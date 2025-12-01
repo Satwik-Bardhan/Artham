@@ -32,22 +32,20 @@ public class HelpSupportActivity extends AppCompatActivity {
 
         // Scroll View and Target Layout for Auto-Scrolling
         NestedScrollView scrollView = findViewById(R.id.scrollView);
-        // We target the included layout by the ID we gave it in activity_help_support.xml
         View faqLayout = findViewById(R.id.faqLayout);
 
         // FAQ Button: Smooth scroll to questions
         btnFAQ.setOnClickListener(v -> {
             if (scrollView != null && faqLayout != null) {
-                // Scroll to the Y-position of the FAQ section
                 scrollView.smoothScrollTo(0, faqLayout.getTop());
             }
         });
 
-        // Contact Us Button
-        btnContactUs.setOnClickListener(v -> sendEmail("support@cashflow.com", "Support Request: Artham App"));
+        // Contact Us Button - [FIX] Updated to support@artham.com
+        btnContactUs.setOnClickListener(v -> sendEmail("support@artham.com", "Support Request: Artham App"));
 
-        // Report Bug Button
-        btnReportBug.setOnClickListener(v -> sendEmail("bugs@cashflow.com", "Bug Report: Artham App"));
+        // Report Bug Button - [FIX] Updated to bugs@artham.com
+        btnReportBug.setOnClickListener(v -> sendEmail("bugs@artham.com", "Bug Report: Artham App"));
     }
 
     private void sendEmail(String recipient, String subject) {
@@ -55,7 +53,7 @@ public class HelpSupportActivity extends AppCompatActivity {
         intent.setData(Uri.parse("mailto:")); // Only email apps should handle this
         intent.putExtra(Intent.EXTRA_EMAIL, new String[]{recipient});
         intent.putExtra(Intent.EXTRA_SUBJECT, subject);
-        intent.putExtra(Intent.EXTRA_TEXT, "Please describe your issue here...\n\n");
+        intent.putExtra(Intent.EXTRA_TEXT, "Please describe the issue you are facing...\n\n");
 
         try {
             startActivity(Intent.createChooser(intent, "Send Email via..."));

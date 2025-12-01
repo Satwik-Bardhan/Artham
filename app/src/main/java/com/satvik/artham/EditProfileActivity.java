@@ -18,6 +18,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
@@ -54,14 +55,13 @@ public class EditProfileActivity extends AppCompatActivity {
     private FirebaseUser currentUser;
 
     private Calendar dobCalendar;
-    private Uri imageUri; // This holds the URI of the *new* image selected by the user
+    private Uri imageUri;
 
     private final ActivityResultLauncher<Intent> imagePickerLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
                 if (result.getResultCode() == RESULT_OK && result.getData() != null && result.getData().getData() != null) {
                     imageUri = result.getData().getData();
-                    // Set the new image in the preview
                     Glide.with(this).load(imageUri).into(profileImageView);
                 }
             }
@@ -111,13 +111,30 @@ public class EditProfileActivity extends AppCompatActivity {
         cancelButton.setOnClickListener(v -> finish());
 
         editProfilePictureButton.setOnClickListener(v -> openImagePicker());
-
         dateOfBirthLayout.setOnClickListener(v -> showDatePicker());
-
         saveProfileButton.setOnClickListener(v -> saveProfileChanges());
 
-        changePasswordLayout.setOnClickListener(v -> Toast.makeText(this, "Change Password feature coming soon", Toast.LENGTH_SHORT).show());
+        changePasswordLayout.setOnClickListener(v -> showChangePasswordDialog());
+
         twoFactorSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> Toast.makeText(this, "2FA Toggled: " + isChecked, Toast.LENGTH_SHORT).show());
+    }
+
+    private void showChangePasswordDialog() {
+        if (currentUser.getEmail() == null) {
+            Toast.makeText(this, "Cannot change password: No email associated.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        new AlertDialog.Builder(this)
+                .setTitle("Change Password")
+                .setMessage("We will send a password reset link to your email address:\n\n" + currentUser.getEmail())
+                .setPositiveButton("Send Email", (dialog, which) -> {
+                    mAuth.sendPasswordResetEmail(currentUser.getEmail())
+                            .addOnSuccessListener(aVoid -> Toast.makeText(this, "Reset email sent! Check your inbox.", Toast.LENGTH_LONG).show())
+                            .addOnFailureListener(e -> Toast.makeText(this, "Failed to send email: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
     }
 
     private void loadUserProfile() {
@@ -188,7 +205,20 @@ public class EditProfileActivity extends AppCompatActivity {
             return;
         }
 
-        saveProfileButton.setEnabled(false); // Prevent double clicks
+        // [FIX] Validate Phone Number Length
+        if (TextUtils.isEmpty(phoneNumber)) {
+            editPhoneNumber.setError("Phone number is required.");
+            editPhoneNumber.requestFocus();
+            return;
+        }
+
+        if (phoneNumber.length() != 10) {
+            editPhoneNumber.setError("Phone number must be exactly 10 digits.");
+            editPhoneNumber.requestFocus();
+            return;
+        }
+
+        saveProfileButton.setEnabled(false);
         saveProfileButton.setText("Saving...");
 
         if (imageUri != null) {
@@ -218,7 +248,6 @@ public class EditProfileActivity extends AppCompatActivity {
         profileUpdates.put("userName", fullName);
         profileUpdates.put("phoneNumber", phoneNumber);
 
-        // Only save DOB if user actually picked a date (or we loaded a valid one)
         if (!dateOfBirthText.getText().toString().equals("Select Date")) {
             profileUpdates.put("dateOfBirthTimestamp", dobTimestamp);
         }

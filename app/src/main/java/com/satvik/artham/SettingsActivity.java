@@ -90,7 +90,6 @@ public class SettingsActivity extends AppCompatActivity {
                 startActivity(new Intent(this, EditProfileActivity.class)));
 
         // General Settings Listeners
-        // [FIX] Updated to launch HelpSupportActivity
         binding.generalSettingsLayout.helpSupport.setOnClickListener(v ->
                 startActivity(new Intent(this, HelpSupportActivity.class)));
 
@@ -100,7 +99,6 @@ public class SettingsActivity extends AppCompatActivity {
         binding.generalSettingsLayout.yourProfile.setOnClickListener(v ->
                 startActivity(new Intent(this, EditProfileActivity.class)));
 
-        // [FIX] Updated to launch AboutActivity
         binding.generalSettingsLayout.aboutCashFlow.setOnClickListener(v ->
                 startActivity(new Intent(this, AboutActivity.class)));
 
@@ -193,7 +191,8 @@ public class SettingsActivity extends AppCompatActivity {
                 } else if (currentUser.getDisplayName() != null && !currentUser.getDisplayName().isEmpty()) {
                     binding.primarySettingsLayout.userName.setText(currentUser.getDisplayName());
                 } else {
-                    binding.primarySettingsLayout.userName.setText("CashFlow User");
+                    // [FIX] Updated from "CashFlow User" to "Artham User"
+                    binding.primarySettingsLayout.userName.setText("Artham User");
                 }
 
                 if (userProfile != null && userProfile.getProfile() != null && !userProfile.getProfile().isEmpty()) {

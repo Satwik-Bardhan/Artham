@@ -19,8 +19,12 @@ import com.itextpdf.text.Image;
 import com.itextpdf.text.PageSize;
 import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.Phrase;
+import com.itextpdf.text.Rectangle;
+import com.itextpdf.text.pdf.ColumnText;
+import com.itextpdf.text.pdf.PdfContentByte;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfPageEventHelper;
 import com.itextpdf.text.pdf.PdfWriter;
 import com.satvik.artham.R;
 import com.satvik.artham.TransactionModel;
@@ -37,27 +41,35 @@ public class PdfReportGenerator {
 
     private static final String TAG = "PdfReportGenerator";
 
-    // Custom colors
+    // Custom Colors
     private static final BaseColor MODE_BLUE_COLOR = new BaseColor(94, 197, 232);
+    private static final BaseColor HEADER_GRAY = new BaseColor(240, 240, 240);
 
-    private static Font titleFont = new Font(Font.FontFamily.HELVETICA, 18, Font.BOLD);
-    private static Font headerFont = new Font(Font.FontFamily.HELVETICA, 12, Font.NORMAL, BaseColor.GRAY);
+    // Fonts
+    private static Font titleFont = new Font(Font.FontFamily.HELVETICA, 22, Font.BOLD);
+    private static Font bookNameFont = new Font(Font.FontFamily.HELVETICA, 16, Font.BOLD, BaseColor.DARK_GRAY);
+    private static Font subTitleFont = new Font(Font.FontFamily.HELVETICA, 10, Font.NORMAL, BaseColor.GRAY);
+    private static Font headerFont = new Font(Font.FontFamily.HELVETICA, 12, Font.NORMAL, BaseColor.BLACK);
     private static Font normalFont = new Font(Font.FontFamily.HELVETICA, 10, Font.NORMAL);
-    private static Font tableHeaderFont = new Font(Font.FontFamily.HELVETICA, 10, Font.BOLD, BaseColor.WHITE);
-
-    // Font for the Mode column
+    private static Font footerFont = new Font(Font.FontFamily.HELVETICA, 8, Font.NORMAL, BaseColor.GRAY);
+    private static Font tableHeaderFont = new Font(Font.FontFamily.HELVETICA, 10, Font.BOLD, BaseColor.BLACK);
     private static Font modeFont = new Font(Font.FontFamily.HELVETICA, 10, Font.NORMAL, MODE_BLUE_COLOR);
 
     public static void generateReport(Context context, List<TransactionModel> transactions, String cashbookName, long startDate, long endDate) {
-        Document document = new Document(PageSize.A4);
+        Document document = new Document(PageSize.A4, 36, 36, 36, 50); // Increased bottom margin for footer
         String fileName = "Artham_Report_" + System.currentTimeMillis() + ".pdf";
         File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), fileName);
 
         try {
-            PdfWriter.getInstance(document, new FileOutputStream(file));
+            PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(file));
+
+            // [FIX] Register the Footer Event to draw page numbers
+            FooterEvent event = new FooterEvent();
+            writer.setPageEvent(event);
+
             document.open();
 
-            // 1. Add Header (Logo + Title) - UPDATED for Center Alignment
+            // 1. Add Header (Logo, Artham Title, Book Name)
             addHeader(document, context, cashbookName, startDate, endDate);
 
             // 2. Add Summary Box
@@ -76,7 +88,7 @@ public class PdfReportGenerator {
     }
 
     private static void addHeader(Document document, Context context, String cashbookName, long startDate, long endDate) throws Exception {
-        // Logo
+        // --- LOGO ---
         Drawable d = ContextCompat.getDrawable(context, R.drawable.logo);
         if (d != null) {
             Bitmap bitmap = ((BitmapDrawable) d).getBitmap();
@@ -84,25 +96,35 @@ public class PdfReportGenerator {
             bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
             Image img = Image.getInstance(stream.toByteArray());
             img.scaleToFit(60, 60);
-
-            // [FIX] Center the Logo
             img.setAlignment(Element.ALIGN_CENTER);
             document.add(img);
         }
 
-        // Book Name (Title)
-        Paragraph title = new Paragraph(cashbookName, titleFont);
-        // [FIX] Center the Title
-        title.setAlignment(Element.ALIGN_CENTER);
-        title.setSpacingBefore(10);
-        title.setSpacingAfter(5);
-        document.add(title);
+        // --- MAIN TITLE ("Artham Report") ---
+        Paragraph mainTitle = new Paragraph("Artham Report", titleFont);
+        mainTitle.setAlignment(Element.ALIGN_CENTER);
+        mainTitle.setSpacingBefore(10);
+        document.add(mainTitle);
 
-        // Date Range
+        // --- BOOK NAME (Subtitle) ---
+        // [FIX] Added Book Name explicitly below the title
+        Paragraph bookTitle = new Paragraph(cashbookName, bookNameFont);
+        bookTitle.setAlignment(Element.ALIGN_CENTER);
+        bookTitle.setSpacingAfter(5);
+        document.add(bookTitle);
+
+        // --- GENERATED ON ---
+        SimpleDateFormat genSdf = new SimpleDateFormat("dd MMM yyyy, hh:mm a", Locale.getDefault());
+        String generatedText = "Generated On: " + genSdf.format(new Date());
+        Paragraph generatedInfo = new Paragraph(generatedText, subTitleFont);
+        generatedInfo.setAlignment(Element.ALIGN_CENTER);
+        generatedInfo.setSpacingAfter(5);
+        document.add(generatedInfo);
+
+        // --- DURATION ---
         SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy", Locale.getDefault());
         String dateRange = "Duration: " + sdf.format(new Date(startDate)) + " - " + sdf.format(new Date(endDate));
         Paragraph duration = new Paragraph(dateRange, headerFont);
-        // [FIX] Center the Date Range
         duration.setAlignment(Element.ALIGN_CENTER);
         duration.setSpacingAfter(20);
         document.add(duration);
@@ -123,7 +145,7 @@ public class PdfReportGenerator {
 
         PdfPTable summaryTable = new PdfPTable(3);
         summaryTable.setWidthPercentage(100);
-        summaryTable.setSpacingAfter(20);
+        summaryTable.setSpacingAfter(15);
 
         // Headers
         addSummaryCell(summaryTable, "Total Cash In", BaseColor.LIGHT_GRAY);
@@ -158,17 +180,17 @@ public class PdfReportGenerator {
     }
 
     private static void addTransactionTable(Document document, List<TransactionModel> transactions) throws DocumentException {
-        // Columns: Date, Remark, Mode, Cash In, Cash Out, Balance
         float[] columnWidths = {2, 4, 2, 2, 2, 2};
         PdfPTable table = new PdfPTable(columnWidths);
         table.setWidthPercentage(100);
+        table.setHeaderRows(1); // Repeats header on new pages
 
         String[] headers = {"Date", "Remark", "Mode", "Cash In", "Cash Out", "Balance"};
         for (String header : headers) {
             PdfPCell cell = new PdfPCell(new Phrase(header, tableHeaderFont));
-            cell.setBackgroundColor(BaseColor.GRAY);
+            cell.setBackgroundColor(HEADER_GRAY);
             cell.setHorizontalAlignment(Element.ALIGN_CENTER);
-            cell.setPadding(6);
+            cell.setPadding(8);
             table.addCell(cell);
         }
 
@@ -176,36 +198,24 @@ public class PdfReportGenerator {
         SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yy", Locale.getDefault());
 
         for (TransactionModel t : transactions) {
-            // Update Running Balance
             if ("IN".equalsIgnoreCase(t.getType())) {
                 runningBalance += t.getAmount();
             } else {
                 runningBalance -= t.getAmount();
             }
 
-            // 1. Date
             table.addCell(createCell(sdf.format(new Date(t.getTimestamp())), Element.ALIGN_LEFT));
-
-            // 2. Remark
             table.addCell(createCell(t.getRemark() != null ? t.getRemark() : t.getTransactionCategory(), Element.ALIGN_LEFT));
-
-            // 3. Mode (Blue Color)
             table.addCell(createCell(t.getPaymentMode(), Element.ALIGN_CENTER, MODE_BLUE_COLOR));
 
-            // Cash In / Out Logic
             if ("IN".equalsIgnoreCase(t.getType())) {
-                // Cash In (Green)
                 table.addCell(createCell(formatCurrency(t.getAmount()), Element.ALIGN_RIGHT, new BaseColor(0, 128, 0)));
-                // Cash Out (Empty)
                 table.addCell(createCell("", Element.ALIGN_RIGHT));
             } else {
-                // Cash In (Empty)
                 table.addCell(createCell("", Element.ALIGN_RIGHT));
-                // Cash Out (Red)
                 table.addCell(createCell(formatCurrency(t.getAmount()), Element.ALIGN_RIGHT, BaseColor.RED));
             }
 
-            // 6. Running Balance
             BaseColor balColor = runningBalance >= 0 ? new BaseColor(0, 128, 0) : BaseColor.RED;
             table.addCell(createCell(formatCurrency(runningBalance), Element.ALIGN_RIGHT, balColor));
         }
@@ -221,11 +231,30 @@ public class PdfReportGenerator {
         Font font = new Font(Font.FontFamily.HELVETICA, 9, Font.NORMAL, color);
         PdfPCell cell = new PdfPCell(new Phrase(text, font));
         cell.setHorizontalAlignment(alignment);
-        cell.setPadding(5);
+        cell.setPadding(6);
         return cell;
     }
 
     private static String formatCurrency(double amount) {
         return String.format(Locale.getDefault(), "%.0f", amount);
+    }
+
+    // [FIX] Inner Class for Footer (Page Numbers & Credentials)
+    static class FooterEvent extends PdfPageEventHelper {
+        @Override
+        public void onEndPage(PdfWriter writer, Document document) {
+            PdfContentByte cb = writer.getDirectContent();
+
+            // 1. Credentials (Left)
+            Phrase credentials = new Phrase("Generated by Artham", footerFont);
+            ColumnText.showTextAligned(cb, Element.ALIGN_LEFT, credentials,
+                    document.left(), document.bottom() - 10, 0);
+
+            // 2. Page Number (Center)
+            Phrase pageNumber = new Phrase("Page " + writer.getPageNumber(), footerFont);
+            ColumnText.showTextAligned(cb, Element.ALIGN_CENTER, pageNumber,
+                    (document.right() - document.left()) / 2 + document.leftMargin(),
+                    document.bottom() - 10, 0);
+        }
     }
 }

@@ -80,6 +80,7 @@
                 android:background="?attr/selectableItemBackgroundBorderless"/>
         </RelativeLayout>
     </androidx.cardview.widget.CardView>
+
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -102,6 +103,7 @@
                 app:cardBackgroundColor="?attr/surfaceColor">
 
                 <LinearLayout
+                    android:id="@+id/noCategoryClickable"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
@@ -111,6 +113,12 @@
                     android:clickable="true"
                     android:focusable="true">
 
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_block"
+                        app:tint="?attr/textColorSecondary"
+                        android:layout_marginEnd="16dp" />
 
                     <RadioButton
                         android:id="@+id/radioNoCategory"
