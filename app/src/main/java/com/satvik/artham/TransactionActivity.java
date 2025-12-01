@@ -31,13 +31,18 @@ import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.satvik.artham.databinding.ActivityTransactionBinding;
 import com.satvik.artham.databinding.LayoutBottomNavigationBinding;
 import com.satvik.artham.databinding.LayoutPieChartBinding;
 import com.satvik.artham.databinding.LayoutSearchBarBinding;
 import com.satvik.artham.databinding.LayoutSummaryCardsBinding;
 import com.satvik.artham.utils.CustomPieChartValueFormatter;
-import com.satvik.artham.utils.PdfReportGenerator; // [IMPORTANT] Import the generator
+import com.satvik.artham.utils.PdfReportGenerator;
 
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
@@ -62,6 +67,8 @@ public class TransactionActivity extends AppCompatActivity {
     // Data
     private List<TransactionModel> allTransactions = new ArrayList<>();
     private Calendar currentMonthCalendar;
+    // [FIX] Added variable to store the real cashbook name
+    private String currentCashbookName = "My Cashbook";
 
     private ActivityTransactionBinding binding;
     private LayoutSummaryCardsBinding summaryBinding;
@@ -99,6 +106,9 @@ public class TransactionActivity extends AppCompatActivity {
             return;
         }
 
+        // [FIX] Fetch the actual cashbook name when activity starts
+        fetchCashbookName();
+
         initializeUI();
         initViewModel();
         setupTransactionFragment();
@@ -110,6 +120,31 @@ public class TransactionActivity extends AppCompatActivity {
         applySavedChartVisibility();
 
         Log.d(TAG, "TransactionActivity created for cashbook: " + currentCashbookId);
+    }
+
+    // [FIX] New method to fetch cashbook name from Firebase
+    private void fetchCashbookName() {
+        DatabaseReference bookRef = FirebaseDatabase.getInstance().getReference("users")
+                .child(currentUser.getUid())
+                .child("cashbooks")
+                .child(currentCashbookId);
+
+        bookRef.child("name").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()) {
+                    String name = snapshot.getValue(String.class);
+                    if (name != null && !name.isEmpty()) {
+                        currentCashbookName = name;
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e(TAG, "Failed to fetch cashbook name", error.toException());
+            }
+        });
     }
 
     private void initializeUI() {
@@ -128,7 +163,6 @@ public class TransactionActivity extends AppCompatActivity {
         if (viewModel == null) return;
 
         viewModel.getFilteredTransactions().observe(this, transactions -> {
-            Log.d(TAG, "ViewModel observed " + transactions.size() + " filtered transactions.");
             this.allTransactions = transactions;
             displayDataForCurrentMonth();
         });
@@ -233,6 +267,13 @@ public class TransactionActivity extends AppCompatActivity {
 
     private void switchCashbook(String newCashbookId, String cashbookName) {
         currentCashbookId = newCashbookId;
+        // [FIX] Update local name variable when switching
+        if (cashbookName != null) {
+            currentCashbookName = cashbookName;
+        } else {
+            fetchCashbookName(); // Fetch if name not passed
+        }
+
         showToast("Switched to: " + cashbookName);
         saveActiveCashbookId(currentCashbookId);
         initViewModel();
@@ -480,7 +521,6 @@ public class TransactionActivity extends AppCompatActivity {
         );
     }
 
-    // [UPDATED] Setup Download Launcher to use PdfReportGenerator
     private void setupDownloadLauncher() {
         downloadLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
@@ -494,16 +534,15 @@ public class TransactionActivity extends AppCompatActivity {
                         String format = data.getStringExtra("format");
 
                         if (checkPermissions()) {
-                            // Filter data based on options selected
                             List<TransactionModel> filteredTransactions = allTransactions.stream()
                                     .filter(t -> t.getTimestamp() >= startDate && t.getTimestamp() <= endDate)
                                     .filter(t -> entryType == null || entryType.equals("All") || t.getType().equals(entryType))
                                     .filter(t -> paymentMode == null || paymentMode.equals("All") || t.getPaymentMode().equals(paymentMode))
                                     .collect(Collectors.toList());
 
-                            // Generate PDF
                             if ("PDF".equalsIgnoreCase(format)) {
-                                PdfReportGenerator.generateReport(this, filteredTransactions, "Cashbook Report", startDate, endDate);
+                                // [FIX] Pass the real currentCashbookName instead of hardcoded string
+                                PdfReportGenerator.generateReport(this, filteredTransactions, currentCashbookName, startDate, endDate);
                             } else {
                                 showToast("Excel format coming soon!");
                             }
