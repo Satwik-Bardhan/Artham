@@ -1,6 +1,5 @@
 <resources>
     <string name="app_name">Artham</string>
-    <string name="default_web_client_id">921171797069-03bo77bm3lh9dittddlb4o35cutnlb66.apps.googleusercontent.com</string>
 
     <string name="home">Home</string>
     <string name="transactions">Transactions</string>

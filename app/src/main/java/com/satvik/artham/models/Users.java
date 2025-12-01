@@ -1,4 +1,4 @@
-package com.satvik.artham.models; // [FIX] Ensure this is in the 'models' package
+package com.satvik.artham.models;
 
 import com.google.firebase.database.IgnoreExtraProperties;
 
@@ -13,6 +13,12 @@ public class Users {
 
     public Users() {
         // Default constructor required for Firebase
+    }
+
+    public Users(String userId, String userName, String mail) {
+        this.userId = userId;
+        this.userName = userName;
+        this.mail = mail;
     }
 
     public String getProfile() {

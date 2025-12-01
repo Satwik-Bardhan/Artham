@@ -55,7 +55,8 @@ public class CashInOutActivity extends AppCompatActivity {
     private TextView headerTitle, headerSubtitle;
     private ImageView backButton, menuButton;
     private TextView dateTextView, timeTextView, selectedCategoryTextView;
-    private LinearLayout dateSelectorLayout, timeSelectorLayout, categorySelectorLayout;
+    // [FIX] Renamed to match function (it holds the clickable layout)
+    private LinearLayout dateSelectorLayout, timeSelectorLayout, categoryInputLayout;
     private RadioGroup inOutToggle, cashOnlineToggle;
     private RadioButton radioIn, radioOut, radioCash, radioOnline;
     private ImageView swapButton;
@@ -171,7 +172,9 @@ public class CashInOutActivity extends AppCompatActivity {
 
         // Category
         selectedCategoryTextView = findViewById(R.id.selectedCategoryTextView);
-        categorySelectorLayout = findViewById(R.id.categorySelectorLayout);
+
+        // [FIX] Bind to the inner clickable Layout ID we created
+        categoryInputLayout = findViewById(R.id.categoryInputLayout);
 
         // Attachments
         cameraButton = findViewById(R.id.cameraButton);
@@ -254,7 +257,10 @@ public class CashInOutActivity extends AppCompatActivity {
             taxAmountLayout.setVisibility(isChecked ? View.VISIBLE : View.GONE);
         });
         voiceInputButton.setOnClickListener(v -> startVoiceInput());
-        categorySelectorLayout.setOnClickListener(v -> openCategorySelector());
+
+        // [FIX] Set listener on the input box, not the outer container
+        categoryInputLayout.setOnClickListener(v -> openCategorySelector());
+
         partySelectorLayout.setOnClickListener(v -> openPartySelector());
         locationButton.setOnClickListener(v -> getCurrentLocation());
         saveEntryButton.setOnClickListener(v -> saveTransaction(false));
@@ -588,6 +594,10 @@ public class CashInOutActivity extends AppCompatActivity {
     private void openCategorySelector() {
         Intent intent = new Intent(this, ChooseCategoryActivity.class);
         intent.putExtra("selected_category", selectedCategory);
+
+        // [FIX] Pass the currentCashbookId so ChooseCategoryActivity knows where to save new categories
+        intent.putExtra("cashbook_id", currentCashbookId);
+
         categoryLauncher.launch(intent);
     }
 

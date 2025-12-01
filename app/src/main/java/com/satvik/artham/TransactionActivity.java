@@ -3,17 +3,13 @@ package com.satvik.artham;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
-import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -30,35 +26,24 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.github.mikephil.charting.data.PieData;
+import com.github.mikephil.charting.data.PieDataSet;
+import com.github.mikephil.charting.data.PieEntry;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.satvik.artham.databinding.ActivityTransactionBinding;
 import com.satvik.artham.databinding.LayoutBottomNavigationBinding;
 import com.satvik.artham.databinding.LayoutPieChartBinding;
 import com.satvik.artham.databinding.LayoutSearchBarBinding;
 import com.satvik.artham.databinding.LayoutSummaryCardsBinding;
 import com.satvik.artham.utils.CustomPieChartValueFormatter;
-import com.github.mikephil.charting.data.PieData;
-import com.github.mikephil.charting.data.PieDataSet;
-import com.github.mikephil.charting.data.PieEntry;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.itextpdf.text.Document;
-import com.itextpdf.text.Element;
-import com.itextpdf.text.Font;
-import com.itextpdf.text.PageSize;
-import com.itextpdf.text.Paragraph;
-import com.itextpdf.text.Phrase;
-import com.itextpdf.text.pdf.PdfPCell;
-import com.itextpdf.text.pdf.PdfPTable;
-import com.itextpdf.text.pdf.PdfWriter;
+import com.satvik.artham.utils.PdfReportGenerator; // [IMPORTANT] Import the generator
 
-import java.io.File;
-import java.io.OutputStream;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -71,7 +56,6 @@ public class TransactionActivity extends AppCompatActivity {
     private static final int STORAGE_PERMISSION_CODE = 101;
     private static final int REQUEST_CODE_CASHBOOK_SWITCH = 1001;
 
-    // [NEW] Preference Keys
     private static final String PREFS_NAME = "AppPrefs";
     private static final String KEY_SHOW_CHART = "show_pie_chart";
 
@@ -86,7 +70,6 @@ public class TransactionActivity extends AppCompatActivity {
     private LayoutBottomNavigationBinding bottomNavBinding;
 
     private TransactionItemFragment transactionFragment;
-
     private TransactionViewModel viewModel;
 
     // Firebase
@@ -124,7 +107,6 @@ public class TransactionActivity extends AppCompatActivity {
         setupLaunchers();
         observeViewModel();
 
-        // [NEW] Restore saved chart visibility state
         applySavedChartVisibility();
 
         Log.d(TAG, "TransactionActivity created for cashbook: " + currentCashbookId);
@@ -234,7 +216,6 @@ public class TransactionActivity extends AppCompatActivity {
         Intent intent = new Intent(this, CashbookSwitchActivity.class);
         intent.putExtra("current_cashbook_id", currentCashbookId);
         startActivityForResult(intent, REQUEST_CODE_CASHBOOK_SWITCH);
-        Log.d(TAG, "Opened CashbookSwitchActivity");
     }
 
     @Override
@@ -253,10 +234,7 @@ public class TransactionActivity extends AppCompatActivity {
     private void switchCashbook(String newCashbookId, String cashbookName) {
         currentCashbookId = newCashbookId;
         showToast("Switched to: " + cashbookName);
-        Log.d(TAG, "Switched to cashbook: " + cashbookName);
-
         saveActiveCashbookId(currentCashbookId);
-
         initViewModel();
         observeViewModel();
     }
@@ -265,10 +243,6 @@ public class TransactionActivity extends AppCompatActivity {
         if (currentUser == null) return;
         SharedPreferences prefs = getSharedPreferences("AppPrefs", Context.MODE_PRIVATE);
         prefs.edit().putString("active_cashbook_id_" + currentUser.getUid(), cashbookId).apply();
-    }
-
-    private int dpToPx(int dp) {
-        return Math.round(dp * getResources().getDisplayMetrics().density);
     }
 
     private void setupClickListeners() {
@@ -288,14 +262,10 @@ public class TransactionActivity extends AppCompatActivity {
             displayDataForCurrentMonth();
         });
 
-        // [UPDATED] Toggle Listener with persistence
         pieChartBinding.togglePieChartButton.setOnClickListener(v -> {
             boolean isCurrentlyVisible = (pieChartBinding.pieChart.getVisibility() == View.VISIBLE);
             boolean newVisibility = !isCurrentlyVisible;
-
             setChartVisibility(newVisibility);
-
-            // Save to SharedPreferences
             SharedPreferences prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
             prefs.edit().putBoolean(KEY_SHOW_CHART, newVisibility).apply();
         });
@@ -306,37 +276,28 @@ public class TransactionActivity extends AppCompatActivity {
         });
     }
 
-    // [NEW] Restore saved visibility state
     private void applySavedChartVisibility() {
         SharedPreferences prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        boolean shouldShow = prefs.getBoolean(KEY_SHOW_CHART, true); // Default true (show)
+        boolean shouldShow = prefs.getBoolean(KEY_SHOW_CHART, true);
         setChartVisibility(shouldShow);
     }
 
-    // [NEW] Helper to toggle visibility of chart and stats
     private void setChartVisibility(boolean show) {
         if (show) {
             pieChartBinding.pieChart.setVisibility(View.VISIBLE);
-            // Also toggle the stats layout (Categories/Highest) if it exists in the binding
-            // Note: You added android:id="@+id/statsLayout" to the XML in previous steps.
-            // ViewBinding should expose it as 'statsLayout' if your XML update was successful.
-            // If not found, this part is skipped safely.
             try {
-                // Reflection or direct access if binding was re-generated
-                // pieChartBinding.statsLayout.setVisibility(View.VISIBLE);
-                // Since I don't know if binding regenerated, using findViewById on the root view of the binding
                 View stats = pieChartBinding.getRoot().findViewById(R.id.statsLayout);
-                if(stats != null) stats.setVisibility(View.VISIBLE);
-            } catch (Exception ignored) {}
-
+                if (stats != null) stats.setVisibility(View.VISIBLE);
+            } catch (Exception ignored) {
+            }
             pieChartBinding.togglePieChartButton.setText("Hide Pie Chart");
         } else {
             pieChartBinding.pieChart.setVisibility(View.GONE);
             try {
                 View stats = pieChartBinding.getRoot().findViewById(R.id.statsLayout);
-                if(stats != null) stats.setVisibility(View.GONE);
-            } catch (Exception ignored) {}
-
+                if (stats != null) stats.setVisibility(View.GONE);
+            } catch (Exception ignored) {
+            }
             pieChartBinding.togglePieChartButton.setText("Show Pie Chart");
         }
     }
@@ -383,8 +344,6 @@ public class TransactionActivity extends AppCompatActivity {
         summaryBinding.incomeText.setText("₹" + String.format(Locale.US, "%.2f", totalIncome));
         summaryBinding.expenseText.setText("₹" + String.format(Locale.US, "%.2f", totalExpense));
         summaryBinding.balanceText.setText("₹" + String.format(Locale.US, "%.2f", totalIncome - totalExpense));
-
-        TypedValue typedValue = new TypedValue();
     }
 
     private void setupStyledPieChart(List<TransactionModel> transactionsForMonth) {
@@ -425,7 +384,6 @@ public class TransactionActivity extends AppCompatActivity {
         }
 
         ArrayList<PieEntry> entries = new ArrayList<>();
-        // [FIX] Distinct Color Palette
         ArrayList<Integer> colors = new ArrayList<>();
         colors.add(Color.parseColor("#EF5350")); // Red
         colors.add(Color.parseColor("#42A5F5")); // Blue
@@ -452,8 +410,6 @@ public class TransactionActivity extends AppCompatActivity {
         dataSet.setValueLinePart2Length(0.5f);
         dataSet.setValueLineColor(Color.parseColor("#828282"));
         dataSet.setValueLineWidth(1.5f);
-
-        // [FIX] Avoid Overlap
         dataSet.setXValuePosition(PieDataSet.ValuePosition.OUTSIDE_SLICE);
         dataSet.setYValuePosition(PieDataSet.ValuePosition.OUTSIDE_SLICE);
         dataSet.setDrawValues(true);
@@ -469,7 +425,6 @@ public class TransactionActivity extends AppCompatActivity {
         pieChartBinding.pieChart.setRotationEnabled(true);
         pieChartBinding.pieChart.setDrawHoleEnabled(false);
         pieChartBinding.pieChart.setDrawEntryLabels(false);
-        // [FIX] Extra offsets
         pieChartBinding.pieChart.setExtraOffsets(30, 10, 30, 10);
         pieChartBinding.pieChart.setBackgroundColor(Color.TRANSPARENT);
 
@@ -481,15 +436,19 @@ public class TransactionActivity extends AppCompatActivity {
     private void setupFilterLauncher() {
         searchBinding.searchEditText.addTextChangedListener(new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 if (viewModel != null) {
                     viewModel.filter(s.toString(), 0, 0, "All", null, null);
                 }
             }
+
             @Override
-            public void afterTextChanged(Editable s) {}
+            public void afterTextChanged(Editable s) {
+            }
         });
 
         searchBinding.filterButton.setOnClickListener(v -> {
@@ -521,6 +480,7 @@ public class TransactionActivity extends AppCompatActivity {
         );
     }
 
+    // [UPDATED] Setup Download Launcher to use PdfReportGenerator
     private void setupDownloadLauncher() {
         downloadLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
@@ -531,9 +491,22 @@ public class TransactionActivity extends AppCompatActivity {
                         long endDate = data.getLongExtra("endDate", 0);
                         String entryType = data.getStringExtra("entryType");
                         String paymentMode = data.getStringExtra("paymentMode");
+                        String format = data.getStringExtra("format");
 
                         if (checkPermissions()) {
-                            exportTransactionsToPdf(startDate, endDate, entryType, paymentMode);
+                            // Filter data based on options selected
+                            List<TransactionModel> filteredTransactions = allTransactions.stream()
+                                    .filter(t -> t.getTimestamp() >= startDate && t.getTimestamp() <= endDate)
+                                    .filter(t -> entryType == null || entryType.equals("All") || t.getType().equals(entryType))
+                                    .filter(t -> paymentMode == null || paymentMode.equals("All") || t.getPaymentMode().equals(paymentMode))
+                                    .collect(Collectors.toList());
+
+                            // Generate PDF
+                            if ("PDF".equalsIgnoreCase(format)) {
+                                PdfReportGenerator.generateReport(this, filteredTransactions, "Cashbook Report", startDate, endDate);
+                            } else {
+                                showToast("Excel format coming soon!");
+                            }
                         } else {
                             requestPermissions();
                         }
@@ -565,103 +538,10 @@ public class TransactionActivity extends AppCompatActivity {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == STORAGE_PERMISSION_CODE) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                showToast("Storage permission granted. Please tap Download again.");
+                showToast("Storage permission granted. Please try again.");
             } else {
-                showToast("Storage permission denied. Cannot export file.");
+                showToast("Storage permission denied.");
             }
-        }
-    }
-
-    private void exportTransactionsToPdf(long startDate, long endDate,
-                                         String entryType, String paymentMode) {
-        try {
-            // Create a folder named after the user's email
-            String userFolder = "CashFlow";
-            if (currentUser.getEmail() != null) {
-                userFolder += "_" + currentUser.getEmail().split("@")[0];
-            }
-
-            String fileName = "Report_" + System.currentTimeMillis() + ".pdf";
-
-            ContentValues values = new ContentValues();
-            values.put(MediaStore.MediaColumns.DISPLAY_NAME, fileName);
-            values.put(MediaStore.MediaColumns.MIME_TYPE, "application/pdf");
-
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS + "/" + userFolder);
-            }
-
-            Uri uri;
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                uri = getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
-            } else {
-                File directory = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), userFolder);
-                if (!directory.exists()) {
-                    directory.mkdirs();
-                }
-                File file = new File(directory, fileName);
-                values.put(MediaStore.Images.Media.DATA, file.getAbsolutePath());
-                uri = getContentResolver().insert(MediaStore.Files.getContentUri("external"), values);
-            }
-
-            if (uri != null) {
-                OutputStream outputStream = getContentResolver().openOutputStream(uri);
-                Document document = new Document(PageSize.A4);
-                PdfWriter.getInstance(document, outputStream);
-                document.open();
-
-                Font titleFont = new Font(Font.FontFamily.HELVETICA, 18, Font.BOLD);
-                Paragraph title = new Paragraph("CashFlow Transaction Report", titleFont);
-                title.setAlignment(Element.ALIGN_CENTER);
-                document.add(title);
-                document.add(new Paragraph(" "));
-
-                SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
-                String dateRange = "Date Range: " + sdf.format(new Date(startDate)) +
-                        " to " + sdf.format(new Date(endDate));
-                document.add(new Paragraph(dateRange));
-                document.add(new Paragraph(" "));
-
-                List<TransactionModel> filteredTransactions = allTransactions.stream()
-                        .filter(t -> t.getTimestamp() >= startDate && t.getTimestamp() <= endDate)
-                        .filter(t -> entryType == null || entryType.equals("All") ||
-                                t.getType().equals(entryType))
-                        .filter(t -> paymentMode == null || paymentMode.equals("All") ||
-                                t.getPaymentMode().equals(paymentMode))
-                        .collect(Collectors.toList());
-
-                PdfPTable table = new PdfPTable(4);
-                table.setWidthPercentage(100);
-                table.setWidths(new float[]{2, 2, 1, 2});
-
-                Font headerFont = new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD);
-                table.addCell(new PdfPCell(new Phrase("Date", headerFont)));
-                table.addCell(new PdfPCell(new Phrase("Category", headerFont)));
-                table.addCell(new PdfPCell(new Phrase("Type", headerFont)));
-                table.addCell(new PdfPCell(new Phrase("Amount", headerFont)));
-
-                Font cellFont = new Font(Font.FontFamily.HELVETICA, 10);
-                for (TransactionModel transaction : filteredTransactions) {
-                    table.addCell(new PdfPCell(new Phrase(
-                            sdf.format(new Date(transaction.getTimestamp())), cellFont)));
-                    table.addCell(new PdfPCell(new Phrase(
-                            transaction.getTransactionCategory() != null ?
-                                    transaction.getTransactionCategory() : "N/A", cellFont)));
-                    table.addCell(new PdfPCell(new Phrase(transaction.getType(), cellFont)));
-                    table.addCell(new PdfPCell(new Phrase(
-                            "₹" + String.format("%.2f", transaction.getAmount()), cellFont)));
-                }
-
-                document.add(table);
-                document.close();
-                outputStream.close();
-
-                showToast("PDF report exported successfully!");
-                Log.d(TAG, "PDF exported successfully");
-            }
-        } catch (Exception e) {
-            Log.e(TAG, "Error exporting PDF", e);
-            showToast("Error exporting PDF: " + e.getMessage());
         }
     }
 
@@ -703,13 +583,5 @@ public class TransactionActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         Log.d(TAG, "TransactionActivity destroyed");
-    }
-
-    static class ThemeUtil {
-        static int getThemeAttrColor(Context context, int attr) {
-            TypedValue typedValue = new TypedValue();
-            context.getTheme().resolveAttribute(attr, typedValue, true);
-            return typedValue.data;
-        }
     }
 }

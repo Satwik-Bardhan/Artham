@@ -5,14 +5,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
-import android.graphics.Typeface;
-import android.icu.util.Calendar;
 import android.os.Bundle;
-import android.text.InputType;
 import android.util.Log;
 import android.util.TypedValue;
-import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
@@ -20,14 +15,13 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TableLayout;
-import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.text.InputType;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.cardview.widget.CardView;
 
 import com.satvik.artham.databinding.ActivityHomePageBinding;
 import com.satvik.artham.databinding.ComponentBalanceCardBinding;
@@ -49,6 +43,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import android.icu.util.Calendar;
 
 public class HomePage extends AppCompatActivity {
 
@@ -74,7 +69,8 @@ public class HomePage extends AppCompatActivity {
     // Firebase
     private FirebaseAuth mAuth;
     private DatabaseReference mDatabase;
-    private ValueEventListener transactionsListener, cashbooksListener;
+    // [FIX] Added listener for user profile
+    private ValueEventListener transactionsListener, cashbooksListener, userProfileListener;
     private FirebaseUser currentUser;
     private DatabaseReference userRef;
 
@@ -85,6 +81,7 @@ public class HomePage extends AppCompatActivity {
     // State
     private String currentCashbookId;
     private String currentUserId;
+    private String fetchedUserName = null; // [FIX] Store fetched username
     private boolean isLoading = false;
 
     // Utils
@@ -103,13 +100,10 @@ public class HomePage extends AppCompatActivity {
         bottomNavBinding = binding.bottomNavCard;
 
         // Initialize Views manually from the included layout
-        // These IDs come from 'layout_daily_balance_summary.xml'
         dailySummaryHeader = findViewById(R.id.dailySummaryHeader);
         dailyDateText = findViewById(R.id.dailyDateText);
         dailyBalanceText = findViewById(R.id.dailyBalanceText);
 
-
-        // These IDs come from 'activity_home_page.xml'
         transactionSection = findViewById(R.id.transaction_section);
         emptyStateView = findViewById(R.id.emptyStateView);
         transactionTable = findViewById(R.id.transactionTable);
@@ -149,7 +143,6 @@ public class HomePage extends AppCompatActivity {
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
             startActivity(intent);
             overridePendingTransition(0, 0);
-            // Removing finish() to keep back stack logical
         });
 
         bottomNavBinding.btnCashbookSwitch.setOnClickListener(v -> openCashbookSwitcher());
@@ -210,6 +203,8 @@ public class HomePage extends AppCompatActivity {
                     saveActiveCashbookId(currentCashbookId);
                 } else if (cashbooks.isEmpty()) {
                     setLoadingState(false);
+                    updateUserUI();
+                    if (emptyStateView != null) emptyStateView.setVisibility(View.VISIBLE);
                     showCreateFirstCashbookDialog();
                     return;
                 }
@@ -225,6 +220,52 @@ public class HomePage extends AppCompatActivity {
             }
         };
         userRef.child("cashbooks").addValueEventListener(cashbooksListener);
+    }
+
+    // [FIX] New method to listen for User Profile changes (Username)
+    private void startListeningForUserProfile() {
+        if (userRef == null) return;
+
+        // Remove existing listener if any
+        if (userProfileListener != null) {
+            userRef.removeEventListener(userProfileListener);
+        }
+
+        userProfileListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                // Fetch userName from the "users/{uid}" node
+                String name = snapshot.child("userName").getValue(String.class);
+                if (name != null && !name.isEmpty()) {
+                    fetchedUserName = name;
+                } else {
+                    fetchedUserName = null;
+                }
+                // Update the card immediately
+                updateBalanceCardUser();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e(TAG, "Failed to load user profile", error.toException());
+            }
+        };
+        userRef.addValueEventListener(userProfileListener);
+    }
+
+    // [FIX] Helper method to update the Balance Card text
+    private void updateBalanceCardUser() {
+        if (binding == null || currentUser == null) return;
+
+        String displayName;
+        if (fetchedUserName != null) {
+            displayName = fetchedUserName;
+        } else {
+            displayName = getDisplayName(currentUser);
+        }
+
+        balanceCardBinding.userNameBottom.setText(displayName);
+        balanceCardBinding.uidText.setText("UID: " + currentUserId.substring(0, 8) + "...");
     }
 
     private void setupUI() {
@@ -259,6 +300,7 @@ public class HomePage extends AppCompatActivity {
         super.onStart();
         if (currentUserId != null) {
             loadActiveCashbookId();
+            startListeningForUserProfile(); // [FIX] Start listening for profile changes
         } else {
             Log.e(TAG, "User is not logged in. Redirecting to Signin.");
             signOutUser();
@@ -361,11 +403,13 @@ public class HomePage extends AppCompatActivity {
                 String cashbookName = "My Cashbook";
                 long lastModified = System.currentTimeMillis();
 
-                for (CashbookModel cashbook : cashbooks) {
-                    if (cashbook.getCashbookId().equals(currentCashbookId)) {
-                        cashbookName = cashbook.getName();
-                        lastModified = cashbook.getLastModified();
-                        break;
+                if (!cashbooks.isEmpty()) {
+                    for (CashbookModel cashbook : cashbooks) {
+                        if (cashbook.getCashbookId().equals(currentCashbookId)) {
+                            cashbookName = cashbook.getName();
+                            lastModified = cashbook.getLastModified();
+                            break;
+                        }
                     }
                 }
 
@@ -379,8 +423,10 @@ public class HomePage extends AppCompatActivity {
                 if (binding.currentCashbookText != null) {
                     binding.currentCashbookText.setText(cashbookName);
                 }
-                balanceCardBinding.uidText.setText("UID: " + currentUserId.substring(0, 8) + "...");
-                balanceCardBinding.userNameBottom.setText(getDisplayName(currentUser));
+
+                // [FIX] Call shared update method
+                updateBalanceCardUser();
+
             } catch (Exception e) {
                 Log.e(TAG, "Error updating UI", e);
             }
@@ -400,12 +446,10 @@ public class HomePage extends AppCompatActivity {
     private void updateTransactionTableAndSummary() {
         if (binding == null) return;
         try {
-            // Clear previous rows
             if (transactionTable != null) {
                 transactionTable.removeAllViews();
             }
 
-            // [1] Calculate GLOBAL Balance (All Time) for the Top Card
             double globalTotalIncome = 0, globalTotalExpense = 0;
             for (TransactionModel transaction : allTransactions) {
                 if ("IN".equalsIgnoreCase(transaction.getType())) {
@@ -416,7 +460,6 @@ public class HomePage extends AppCompatActivity {
             }
             double globalBalance = globalTotalIncome - globalTotalExpense;
 
-            // [2] Calculate TODAY'S Income, Expense & Net Balance
             double todayIncome = 0, todayExpense = 0;
             List<TransactionModel> todaysTransactions = new ArrayList<>();
 
@@ -433,13 +476,11 @@ public class HomePage extends AppCompatActivity {
 
             double todayBalance = todayIncome - todayExpense;
 
-            // Update Balance Card (Global Stats)
             balanceCardBinding.balanceText.setText(formatCurrency(globalBalance));
             balanceCardBinding.moneyIn.setText(formatCurrency(globalTotalIncome));
             balanceCardBinding.moneyOut.setText(formatCurrency(globalTotalExpense));
             balanceCardBinding.balanceText.setTextColor(Color.WHITE);
 
-            // Update Daily Header Text (Date & Net Balance)
             if (dailyDateText != null) {
                 dailyDateText.setText(DateTimeUtils.formatDate(System.currentTimeMillis(), "dd MMM yyyy"));
             }
@@ -455,7 +496,6 @@ public class HomePage extends AppCompatActivity {
                 }
             }
 
-            // [3] Populate List with Today's Transactions
             if (todaysTransactions.isEmpty()) {
                 if (emptyStateView != null) emptyStateView.setVisibility(View.VISIBLE);
                 if (transactionTable != null) transactionTable.setVisibility(View.GONE);
@@ -491,7 +531,6 @@ public class HomePage extends AppCompatActivity {
     private void addTransactionRow(TransactionModel transaction) {
         if (transactionTable == null) return;
 
-        // Inflate the specific row layout
         View rowView = getLayoutInflater().inflate(R.layout.item_transaction_row_daily, transactionTable, false);
 
         TextView rowCategory = rowView.findViewById(R.id.rowCategory);
@@ -626,6 +665,11 @@ public class HomePage extends AppCompatActivity {
             if (cashbooksListener != null) {
                 userRef.child("cashbooks").removeEventListener(cashbooksListener);
                 cashbooksListener = null;
+            }
+            // [FIX] Remove user profile listener
+            if (userProfileListener != null) {
+                userRef.removeEventListener(userProfileListener);
+                userProfileListener = null;
             }
         } catch (Exception e) {
             Log.e(TAG, "Error removing listeners", e);

@@ -24,83 +24,62 @@
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingStart="20dp"
-            android:paddingEnd="20dp"
-            android:paddingTop="28dp"
-            android:paddingBottom="18dp"
-            android:gravity="center_vertical">
+            android:padding="20dp">
 
             <ImageView
                 android:id="@+id/backButton"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:layout_alignParentStart="true"
-                android:layout_centerVertical="true"
-                android:src="@drawable/ic_arrow_left"
-                android:background="?attr/selectableItemBackgroundBorderless"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:clickable="true"
                 android:contentDescription="@string/back_button_desc"
-                android:clickable="true"
                 android:focusable="true"
-                app:tint="?attr/textColorPrimary"
                 android:padding="6dp"
-                android:importantForAccessibility="yes" />
-
-            <ImageView
-                android:id="@+id/searchButton"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:layout_alignParentEnd="true"
-                android:layout_centerVertical="true"
-                android:src="@drawable/ic_search"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:clickable="true"
-                android:focusable="true"
+                android:src="@drawable/ic_arrow_left"
                 app:tint="?attr/textColorPrimary"
-                android:padding="6dp"
-                android:visibility="visible"
-                android:importantForAccessibility="yes" />
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true" />
 
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_centerInParent="true"
                 android:orientation="vertical"
-                android:gravity="center_horizontal">
+                android:gravity="center"
+                android:layout_centerInParent="true">
 
                 <TextView
                     android:id="@+id/headerTitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="CASH FLOW"
+                    android:text="Categories"
                     android:textColor="?attr/textColorPrimary"
-                    android:textSize="20sp"
-                    android:textStyle="bold"
-                    android:fontFamily="sans-serif-medium"
-                    android:maxLines="1"
-                    android:ellipsize="end" />
+                    android:textSize="24sp"
+                    android:textStyle="bold" />
 
-                <LinearLayout
+                <TextView
+                    android:id="@+id/headerSubtitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:layout_marginTop="7dp">
-
-
-                    <TextView
-                        android:id="@+id/headerSubtitle"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Choose Category"
-                        android:textColor="?attr/textColorPrimary"
-                        android:textSize="18sp"
-                        android:textStyle="bold"
-                        android:fontFamily="sans-serif" />
-                </LinearLayout>
+                    android:layout_marginTop="2dp"
+                    android:text="Select or create a category"
+                    android:textColor="?attr/textColorSecondary"
+                    android:textSize="12sp" />
             </LinearLayout>
+
+            <ImageView
+                android:id="@+id/searchButton"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:padding="4dp"
+                android:src="@drawable/ic_search"
+                app:tint="?attr/textColorPrimary"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackgroundBorderless"/>
         </RelativeLayout>
     </androidx.cardview.widget.CardView>
-
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -132,12 +111,6 @@
                     android:clickable="true"
                     android:focusable="true">
 
-                    <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:src="@drawable/ic_block"
-                        app:tint="?attr/textColorSecondary"
-                        android:layout_marginEnd="12dp" />
 
                     <RadioButton
                         android:id="@+id/radioNoCategory"
@@ -146,16 +119,20 @@
                         android:layout_weight="1"
                         android:text="No Category"
                         android:textColor="?attr/textColorPrimary"
-                        android:textSize="16sp" />
+                        android:textSize="16sp"
+                        android:checked="false"
+                        android:clickable="false"
+                        android:focusable="false" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Default"
                         android:textColor="?attr/textColorPrimary"
-                        android:textSize="12sp"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
                         android:background="@drawable/rounded_tag_background"
-                        android:paddingHorizontal="8dp"
+                        android:paddingHorizontal="10dp"
                         android:paddingVertical="4dp" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
@@ -165,13 +142,14 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
-                android:layout_marginBottom="12dp">
+                android:layout_marginBottom="12dp"
+                android:paddingHorizontal="4dp">
 
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Categories"
+                    android:text="All Categories"
                     android:textColor="?attr/textColorPrimary"
                     android:textSize="16sp"
                     android:textStyle="bold" />
@@ -188,15 +166,14 @@
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardCornerRadius="12dp"
+                app:cardCornerRadius="16dp"
                 app:cardElevation="4dp"
                 app:cardBackgroundColor="?attr/surfaceColor">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="8dp">
+                    android:orientation="vertical">
 
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/categoriesRecyclerView"
@@ -204,53 +181,55 @@
                         android:layout_height="wrap_content"
                         android:nestedScrollingEnabled="false"
                         android:clipToPadding="false"
-                        android:paddingVertical="8dp" />
+                        android:paddingBottom="8dp" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Quick Add"
+                android:text="Quick Suggestions"
                 android:textColor="?attr/textColorPrimary"
                 android:textSize="16sp"
                 android:textStyle="bold"
                 android:layout_marginTop="24dp"
-                android:layout_marginBottom="12dp" />
+                android:layout_marginBottom="12dp"
+                android:layout_marginStart="4dp" />
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:weightSum="3">
 
                 <Button
                     android:id="@+id/quickCategoryFood"
                     android:layout_width="0dp"
-                    android:layout_height="40dp"
+                    android:layout_height="44dp"
                     android:layout_weight="1"
                     android:text="Food"
                     android:textColor="?attr/textColorPrimary"
                     android:textSize="12sp"
                     android:background="@drawable/quick_category_button"
                     app:backgroundTint="@null"
-                    android:layout_marginEnd="4dp" />
+                    android:layout_marginEnd="8dp" />
 
                 <Button
                     android:id="@+id/quickCategoryTransport"
                     android:layout_width="0dp"
-                    android:layout_height="40dp"
+                    android:layout_height="44dp"
                     android:layout_weight="1"
                     android:text="Transport"
                     android:textColor="?attr/textColorPrimary"
                     android:textSize="12sp"
                     android:background="@drawable/quick_category_button"
                     app:backgroundTint="@null"
-                    android:layout_marginEnd="4dp" />
+                    android:layout_marginEnd="8dp" />
 
                 <Button
                     android:id="@+id/quickCategoryShopping"
                     android:layout_width="0dp"
-                    android:layout_height="40dp"
+                    android:layout_height="44dp"
                     android:layout_weight="1"
                     android:text="Shopping"
                     android:textColor="?attr/textColorPrimary"
@@ -267,15 +246,15 @@
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
-        android:layout_margin="16dp"
+        android:layout_margin="24dp"
         android:text="ADD NEW"
         android:textColor="#FFFFFF"
         android:textSize="14sp"
         android:textStyle="bold"
-        app:backgroundTint="?attr/incomeColor"
+        app:backgroundTint="?attr/balanceColor"
         app:icon="@drawable/ic_add"
         app:iconTint="#FFFFFF"
-        app:cornerRadius="16dp"
-        app:elevation="8dp" />
+        app:cornerRadius="28dp"
+        app:elevation="6dp" />
 
 </RelativeLayout>

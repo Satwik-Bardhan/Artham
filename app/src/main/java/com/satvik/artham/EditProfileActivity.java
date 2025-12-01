@@ -21,7 +21,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
-import com.satvik.artham.models.Users; // [FIX] Ensure correct model import
+import com.satvik.artham.models.Users;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -76,7 +76,6 @@ public class EditProfileActivity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
         currentUser = mAuth.getCurrentUser();
         if (currentUser == null) {
-            // No user is signed in, so finish this activity
             Toast.makeText(this, "No user logged in.", Toast.LENGTH_SHORT).show();
             finish();
             return;
@@ -105,51 +104,46 @@ public class EditProfileActivity extends AppCompatActivity {
         saveProfileButton = findViewById(R.id.saveProfileButton);
 
         dobCalendar = Calendar.getInstance();
-        dateOfBirthText.setText("Select Date"); // Placeholder
     }
 
     private void setupClickListeners() {
         backButton.setOnClickListener(v -> finish());
         cancelButton.setOnClickListener(v -> finish());
+
         editProfilePictureButton.setOnClickListener(v -> openImagePicker());
+
         dateOfBirthLayout.setOnClickListener(v -> showDatePicker());
+
         saveProfileButton.setOnClickListener(v -> saveProfileChanges());
 
-        // Placeholder listeners for features to be implemented
-        changePasswordLayout.setOnClickListener(v -> Toast.makeText(this, "Change Password clicked", Toast.LENGTH_SHORT).show());
+        changePasswordLayout.setOnClickListener(v -> Toast.makeText(this, "Change Password feature coming soon", Toast.LENGTH_SHORT).show());
         twoFactorSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> Toast.makeText(this, "2FA Toggled: " + isChecked, Toast.LENGTH_SHORT).show());
     }
 
     private void loadUserProfile() {
-        // Set email (it's read-only)
         if (currentUser.getEmail() != null) {
             displayEmail.setText(currentUser.getEmail());
         }
 
-        // Load other data from Realtime Database
         userDatabaseRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 Users user = snapshot.getValue(Users.class);
                 if (user != null) {
-                    editFullName.setText(user.getUserName());
+                    if (user.getUserName() != null) editFullName.setText(user.getUserName());
+                    if (user.getPhoneNumber() != null) editPhoneNumber.setText(user.getPhoneNumber());
 
-                    // [FIX] Load phone number
-                    if (user.getPhoneNumber() != null) {
-                        editPhoneNumber.setText(user.getPhoneNumber());
-                    }
-
-                    // [FIX] Load date of birth
                     if (user.getDateOfBirthTimestamp() > 0) {
                         updateDobText(user.getDateOfBirthTimestamp());
+                    } else {
+                        dateOfBirthText.setText("Select Date");
                     }
 
-                    // Load profile image using Glide
                     if (user.getProfile() != null && !user.getProfile().isEmpty()) {
                         Glide.with(EditProfileActivity.this)
                                 .load(user.getProfile())
-                                .placeholder(R.drawable.ic_person_placeholder) // Fallback
-                                .error(R.drawable.ic_person_placeholder) // On error
+                                .placeholder(R.drawable.ic_person_placeholder)
+                                .error(R.drawable.ic_person_placeholder)
                                 .into(profileImageView);
                     }
                 }
@@ -174,13 +168,9 @@ public class EditProfileActivity extends AppCompatActivity {
     }
 
     private void updateDobText(long timestamp) {
-        if (timestamp > 0) {
-            dobCalendar.setTimeInMillis(timestamp);
-            SimpleDateFormat sdf = new SimpleDateFormat("MMMM dd, yyyy", Locale.US);
-            dateOfBirthText.setText(sdf.format(dobCalendar.getTime()));
-        } else {
-            dateOfBirthText.setText("Select Date");
-        }
+        dobCalendar.setTimeInMillis(timestamp);
+        SimpleDateFormat sdf = new SimpleDateFormat("MMMM dd, yyyy", Locale.US);
+        dateOfBirthText.setText(sdf.format(dobCalendar.getTime()));
     }
 
     private void openImagePicker() {
@@ -190,7 +180,7 @@ public class EditProfileActivity extends AppCompatActivity {
 
     private void saveProfileChanges() {
         String fullName = editFullName.getText().toString().trim();
-        String phoneNumber = editPhoneNumber.getText().toString().trim(); // [FIX] Get phone number
+        String phoneNumber = editPhoneNumber.getText().toString().trim();
 
         if (TextUtils.isEmpty(fullName)) {
             editFullName.setError("Full name is required.");
@@ -198,34 +188,38 @@ public class EditProfileActivity extends AppCompatActivity {
             return;
         }
 
+        saveProfileButton.setEnabled(false); // Prevent double clicks
+        saveProfileButton.setText("Saving...");
+
         if (imageUri != null) {
-            // If a new image was selected, upload it first
             uploadImageAndSaveData(fullName, phoneNumber, dobCalendar.getTimeInMillis());
         } else {
-            // Otherwise, just save the other data
             saveDataToDatabase(fullName, phoneNumber, dobCalendar.getTimeInMillis(), null);
         }
     }
 
     private void uploadImageAndSaveData(String fullName, String phoneNumber, long dobTimestamp) {
-        final StorageReference fileReference = storageReference.child(currentUser.getUid() + "/" + UUID.randomUUID().toString());
-        Toast.makeText(this, "Uploading photo...", Toast.LENGTH_SHORT).show();
+        final StorageReference fileReference = storageReference.child(currentUser.getUid() + ".jpg");
 
         fileReference.putFile(imageUri)
                 .addOnSuccessListener(taskSnapshot -> fileReference.getDownloadUrl().addOnSuccessListener(uri -> {
                     String imageUrl = uri.toString();
                     saveDataToDatabase(fullName, phoneNumber, dobTimestamp, imageUrl);
                 }))
-                .addOnFailureListener(e -> Toast.makeText(EditProfileActivity.this, "Upload failed: " + e.getMessage(), Toast.LENGTH_LONG).show());
+                .addOnFailureListener(e -> {
+                    Toast.makeText(EditProfileActivity.this, "Image upload failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    saveProfileButton.setEnabled(true);
+                    saveProfileButton.setText("Save Changes");
+                });
     }
 
     private void saveDataToDatabase(String fullName, String phoneNumber, long dobTimestamp, @Nullable String imageUrl) {
         Map<String, Object> profileUpdates = new HashMap<>();
         profileUpdates.put("userName", fullName);
-
-        // [FIX] Add phone number and DOB to the save map
         profileUpdates.put("phoneNumber", phoneNumber);
-        if (dobTimestamp > 0) {
+
+        // Only save DOB if user actually picked a date (or we loaded a valid one)
+        if (!dateOfBirthText.getText().toString().equals("Select Date")) {
             profileUpdates.put("dateOfBirthTimestamp", dobTimestamp);
         }
 
@@ -235,11 +229,14 @@ public class EditProfileActivity extends AppCompatActivity {
 
         userDatabaseRef.updateChildren(profileUpdates)
                 .addOnCompleteListener(task -> {
+                    saveProfileButton.setEnabled(true);
+                    saveProfileButton.setText("Save Changes");
+
                     if (task.isSuccessful()) {
                         Toast.makeText(EditProfileActivity.this, "Profile updated successfully!", Toast.LENGTH_SHORT).show();
                         finish();
                     } else {
-                        Toast.makeText(EditProfileActivity.this, "Failed to update profile.", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(EditProfileActivity.this, "Failed to update database.", Toast.LENGTH_SHORT).show();
                     }
                 });
     }

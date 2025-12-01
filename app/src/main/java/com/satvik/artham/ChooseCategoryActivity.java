@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.TypedValue;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
@@ -42,6 +43,8 @@ public class ChooseCategoryActivity extends AppCompatActivity implements Categor
     private RecyclerView categoriesRecyclerView;
     private ExtendedFloatingActionButton addNewCategoryButton;
     private TextView categoryCountTextView;
+    // [FIX] Add quick buttons
+    private Button quickFoodButton, quickTransportButton, quickShoppingButton;
 
     private FirebaseAuth mAuth;
     private DatabaseReference userCategoriesRef;
@@ -62,7 +65,6 @@ public class ChooseCategoryActivity extends AppCompatActivity implements Categor
         mAuth = FirebaseAuth.getInstance();
         FirebaseUser currentUser = mAuth.getCurrentUser();
 
-        // [FIX] Get cashbookId to load/save custom categories
         currentCashbookId = getIntent().getStringExtra("cashbook_id");
         previouslySelectedCategoryName = getIntent().getStringExtra("selected_category");
 
@@ -85,11 +87,15 @@ public class ChooseCategoryActivity extends AppCompatActivity implements Categor
         radioNoCategory = findViewById(R.id.radioNoCategory);
         categoriesRecyclerView = findViewById(R.id.categoriesRecyclerView);
         addNewCategoryButton = findViewById(R.id.addNewCategoryButton);
-        categoryCountTextView = findViewById(R.id.categoryCount); // [FIX] Added count TextView
+        categoryCountTextView = findViewById(R.id.categoryCount);
+
+        // [FIX] Initialize Quick Suggestion Buttons
+        quickFoodButton = findViewById(R.id.quickCategoryFood);
+        quickTransportButton = findViewById(R.id.quickCategoryTransport);
+        quickShoppingButton = findViewById(R.id.quickCategoryShopping);
     }
 
     private void setupRecyclerView() {
-        // Use a grid layout with 2 columns
         categoriesRecyclerView.setLayoutManager(new GridLayoutManager(this, 2));
         categoryAdapter = new CategoryAdapter(allCategories, this, this);
         categoriesRecyclerView.setAdapter(categoryAdapter);
@@ -97,25 +103,34 @@ public class ChooseCategoryActivity extends AppCompatActivity implements Categor
 
     private void setupListeners() {
         findViewById(R.id.backButton).setOnClickListener(v -> finish());
+
+        // [FIX] Add New Category Button Listener
         addNewCategoryButton.setOnClickListener(v -> showAddCategoryDialog());
 
-        // [FIX] Use the CardView for the click listener
         findViewById(R.id.noCategoryCard).setOnClickListener(v -> {
             radioNoCategory.setChecked(true);
             returnCategory("No Category");
         });
+
+        // [FIX] Quick Suggestion Button Listeners
+        if (quickFoodButton != null) {
+            quickFoodButton.setOnClickListener(v -> returnCategory("Food"));
+        }
+        if (quickTransportButton != null) {
+            quickTransportButton.setOnClickListener(v -> returnCategory("Transport"));
+        }
+        if (quickShoppingButton != null) {
+            quickShoppingButton.setOnClickListener(v -> returnCategory("Shopping"));
+        }
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        // Always load predefined categories
         populatePredefinedCategories();
-        // Load custom categories if user is logged in
         if (userCategoriesRef != null) {
             startListeningForCategories();
         } else {
-            // If no user/cashbook, just show the predefined ones
             updateUI();
         }
     }
@@ -124,7 +139,6 @@ public class ChooseCategoryActivity extends AppCompatActivity implements Categor
     protected void onStop() {
         super.onStop();
         if (userCategoriesRef != null && categoriesListener != null) {
-            // Remove listener to prevent memory leaks
             userCategoriesRef.removeEventListener(categoriesListener);
         }
     }
@@ -133,7 +147,7 @@ public class ChooseCategoryActivity extends AppCompatActivity implements Categor
         allCategories.clear();
         String[] predefinedNames = getResources().getStringArray(R.array.transaction_categories);
         for (String name : predefinedNames) {
-            if (!"Select Category".equals(name) && !"No Category".equals(name)) { // Ignore placeholders
+            if (!"Select Category".equals(name) && !"No Category".equals(name)) {
                 int colorInt = CategoryColorUtil.getCategoryColor(this, name);
                 String colorHex = String.format("#%06X", (0xFFFFFF & colorInt));
                 allCategories.add(new CategoryModel(name, colorHex, false));
@@ -146,7 +160,6 @@ public class ChooseCategoryActivity extends AppCompatActivity implements Categor
             @SuppressLint("NotifyDataSetChanged")
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                // [FIX] Repopulate predefined first to avoid duplicates
                 populatePredefinedCategories();
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                     CategoryModel customCategory = snapshot.getValue(CategoryModel.class);
@@ -205,14 +218,13 @@ public class ChooseCategoryActivity extends AppCompatActivity implements Categor
         categoryNameEditText.setHint("Category Name");
         categoryNameEditText.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_FLAG_CAP_WORDS);
 
-        // [FIX] Add padding to the EditText in the dialog
         LinearLayout container = new LinearLayout(this);
         container.setPadding(48, 16, 48, 0);
         container.addView(categoryNameEditText);
 
         new AlertDialog.Builder(this)
                 .setTitle("Add New Category")
-                .setView(container) // [FIX] Use container with padding
+                .setView(container)
                 .setPositiveButton("Choose Color", (dialog, which) -> {
                     String newCategoryName = categoryNameEditText.getText().toString().trim();
                     if (!newCategoryName.isEmpty()) {
@@ -246,7 +258,6 @@ public class ChooseCategoryActivity extends AppCompatActivity implements Categor
 
         CategoryModel newCategory = new CategoryModel(name, colorHex, true);
 
-        // [FIX] Use category name as the key for easier lookup and to prevent duplicates
         userCategoriesRef.child(name).setValue(newCategory)
                 .addOnSuccessListener(aVoid -> Toast.makeText(this, "Category '" + name + "' added!", Toast.LENGTH_SHORT).show())
                 .addOnFailureListener(e -> Toast.makeText(this, "Failed to add category.", Toast.LENGTH_LONG).show());
@@ -256,7 +267,6 @@ public class ChooseCategoryActivity extends AppCompatActivity implements Categor
         return name == null || name.isEmpty() || "No Category".equals(name) || "Select Category".equals(name);
     }
 
-    // [FIX] Added a simple helper class to resolve theme attributes
     static class ThemeUtil {
         static int getThemeAttrColor(Context context, int attr) {
             TypedValue typedValue = new TypedValue();
