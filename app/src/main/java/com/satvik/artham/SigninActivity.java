@@ -32,11 +32,9 @@ import com.google.firebase.auth.FirebaseUser;
 public class SigninActivity extends AppCompatActivity {
 
     private static final String TAG = "SigninActivity";
-    private static final int RC_SIGN_IN = 9001;
 
     private EditText emailEditText, passwordEditText;
     private Button signinButton;
-    // [FIX] Removed guestButton variable
     private TextView forgotPasswordText, signUpText;
     private ImageView togglePasswordVisibility, backButton, helpButton;
     private CardView googleSignInCard;
@@ -70,12 +68,11 @@ public class SigninActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_signin);
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().hide();
-        }
+        if (getSupportActionBar() != null) getSupportActionBar().hide();
 
         viewModel = new ViewModelProvider(this).get(SigninViewModel.class);
 
+        // [FIX] Use auto-generated web client ID
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(getString(R.string.default_web_client_id))
                 .requestEmail()
@@ -91,7 +88,6 @@ public class SigninActivity extends AppCompatActivity {
         emailEditText = findViewById(R.id.email);
         passwordEditText = findViewById(R.id.password);
         signinButton = findViewById(R.id.signinButton);
-        // [FIX] Removed finding guestButton
         forgotPasswordText = findViewById(R.id.forgotPassword);
         signUpText = findViewById(R.id.signUpText);
         togglePasswordVisibility = findViewById(R.id.togglePasswordVisibility);
@@ -122,16 +118,16 @@ public class SigninActivity extends AppCompatActivity {
 
     private void setupClickListeners() {
         signinButton.setOnClickListener(v -> attemptEmailPasswordSignIn());
-
-        // [FIX] Removed guestButton listener
-
         googleSignInCard.setOnClickListener(v -> signInWithGoogle());
         signUpText.setOnClickListener(v -> startActivity(new Intent(this, SignupActivity.class)));
 
         forgotPasswordText.setOnClickListener(v -> {
-            Intent intent = new Intent(this, ForgotPasswordActivity.class);
-            intent.putExtra("email", emailEditText.getText().toString().trim());
-            startActivity(intent);
+            // [FIX] Safety check before getting text
+            if (emailEditText != null && emailEditText.getText() != null) {
+                Intent intent = new Intent(this, ForgotPasswordActivity.class);
+                intent.putExtra("email", emailEditText.getText().toString().trim());
+                startActivity(intent);
+            }
         });
 
         togglePasswordVisibility.setOnClickListener(v -> togglePasswordVisibility());
@@ -140,6 +136,10 @@ public class SigninActivity extends AppCompatActivity {
     }
 
     private void attemptEmailPasswordSignIn() {
+        // [FIX] Add explicit null checks to prevent crashes
+        if (emailEditText == null || passwordEditText == null) return;
+        if (emailEditText.getText() == null || passwordEditText.getText() == null) return;
+
         String email = emailEditText.getText().toString().trim();
         String password = passwordEditText.getText().toString().trim();
 

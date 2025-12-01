@@ -11,61 +11,34 @@ public class Users {
     private String phoneNumber;
     private long dateOfBirthTimestamp;
 
+    // Required Default Constructor for Firebase
     public Users() {
-        // Default constructor required for Firebase
     }
 
+    // Parameterized Constructor
     public Users(String userId, String userName, String mail) {
         this.userId = userId;
-        this.userName = userName;
-        this.mail = mail;
+        // [FIX] Prevent NullPointerException if userName is null
+        this.userName = (userName != null) ? userName : "User";
+        this.mail = (mail != null) ? mail : "";
     }
 
-    public String getProfile() {
-        return profile;
-    }
+    // Getters and Setters
+    public String getProfile() { return profile; }
+    public void setProfile(String profile) { this.profile = profile; }
 
-    public void setProfile(String profile) {
-        this.profile = profile;
-    }
+    public String getMail() { return mail; }
+    public void setMail(String mail) { this.mail = mail; }
 
-    public String getMail() {
-        return mail;
-    }
+    public String getUserName() { return userName; }
+    public void setUserName(String userName) { this.userName = userName; }
 
-    public void setMail(String mail) {
-        this.mail = mail;
-    }
+    public String getUserId() { return userId; }
+    public void setUserId(String userId) { this.userId = userId; }
 
-    public String getUserName() {
-        return userName;
-    }
+    public String getPhoneNumber() { return phoneNumber; }
+    public void setPhoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber; }
 
-    public void setUserName(String userName) {
-        this.userName = userName;
-    }
-
-    public String getUserId() {
-        return userId;
-    }
-
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
-
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
-
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
-    }
-
-    public long getDateOfBirthTimestamp() {
-        return dateOfBirthTimestamp;
-    }
-
-    public void setDateOfBirthTimestamp(long dateOfBirthTimestamp) {
-        this.dateOfBirthTimestamp = dateOfBirthTimestamp;
-    }
+    public long getDateOfBirthTimestamp() { return dateOfBirthTimestamp; }
+    public void setDateOfBirthTimestamp(long dateOfBirthTimestamp) { this.dateOfBirthTimestamp = dateOfBirthTimestamp; }
 }

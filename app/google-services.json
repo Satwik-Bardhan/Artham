@@ -15,6 +15,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "468688842282-25rma83lqvlokc6ji00r82tkh5euqk1a.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.satvik.artham",
+            "certificate_hash": "76528e2569a7575545d31cc277fd6e064f593ec1"
+          }
+        },
+        {
           "client_id": "468688842282-eovrl7bgfosoun9rt53r5recbup70tkr.apps.googleusercontent.com",
           "client_type": 3
         }
