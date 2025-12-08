@@ -5,7 +5,7 @@ import android.app.DatePickerDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.TypedValue; // [FIX] Added for ThemeUtil
+import android.util.TypedValue;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -26,10 +26,10 @@ public class DownloadOptionsActivity extends AppCompatActivity {
     private LinearLayout startDateLayout, endDateLayout;
     private Button todayButton, thisWeekButton, thisMonthButton, formatPdfButton, formatExcelButton, downloadActionButton;
     private RadioGroup entryTypeRadioGroup, paymentModeRadioGroup;
-    private ImageView backButton, shareButton;
+    private ImageView backButton; // Removed shareButton
 
     private Calendar startCalendar, endCalendar;
-    private String selectedFormat = "PDF"; // Default format
+    private String selectedFormat = "PDF";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,59 +45,63 @@ public class DownloadOptionsActivity extends AppCompatActivity {
     }
 
     private void initializeUI() {
-        // Header
         backButton = findViewById(R.id.backButton);
-        shareButton = findViewById(R.id.shareButton);
+        // Share button removed
 
-        // Date Range
         startDateText = findViewById(R.id.startDateText);
         endDateText = findViewById(R.id.endDateText);
         startDateLayout = findViewById(R.id.startDateLayout);
         endDateLayout = findViewById(R.id.endDateLayout);
+
         todayButton = findViewById(R.id.todayButton);
         thisWeekButton = findViewById(R.id.thisWeekButton);
         thisMonthButton = findViewById(R.id.thisMonthButton);
 
-        // Entry Type & Payment Mode
         entryTypeRadioGroup = findViewById(R.id.entryTypeRadioGroup);
         paymentModeRadioGroup = findViewById(R.id.paymentModeRadioGroup);
 
-        // Format Selection
         formatPdfButton = findViewById(R.id.formatPdfButton);
         formatExcelButton = findViewById(R.id.formatExcelButton);
-
-        // Action Button
         downloadActionButton = findViewById(R.id.downloadActionButton);
     }
 
     private void initializeDateTime() {
         startCalendar = Calendar.getInstance();
         endCalendar = Calendar.getInstance();
-        // Default to the current month
+
+        startCalendar.set(Calendar.MILLISECOND, 0);
+        endCalendar.set(Calendar.MILLISECOND, 0);
+
         setDateRangeToThisMonth();
     }
 
     private void setupClickListeners() {
-        backButton.setOnClickListener(v -> finish());
-        shareButton.setOnClickListener(v -> Toast.makeText(this, "Share functionality coming soon!", Toast.LENGTH_SHORT).show());
+        if (backButton != null) backButton.setOnClickListener(v -> finish());
 
-        // Date Listeners
-        startDateLayout.setOnClickListener(v -> showDatePicker(true));
-        endDateLayout.setOnClickListener(v -> showDatePicker(false));
-        todayButton.setOnClickListener(v -> setDateRangeToToday());
-        thisWeekButton.setOnClickListener(v -> setDateRangeToThisWeek());
-        thisMonthButton.setOnClickListener(v -> setDateRangeToThisMonth());
+        // Date Picker Logic
+        if (startDateLayout != null) {
+            startDateLayout.setOnClickListener(v -> showDatePicker(true));
+        }
 
-        // Format Selection Listeners
-        formatPdfButton.setOnClickListener(v -> updateFormatSelection(formatPdfButton));
-        formatExcelButton.setOnClickListener(v -> updateFormatSelection(formatExcelButton));
+        if (endDateLayout != null) {
+            endDateLayout.setOnClickListener(v -> showDatePicker(false));
+        }
 
-        // Download Action
-        downloadActionButton.setOnClickListener(v -> returnDownloadOptions());
+        // Quick Options
+        if (todayButton != null) todayButton.setOnClickListener(v -> setDateRangeToToday());
+        if (thisWeekButton != null) thisWeekButton.setOnClickListener(v -> setDateRangeToThisWeek());
+        if (thisMonthButton != null) thisMonthButton.setOnClickListener(v -> setDateRangeToThisMonth());
+
+        // Format
+        if (formatPdfButton != null) formatPdfButton.setOnClickListener(v -> updateFormatSelection(formatPdfButton));
+        if (formatExcelButton != null) formatExcelButton.setOnClickListener(v -> updateFormatSelection(formatExcelButton));
+
+        if (downloadActionButton != null) downloadActionButton.setOnClickListener(v -> returnDownloadOptions());
     }
 
     private void showDatePicker(boolean isStartDate) {
         Calendar calendarToShow = isStartDate ? startCalendar : endCalendar;
+
         DatePickerDialog datePickerDialog = new DatePickerDialog(
                 this,
                 (view, year, month, dayOfMonth) -> {
@@ -117,13 +121,16 @@ public class DownloadOptionsActivity extends AppCompatActivity {
 
     private void updateDateTextViews() {
         SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy", Locale.US);
-        startDateText.setText(sdf.format(startCalendar.getTime()));
-        endDateText.setText(sdf.format(endCalendar.getTime()));
 
-        // [FIX] Use theme-aware colors
-        int textColor = ThemeUtil.getThemeAttrColor(this, R.attr.textColorPrimary);
-        startDateText.setTextColor(textColor);
-        endDateText.setTextColor(textColor);
+        if (startDateText != null) {
+            startDateText.setText(sdf.format(startCalendar.getTime()));
+            startDateText.setTextColor(ThemeUtil.getThemeAttrColor(this, R.attr.textColorPrimary));
+        }
+
+        if (endDateText != null) {
+            endDateText.setText(sdf.format(endCalendar.getTime()));
+            endDateText.setTextColor(ThemeUtil.getThemeAttrColor(this, R.attr.textColorPrimary));
+        }
     }
 
     private void setDateRangeToToday() {
@@ -136,6 +143,7 @@ public class DownloadOptionsActivity extends AppCompatActivity {
         endCalendar.set(Calendar.HOUR_OF_DAY, 23);
         endCalendar.set(Calendar.MINUTE, 59);
         endCalendar.set(Calendar.SECOND, 59);
+
         updateDateTextViews();
     }
 
@@ -151,6 +159,7 @@ public class DownloadOptionsActivity extends AppCompatActivity {
         endCalendar.set(Calendar.HOUR_OF_DAY, 23);
         endCalendar.set(Calendar.MINUTE, 59);
         endCalendar.set(Calendar.SECOND, 59);
+
         updateDateTextViews();
     }
 
@@ -166,6 +175,7 @@ public class DownloadOptionsActivity extends AppCompatActivity {
         endCalendar.set(Calendar.HOUR_OF_DAY, 23);
         endCalendar.set(Calendar.MINUTE, 59);
         endCalendar.set(Calendar.SECOND, 59);
+
         updateDateTextViews();
     }
 
@@ -186,25 +196,21 @@ public class DownloadOptionsActivity extends AppCompatActivity {
     }
 
     private void returnDownloadOptions() {
-        // Get selected entry type
         String entryType = "All";
-        int selectedEntryTypeId = entryTypeRadioGroup.getCheckedRadioButtonId();
-        if (selectedEntryTypeId == R.id.radioCashIn) {
-            entryType = "IN"; // [FIX] Use "IN" to match TransactionModel
-        } else if (selectedEntryTypeId == R.id.radioCashOut) {
-            entryType = "OUT"; // [FIX] Use "OUT" to match TransactionModel
+        if (entryTypeRadioGroup != null) {
+            int id = entryTypeRadioGroup.getCheckedRadioButtonId();
+            if (id == R.id.radioCashIn) entryType = "IN";
+            else if (id == R.id.radioCashOut) entryType = "OUT";
         }
 
-        // Get selected payment mode
         String paymentMode = "All";
-        int selectedPaymentModeId = paymentModeRadioGroup.getCheckedRadioButtonId();
-        if (selectedPaymentModeId == R.id.radioCashMode) {
-            paymentMode = "Cash";
-        } else if (selectedPaymentModeId == R.id.radioOnlineMode) {
-            paymentMode = "Online";
+        if (paymentModeRadioGroup != null) {
+            int id = paymentModeRadioGroup.getCheckedRadioButtonId();
+            if (id == R.id.radioCashMode) paymentMode = "Cash";
+            else if (id == R.id.radioOnlineMode) paymentMode = "Online";
+            else if (id == R.id.radioCardMode) paymentMode = "Card"; // [UPDATED]
         }
 
-        // Create result intent and pass back the data
         Intent resultIntent = new Intent();
         resultIntent.putExtra("startDate", startCalendar.getTimeInMillis());
         resultIntent.putExtra("endDate", endCalendar.getTimeInMillis());
@@ -216,7 +222,6 @@ public class DownloadOptionsActivity extends AppCompatActivity {
         finish();
     }
 
-    // [FIX] Added a simple helper class to resolve theme attributes
     static class ThemeUtil {
         static int getThemeAttrColor(Context context, int attr) {
             TypedValue typedValue = new TypedValue();

@@ -37,26 +37,10 @@
                 android:layout_centerVertical="true"
                 android:src="@drawable/ic_arrow_left"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="@string/back_button_desc"
                 android:clickable="true"
                 android:focusable="true"
                 app:tint="?attr/textColorPrimary"
-                android:padding="6dp"
-                android:importantForAccessibility="yes" />
-
-            <ImageView
-                android:id="@+id/shareButton"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:layout_alignParentEnd="true"
-                android:layout_centerVertical="true"
-                android:src="@drawable/ic_share"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:clickable="true"
-                android:focusable="true"
-                app:tint="?attr/textColorPrimary"
-                android:padding="6dp"
-                android:importantForAccessibility="yes" />
+                android:padding="6dp" />
 
             <LinearLayout
                 android:layout_width="wrap_content"
@@ -69,32 +53,20 @@
                     android:id="@+id/headerTitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="CASH FLOW"
+                    android:text="ARTHAM"
                     android:textColor="?attr/textColorPrimary"
                     android:textSize="20sp"
                     android:textStyle="bold"
-                    android:fontFamily="sans-serif-medium"
-                    android:maxLines="1"
-                    android:ellipsize="end" />
+                    android:fontFamily="sans-serif-medium" />
 
-                <LinearLayout
+                <TextView
+                    android:id="@+id/headerSubtitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:layout_marginTop="7dp">
-
-
-                    <TextView
-                        android:id="@+id/headerSubtitle"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Download Report"
-                        android:textColor="?attr/textColorPrimary"
-                        android:textSize="18sp"
-                        android:textStyle="bold"
-                        android:fontFamily="sans-serif" />
-                </LinearLayout>
+                    android:text="Download Report"
+                    android:textColor="?attr/textColorPrimary"
+                    android:textSize="18sp"
+                    android:layout_marginTop="4dp" />
             </LinearLayout>
         </RelativeLayout>
     </androidx.cardview.widget.CardView>
@@ -151,7 +123,8 @@
                             android:paddingHorizontal="12dp"
                             android:layout_marginEnd="8dp"
                             android:clickable="true"
-                            android:focusable="true">
+                            android:focusable="true"
+                            android:foreground="?attr/selectableItemBackground">
 
                             <TextView
                                 android:id="@+id/startDateText"
@@ -160,13 +133,21 @@
                                 android:layout_weight="1"
                                 android:text="Start Date"
                                 android:textColor="?attr/textColorHint"
-                                android:textSize="14sp" />
+                                android:textSize="14sp"
+                                android:clickable="false"
+                                android:focusable="false"
+                                android:longClickable="false"
+                                android:duplicateParentState="true"/>
 
                             <ImageView
                                 android:layout_width="16dp"
                                 android:layout_height="16dp"
                                 android:src="@drawable/ic_calendar"
-                                app:tint="?attr/textColorSecondary" />
+                                app:tint="?attr/textColorSecondary"
+                                android:clickable="false"
+                                android:focusable="false"
+                                android:longClickable="false"
+                                android:duplicateParentState="true"/>
                         </LinearLayout>
 
                         <LinearLayout
@@ -180,7 +161,8 @@
                             android:paddingHorizontal="12dp"
                             android:layout_marginStart="8dp"
                             android:clickable="true"
-                            android:focusable="true">
+                            android:focusable="true"
+                            android:foreground="?attr/selectableItemBackground">
 
                             <TextView
                                 android:id="@+id/endDateText"
@@ -189,13 +171,21 @@
                                 android:layout_weight="1"
                                 android:text="End Date"
                                 android:textColor="?attr/textColorHint"
-                                android:textSize="14sp" />
+                                android:textSize="14sp"
+                                android:clickable="false"
+                                android:focusable="false"
+                                android:longClickable="false"
+                                android:duplicateParentState="true"/>
 
                             <ImageView
                                 android:layout_width="16dp"
                                 android:layout_height="16dp"
                                 android:src="@drawable/ic_calendar"
-                                app:tint="?attr/textColorSecondary" />
+                                app:tint="?attr/textColorSecondary"
+                                android:clickable="false"
+                                android:focusable="false"
+                                android:longClickable="false"
+                                android:duplicateParentState="true"/>
                         </LinearLayout>
                     </LinearLayout>
 
@@ -205,6 +195,7 @@
                         android:text="Quick Options"
                         android:textColor="?attr/textColorSecondary"
                         android:textSize="12sp"
+                        android:textStyle="bold"
                         android:layout_marginBottom="8dp" />
 
                     <LinearLayout
@@ -267,56 +258,37 @@
                 app:cardElevation="4dp"
                 app:cardBackgroundColor="?attr/surfaceColor">
 
-                <LinearLayout
+                <RadioGroup
+                    android:id="@+id/entryTypeRadioGroup"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
                     android:padding="16dp">
 
-                    <RadioGroup
-                        android:id="@+id/entryTypeRadioGroup"
+                    <RadioButton
+                        android:id="@+id/radioAll"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="vertical">
+                        android:text="All Transactions"
+                        android:textColor="?attr/textColorPrimary"
+                        android:checked="true"
+                        android:padding="12dp"/>
 
-                        <RadioButton
-                            android:id="@+id/radioAll"
-                            android:layout_width="match_parent"
-                            android:layout_height="48dp"
-                            android:text="All Transactions"
-                            android:textColor="?attr/textColorPrimary"
-                            android:textSize="16sp"
-                            android:checked="true"
-                            android:drawableStart="@drawable/ic_all_transactions"
-                            android:drawablePadding="12dp"
-                            android:gravity="center_vertical"
-                            app:drawableTint="?attr/balanceColor" />
+                    <RadioButton
+                        android:id="@+id/radioCashIn"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Income Only"
+                        android:textColor="?attr/textColorPrimary"
+                        android:padding="12dp"/>
 
-                        <RadioButton
-                            android:id="@+id/radioCashIn"
-                            android:layout_width="match_parent"
-                            android:layout_height="48dp"
-                            android:text="Cash In Only"
-                            android:textColor="?attr/textColorPrimary"
-                            android:textSize="16sp"
-                            android:drawableStart="@drawable/ic_arrow_upward"
-                            android:drawablePadding="12dp"
-                            android:gravity="center_vertical"
-                            app:drawableTint="?attr/incomeColor" />
-
-                        <RadioButton
-                            android:id="@+id/radioCashOut"
-                            android:layout_width="match_parent"
-                            android:layout_height="48dp"
-                            android:text="Cash Out Only"
-                            android:textColor="?attr/textColorPrimary"
-                            android:textSize="16sp"
-                            android:drawableStart="@drawable/ic_arrow_downward"
-                            android:drawablePadding="12dp"
-                            android:gravity="center_vertical"
-                            app:drawableTint="?attr/expenseColor" />
-                    </RadioGroup>
-                </LinearLayout>
+                    <RadioButton
+                        android:id="@+id/radioCashOut"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Expense Only"
+                        android:textColor="?attr/textColorPrimary"
+                        android:padding="12dp"/>
+                </RadioGroup>
             </androidx.cardview.widget.CardView>
 
             <TextView
@@ -336,55 +308,55 @@
                 app:cardElevation="4dp"
                 app:cardBackgroundColor="?attr/surfaceColor">
 
-                <LinearLayout
+                <RadioGroup
+                    android:id="@+id/paymentModeRadioGroup"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
                     android:padding="16dp">
 
-                    <RadioGroup
-                        android:id="@+id/paymentModeRadioGroup"
+                    <RadioButton
+                        android:id="@+id/radioAllModes"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="vertical">
+                        android:text="All Modes"
+                        android:textColor="?attr/textColorPrimary"
+                        android:checked="true"
+                        android:drawablePadding="12dp"
+                        android:gravity="center_vertical"
+                        app:drawableTint="?attr/balanceColor"
+                        android:padding="12dp"/>
 
-                        <RadioButton
-                            android:id="@+id/radioAllModes"
-                            android:layout_width="match_parent"
-                            android:layout_height="48dp"
-                            android:text="All Payment Modes"
-                            android:textColor="?attr/textColorPrimary"
-                            android:textSize="16sp"
-                            android:checked="true"
-                            android:drawableStart="@drawable/ic_payment_all"
-                            android:drawablePadding="12dp"
-                            android:gravity="center_vertical"
-                            app:drawableTint="?attr/balanceColor" />
+                    <RadioButton
+                        android:id="@+id/radioCashMode"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Cash"
+                        android:textColor="?attr/textColorPrimary"
+                        android:drawablePadding="12dp"
+                        android:gravity="center_vertical"
+                        android:padding="12dp"/>
 
-                        <RadioButton
-                            android:id="@+id/radioCashMode"
-                            android:layout_width="match_parent"
-                            android:layout_height="48dp"
-                            android:text="Cash Only"
-                            android:textColor="?attr/textColorPrimary"
-                            android:textSize="16sp"
-                            android:drawableStart="@drawable/ic_money"
-                            android:drawablePadding="12dp"
-                            android:gravity="center_vertical" />
+                    <RadioButton
+                        android:id="@+id/radioCardMode"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Card"
+                        android:textColor="?attr/textColorPrimary"
+                        android:drawablePadding="12dp"
+                        android:gravity="center_vertical"
+                        android:padding="12dp"/>
 
-                        <RadioButton
-                            android:id="@+id/radioOnlineMode"
-                            android:layout_width="match_parent"
-                            android:layout_height="48dp"
-                            android:text="Online Only"
-                            android:textColor="?attr/textColorPrimary"
-                            android:textSize="16sp"
-                            android:drawableStart="@drawable/ic_online_payment"
-                            android:drawablePadding="12dp"
-                            android:gravity="center_vertical"
-                            app:drawableTint="#9C27B0" />
-                    </RadioGroup>
-                </LinearLayout>
+                    <RadioButton
+                        android:id="@+id/radioOnlineMode"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Online"
+                        android:textColor="?attr/textColorPrimary"
+                        android:drawablePadding="12dp"
+                        android:gravity="center_vertical"
+                        app:drawableTint="#9C27B0"
+                        android:padding="12dp"/>
+                </RadioGroup>
             </androidx.cardview.widget.CardView>
 
             <TextView
@@ -416,13 +388,9 @@
                         android:layout_weight="1"
                         android:text="PDF"
                         android:textColor="#FFFFFF"
-                        android:textSize="14sp"
                         android:background="@drawable/format_button_selected"
-                        android:drawableTop="@drawable/ic_pdf"
                         app:backgroundTint="@null"
-                        android:drawablePadding="4dp"
-                        android:layout_marginEnd="8dp"
-                        app:drawableTint="#FFFFFF" />
+                        android:layout_marginEnd="8dp" />
 
                     <Button
                         android:id="@+id/formatExcelButton"
@@ -431,13 +399,9 @@
                         android:layout_weight="1"
                         android:text="EXCEL"
                         android:textColor="?attr/textColorSecondary"
-                        android:textSize="14sp"
                         app:backgroundTint="@null"
                         android:background="@drawable/format_button_unselected"
-                        android:drawableTop="@drawable/ic_excel"
-                        android:drawablePadding="4dp"
-                        android:layout_marginStart="8dp"
-                        app:drawableTint="?attr/textColorSecondary" />
+                        android:layout_marginStart="8dp" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
         </LinearLayout>
@@ -454,9 +418,6 @@
         android:textSize="16sp"
         android:textStyle="bold"
         android:background="@drawable/button_download"
-        android:drawableStart="@drawable/ic_download"
-        app:backgroundTint="@null"
-        android:drawablePadding="8dp"
-        app:drawableTint="#FFFFFF" />
+        app:backgroundTint="@null" />
 
 </RelativeLayout>
