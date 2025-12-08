@@ -8,6 +8,35 @@
   "client": [
     {
       "client_info": {
+        "mobilesdk_app_id": "1:468688842282:android:542792482883585fb59d53",
+        "android_client_info": {
+          "package_name": "com.phynix.artham"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "468688842282-eovrl7bgfosoun9rt53r5recbup70tkr.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAlnWG0FaWdX3dS06duHxINz8gwUzV6zp8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "468688842282-eovrl7bgfosoun9rt53r5recbup70tkr.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:468688842282:android:d673d9dd09e029cfb59d53",
         "android_client_info": {
           "package_name": "com.satvik.artham"

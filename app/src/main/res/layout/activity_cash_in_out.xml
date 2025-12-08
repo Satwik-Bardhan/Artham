@@ -2,7 +2,6 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main_root_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?attr/backgroundColor"
@@ -33,7 +32,6 @@
                 app:tint="?attr/textColorPrimary" />
 
             <LinearLayout
-                android:id="@+id/header_text_layout"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
@@ -44,16 +42,18 @@
                     android:id="@+id/headerTitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="ARTHAM"
+                    android:fontFamily="@font/app_font"
+                    android:text="New Entry"
                     android:textColor="?attr/textColorPrimary"
-                    android:textSize="20sp"
+                    android:textSize="18sp"
                     android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/headerSubtitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Add Entry"
+                    android:fontFamily="@font/app_font"
+                    android:text="Add transaction details"
                     android:textColor="?attr/textColorSecondary"
                     android:textSize="12sp" />
             </LinearLayout>
@@ -70,7 +70,7 @@
         </RelativeLayout>
     </androidx.cardview.widget.CardView>
 
-    <ScrollView
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@id/headerCard"
@@ -83,32 +83,203 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <include layout="@layout/layout_date_time" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:id="@+id/dateSelectorLayout"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="8dp"
+                    android:background="@drawable/rounded_input_background"
+                    android:gravity="center_vertical"
+                    android:padding="12dp"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:src="@drawable/ic_calendar"
+                        app:tint="?attr/textColorSecondary" />
+
+                    <TextView
+                        android:id="@+id/dateTextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="10dp"
+                        android:fontFamily="@font/app_font"
+                        android:text="Select Date"
+                        android:textColor="?attr/textColorPrimary"
+                        android:textSize="14sp"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/timeSelectorLayout"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="8dp"
+                    android:background="@drawable/rounded_input_background"
+                    android:gravity="center_vertical"
+                    android:padding="12dp"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:src="@drawable/ic_time"
+                        app:tint="?attr/textColorSecondary" />
+
+                    <TextView
+                        android:id="@+id/timeTextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="10dp"
+                        android:fontFamily="@font/app_font"
+                        android:text="Select Time"
+                        android:textColor="?attr/textColorPrimary"
+                        android:textSize="14sp"/>
+                </LinearLayout>
+            </LinearLayout>
 
             <include layout="@layout/layout_transaction_type" />
-
             <include layout="@layout/layout_payment_method" />
 
             <include layout="@layout/layout_amount" />
 
-            <include layout="@layout/layout_quick_amounts" />
-
-            <include layout="@layout/layout_tax_amount" />
-
-            <include layout="@layout/layout_remark_voice" />
-
             <include layout="@layout/layout_category" />
-
-            <include layout="@layout/layout_attachments" />
-
-            <include layout="@layout/layout_attached_files" />
-
             <include layout="@layout/layout_party_reference" />
+
+            <include layout="@layout/layout_remark" />
 
             <include layout="@layout/layout_tags_location" />
 
+            <include layout="@layout/layout_attachments" />
+
+            <LinearLayout
+                android:id="@+id/attachedFilesSection"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginTop="16dp"
+                android:visibility="gone">
+
+                <LinearLayout
+                    android:id="@+id/attachedImageLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:background="@drawable/rounded_input_background"
+                    android:padding="8dp"
+                    android:layout_marginBottom="8dp"
+                    android:visibility="gone">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_image"
+                        app:tint="?attr/textColorSecondary"/>
+
+                    <TextView
+                        android:id="@+id/attachedImageText"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="12dp"
+                        android:text="Image.jpg"
+                        android:fontFamily="@font/app_font"
+                        android:textColor="?attr/textColorPrimary"/>
+
+                    <ImageView
+                        android:id="@+id/removeAttachedImage"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_close"
+                        app:tint="?attr/expenseColor"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/attachedPdfLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:background="@drawable/rounded_input_background"
+                    android:padding="8dp"
+                    android:layout_marginBottom="8dp"
+                    android:visibility="gone">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_description"
+                        app:tint="?attr/textColorSecondary"/>
+
+                    <TextView
+                        android:id="@+id/attachedPdfText"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="12dp"
+                        android:text="Document.pdf"
+                        android:fontFamily="@font/app_font"
+                        android:textColor="?attr/textColorPrimary"/>
+
+                    <ImageView
+                        android:id="@+id/removeAttachedPdf"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_close"
+                        app:tint="?attr/expenseColor"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/attachedQrLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:background="@drawable/rounded_input_background"
+                    android:padding="8dp"
+                    android:visibility="gone">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_qr_code"
+                        app:tint="?attr/textColorSecondary"/>
+
+                    <TextView
+                        android:id="@+id/attachedQrText"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="12dp"
+                        android:text="QR Data"
+                        android:fontFamily="@font/app_font"
+                        android:textColor="?attr/textColorPrimary"/>
+
+                    <ImageView
+                        android:id="@+id/removeAttachedQr"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_close"
+                        app:tint="?attr/expenseColor"/>
+                </LinearLayout>
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="100dp" />
         </LinearLayout>
-    </ScrollView>
+    </androidx.core.widget.NestedScrollView>
 
     <LinearLayout
         android:id="@+id/footerLayout"
@@ -116,41 +287,53 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:background="?attr/surfaceColor"
+        android:elevation="16dp"
         android:padding="16dp"
-        android:elevation="16dp">
+        android:orientation="horizontal">
 
         <Button
             android:id="@+id/clearButton"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.8"
+            android:layout_height="50dp"
+            android:layout_weight="1"
             android:layout_marginEnd="8dp"
             android:background="@drawable/button_cancel_outline"
+            android:fontFamily="@font/app_font"
             android:text="Clear"
             android:textColor="?attr/expenseColor"
+            android:textAllCaps="false"
             app:backgroundTint="@null" />
+
 
         <Button
             android:id="@+id/saveAndAddNewButton"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="50dp"
             android:layout_weight="1.2"
-            android:layout_marginEnd="8dp"
+            android:layout_marginStart="8dp"
             android:background="@drawable/button_save_add_new"
+            android:fontFamily="@font/app_font"
             android:text="Save &amp; New"
-            android:textColor="@android:color/white"
+            android:textColor="@color/white"
             android:textSize="13sp"
+            android:textStyle="bold"
+            android:textAllCaps="false"
             app:backgroundTint="@null" />
 
         <Button
             android:id="@+id/saveEntryButton"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="50dp"
             android:layout_weight="1"
+            android:layout_marginStart="8dp"
             android:background="@drawable/button_primary"
+            android:fontFamily="@font/app_font"
             android:text="Save"
             android:textColor="@android:color/white"
+            android:textStyle="bold"
+            android:textAllCaps="false"
             app:backgroundTint="@null" />
+
     </LinearLayout>
 
 </RelativeLayout>

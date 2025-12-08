@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "com.satvik.artham"
+    namespace = "com.phynix.artham"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.satvik.artham"
+        applicationId = "com.phynix.artham"
         minSdk = 24
         targetSdk = 35
         versionCode = 1

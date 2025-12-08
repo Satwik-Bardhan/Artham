@@ -19,23 +19,23 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center"
-        android:layout_marginBottom="12dp"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="8dp"
         android:orientation="horizontal">
 
         <com.google.android.material.textfield.TextInputLayout
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="12dp"
             android:layout_weight="1"
             android:hint="Enter amount"
+            app:hintTextColor="?attr/textColorSecondary"
             app:boxBackgroundColor="?attr/surfaceColor"
             app:boxCornerRadiusBottomEnd="12dp"
             app:boxCornerRadiusBottomStart="12dp"
             app:boxCornerRadiusTopEnd="12dp"
             app:boxCornerRadiusTopStart="12dp"
-            app:hintTextColor="?attr/textColorSecondary">
+            app:boxStrokeWidth="0dp">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/amountEditText"
@@ -46,24 +46,53 @@
                 android:textSize="16sp" />
         </com.google.android.material.textfield.TextInputLayout>
 
-        <androidx.cardview.widget.CardView
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            app:cardBackgroundColor="?attr/balanceColor"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="4dp">
-
-            <ImageView
-                android:id="@+id/calculatorButton"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@drawable/calculator_ripple"
-                android:clickable="true"
-                android:contentDescription="Calculator"
-                android:focusable="true"
-                android:padding="12dp"
-                android:src="@drawable/ic_calculator"
-                app:tint="#FFFFFF" />
-        </androidx.cardview.widget.CardView>
+        <ImageView
+            android:id="@+id/calculatorButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="8dp"
+            android:padding="12dp"
+            android:background="@drawable/rounded_input_background"
+            android:src="@drawable/ic_calculator"
+            app:tint="?attr/balanceColor"
+            android:clickable="true"
+            android:focusable="true"
+            android:contentDescription="Calculator" />
     </LinearLayout>
+
+    <CheckBox
+        android:id="@+id/taxCheckbox"
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:buttonTint="@color/category_food"
+        android:gravity="center_vertical"
+        android:text="Include Tax"
+        android:textColor="?attr/textColorPrimary"
+        android:textSize="14sp" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/taxAmountLayout"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="20dp"
+        android:hint="Tax Amount (%)"
+        android:visibility="gone"
+        app:hintTextColor="?attr/textColorSecondary"
+        app:boxBackgroundColor="?attr/surfaceColor"
+        app:boxCornerRadiusBottomEnd="12dp"
+        app:boxCornerRadiusBottomStart="12dp"
+        app:boxCornerRadiusTopEnd="12dp"
+        app:boxCornerRadiusTopStart="12dp"
+        app:boxStrokeWidth="0dp">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/taxAmountEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="numberDecimal"
+            android:textColor="?attr/textColorPrimary"
+            android:textSize="16sp" />
+    </com.google.android.material.textfield.TextInputLayout>
+
 </LinearLayout>

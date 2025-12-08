@@ -3,94 +3,233 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingBottom="10dp"
     android:orientation="vertical">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:drawablePadding="8dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginBottom="12dp"
+        android:fontFamily="@font/app_font"
         android:text="Attachments"
         android:textColor="?attr/textColorPrimary"
         android:textSize="16sp"
-        android:textStyle="bold"
-        app:drawableTint="?attr/textColorSecondary" />
+        android:textStyle="bold" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="12dp"
-        android:gravity="center_vertical"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:baselineAligned="false"
+        android:weightSum="3">
 
-        <TextView
+        <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Add photos, documents, or scan items"
-            android:textColor="?attr/textColorSecondary"
-            android:textSize="14sp" />
-
-        <androidx.cardview.widget.CardView
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_marginEnd="8dp"
-            app:cardBackgroundColor="?attr/incomeColor"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="3dp">
+            android:orientation="vertical"
+            android:gravity="center"
+            android:layout_marginEnd="8dp">
 
             <ImageView
                 android:id="@+id/cameraButton"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@drawable/camera_ripple"
-                android:clickable="true"
-                android:contentDescription="Take Photo"
-                android:focusable="true"
-                android:padding="8dp"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:background="@drawable/rounded_input_background"
+                android:padding="12dp"
                 android:src="@drawable/ic_camera"
-                app:tint="#FFFFFF" />
-        </androidx.cardview.widget.CardView>
+                app:tint="?attr/balanceColor"
+                android:clickable="true"
+                android:focusable="true"
+                android:contentDescription="Take Photo"/>
 
-        <androidx.cardview.widget.CardView
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_marginEnd="8dp"
-            app:cardBackgroundColor="?attr/balanceColor"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="3dp">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Camera"
+                android:layout_marginTop="4dp"
+                android:textSize="12sp"
+                android:fontFamily="@font/app_font"
+                android:textColor="?attr/textColorSecondary"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:layout_marginEnd="8dp">
 
             <ImageView
                 android:id="@+id/scanButton"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@drawable/scan_ripple"
-                android:clickable="true"
-                android:contentDescription="Scan Barcode"
-                android:focusable="true"
-                android:padding="8dp"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:background="@drawable/rounded_input_background"
+                android:padding="12dp"
                 android:src="@drawable/ic_qr_code"
-                app:tint="#FFFFFF" />
-        </androidx.cardview.widget.CardView>
+                app:tint="?attr/balanceColor"
+                android:clickable="true"
+                android:focusable="true"
+                android:contentDescription="Scan QR"/>
 
-        <androidx.cardview.widget.CardView
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            app:cardBackgroundColor="@color/category_food"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="3dp">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Scan"
+                android:layout_marginTop="4dp"
+                android:textSize="12sp"
+                android:fontFamily="@font/app_font"
+                android:textColor="?attr/textColorSecondary"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center">
 
             <ImageView
                 android:id="@+id/attachFileButton"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@drawable/attach_ripple"
-                android:clickable="true"
-                android:contentDescription="Attach File"
-                android:focusable="true"
-                android:padding="8dp"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:background="@drawable/rounded_input_background"
+                android:padding="12dp"
                 android:src="@drawable/ic_attach_file"
-                app:tint="#FFFFFF" />
-        </androidx.cardview.widget.CardView>
+                app:tint="?attr/balanceColor"
+                android:clickable="true"
+                android:focusable="true"
+                android:contentDescription="Attach File"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="File"
+                android:layout_marginTop="4dp"
+                android:textSize="12sp"
+                android:fontFamily="@font/app_font"
+                android:textColor="?attr/textColorSecondary"/>
+        </LinearLayout>
     </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/attachedFilesSection"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginTop="16dp"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:id="@+id/attachedImageLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="@drawable/rounded_input_background"
+            android:padding="8dp"
+            android:layout_marginBottom="8dp"
+            android:visibility="gone">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_image"
+                app:tint="?attr/textColorSecondary"/>
+
+            <TextView
+                android:id="@+id/attachedImageText"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="12dp"
+                android:text="Image.jpg"
+                android:fontFamily="@font/app_font"
+                android:textColor="?attr/textColorPrimary"/>
+
+            <ImageView
+                android:id="@+id/removeAttachedImage"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_close"
+                app:tint="?attr/expenseColor"
+                android:clickable="true"
+                android:focusable="true"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/attachedPdfLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="@drawable/rounded_input_background"
+            android:padding="8dp"
+            android:layout_marginBottom="8dp"
+            android:visibility="gone">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_description"
+                app:tint="?attr/textColorSecondary"/>
+
+            <TextView
+                android:id="@+id/attachedPdfText"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="12dp"
+                android:text="Document.pdf"
+                android:fontFamily="@font/app_font"
+                android:textColor="?attr/textColorPrimary"/>
+
+            <ImageView
+                android:id="@+id/removeAttachedPdf"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_close"
+                app:tint="?attr/expenseColor"
+                android:clickable="true"
+                android:focusable="true"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/attachedQrLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="@drawable/rounded_input_background"
+            android:padding="8dp"
+            android:visibility="gone">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_qr_code"
+                app:tint="?attr/textColorSecondary"/>
+
+            <TextView
+                android:id="@+id/attachedQrText"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="12dp"
+                android:text="QR Data"
+                android:fontFamily="@font/app_font"
+                android:textColor="?attr/textColorPrimary"/>
+
+            <ImageView
+                android:id="@+id/removeAttachedQr"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_close"
+                app:tint="?attr/expenseColor"
+                android:clickable="true"
+                android:focusable="true"/>
+        </LinearLayout>
+    </LinearLayout>
+
 </LinearLayout>

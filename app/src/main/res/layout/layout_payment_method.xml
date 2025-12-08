@@ -42,6 +42,18 @@
                 android:textStyle="bold" />
 
             <RadioButton
+                android:id="@+id/radioCard"
+                android:layout_width="80dp"
+                android:layout_height="40dp"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/payment_method_selector"
+                android:button="@android:color/transparent"
+                android:gravity="center"
+                android:text="Card"
+                android:textColor="@color/payment_method_text_selector"
+                android:textStyle="bold" />
+
+            <RadioButton
                 android:id="@+id/radioOnline"
                 android:layout_width="80dp"
                 android:layout_height="40dp"
@@ -52,16 +64,5 @@
                 android:textColor="@color/button_text_selector"
                 android:textStyle="bold" />
         </RadioGroup>
-
-        <CheckBox
-            android:id="@+id/taxCheckbox"
-            android:layout_width="wrap_content"
-            android:layout_height="40dp"
-            android:layout_marginStart="16dp"
-            android:buttonTint="@color/category_food"
-            android:gravity="center_vertical"
-            android:text="Include Tax"
-            android:textColor="?attr/textColorPrimary"
-            android:textSize="14sp" />
     </LinearLayout>
 </LinearLayout>

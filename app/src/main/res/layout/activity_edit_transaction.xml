@@ -42,16 +42,18 @@
                     android:id="@+id/headerTitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:fontFamily="@font/app_font"
                     android:text="Edit Transaction"
                     android:textColor="?attr/textColorPrimary"
-                    android:textSize="20sp"
+                    android:textSize="18sp"
                     android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/headerSubtitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Last modified: Today"
+                    android:fontFamily="@font/app_font"
+                    android:text="Update details"
                     android:textColor="?attr/textColorSecondary"
                     android:textSize="12sp" />
             </LinearLayout>
@@ -68,7 +70,7 @@
         </RelativeLayout>
     </androidx.cardview.widget.CardView>
 
-    <ScrollView
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@id/headerCard"
@@ -95,7 +97,9 @@
                     android:layout_marginEnd="8dp"
                     android:background="@drawable/rounded_input_background"
                     android:gravity="center_vertical"
-                    android:padding="12dp">
+                    android:padding="12dp"
+                    android:clickable="true"
+                    android:focusable="true">
 
                     <ImageView
                         android:layout_width="20dp"
@@ -107,9 +111,11 @@
                         android:id="@+id/dateTextView"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
+                        android:layout_marginStart="10dp"
+                        android:fontFamily="@font/app_font"
                         android:text="Select Date"
-                        android:textColor="?attr/textColorPrimary" />
+                        android:textColor="?attr/textColorPrimary"
+                        android:textSize="14sp"/>
                 </LinearLayout>
 
                 <LinearLayout
@@ -120,7 +126,9 @@
                     android:layout_marginStart="8dp"
                     android:background="@drawable/rounded_input_background"
                     android:gravity="center_vertical"
-                    android:padding="12dp">
+                    android:padding="12dp"
+                    android:clickable="true"
+                    android:focusable="true">
 
                     <ImageView
                         android:id="@+id/timePickerIcon"
@@ -133,46 +141,32 @@
                         android:id="@+id/timeTextView"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
+                        android:layout_marginStart="10dp"
+                        android:fontFamily="@font/app_font"
                         android:text="Select Time"
-                        android:textColor="?attr/textColorPrimary" />
+                        android:textColor="?attr/textColorPrimary"
+                        android:textSize="14sp"/>
                 </LinearLayout>
             </LinearLayout>
 
             <include layout="@layout/layout_transaction_type" />
-
             <include layout="@layout/layout_payment_method" />
 
             <include layout="@layout/layout_amount" />
 
             <include layout="@layout/layout_category" />
-
             <include layout="@layout/layout_party_reference" />
 
-            <com.google.android.material.textfield.TextInputLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:hint="Remark"
-                app:boxBackgroundColor="?attr/surfaceColor"
-                app:boxCornerRadiusBottomEnd="12dp"
-                app:boxCornerRadiusBottomStart="12dp"
-                app:boxCornerRadiusTopEnd="12dp"
-                app:boxCornerRadiusTopStart="12dp">
+            <include layout="@layout/layout_remark" />
 
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/remarkEditText"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="textMultiLine"
-                    android:textColor="?attr/textColorPrimary" />
-            </com.google.android.material.textfield.TextInputLayout>
+            <include layout="@layout/layout_tags_location" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
                 android:layout_marginBottom="12dp"
+                android:fontFamily="@font/app_font"
                 android:text="History"
                 android:textColor="?attr/textColorPrimary"
                 android:textSize="16sp"
@@ -199,20 +193,21 @@
                         <ImageView
                             android:layout_width="20dp"
                             android:layout_height="20dp"
+                            android:layout_marginTop="2dp"
                             android:src="@drawable/ic_check"
-                            app:tint="?attr/incomeColor"
-                            android:layout_marginTop="2dp" />
+                            app:tint="?attr/incomeColor" />
 
                         <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:orientation="vertical"
-                            android:layout_marginStart="12dp">
+                            android:layout_marginStart="12dp"
+                            android:orientation="vertical">
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
+                                android:fontFamily="@font/app_font"
                                 android:text="Created"
                                 android:textColor="?attr/textColorPrimary"
                                 android:textSize="14sp"
@@ -222,20 +217,21 @@
                                 android:id="@+id/createdDateText"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:fontFamily="@font/app_font"
                                 android:text="Loading..."
                                 android:textColor="?attr/textColorSecondary"
-                                android:textSize="12sp"
-                                android:layout_marginTop="2dp"/>
+                                android:textSize="12sp" />
                         </LinearLayout>
                     </LinearLayout>
 
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
-                        android:background="?attr/dividerHorizontal"
                         android:layout_marginTop="12dp"
                         android:layout_marginBottom="12dp"
-                        android:layout_marginStart="32dp"/>
+                        android:layout_marginStart="32dp"
+                        android:background="?attr/dividerHorizontal" />
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -245,20 +241,21 @@
                         <ImageView
                             android:layout_width="20dp"
                             android:layout_height="20dp"
+                            android:layout_marginTop="2dp"
                             android:src="@drawable/ic_edit"
-                            app:tint="?attr/balanceColor"
-                            android:layout_marginTop="2dp" />
+                            app:tint="?attr/balanceColor" />
 
                         <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:orientation="vertical"
-                            android:layout_marginStart="12dp">
+                            android:layout_marginStart="12dp"
+                            android:orientation="vertical">
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
+                                android:fontFamily="@font/app_font"
                                 android:text="Last Updated"
                                 android:textColor="?attr/textColorPrimary"
                                 android:textSize="14sp"
@@ -268,22 +265,21 @@
                                 android:id="@+id/updatedDateText"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:fontFamily="@font/app_font"
                                 android:text="Loading..."
                                 android:textColor="?attr/textColorSecondary"
-                                android:textSize="12sp"
-                                android:layout_marginTop="2dp"/>
+                                android:textSize="12sp" />
                         </LinearLayout>
                     </LinearLayout>
-
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
             <View
                 android:layout_width="match_parent"
-                android:layout_height="20dp" />
-
+                android:layout_height="80dp" />
         </LinearLayout>
-    </ScrollView>
+    </androidx.core.widget.NestedScrollView>
 
     <LinearLayout
         android:id="@+id/footerLayout"
@@ -291,29 +287,35 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:background="?attr/surfaceColor"
+        android:elevation="16dp"
         android:padding="16dp"
-        android:elevation="16dp">
+        android:orientation="horizontal">
 
         <Button
             android:id="@+id/CancelTransactionButton"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="50dp"
             android:layout_weight="1"
             android:layout_marginEnd="8dp"
             android:background="@drawable/button_cancel_outline"
+            android:fontFamily="@font/app_font"
             android:text="Cancel"
             android:textColor="?attr/expenseColor"
+            android:textAllCaps="false"
             app:backgroundTint="@null" />
 
         <Button
             android:id="@+id/saveChangesButton"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="50dp"
             android:layout_weight="1"
             android:layout_marginStart="8dp"
             android:background="@drawable/button_primary"
+            android:fontFamily="@font/app_font"
             android:text="Save Changes"
             android:textColor="@android:color/white"
+            android:textStyle="bold"
+            android:textAllCaps="false"
             app:backgroundTint="@null" />
     </LinearLayout>
 

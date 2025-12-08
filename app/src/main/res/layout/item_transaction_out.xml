@@ -1,15 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/transactionCard"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginVertical="4dp"
     android:clickable="true"
     android:focusable="true"
     android:foreground="?android:attr/selectableItemBackground"
+    app:cardBackgroundColor="?attr/surfaceColor"
     app:cardCornerRadius="12dp"
-    app:cardElevation="4dp"
-    app:cardBackgroundColor="?attr/surfaceColor">
+    app:cardElevation="2dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -22,198 +24,275 @@
             android:layout_width="4dp"
             android:layout_height="match_parent"
             android:layout_marginEnd="12dp"
-            android:background="?attr/expenseColor" /> <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
+            android:background="?attr/expenseColor" />
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:layout_marginBottom="8dp">
+            android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/titleTextView"
-                android:layout_width="0dp"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Category Name"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:textColor="?attr/textColorPrimary"
-                android:ellipsize="end"
-                android:maxLines="1" />
+                android:layout_marginBottom="8dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
 
-            <TextView
-                android:id="@+id/paymentModeTextView"
-                android:layout_width="55dp"
-                android:layout_height="25dp"
-                android:layout_marginEnd="12dp"
-                android:background="@drawable/button_blue"
-                android:paddingHorizontal="8dp"
-                android:paddingVertical="2dp"
+                <TextView
+                    android:id="@+id/titleTextView"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:text="Category Name"
+                    android:textColor="?attr/textColorPrimary"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/paymentModeTextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="12dp"
+                    android:background="@drawable/rounded_tag_background"
+                    android:gravity="center"
+                    android:paddingHorizontal="8dp"
+                    android:paddingVertical="2dp"
+                    android:text="Cash"
+                    android:textColor="?attr/textColorPrimary"
+                    android:textSize="10sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/amountTextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="end"
+                    android:text="- ₹1,500"
+                    android:textColor="?attr/expenseColor"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="6dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="14dp"
+                    android:layout_height="14dp"
+                    android:layout_marginEnd="6dp"
+                    android:src="@drawable/ic_person"
+                    app:tint="?attr/textColorSecondary" />
+
+                <TextView
+                    android:id="@+id/partyTextView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:text="Party/Customer/Supplier"
+                    android:textColor="?attr/textColorSecondary"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="6dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="12dp"
+                    android:layout_height="12dp"
+                    android:layout_marginEnd="6dp"
+                    android:src="@drawable/ic_calendar"
+                    app:tint="?attr/textColorHint" />
+
+                <TextView
+                    android:id="@+id/dateTextView"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Sep 06, 2025"
+                    android:textColor="?attr/textColorHint"
+                    android:textSize="11sp" />
+
+                <ImageView
+                    android:layout_width="12dp"
+                    android:layout_height="12dp"
+                    android:layout_marginEnd="6dp"
+                    android:src="@drawable/ic_time"
+                    app:tint="?attr/textColorHint" />
+
+                <TextView
+                    android:id="@+id/transactionTimeTextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="08:19 PM"
+                    android:textColor="?attr/textColorHint"
+                    android:textSize="11sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 android:gravity="center"
-                android:text="Cash"
-                android:textColor="?attr/textColorPrimary"
-                android:textSize="10sp"
-                android:textStyle="bold" />
+                android:orientation="horizontal">
 
-            <TextView
-                android:id="@+id/amountTextView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="- ₹1,500"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:textColor="?attr/expenseColor"
-                android:gravity="end" />
-        </LinearLayout>
+                <ImageButton
+                    android:id="@+id/editButton"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:layout_marginEnd="32dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:clickable="true"
+                    android:contentDescription="Edit transaction"
+                    android:focusable="true"
+                    android:padding="6dp"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/ic_edit"
+                    app:tint="#FF9800" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:layout_marginBottom="6dp">
+                <ImageButton
+                    android:id="@+id/copyButton"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:layout_marginEnd="32dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:clickable="true"
+                    android:contentDescription="Copy transaction"
+                    android:focusable="true"
+                    android:padding="6dp"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/ic_copy"
+                    app:tint="#03A9F4" />
 
-            <ImageView
-                android:layout_width="14dp"
-                android:layout_height="14dp"
-                android:src="@drawable/ic_person"
-                android:layout_marginEnd="6dp"
-                app:tint="?attr/textColorSecondary" />
+                <ImageButton
+                    android:id="@+id/deleteButton"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:clickable="true"
+                    android:contentDescription="Delete transaction"
+                    android:focusable="true"
+                    android:padding="6dp"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/ic_delete"
+                    app:tint="#F44336" />
+            </LinearLayout>
 
-            <TextView
-                android:id="@+id/partyTextView"
+            <LinearLayout
+                android:id="@+id/expandedDetailsLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Party/Customer/Supplier"
-                android:textSize="12sp"
-                android:textColor="?attr/textColorSecondary"
-                android:ellipsize="end"
-                android:maxLines="1" />
+                android:layout_marginTop="8dp"
+                android:background="@drawable/rounded_input_background"
+                android:orientation="vertical"
+                android:padding="8dp"
+                android:visibility="gone">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="4dp">
+
+                    <ImageView
+                        android:layout_width="14dp"
+                        android:layout_height="14dp"
+                        android:layout_marginEnd="8dp"
+                        android:src="@drawable/ic_note"
+                        app:tint="?attr/textColorSecondary" />
+
+                    <TextView
+                        android:id="@+id/remarkTextView"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="No remark added."
+                        android:textColor="?attr/textColorPrimary"
+                        android:textSize="12sp"
+                        android:textStyle="italic" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/tagsRow"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="4dp">
+
+                    <ImageView
+                        android:layout_width="14dp"
+                        android:layout_height="14dp"
+                        android:layout_marginEnd="8dp"
+                        android:src="@drawable/ic_list"
+                        app:tint="?attr/textColorSecondary" />
+
+                    <TextView
+                        android:id="@+id/tagsDetailText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Tags: Personal"
+                        android:textColor="?attr/textColorSecondary"
+                        android:textSize="12sp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/locationRow"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="4dp">
+
+                    <ImageView
+                        android:layout_width="14dp"
+                        android:layout_height="14dp"
+                        android:layout_marginEnd="8dp"
+                        android:src="@drawable/ic_location"
+                        app:tint="?attr/textColorSecondary" />
+
+                    <TextView
+                        android:id="@+id/locationDetailText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Location: 12.34, 56.78"
+                        android:textColor="?attr/textColorSecondary"
+                        android:textSize="12sp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/attachmentRow"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:layout_width="14dp"
+                        android:layout_height="14dp"
+                        android:layout_marginEnd="8dp"
+                        android:src="@drawable/ic_attach_file"
+                        app:tint="?attr/textColorSecondary" />
+
+                    <TextView
+                        android:id="@+id/attachmentDetailText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="1 Attachment"
+                        android:textColor="?attr/textColorSecondary"
+                        android:textSize="12sp" />
+                </LinearLayout>
+            </LinearLayout>
+
         </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginBottom="6dp"
-            android:gravity="center_vertical">
-
-            <ImageView
-                android:layout_width="12dp"
-                android:layout_height="12dp"
-                android:src="@drawable/ic_calendar"
-                android:layout_marginEnd="6dp"
-                app:tint="?attr/textColorHint" />
-
-            <TextView
-                android:id="@+id/dateTextView"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Sep 06, 2025"
-                android:textSize="11sp"
-                android:textColor="?attr/textColorHint" />
-
-            <ImageView
-                android:layout_width="12dp"
-                android:layout_height="12dp"
-                android:src="@drawable/ic_time"
-                android:layout_marginEnd="6dp"
-                app:tint="?attr/textColorHint" />
-
-            <TextView
-                android:id="@+id/transactionTimeTextView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="08:19 PM"
-                android:textSize="11sp"
-                android:textColor="?attr/textColorHint" />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center"
-            android:layout_marginBottom="6dp">
-
-            <ImageButton
-                android:id="@+id/editButton"
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:layout_marginEnd="80dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@drawable/ic_edit"
-                android:contentDescription="Edit transaction"
-                android:clickable="true"
-                android:focusable="true"
-                android:scaleType="fitCenter"
-                app:tint="#FF9800" />
-
-            <ImageButton
-                android:id="@+id/copyButton"
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:layout_marginEnd="80dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@drawable/ic_copy"
-                android:contentDescription="Copy transaction"
-                android:clickable="true"
-                android:focusable="true"
-                android:scaleType="fitCenter"
-                app:tint="#03A9F4" />
-
-            <ImageButton
-                android:id="@+id/deleteButton"
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@drawable/ic_delete"
-                android:contentDescription="Delete transaction"
-                android:clickable="true"
-                android:focusable="true"
-                android:scaleType="fitCenter"
-                app:tint="#F44336" />
-
-        </LinearLayout>
-
-
-        <LinearLayout
-            android:id="@+id/remarkLayout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginTop="8dp"
-            android:background="@drawable/remark_background"
-            android:padding="8dp"
-            android:visibility="gone">
-
-            <ImageView
-                android:layout_width="12dp"
-                android:layout_height="12dp"
-                android:src="@drawable/ic_note"
-                android:layout_marginEnd="6dp"
-                android:layout_marginTop="2dp"
-                app:tint="?attr/textColorHint" />
-
-            <TextView
-                android:id="@+id/remarkTextView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Transaction remark goes here"
-                android:textSize="11sp"
-                android:textColor="?attr/textColorSecondary"
-                android:textStyle="italic" />
-        </LinearLayout>
-
     </LinearLayout>
-
-    </LinearLayout>
-
 </androidx.cardview.widget.CardView>
