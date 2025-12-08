@@ -1,21 +1,18 @@
 package com.phynix.artham.utils;
 
+import android.content.ContentValues;
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Environment;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.widget.Toast;
 
-import androidx.core.content.ContextCompat;
-
 import com.itextpdf.text.BaseColor;
 import com.itextpdf.text.Document;
-import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.Element;
 import com.itextpdf.text.Font;
-import com.itextpdf.text.Image;
 import com.itextpdf.text.PageSize;
 import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.Phrase;
@@ -25,233 +22,254 @@ import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfPageEventHelper;
 import com.itextpdf.text.pdf.PdfWriter;
-import com.phynix.artham.R;
 import com.phynix.artham.models.TransactionModel;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.text.SimpleDateFormat;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 public class PdfReportGenerator {
 
     private static final String TAG = "PdfReportGenerator";
 
-    // Custom Colors
-    private static final BaseColor MODE_BLUE_COLOR = new BaseColor(94, 197, 232);
+    // Colors
+    private static final BaseColor MODE_TEAL = new BaseColor(1, 136, 159); // #01889F
+    private static final BaseColor TEXT_BLACK = BaseColor.BLACK;
+    private static final BaseColor TEXT_GRAY = BaseColor.GRAY;
+    private static final BaseColor COLOR_GREEN = new BaseColor(76, 175, 80);
+    private static final BaseColor COLOR_RED = new BaseColor(244, 67, 54);
     private static final BaseColor HEADER_GRAY = new BaseColor(240, 240, 240);
 
     // Fonts
-    private static Font titleFont = new Font(Font.FontFamily.HELVETICA, 22, Font.BOLD);
-    private static Font bookNameFont = new Font(Font.FontFamily.HELVETICA, 16, Font.BOLD, BaseColor.DARK_GRAY);
-    private static Font subTitleFont = new Font(Font.FontFamily.HELVETICA, 10, Font.NORMAL, BaseColor.GRAY);
-    private static Font headerFont = new Font(Font.FontFamily.HELVETICA, 12, Font.NORMAL, BaseColor.BLACK);
-    private static Font normalFont = new Font(Font.FontFamily.HELVETICA, 10, Font.NORMAL);
-    private static Font footerFont = new Font(Font.FontFamily.HELVETICA, 8, Font.NORMAL, BaseColor.GRAY);
-    private static Font tableHeaderFont = new Font(Font.FontFamily.HELVETICA, 10, Font.BOLD, BaseColor.BLACK);
-    private static Font modeFont = new Font(Font.FontFamily.HELVETICA, 10, Font.NORMAL, MODE_BLUE_COLOR);
+    private static final Font fontTitle = new Font(Font.FontFamily.HELVETICA, 18, Font.BOLD, TEXT_BLACK);
+    private static final Font fontSubtitle = new Font(Font.FontFamily.HELVETICA, 14, Font.BOLD, TEXT_BLACK);
+    private static final Font fontHeader = new Font(Font.FontFamily.HELVETICA, 10, Font.BOLD, TEXT_BLACK);
+    private static final Font fontNormal = new Font(Font.FontFamily.HELVETICA, 10, Font.NORMAL, TEXT_BLACK);
+    private static final Font fontMode = new Font(Font.FontFamily.HELVETICA, 9, Font.NORMAL, MODE_TEAL);
+    private static final Font fontFooter = new Font(Font.FontFamily.HELVETICA, 8, Font.NORMAL, TEXT_GRAY);
 
-    public static void generateReport(Context context, List<TransactionModel> transactions, String cashbookName, long startDate, long endDate) {
-        Document document = new Document(PageSize.A4, 36, 36, 36, 50); // Increased bottom margin for footer
+    public static void generateReport(Context context, List<TransactionModel> transactions, long startDate, long endDate) {
+        Document document = new Document(PageSize.A4, 36, 36, 36, 50);
         String fileName = "Artham_Report_" + System.currentTimeMillis() + ".pdf";
-        File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), fileName);
+
+        OutputStream outputStream = null;
+        Uri uri = null;
 
         try {
-            PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(file));
+            // Save to Downloads/Artham folder logic
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                ContentValues values = new ContentValues();
+                values.put(MediaStore.MediaColumns.DISPLAY_NAME, fileName);
+                values.put(MediaStore.MediaColumns.MIME_TYPE, "application/pdf");
+                values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS + "/Artham");
+                uri = context.getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
+                if (uri != null) {
+                    outputStream = context.getContentResolver().openOutputStream(uri);
+                }
+            } else {
+                File dir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "Artham");
+                if (!dir.exists()) dir.mkdirs();
+                File file = new File(dir, fileName);
+                outputStream = new FileOutputStream(file);
+            }
 
-            // [FIX] Register the Footer Event to draw page numbers
-            FooterEvent event = new FooterEvent();
-            writer.setPageEvent(event);
+            if (outputStream == null) {
+                Toast.makeText(context, "Failed to create file", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            PdfWriter writer = PdfWriter.getInstance(document, outputStream);
+            writer.setPageEvent(new FooterEvent());
 
             document.open();
 
-            // 1. Add Header (Logo, Artham Title, Book Name)
-            addHeader(document, context, cashbookName, startDate, endDate);
+            // 1. Calculate Balances Chronologically (Oldest -> Newest)
+            Collections.sort(transactions, Comparator.comparingLong(TransactionModel::getTimestamp));
 
-            // 2. Add Summary Box
-            addSummary(document, transactions);
+            Map<String, Double> balanceMap = new HashMap<>();
+            double runningBalance = 0;
+            double totalIn = 0;
+            double totalOut = 0;
 
-            // 3. Add Transaction Table
-            addTransactionTable(document, transactions);
+            for (TransactionModel t : transactions) {
+                if ("IN".equalsIgnoreCase(t.getType())) {
+                    runningBalance += t.getAmount();
+                    totalIn += t.getAmount();
+                } else {
+                    runningBalance -= t.getAmount();
+                    totalOut += t.getAmount();
+                }
+                balanceMap.put(t.getTransactionId(), runningBalance);
+            }
+            double finalBalance = totalIn - totalOut;
+
+            // 2. Sort Descending for Display (Newest -> Oldest)
+            Collections.reverse(transactions);
+
+            // 3. Add Header Section
+            addHeaderSection(document, startDate, endDate, totalIn, totalOut, finalBalance, transactions.size());
+
+            document.add(new Paragraph(" "));
+            document.add(new Paragraph(" "));
+
+            // 4. Add Transaction Table
+            addTransactionTable(document, transactions, balanceMap);
 
             document.close();
-            Toast.makeText(context, "PDF Saved to Downloads: " + fileName, Toast.LENGTH_LONG).show();
+            outputStream.close();
+            Toast.makeText(context, "PDF Saved to Downloads/Artham", Toast.LENGTH_LONG).show();
 
         } catch (Exception e) {
             Log.e(TAG, "Error creating PDF", e);
-            Toast.makeText(context, "Error creating PDF: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
     }
 
-    private static void addHeader(Document document, Context context, String cashbookName, long startDate, long endDate) throws Exception {
-        // --- LOGO ---
-        Drawable d = ContextCompat.getDrawable(context, R.drawable.logo);
-        if (d != null) {
-            Bitmap bitmap = ((BitmapDrawable) d).getBitmap();
-            ByteArrayOutputStream stream = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
-            Image img = Image.getInstance(stream.toByteArray());
-            img.scaleToFit(60, 60);
-            img.setAlignment(Element.ALIGN_CENTER);
-            document.add(img);
-        }
+    private static void addHeaderSection(Document document, long startDate, long endDate, double totalIn, double totalOut, double finalBalance, int count) throws Exception {
+        PdfPTable masterTable = new PdfPTable(2);
+        masterTable.setWidthPercentage(100);
+        masterTable.setWidths(new float[]{1, 1}); // Split 50% - 50%
 
-        // --- MAIN TITLE ("Artham Report") ---
-        Paragraph mainTitle = new Paragraph("Artham Report", titleFont);
-        mainTitle.setAlignment(Element.ALIGN_CENTER);
-        mainTitle.setSpacingBefore(10);
-        document.add(mainTitle);
-
-        // --- BOOK NAME (Subtitle) ---
-        // [FIX] Added Book Name explicitly below the title
-        Paragraph bookTitle = new Paragraph(cashbookName, bookNameFont);
-        bookTitle.setAlignment(Element.ALIGN_CENTER);
-        bookTitle.setSpacingAfter(5);
-        document.add(bookTitle);
-
-        // --- GENERATED ON ---
-        SimpleDateFormat genSdf = new SimpleDateFormat("dd MMM yyyy, hh:mm a", Locale.getDefault());
-        String generatedText = "Generated On: " + genSdf.format(new Date());
-        Paragraph generatedInfo = new Paragraph(generatedText, subTitleFont);
-        generatedInfo.setAlignment(Element.ALIGN_CENTER);
-        generatedInfo.setSpacingAfter(5);
-        document.add(generatedInfo);
-
-        // --- DURATION ---
-        SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy", Locale.getDefault());
-        String dateRange = "Duration: " + sdf.format(new Date(startDate)) + " - " + sdf.format(new Date(endDate));
-        Paragraph duration = new Paragraph(dateRange, headerFont);
-        duration.setAlignment(Element.ALIGN_CENTER);
-        duration.setSpacingAfter(20);
-        document.add(duration);
-    }
-
-    private static void addSummary(Document document, List<TransactionModel> transactions) throws DocumentException {
-        double totalIn = 0;
-        double totalOut = 0;
-
-        for (TransactionModel t : transactions) {
-            if ("IN".equalsIgnoreCase(t.getType())) {
-                totalIn += t.getAmount();
-            } else {
-                totalOut += t.getAmount();
-            }
-        }
-        double balance = totalIn - totalOut;
-
+        // --- LEFT: Summary Table ---
         PdfPTable summaryTable = new PdfPTable(3);
         summaryTable.setWidthPercentage(100);
-        summaryTable.setSpacingAfter(15);
 
         // Headers
-        addSummaryCell(summaryTable, "Total Cash In", BaseColor.LIGHT_GRAY);
-        addSummaryCell(summaryTable, "Total Cash Out", BaseColor.LIGHT_GRAY);
-        addSummaryCell(summaryTable, "Final Balance", BaseColor.LIGHT_GRAY);
+        addCell(summaryTable, "Total Cash In", fontHeader, Element.ALIGN_LEFT, HEADER_GRAY);
+        addCell(summaryTable, "Total Cash Out", fontHeader, Element.ALIGN_LEFT, HEADER_GRAY);
+        addCell(summaryTable, "Final Balance", fontHeader, Element.ALIGN_LEFT, HEADER_GRAY);
 
         // Values
-        addSummaryCell(summaryTable, formatCurrency(totalIn), BaseColor.WHITE);
-        addSummaryCell(summaryTable, formatCurrency(totalOut), BaseColor.WHITE);
+        addCell(summaryTable, formatCurrency(totalIn), fontNormal, Element.ALIGN_LEFT, BaseColor.WHITE);
+        addCell(summaryTable, formatCurrency(totalOut), fontNormal, Element.ALIGN_LEFT, BaseColor.WHITE);
+        addCell(summaryTable, formatCurrency(finalBalance), fontNormal, Element.ALIGN_LEFT, BaseColor.WHITE);
 
-        BaseColor balanceColor = balance >= 0 ? new BaseColor(0, 128, 0) : BaseColor.RED;
-        PdfPCell balanceCell = new PdfPCell(new Phrase(formatCurrency(balance), new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD, balanceColor)));
-        balanceCell.setHorizontalAlignment(Element.ALIGN_CENTER);
-        balanceCell.setPadding(10);
-        balanceCell.setBorder(PdfPCell.NO_BORDER);
-        summaryTable.addCell(balanceCell);
+        PdfPCell leftCell = new PdfPCell(summaryTable);
+        leftCell.setBorder(PdfPCell.NO_BORDER);
+        leftCell.setVerticalAlignment(Element.ALIGN_TOP);
+        masterTable.addCell(leftCell);
 
-        document.add(summaryTable);
+        // --- RIGHT: Details Section (Center Aligned) ---
+        PdfPCell rightCell = new PdfPCell();
+        rightCell.setBorder(PdfPCell.NO_BORDER);
+        rightCell.setHorizontalAlignment(Element.ALIGN_CENTER);
+        rightCell.setVerticalAlignment(Element.ALIGN_TOP);
 
-        Paragraph count = new Paragraph("Total No. of entries: " + transactions.size(), normalFont);
-        count.setSpacingAfter(10);
-        document.add(count);
+        Paragraph pTitle = new Paragraph("Artham Report", fontTitle);
+        pTitle.setAlignment(Element.ALIGN_CENTER);
+        rightCell.addElement(pTitle);
+
+        SimpleDateFormat monthFormat = new SimpleDateFormat("MMMM", Locale.getDefault());
+        Paragraph pSubTitle = new Paragraph(monthFormat.format(new Date(startDate)) + " Expenses", fontSubtitle);
+        pSubTitle.setAlignment(Element.ALIGN_CENTER);
+        pSubTitle.setSpacingAfter(8);
+        rightCell.addElement(pSubTitle);
+
+        SimpleDateFormat genFormat = new SimpleDateFormat("dd MMM yyyy, hh:mm a", Locale.getDefault());
+        Paragraph pGen = new Paragraph("Generated On: " + genFormat.format(new Date()), fontNormal);
+        pGen.setAlignment(Element.ALIGN_CENTER);
+        rightCell.addElement(pGen);
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy", Locale.getDefault());
+        String duration = "Duration: " + dateFormat.format(new Date(startDate)) + " - " + dateFormat.format(new Date(endDate));
+        Paragraph pDuration = new Paragraph(duration, fontNormal);
+        pDuration.setAlignment(Element.ALIGN_CENTER);
+        rightCell.addElement(pDuration);
+
+        Paragraph pCount = new Paragraph("Total No. of entries: " + count, fontNormal);
+        pCount.setAlignment(Element.ALIGN_CENTER);
+        rightCell.addElement(pCount);
+
+        masterTable.addCell(rightCell);
+        document.add(masterTable);
     }
 
-    private static void addSummaryCell(PdfPTable table, String text, BaseColor bgColor) {
-        PdfPCell cell = new PdfPCell(new Phrase(text, normalFont));
-        cell.setBackgroundColor(bgColor);
-        cell.setHorizontalAlignment(Element.ALIGN_CENTER);
-        cell.setPadding(8);
-        cell.setBorder(PdfPCell.NO_BORDER);
-        table.addCell(cell);
-    }
-
-    private static void addTransactionTable(Document document, List<TransactionModel> transactions) throws DocumentException {
-        float[] columnWidths = {2, 4, 2, 2, 2, 2};
-        PdfPTable table = new PdfPTable(columnWidths);
+    private static void addTransactionTable(Document document, List<TransactionModel> transactions, Map<String, Double> balanceMap) throws Exception {
+        PdfPTable table = new PdfPTable(6);
         table.setWidthPercentage(100);
-        table.setHeaderRows(1); // Repeats header on new pages
+        table.setWidths(new float[]{2, 3, 2, 2, 2, 2});
 
+        // Headers
         String[] headers = {"Date", "Remark", "Mode", "Cash In", "Cash Out", "Balance"};
-        for (String header : headers) {
-            PdfPCell cell = new PdfPCell(new Phrase(header, tableHeaderFont));
-            cell.setBackgroundColor(HEADER_GRAY);
-            cell.setHorizontalAlignment(Element.ALIGN_CENTER);
-            cell.setPadding(8);
-            table.addCell(cell);
+        for (String h : headers) {
+            int align = h.equals("Mode") ? Element.ALIGN_CENTER : Element.ALIGN_LEFT;
+            addCell(table, h, fontHeader, align, HEADER_GRAY);
         }
 
-        double runningBalance = 0;
         SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yy", Locale.getDefault());
 
         for (TransactionModel t : transactions) {
+            // Date
+            addCell(table, sdf.format(new Date(t.getTimestamp())), fontNormal, Element.ALIGN_LEFT, BaseColor.WHITE);
+
+            // Remark
+            String remark = (t.getRemark() != null && !t.getRemark().isEmpty()) ? t.getRemark() : t.getTransactionCategory();
+            addCell(table, remark, fontNormal, Element.ALIGN_LEFT, BaseColor.WHITE);
+
+            // Mode (Teal, Center)
+            addCell(table, t.getPaymentMode(), fontMode, Element.ALIGN_CENTER, BaseColor.WHITE);
+
+            // Cash In / Out (Left, Colored)
             if ("IN".equalsIgnoreCase(t.getType())) {
-                runningBalance += t.getAmount();
+                addColoredCell(table, formatCurrency(t.getAmount()), COLOR_GREEN, Element.ALIGN_LEFT);
+                addCell(table, "", fontNormal, Element.ALIGN_LEFT, BaseColor.WHITE);
             } else {
-                runningBalance -= t.getAmount();
+                addCell(table, "", fontNormal, Element.ALIGN_LEFT, BaseColor.WHITE);
+                addColoredCell(table, formatCurrency(t.getAmount()), COLOR_RED, Element.ALIGN_LEFT);
             }
 
-            table.addCell(createCell(sdf.format(new Date(t.getTimestamp())), Element.ALIGN_LEFT));
-            table.addCell(createCell(t.getRemark() != null ? t.getRemark() : t.getTransactionCategory(), Element.ALIGN_LEFT));
-            table.addCell(createCell(t.getPaymentMode(), Element.ALIGN_CENTER, MODE_BLUE_COLOR));
+            // Balance
+            Double bal = balanceMap.get(t.getTransactionId());
+            if (bal == null) bal = 0.0;
+            BaseColor balColor = bal >= 0 ? COLOR_GREEN : COLOR_RED;
+            Font balFont = new Font(Font.FontFamily.HELVETICA, 9, Font.BOLD, balColor);
 
-            if ("IN".equalsIgnoreCase(t.getType())) {
-                table.addCell(createCell(formatCurrency(t.getAmount()), Element.ALIGN_RIGHT, new BaseColor(0, 128, 0)));
-                table.addCell(createCell("", Element.ALIGN_RIGHT));
-            } else {
-                table.addCell(createCell("", Element.ALIGN_RIGHT));
-                table.addCell(createCell(formatCurrency(t.getAmount()), Element.ALIGN_RIGHT, BaseColor.RED));
-            }
-
-            BaseColor balColor = runningBalance >= 0 ? new BaseColor(0, 128, 0) : BaseColor.RED;
-            table.addCell(createCell(formatCurrency(runningBalance), Element.ALIGN_RIGHT, balColor));
+            PdfPCell balCell = new PdfPCell(new Phrase(formatCurrency(bal), balFont));
+            balCell.setPadding(5);
+            balCell.setHorizontalAlignment(Element.ALIGN_LEFT);
+            balCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+            table.addCell(balCell);
         }
 
         document.add(table);
     }
 
-    private static PdfPCell createCell(String text, int alignment) {
-        return createCell(text, alignment, BaseColor.BLACK);
+    private static void addCell(PdfPTable table, String text, Font font, int alignment, BaseColor bgColor) {
+        PdfPCell cell = new PdfPCell(new Phrase(text, font));
+        cell.setPadding(5);
+        cell.setHorizontalAlignment(alignment);
+        cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        cell.setBackgroundColor(bgColor);
+        table.addCell(cell);
     }
 
-    private static PdfPCell createCell(String text, int alignment, BaseColor color) {
+    private static void addColoredCell(PdfPTable table, String text, BaseColor color, int alignment) {
         Font font = new Font(Font.FontFamily.HELVETICA, 9, Font.NORMAL, color);
         PdfPCell cell = new PdfPCell(new Phrase(text, font));
+        cell.setPadding(5);
         cell.setHorizontalAlignment(alignment);
-        cell.setPadding(6);
-        return cell;
+        cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        table.addCell(cell);
     }
 
     private static String formatCurrency(double amount) {
         return String.format(Locale.getDefault(), "%.0f", amount);
     }
 
-    // [FIX] Inner Class for Footer (Page Numbers & Credentials)
     static class FooterEvent extends PdfPageEventHelper {
         @Override
         public void onEndPage(PdfWriter writer, Document document) {
             PdfContentByte cb = writer.getDirectContent();
-
-            // 1. Credentials (Left)
-            Phrase credentials = new Phrase("Generated by Artham", footerFont);
-            ColumnText.showTextAligned(cb, Element.ALIGN_LEFT, credentials,
-                    document.left(), document.bottom() - 10, 0);
-
-            // 2. Page Number (Center)
-            Phrase pageNumber = new Phrase("Page " + writer.getPageNumber(), footerFont);
-            ColumnText.showTextAligned(cb, Element.ALIGN_CENTER, pageNumber,
+            Phrase footer = new Phrase("Page " + writer.getPageNumber() + " | Generated by Artham", fontFooter);
+            ColumnText.showTextAligned(cb, Element.ALIGN_CENTER, footer,
                     (document.right() - document.left()) / 2 + document.leftMargin(),
                     document.bottom() - 10, 0);
         }
