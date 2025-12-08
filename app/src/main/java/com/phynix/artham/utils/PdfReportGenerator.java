@@ -112,17 +112,17 @@ public class PdfReportGenerator {
             // 3. Add Header
             addHeader(document, context, cashbookName, startDate, endDate);
 
-            document.add(new Paragraph(" ")); // Spacer
+            document.add(new Paragraph(" "));
 
-            // 4. Add Main Transaction Table (Only transactions)
+            // 4. Add Transaction Table
             addTransactionTable(document, transactions);
 
-            document.add(new Paragraph(" ")); // Separator between Main Table and Summary
+            document.add(new Paragraph(" "));
 
             // 5. Add Detached Summary Table
             addSummaryTable(document, totalIn, totalOut, finalBalance);
 
-            document.add(new Paragraph(" ")); // Separator before Count
+            document.add(new Paragraph(" "));
 
             // 6. Add Total Count at the very bottom
             addTotalCount(document, transactions.size());
@@ -221,6 +221,7 @@ public class PdfReportGenerator {
     }
 
     private static void addSummaryTable(Document document, double totalIn, double totalOut, double finalBalance) throws Exception {
+        // Detached table with same column structure
         PdfPTable summaryTable = new PdfPTable(6);
         summaryTable.setWidthPercentage(100);
         summaryTable.setWidths(new float[]{2, 3, 2, 2, 2, 2});
@@ -235,7 +236,6 @@ public class PdfReportGenerator {
         summaryTable.addCell(labelCell);
 
         // Values
-        // [FIX] These calls caused the error. I have ensured the 6-arg method is defined below.
         addColoredCell(summaryTable, formatCurrency(totalIn), TEXT_BLACK, Element.ALIGN_RIGHT, TOTAL_ROW_BG, true);
         addColoredCell(summaryTable, formatCurrency(totalOut), TEXT_BLACK, Element.ALIGN_RIGHT, TOTAL_ROW_BG, true);
 
@@ -266,12 +266,10 @@ public class PdfReportGenerator {
         table.addCell(cell);
     }
 
-    // [FIX] Added missing 5-argument method to handle main table calls
     private static void addColoredCell(PdfPTable table, String text, BaseColor textColor, int alignment, BaseColor bgColor) {
         addColoredCell(table, text, textColor, alignment, bgColor, false);
     }
 
-    // [FIX] 6-argument method to handle summary table calls (with bold flag)
     private static void addColoredCell(PdfPTable table, String text, BaseColor textColor, int alignment, BaseColor bgColor, boolean isBold) {
         Font font = isBold ? new Font(Font.FontFamily.HELVETICA, 10, Font.BOLD, textColor)
                 : new Font(Font.FontFamily.HELVETICA, 9, Font.NORMAL, textColor);

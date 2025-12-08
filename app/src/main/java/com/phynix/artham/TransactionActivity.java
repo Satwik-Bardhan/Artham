@@ -2,6 +2,7 @@ package com.phynix.artham;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -22,6 +23,11 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.phynix.artham.databinding.ActivityTransactionBinding;
 import com.phynix.artham.databinding.LayoutBottomNavigationBinding;
 import com.phynix.artham.databinding.LayoutPieChartBinding;
@@ -30,7 +36,11 @@ import com.phynix.artham.databinding.LayoutSummaryCardsBinding;
 import com.phynix.artham.models.TransactionModel;
 import com.phynix.artham.viewmodels.TransactionViewModel;
 import com.phynix.artham.viewmodels.TransactionViewModelFactory;
-import com.phynix.artham.utils.PdfReportGenerator; // Import Generator
+import com.phynix.artham.utils.CustomPieChartValueFormatter;
+import com.phynix.artham.utils.PdfReportGenerator;
+import com.github.mikephil.charting.data.PieData;
+import com.github.mikephil.charting.data.PieDataSet;
+import com.github.mikephil.charting.data.PieEntry;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.phynix.artham.dialogs.TransactionDetailsDialog;
@@ -65,7 +75,7 @@ public class TransactionActivity extends AppCompatActivity implements Transactio
 
     private FirebaseAuth mAuth;
     private String currentCashbookId;
-    private String currentCashbookName = "My Cashbook"; // Default Name
+    private String currentCashbookName = "Artham Cashbook"; // Default fallback
     private FirebaseUser currentUser;
 
     private ActivityResultLauncher<Intent> filterLauncher;
@@ -79,10 +89,6 @@ public class TransactionActivity extends AppCompatActivity implements Transactio
         if (getSupportActionBar() != null) getSupportActionBar().hide();
 
         currentCashbookId = getIntent().getStringExtra("cashbook_id");
-        // Try to retrieve name from intent if passed, else pref, else default
-        String nameFromIntent = getIntent().getStringExtra("cashbook_name");
-        if (nameFromIntent != null) currentCashbookName = nameFromIntent;
-
         mAuth = FirebaseAuth.getInstance();
         currentUser = mAuth.getCurrentUser();
         currentMonthCalendar = Calendar.getInstance();
@@ -92,6 +98,9 @@ public class TransactionActivity extends AppCompatActivity implements Transactio
             finish();
             return;
         }
+
+        // [FIX] Fetch the real name immediately
+        fetchCashbookName();
 
         initializeUI();
         initViewModel();
@@ -103,7 +112,46 @@ public class TransactionActivity extends AppCompatActivity implements Transactio
         applySavedChartVisibility();
     }
 
-    // ... (UI Init, ViewModel Init, Observer methods unchanged) ...
+    private void fetchCashbookName() {
+        // 1. Try Intent
+        String intentName = getIntent().getStringExtra("cashbook_name");
+        if (intentName != null && !intentName.isEmpty()) {
+            currentCashbookName = intentName;
+        } else {
+            // 2. Try Firebase (Reliable)
+            DatabaseReference ref = FirebaseDatabase.getInstance().getReference()
+                    .child("users").child(currentUser.getUid())
+                    .child("cashbooks").child(currentCashbookId).child("name");
+
+            ref.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    if (snapshot.exists() && snapshot.getValue(String.class) != null) {
+                        currentCashbookName = snapshot.getValue(String.class);
+                    }
+                }
+                @Override public void onCancelled(@NonNull DatabaseError error) {}
+            });
+        }
+    }
+
+    private void exportReport(long startDate, long endDate, String entryType, String paymentMode) {
+        if (allTransactions == null || allTransactions.isEmpty()) { showToast("No data"); return; }
+
+        List<TransactionModel> exportList = allTransactions.stream()
+                .filter(t -> t.getTimestamp() >= startDate && t.getTimestamp() <= endDate)
+                .filter(t -> entryType == null || entryType.equals("All") || t.getType().equalsIgnoreCase(entryType))
+                .filter(t -> paymentMode == null || paymentMode.equals("All") || t.getPaymentMode().equalsIgnoreCase(paymentMode))
+                .collect(Collectors.toList());
+
+        if (exportList.isEmpty()) { showToast("No matching transactions"); return; }
+
+        // [UPDATED] Passes the fetched 'currentCashbookName'
+        PdfReportGenerator.generateReport(this, exportList, currentCashbookName, startDate, endDate);
+    }
+
+    // --- Standard Methods (Copy-Paste Safe) ---
+
     private void initializeUI() {
         summaryBinding = binding.summaryCards;
         pieChartBinding = binding.pieChartComponent;
@@ -143,7 +191,6 @@ public class TransactionActivity extends AppCompatActivity implements Transactio
         getSupportFragmentManager().beginTransaction().replace(R.id.transaction_fragment_container, transactionFragment).commit();
     }
 
-    // ... (Edit, Delete, Duplicate logic unchanged) ...
     @Override public void onEditTransaction(TransactionModel transaction) { openEditActivity(transaction); }
     @Override public void onDeleteTransaction(TransactionModel transaction) { showDeleteConfirmation(transaction); }
 
@@ -155,8 +202,7 @@ public class TransactionActivity extends AppCompatActivity implements Transactio
     }
 
     private void showDeleteConfirmation(TransactionModel transaction) {
-        new AlertDialog.Builder(this)
-                .setTitle("Delete").setMessage("Delete transaction?")
+        new AlertDialog.Builder(this).setTitle("Delete").setMessage("Are you sure?")
                 .setPositiveButton("Delete", (d, w) -> { if (viewModel != null) viewModel.deleteTransaction(transaction.getTransactionId()); })
                 .setNegativeButton("Cancel", null).show();
     }
@@ -170,11 +216,11 @@ public class TransactionActivity extends AppCompatActivity implements Transactio
         newT.setPartyName(transaction.getPartyName());
         newT.setRemark(transaction.getRemark() + " (Copy)");
         newT.setTimestamp(System.currentTimeMillis());
+        newT.setTags(transaction.getTags());
         viewModel.addTransaction(newT);
         showToast("Duplicated");
     }
 
-    // ... (Navigation) ...
     private void setupBottomNavigation() {
         bottomNavBinding.btnTransactions.setSelected(true);
         bottomNavBinding.btnHome.setOnClickListener(v -> {
@@ -210,14 +256,13 @@ public class TransactionActivity extends AppCompatActivity implements Transactio
 
     private void switchCashbook(String newId, String newName) {
         currentCashbookId = newId;
-        currentCashbookName = newName; // Update Name
+        currentCashbookName = newName; // [FIX] Update name on switch
         showToast("Switched to: " + newName);
         getSharedPreferences("AppPrefs", Context.MODE_PRIVATE).edit().putString("active_cashbook_id_" + currentUser.getUid(), newId).apply();
         initViewModel();
         observeViewModel();
     }
 
-    // Launchers
     private void setupLaunchers() {
         setupFilterLauncher();
         setupDownloadLauncher();
@@ -255,7 +300,7 @@ public class TransactionActivity extends AppCompatActivity implements Transactio
             if (result.getResultCode() == RESULT_OK && result.getData() != null) {
                 Intent data = result.getData();
                 if (checkPermissions()) {
-                    exportTransactionsToPdf(
+                    exportReport(
                             data.getLongExtra("startDate", 0),
                             data.getLongExtra("endDate", 0),
                             data.getStringExtra("entryType"),
@@ -268,23 +313,22 @@ public class TransactionActivity extends AppCompatActivity implements Transactio
         });
     }
 
-    // Export Logic
-    private void exportTransactionsToPdf(long startDate, long endDate, String entryType, String paymentMode) {
-        if (allTransactions == null || allTransactions.isEmpty()) { showToast("No data"); return; }
-
-        List<TransactionModel> exportList = allTransactions.stream()
-                .filter(t -> t.getTimestamp() >= startDate && t.getTimestamp() <= endDate)
-                .filter(t -> entryType == null || entryType.equals("All") || t.getType().equalsIgnoreCase(entryType))
-                .filter(t -> paymentMode == null || paymentMode.equals("All") || t.getPaymentMode().equalsIgnoreCase(paymentMode))
-                .collect(Collectors.toList());
-
-        if (exportList.isEmpty()) { showToast("No matching transactions"); return; }
-
-        // [UPDATED] Pass cashbookName
-        PdfReportGenerator.generateReport(this, exportList, currentCashbookName, startDate, endDate);
+    private boolean checkPermissions() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) return true;
+        return ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
     }
 
-    // ... (Permissions, Chart Logic, Click Listeners - omitted for brevity but remain the same) ...
+    private void requestPermissions() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, STORAGE_PERMISSION_CODE);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == STORAGE_PERMISSION_CODE && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) showToast("Permission granted");
+    }
 
     private void setupClickListeners() {
         pieChartBinding.pieChartHeader.setOnClickListener(v -> {
@@ -311,6 +355,16 @@ public class TransactionActivity extends AppCompatActivity implements Transactio
         });
     }
 
+    private void applySavedChartVisibility() {
+        boolean show = getSharedPreferences(PREFS_NAME, MODE_PRIVATE).getBoolean(KEY_SHOW_CHART, true);
+        setChartVisibility(show);
+    }
+
+    private void setChartVisibility(boolean show) {
+        pieChartBinding.pieChart.setVisibility(show ? View.VISIBLE : View.GONE);
+        pieChartBinding.togglePieChartButton.setText(show ? "Hide Pie Chart" : "Show Pie Chart");
+    }
+
     private void displayDataForCurrentMonth() {
         if(allTransactions==null) return;
         SimpleDateFormat sdf = new SimpleDateFormat("MMMM yyyy", Locale.getDefault());
@@ -330,33 +384,6 @@ public class TransactionActivity extends AppCompatActivity implements Transactio
         summaryBinding.incomeText.setText("₹" + String.format(Locale.US, "%.2f", in));
         summaryBinding.expenseText.setText("₹" + String.format(Locale.US, "%.2f", out));
         summaryBinding.balanceText.setText("₹" + String.format(Locale.US, "%.2f", in - out));
-    }
-
-    private void applySavedChartVisibility() {
-        boolean show = getSharedPreferences(PREFS_NAME, MODE_PRIVATE).getBoolean(KEY_SHOW_CHART, true);
-        setChartVisibility(show);
-    }
-
-    private void setChartVisibility(boolean show) {
-        pieChartBinding.pieChart.setVisibility(show ? View.VISIBLE : View.GONE);
-        pieChartBinding.togglePieChartButton.setText(show ? "Hide Pie Chart" : "Show Pie Chart");
-    }
-
-    private boolean checkPermissions() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) return true;
-        return ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
-    }
-
-    private void requestPermissions() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, STORAGE_PERMISSION_CODE);
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if(requestCode == STORAGE_PERMISSION_CODE && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) showToast("Permission granted");
     }
 
     private void showToast(String msg) { Toast.makeText(this, msg, Toast.LENGTH_SHORT).show(); }
