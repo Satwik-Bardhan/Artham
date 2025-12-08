@@ -1,9 +1,9 @@
-package com.phynix.artham;
+package com.phynix.artham; // [UPDATED PACKAGE]
 
 import android.app.Application;
 import android.content.SharedPreferences;
 
-import com.phynix.artham.utils.ThemeManager;
+import com.phynix.artham.utils.ThemeManager; // [UPDATED IMPORT]
 
 public class MyApplication extends Application {
 
@@ -19,8 +19,10 @@ public class MyApplication extends Application {
 
     private void applyAppTheme() {
         SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-        // Default to dark theme if no preference is saved yet
-        String currentTheme = prefs.getString(KEY_THEME, ThemeManager.THEME_DARK);
+
+        // [UPDATED] Default to LIGHT theme if no preference is saved yet
+        String currentTheme = prefs.getString(KEY_THEME, ThemeManager.THEME_LIGHT);
+
         ThemeManager.applyTheme(currentTheme);
     }
 }

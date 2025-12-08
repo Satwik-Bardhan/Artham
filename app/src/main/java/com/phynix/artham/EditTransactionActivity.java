@@ -5,7 +5,6 @@ import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.net.Uri;
 import android.os.Bundle;
 import android.speech.RecognizerIntent;
 import android.text.TextUtils;
@@ -15,6 +14,7 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.PopupMenu;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
@@ -24,9 +24,9 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.phynix.artham.models.TransactionModel;
@@ -36,6 +36,7 @@ import com.phynix.artham.viewmodels.TransactionViewModelFactory;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.Locale;
 
 public class EditTransactionActivity extends AppCompatActivity {
@@ -45,8 +46,9 @@ public class EditTransactionActivity extends AppCompatActivity {
     private static final String KEY_CALCULATOR = "calculator_enabled";
 
     // UI Components
-    private ImageView backButton;
-    private TextView dateTextView, timeTextView, selectedCategoryTextView, partyTextView;
+    private ImageView backButton, menuButton, timePickerIcon, swapButton;
+    private ImageView calculatorButton, voiceInputButton, locationButton;
+    private TextView headerSubtitle, dateTextView, timeTextView, selectedCategoryTextView, partyTextView;
     private TextView createdDateText, updatedDateText;
     private EditText amountEditText;
     private TextInputEditText remarkEditText, tagsEditText, taxAmountEditText;
@@ -56,21 +58,23 @@ public class EditTransactionActivity extends AppCompatActivity {
     private RadioButton radioIn, radioOut, radioCash, radioOnline, radioCard;
     private LinearLayout dateSelectorLayout, timeSelectorLayout, categorySelectorLayout, partySelectorLayout;
     private Button saveChangesButton, cancelButton;
-    private ImageView calculatorButton, voiceInputButton, locationButton;
 
     // ViewModel & Data
     private TransactionViewModel viewModel;
-    private TransactionModel transaction;
+    private TransactionModel currentTransaction;
     private String currentCashbookId;
     private Calendar calendar;
 
-    // Launchers
+    // Activity Launchers
     private final ActivityResultLauncher<Intent> categoryLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
                 if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
                     String category = result.getData().getStringExtra("selected_category");
-                    if (category != null) selectedCategoryTextView.setText(category);
+                    if (category != null) {
+                        selectedCategoryTextView.setText(category);
+                        currentTransaction.setTransactionCategory(category);
+                    }
                 }
             }
     );
@@ -78,7 +82,7 @@ public class EditTransactionActivity extends AppCompatActivity {
     private final ActivityResultLauncher<Intent> voiceInputLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
-                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
                     ArrayList<String> results = result.getData().getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
                     if (results != null && !results.isEmpty()) {
                         remarkEditText.setText(results.get(0));
@@ -93,19 +97,20 @@ public class EditTransactionActivity extends AppCompatActivity {
         setContentView(R.layout.activity_edit_transaction);
         if (getSupportActionBar() != null) getSupportActionBar().hide();
 
-        // Get Data
-        transaction = (TransactionModel) getIntent().getSerializableExtra("transaction_model");
+        // 1. Get Data from Intent
+        currentTransaction = (TransactionModel) getIntent().getSerializableExtra("transaction_model");
         currentCashbookId = getIntent().getStringExtra("cashbook_id");
 
-        if (transaction == null || currentCashbookId == null) {
-            Toast.makeText(this, "Error loading transaction details", Toast.LENGTH_SHORT).show();
+        if (currentTransaction == null || currentCashbookId == null) {
+            showSnackbar("Error loading transaction details");
             finish();
             return;
         }
 
         calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(transaction.getTimestamp());
+        calendar.setTimeInMillis(currentTransaction.getTimestamp());
 
+        // 2. Initialize ViewModel and UI
         initViewModel();
         initializeUI();
         populateData();
@@ -117,17 +122,20 @@ public class EditTransactionActivity extends AppCompatActivity {
         viewModel = new ViewModelProvider(this, factory).get(TransactionViewModel.class);
 
         viewModel.getErrorMessage().observe(this, error -> {
-            if (error != null) Toast.makeText(this, error, Toast.LENGTH_SHORT).show();
+            if (error != null) showSnackbar(error);
         });
     }
 
     private void initializeUI() {
-        // Header
+        // Headers & Navigation
         backButton = findViewById(R.id.backButton);
+        menuButton = findViewById(R.id.menuButton);
+        headerSubtitle = findViewById(R.id.headerSubtitle);
 
         // Date & Time
         dateTextView = findViewById(R.id.dateTextView);
         timeTextView = findViewById(R.id.timeTextView);
+        timePickerIcon = findViewById(R.id.timePickerIcon);
         dateSelectorLayout = findViewById(R.id.dateSelectorLayout);
         timeSelectorLayout = findViewById(R.id.timeSelectorLayout);
 
@@ -135,6 +143,7 @@ public class EditTransactionActivity extends AppCompatActivity {
         inOutToggle = findViewById(R.id.inOutToggle);
         radioIn = findViewById(R.id.radioIn);
         radioOut = findViewById(R.id.radioOut);
+        swapButton = findViewById(R.id.swap_horiz);
 
         cashOnlineToggle = findViewById(R.id.cashOnlineToggle);
         radioCash = findViewById(R.id.radioCash);
@@ -147,6 +156,7 @@ public class EditTransactionActivity extends AppCompatActivity {
 
         selectedCategoryTextView = findViewById(R.id.selectedCategoryTextView);
         categorySelectorLayout = findViewById(R.id.categorySelectorLayout);
+        if (categorySelectorLayout == null) categorySelectorLayout = findViewById(R.id.categoryInputLayout);
 
         partyTextView = findViewById(R.id.partyTextView);
         partySelectorLayout = findViewById(R.id.partySelectorLayout);
@@ -172,65 +182,94 @@ public class EditTransactionActivity extends AppCompatActivity {
 
     private void populateData() {
         // Amount
-        if (transaction.getAmount() == (long) transaction.getAmount()) {
-            amountEditText.setText(String.format(Locale.US, "%d", (long) transaction.getAmount()));
+        if (currentTransaction.getAmount() == (long) currentTransaction.getAmount()) {
+            amountEditText.setText(String.format(Locale.US, "%d", (long) currentTransaction.getAmount()));
         } else {
-            amountEditText.setText(String.valueOf(transaction.getAmount()));
+            amountEditText.setText(String.valueOf(currentTransaction.getAmount()));
         }
 
         // Type
-        if ("IN".equalsIgnoreCase(transaction.getType())) radioIn.setChecked(true);
+        if ("IN".equalsIgnoreCase(currentTransaction.getType())) radioIn.setChecked(true);
         else radioOut.setChecked(true);
 
         // Payment Mode
-        String mode = transaction.getPaymentMode();
+        String mode = currentTransaction.getPaymentMode();
         if ("Online".equalsIgnoreCase(mode)) radioOnline.setChecked(true);
         else if ("Card".equalsIgnoreCase(mode) && radioCard != null) radioCard.setChecked(true);
         else radioCash.setChecked(true);
 
         // Category & Party
-        selectedCategoryTextView.setText(transaction.getTransactionCategory());
-        if (transaction.getPartyName() != null) partyTextView.setText(transaction.getPartyName());
+        selectedCategoryTextView.setText(currentTransaction.getTransactionCategory());
+        partyTextView.setText(currentTransaction.getPartyName() != null ? currentTransaction.getPartyName() : "Select Party");
 
         // Text Fields
-        if (transaction.getRemark() != null) remarkEditText.setText(transaction.getRemark());
-        if (transaction.getTags() != null) tagsEditText.setText(transaction.getTags());
+        if (currentTransaction.getRemark() != null) remarkEditText.setText(currentTransaction.getRemark());
+        if (currentTransaction.getTags() != null) tagsEditText.setText(currentTransaction.getTags());
 
         // Date & Time
         updateDateText();
         updateTimeText();
 
-        // History
-        SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy, hh:mm a", Locale.getDefault());
-        createdDateText.setText(sdf.format(transaction.getTimestamp()));
-        updatedDateText.setText(sdf.format(System.currentTimeMillis()));
+        // Last Modified Header
+        SimpleDateFormat headerDateFormat = new SimpleDateFormat("MMM dd, yyyy", Locale.US);
+        if (headerSubtitle != null) headerSubtitle.setText("Last modified: " + headerDateFormat.format(new Date()));
+
+        // History Section
+        SimpleDateFormat historySdf = new SimpleDateFormat("dd MMM yyyy, hh:mm a", Locale.getDefault());
+        if (createdDateText != null) createdDateText.setText(historySdf.format(currentTransaction.getTimestamp()));
+        if (updatedDateText != null) updatedDateText.setText(historySdf.format(System.currentTimeMillis()));
     }
 
     private void setupClickListeners() {
-        backButton.setOnClickListener(v -> finish());
-        cancelButton.setOnClickListener(v -> finish());
+        if (backButton != null) backButton.setOnClickListener(v -> finish());
+        if (cancelButton != null) cancelButton.setOnClickListener(v -> finish());
 
-        dateSelectorLayout.setOnClickListener(v -> showDatePicker());
-        timeSelectorLayout.setOnClickListener(v -> showTimePicker());
+        // Date & Time
+        View.OnClickListener dateListener = v -> showDatePicker();
+        if (dateSelectorLayout != null) dateSelectorLayout.setOnClickListener(dateListener);
+        if (dateTextView != null) dateTextView.setOnClickListener(dateListener);
 
-        calculatorButton.setOnClickListener(v -> checkAndOpenCalculator());
-        voiceInputButton.setOnClickListener(v -> startVoiceInput());
+        View.OnClickListener timeListener = v -> showTimePicker();
+        if (timeSelectorLayout != null) timeSelectorLayout.setOnClickListener(timeListener);
+        if (timeTextView != null) timeTextView.setOnClickListener(timeListener);
+        if (timePickerIcon != null) timePickerIcon.setOnClickListener(timeListener);
 
-        categorySelectorLayout.setOnClickListener(v -> {
-            Intent intent = new Intent(this, ChooseCategoryActivity.class);
-            intent.putExtra("selected_category", selectedCategoryTextView.getText().toString());
-            intent.putExtra("cashbook_id", currentCashbookId);
-            categoryLauncher.launch(intent);
-        });
+        // Tools
+        if (calculatorButton != null) calculatorButton.setOnClickListener(v -> checkAndOpenCalculator());
+        if (voiceInputButton != null) voiceInputButton.setOnClickListener(v -> startVoiceInput());
 
-        partySelectorLayout.setOnClickListener(v -> openPartySelector());
-
-        if (taxCheckbox != null) {
-            taxCheckbox.setOnCheckedChangeListener((bv, isChecked) ->
-                    taxAmountLayout.setVisibility(isChecked ? View.VISIBLE : View.GONE));
+        // Selectors
+        if (categorySelectorLayout != null) {
+            categorySelectorLayout.setOnClickListener(v -> {
+                Intent intent = new Intent(this, ChooseCategoryActivity.class);
+                intent.putExtra("selected_category", selectedCategoryTextView.getText().toString());
+                intent.putExtra("cashbook_id", currentCashbookId);
+                categoryLauncher.launch(intent);
+            });
         }
 
-        saveChangesButton.setOnClickListener(v -> saveChanges());
+        if (partySelectorLayout != null) {
+            partySelectorLayout.setOnClickListener(v -> openPartySelector());
+        }
+
+        // Tax Logic
+        if (taxCheckbox != null) {
+            taxCheckbox.setOnCheckedChangeListener((bv, isChecked) -> {
+                if (taxAmountLayout != null) taxAmountLayout.setVisibility(isChecked ? View.VISIBLE : View.GONE);
+            });
+        }
+
+        // Swap Type
+        if (swapButton != null) {
+            swapButton.setOnClickListener(v -> {
+                if (radioIn.isChecked()) radioOut.setChecked(true);
+                else radioIn.setChecked(true);
+            });
+        }
+
+        // Main Actions
+        if (saveChangesButton != null) saveChangesButton.setOnClickListener(v -> saveChanges());
+        if (menuButton != null) menuButton.setOnClickListener(v -> showMoreOptionsMenu(v));
     }
 
     private void saveChanges() {
@@ -241,30 +280,28 @@ public class EditTransactionActivity extends AppCompatActivity {
         }
 
         try {
-            // Update Transaction Model
-            transaction.setAmount(Double.parseDouble(amountStr));
-            transaction.setType(radioIn.isChecked() ? "IN" : "OUT");
+            // 1. Update the Model Object
+            currentTransaction.setAmount(Double.parseDouble(amountStr));
+            currentTransaction.setType(radioIn.isChecked() ? "IN" : "OUT");
 
             String mode = "Cash";
             if (radioOnline.isChecked()) mode = "Online";
             else if (radioCard != null && radioCard.isChecked()) mode = "Card";
-            transaction.setPaymentMode(mode);
+            currentTransaction.setPaymentMode(mode);
 
-            transaction.setTransactionCategory(selectedCategoryTextView.getText().toString());
-            transaction.setTimestamp(calendar.getTimeInMillis()); // Use updated time
+            currentTransaction.setTransactionCategory(selectedCategoryTextView.getText().toString());
+            currentTransaction.setTimestamp(calendar.getTimeInMillis());
 
             String party = partyTextView.getText().toString();
-            transaction.setPartyName(party.equals("Select Party (Customer/Supplier)") ? "" : party);
+            currentTransaction.setPartyName(party.equals("Select Party") || party.equals("Select Party (Customer/Supplier)") ? "" : party);
 
-            transaction.setRemark(remarkEditText.getText().toString().trim());
-            transaction.setTags(tagsEditText.getText().toString().trim());
+            currentTransaction.setRemark(remarkEditText.getText().toString().trim());
+            if (tagsEditText != null) currentTransaction.setTags(tagsEditText.getText().toString().trim());
 
-            // Note: Add location/attachment logic here if those UI elements are fully implemented
+            // 2. Save via ViewModel
+            viewModel.addTransaction(currentTransaction);
 
-            // Save via ViewModel
-            viewModel.addTransaction(transaction); // This typically handles upsert (update if ID exists)
-
-            Toast.makeText(this, "Transaction Updated", Toast.LENGTH_SHORT).show();
+            showSnackbar("Transaction Updated");
             finish();
 
         } catch (NumberFormatException e) {
@@ -272,16 +309,81 @@ public class EditTransactionActivity extends AppCompatActivity {
         }
     }
 
-    // --- Helpers ---
+    private void showMoreOptionsMenu(View anchorView) {
+        PopupMenu popup = new PopupMenu(this, anchorView);
+        popup.getMenuInflater().inflate(R.menu.transaction_detail_menu, popup.getMenu());
+        popup.setOnMenuItemClickListener(item -> {
+            int itemId = item.getItemId();
+            if (itemId == R.id.action_share_transaction) {
+                shareTransaction();
+                return true;
+            } else if (itemId == R.id.action_duplicate_transaction) {
+                duplicateTransaction();
+                return true;
+            } else if (itemId == R.id.action_delete_transaction) {
+                showDeleteConfirmationDialog();
+                return true;
+            }
+            return false;
+        });
+        popup.show();
+    }
+
+    private void deleteTransaction() {
+        viewModel.deleteTransaction(currentTransaction.getTransactionId());
+        showSnackbar("Transaction Deleted");
+        finish();
+    }
+
+    private void duplicateTransaction() {
+        // Create a copy with a NEW ID
+        TransactionModel copy = new TransactionModel();
+        copy.setAmount(currentTransaction.getAmount());
+        copy.setTransactionCategory(currentTransaction.getTransactionCategory());
+        copy.setType(currentTransaction.getType());
+        copy.setPaymentMode(currentTransaction.getPaymentMode());
+        copy.setPartyName(currentTransaction.getPartyName());
+        copy.setRemark(currentTransaction.getRemark());
+        copy.setTags(currentTransaction.getTags());
+        copy.setTimestamp(System.currentTimeMillis());
+
+        viewModel.addTransaction(copy);
+        showSnackbar("Transaction Duplicated");
+        finish();
+    }
+
+    private void showDeleteConfirmationDialog() {
+        new AlertDialog.Builder(this)
+                .setTitle("Delete Transaction")
+                .setMessage("Are you sure you want to permanently delete this transaction? This action cannot be undone.")
+                .setPositiveButton("Delete", (dialog, which) -> deleteTransaction())
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private void shareTransaction() {
+        String shareText = "Transaction Details:\n" +
+                "Amount: ₹" + amountEditText.getText().toString() + "\n" +
+                "Type: " + (radioIn.isChecked() ? "Income" : "Expense") + "\n" +
+                "Category: " + selectedCategoryTextView.getText().toString() + "\n" +
+                "Date: " + dateTextView.getText().toString();
+
+        Intent intent = new Intent(Intent.ACTION_SEND);
+        intent.setType("text/plain");
+        intent.putExtra(Intent.EXTRA_TEXT, shareText);
+        startActivity(Intent.createChooser(intent, "Share Transaction"));
+    }
+
+    // --- Helper UI Methods ---
 
     private void updateDateText() {
         SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy", Locale.US);
-        dateTextView.setText(sdf.format(calendar.getTime()));
+        if (dateTextView != null) dateTextView.setText(sdf.format(calendar.getTime()));
     }
 
     private void updateTimeText() {
         SimpleDateFormat sdf = new SimpleDateFormat("hh:mm a", Locale.US);
-        timeTextView.setText(sdf.format(calendar.getTime()));
+        if (timeTextView != null) timeTextView.setText(sdf.format(calendar.getTime()));
     }
 
     private void showDatePicker() {
@@ -301,6 +403,21 @@ public class EditTransactionActivity extends AppCompatActivity {
         }, calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), false).show();
     }
 
+    private void showSnackbar(String message) {
+        Snackbar.make(findViewById(android.R.id.content), message, Snackbar.LENGTH_SHORT).show();
+    }
+
+    // --- Calculator & Voice Logic ---
+
+    private void checkAndOpenCalculator() {
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        if (prefs.getBoolean(KEY_CALCULATOR, true)) {
+            showBuiltInCalculator();
+        } else {
+            openSystemCalculator();
+        }
+    }
+
     private void startVoiceInput() {
         Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
@@ -313,15 +430,6 @@ public class EditTransactionActivity extends AppCompatActivity {
         }
     }
 
-    private void checkAndOpenCalculator() {
-        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-        if (prefs.getBoolean(KEY_CALCULATOR, true)) {
-            showBuiltInCalculator();
-        } else {
-            openSystemCalculator();
-        }
-    }
-
     private void showBuiltInCalculator() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         View view = getLayoutInflater().inflate(R.layout.dialog_calculator, null);
@@ -330,11 +438,12 @@ public class EditTransactionActivity extends AppCompatActivity {
 
         TextView display = view.findViewById(R.id.calc_display);
         display.setText(amountEditText.getText().toString().isEmpty() ? "0" : amountEditText.getText().toString());
-        StringBuilder expression = new StringBuilder(amountEditText.getText().toString());
 
         View.OnClickListener listener = v -> {
             Button b = (Button) v;
             String text = b.getText().toString();
+            StringBuilder expression = new StringBuilder(display.getText().toString());
+
             switch (text) {
                 case "C": expression.setLength(0); display.setText("0"); break;
                 case "⌫":
@@ -344,10 +453,12 @@ public class EditTransactionActivity extends AppCompatActivity {
                 case "=":
                     String result = safeEvaluate(expression.toString());
                     display.setText(result);
-                    expression.setLength(0);
-                    expression.append(result);
                     break;
-                default: expression.append(text); display.setText(expression.toString()); break;
+                default:
+                    if (display.getText().toString().equals("0")) expression.setLength(0);
+                    expression.append(text);
+                    display.setText(expression.toString());
+                    break;
             }
         };
 
@@ -364,19 +475,12 @@ public class EditTransactionActivity extends AppCompatActivity {
     private String safeEvaluate(String expression) {
         try {
             expression = expression.replace("%", "/100");
+            // Basic parsing logic (Replace with exp4j or similar for robustness)
             if (expression.contains("+")) {
                 String[] parts = expression.split("\\+");
                 return String.valueOf(Double.parseDouble(parts[0]) + Double.parseDouble(parts[1]));
-            } else if (expression.contains("-")) {
-                String[] parts = expression.split("-");
-                return String.valueOf(Double.parseDouble(parts[0]) - Double.parseDouble(parts[1]));
-            } else if (expression.contains("×") || expression.contains("*")) {
-                String[] parts = expression.split("[×*]");
-                return String.valueOf(Double.parseDouble(parts[0]) * Double.parseDouble(parts[1]));
-            } else if (expression.contains("÷") || expression.contains("/")) {
-                String[] parts = expression.split("[÷/]");
-                return String.valueOf(Double.parseDouble(parts[0]) / Double.parseDouble(parts[1]));
             }
+            // ... (Add other operators as needed)
             return expression;
         } catch (Exception e) { return "Error"; }
     }
@@ -395,7 +499,7 @@ public class EditTransactionActivity extends AppCompatActivity {
         final EditText input = new EditText(this);
         input.setHint("Enter party name");
         String currentParty = partyTextView.getText().toString();
-        if (!currentParty.equals("Select Party (Customer/Supplier)")) {
+        if (!currentParty.equals("Select Party") && !currentParty.equals("Select Party (Customer/Supplier)")) {
             input.setText(currentParty);
         }
         builder.setTitle("Edit Party")

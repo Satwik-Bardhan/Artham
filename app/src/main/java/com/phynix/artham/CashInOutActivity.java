@@ -243,52 +243,68 @@ public class CashInOutActivity extends AppCompatActivity {
     }
 
     private void setupClickListeners() {
-        backButton.setOnClickListener(v -> finish());
-        menuButton.setOnClickListener(v -> showMenuOptions());
+        if (backButton != null) backButton.setOnClickListener(v -> finish());
+        if (menuButton != null) menuButton.setOnClickListener(v -> showMenuOptions());
 
-        dateSelectorLayout.setOnClickListener(v -> {
-            stopRealTimeClock();
-            showDatePicker();
-        });
-        timeSelectorLayout.setOnClickListener(v -> {
-            stopRealTimeClock();
-            showTimePicker();
-        });
+        if (dateSelectorLayout != null) {
+            dateSelectorLayout.setOnClickListener(v -> {
+                stopRealTimeClock();
+                showDatePicker();
+            });
+        }
+        if (timeSelectorLayout != null) {
+            timeSelectorLayout.setOnClickListener(v -> {
+                stopRealTimeClock();
+                showTimePicker();
+            });
+        }
 
-        swapButton.setOnClickListener(v -> swapTransactionType());
-        inOutToggle.setOnCheckedChangeListener(this::onTransactionTypeChanged);
+        if (swapButton != null) swapButton.setOnClickListener(v -> swapTransactionType());
+        if (inOutToggle != null) inOutToggle.setOnCheckedChangeListener(this::onTransactionTypeChanged);
 
-        calculatorButton.setOnClickListener(v -> checkAndOpenCalculator());
+        if (calculatorButton != null) calculatorButton.setOnClickListener(v -> checkAndOpenCalculator());
 
-        taxCheckbox.setOnCheckedChangeListener((bv, isChecked) -> {
-            taxAmountLayout.setVisibility(isChecked ? View.VISIBLE : View.GONE);
-        });
-        voiceInputButton.setOnClickListener(v -> startVoiceInput());
-        categorySelectorLayout.setOnClickListener(v -> openCategorySelector());
-        partySelectorLayout.setOnClickListener(v -> openPartySelector());
-        locationButton.setOnClickListener(v -> getCurrentLocation());
-        saveEntryButton.setOnClickListener(v -> saveTransaction(false));
-        saveAndAddNewButton.setOnClickListener(v -> saveTransaction(true));
-        clearButton.setOnClickListener(v -> clearForm());
+        if (taxCheckbox != null) {
+            taxCheckbox.setOnCheckedChangeListener((bv, isChecked) -> {
+                if (taxAmountLayout != null) {
+                    taxAmountLayout.setVisibility(isChecked ? View.VISIBLE : View.GONE);
+                }
+            });
+        }
+
+        if (voiceInputButton != null) voiceInputButton.setOnClickListener(v -> startVoiceInput());
+        if (categorySelectorLayout != null) categorySelectorLayout.setOnClickListener(v -> openCategorySelector());
+        if (partySelectorLayout != null) partySelectorLayout.setOnClickListener(v -> openPartySelector());
+        if (locationButton != null) locationButton.setOnClickListener(v -> getCurrentLocation());
+
+        if (saveEntryButton != null) saveEntryButton.setOnClickListener(v -> saveTransaction(false));
+        if (saveAndAddNewButton != null) saveAndAddNewButton.setOnClickListener(v -> saveTransaction(true));
+        if (clearButton != null) clearButton.setOnClickListener(v -> clearForm());
 
         setupQuickAmountButtons();
 
-        cameraButton.setOnClickListener(v -> openCamera());
-        scanButton.setOnClickListener(v -> openScanner());
-        attachFileButton.setOnClickListener(v -> openFilePicker());
+        if (cameraButton != null) cameraButton.setOnClickListener(v -> openCamera());
+        if (scanButton != null) scanButton.setOnClickListener(v -> openScanner());
+        if (attachFileButton != null) attachFileButton.setOnClickListener(v -> openFilePicker());
 
-        removeAttachedImage.setOnClickListener(v -> {
-            attachedImageUri = null;
-            updateAttachmentVisibility();
-        });
-        removeAttachedQr.setOnClickListener(v -> {
-            attachedQrData = null;
-            updateAttachmentVisibility();
-        });
-        removeAttachedPdf.setOnClickListener(v -> {
-            attachedFileUri = null;
-            updateAttachmentVisibility();
-        });
+        if (removeAttachedImage != null) {
+            removeAttachedImage.setOnClickListener(v -> {
+                attachedImageUri = null;
+                updateAttachmentVisibility();
+            });
+        }
+        if (removeAttachedQr != null) {
+            removeAttachedQr.setOnClickListener(v -> {
+                attachedQrData = null;
+                updateAttachmentVisibility();
+            });
+        }
+        if (removeAttachedPdf != null) {
+            removeAttachedPdf.setOnClickListener(v -> {
+                attachedFileUri = null;
+                updateAttachmentVisibility();
+            });
+        }
     }
 
     private void updateAttachmentVisibility() {
@@ -296,17 +312,20 @@ public class CashInOutActivity extends AppCompatActivity {
         boolean hasQr = attachedQrData != null;
         boolean hasFile = attachedFileUri != null;
 
-        attachedImageLayout.setVisibility(hasImage ? View.VISIBLE : View.GONE);
-        attachedQrLayout.setVisibility(hasQr ? View.VISIBLE : View.GONE);
-        attachedPdfLayout.setVisibility(hasFile ? View.VISIBLE : View.GONE);
+        if (attachedImageLayout != null) attachedImageLayout.setVisibility(hasImage ? View.VISIBLE : View.GONE);
+        if (attachedQrLayout != null) attachedQrLayout.setVisibility(hasQr ? View.VISIBLE : View.GONE);
+        if (attachedPdfLayout != null) attachedPdfLayout.setVisibility(hasFile ? View.VISIBLE : View.GONE);
 
-        if (hasImage || hasQr || hasFile) {
-            attachedFilesSection.setVisibility(View.VISIBLE);
-        } else {
-            attachedFilesSection.setVisibility(View.GONE);
+        if (attachedFilesSection != null) {
+            if (hasImage || hasQr || hasFile) {
+                attachedFilesSection.setVisibility(View.VISIBLE);
+            } else {
+                attachedFilesSection.setVisibility(View.GONE);
+            }
         }
     }
 
+    // [FIXED] Added Null Checks to prevent Crash
     private void setupQuickAmountButtons() {
         View.OnClickListener quickAmountClickListener = v -> {
             clearQuickAmountSelections();
@@ -317,17 +336,19 @@ public class CashInOutActivity extends AppCompatActivity {
             amountEditText.setText(cleanAmount);
             showQuickAmountSelectionFeedback(clickedButton);
         };
-        quickAmount100.setOnClickListener(quickAmountClickListener);
-        quickAmount500.setOnClickListener(quickAmountClickListener);
-        quickAmount1000.setOnClickListener(quickAmountClickListener);
-        quickAmount5000.setOnClickListener(quickAmountClickListener);
+
+        if (quickAmount100 != null) quickAmount100.setOnClickListener(quickAmountClickListener);
+        if (quickAmount500 != null) quickAmount500.setOnClickListener(quickAmountClickListener);
+        if (quickAmount1000 != null) quickAmount1000.setOnClickListener(quickAmountClickListener);
+        if (quickAmount5000 != null) quickAmount5000.setOnClickListener(quickAmountClickListener);
     }
 
+    // [FIXED] Added Null Checks
     private void clearQuickAmountSelections() {
-        quickAmount100.setSelected(false);
-        quickAmount500.setSelected(false);
-        quickAmount1000.setSelected(false);
-        quickAmount5000.setSelected(false);
+        if (quickAmount100 != null) quickAmount100.setSelected(false);
+        if (quickAmount500 != null) quickAmount500.setSelected(false);
+        if (quickAmount1000 != null) quickAmount1000.setSelected(false);
+        if (quickAmount5000 != null) quickAmount5000.setSelected(false);
     }
 
     private void showQuickAmountSelectionFeedback(Button selectedButton) {
@@ -379,8 +400,7 @@ public class CashInOutActivity extends AppCompatActivity {
                         selectedCategory = result.getData().getStringExtra("selected_category");
                         if (selectedCategory != null) {
                             selectedCategoryTextView.setText(selectedCategory);
-                            // Check for null context before accessing resources if needed, though 'this' is safe here
-                            int color = ContextCompat.getColor(this, R.color.primary_blue); // Default or logic to get attr
+                            int color = ContextCompat.getColor(this, R.color.primary_blue);
                             selectedCategoryTextView.setTextColor(color);
                         }
                     }
@@ -727,9 +747,9 @@ public class CashInOutActivity extends AppCompatActivity {
 
         // [UPDATE] Logic for Payment Mode including Card
         String paymentMode = "Cash";
-        if (radioCard.isChecked()) {
+        if (radioCard != null && radioCard.isChecked()) {
             paymentMode = "Card";
-        } else if (radioOnline.isChecked()) {
+        } else if (radioOnline != null && radioOnline.isChecked()) {
             paymentMode = "Online";
         }
         transaction.setPaymentMode(paymentMode);

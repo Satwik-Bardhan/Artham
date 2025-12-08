@@ -9,8 +9,8 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="com.satvik.artham" />
-                  <option name="mobileSdkAppId" value="1:468688842282:android:d673d9dd09e029cfb59d53" />
+                  <option name="appId" value="com.phynix.artham" />
+                  <option name="mobileSdkAppId" value="1:468688842282:android:542792482883585fb59d53" />
                   <option name="projectId" value="artham-67" />
                   <option name="projectNumber" value="468688842282" />
                 </ConnectionSetting>
