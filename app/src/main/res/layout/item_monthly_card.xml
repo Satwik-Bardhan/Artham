@@ -1,42 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="120dp"
-    android:layout_height="80dp"
-    android:layout_margin="4dp"
-    app:cardCornerRadius="8dp"
-    app:cardElevation="4dp"
-    app:cardBackgroundColor="?attr/surfaceColor">
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/cardContainer"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="12dp"
+    android:layout_marginEnd="8dp"
+    android:background="@drawable/rounded_input_background"
+    android:gravity="center">
 
-    <LinearLayout
-        android:id="@+id/cardContainer"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:gravity="center"
-        android:padding="8dp"
-        android:background="?attr/surfaceColor">
+    <TextView
+        android:id="@+id/monthNameTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Month"
+        android:textSize="14sp"
+        android:textStyle="bold"/>
 
-        <TextView
-            android:id="@+id/monthNameTextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="January 2024"
-            android:textSize="12sp"
-            android:textStyle="bold"
-            android:textColor="?attr/textColorPrimary"
-            android:gravity="center" />
-
-        <TextView
-            android:id="@+id/totalExpenseTextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="₹5,230.00"
-            android:textSize="14sp"
-            android:textColor="?attr/expenseColor"
-            android:textStyle="bold"
-            android:layout_marginTop="4dp" />
-
-    </LinearLayout>
-
-</androidx.cardview.widget.CardView>
+    <TextView
+        android:id="@+id/totalExpenseTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="₹0"
+        android:textSize="12sp"
+        android:layout_marginTop="4dp"/>
+</LinearLayout>

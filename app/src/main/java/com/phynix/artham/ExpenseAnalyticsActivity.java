@@ -4,14 +4,17 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -19,14 +22,10 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.phynix.artham.models.TransactionModel;
 import com.phynix.artham.utils.CustomPieChartValueFormatter;
-import com.phynix.artham.utils.ErrorHandler;
 import com.github.mikephil.charting.charts.PieChart;
-import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
-import com.github.mikephil.charting.highlight.Highlight;
-import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -45,20 +44,25 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class ExpenseAnalyticsActivity extends AppCompatActivity implements OnChartValueSelectedListener {
+public class ExpenseAnalyticsActivity extends AppCompatActivity {
 
     private static final String TAG = "ExpenseAnalytics";
 
+    // UI
     private PieChart fullScreenPieChart;
     private RecyclerView monthlyCardsRecyclerView, detailedLegendRecyclerView;
     private ImageButton closeButton;
+    private TextView noDataTextView;
+    private ProgressBar loadingProgressBar;
+    private LinearLayout contentLayout;
 
+    // Data
     private List<TransactionModel> allTransactions = new ArrayList<>();
-    private List<MonthlyExpense> monthlyExpenses;
-    private MonthlyExpense currentSelectedMonth;
-    private LegendAdapter legendAdapter;
+    private List<MonthlyExpense> monthlyExpenses = new ArrayList<>();
     private MonthlyCardAdapter monthlyAdapter;
+    private LegendAdapter legendAdapter;
 
+    // Firebase
     private String cashbookId;
     private DatabaseReference transactionsRef;
     private ValueEventListener transactionsListener;
@@ -67,18 +71,19 @@ public class ExpenseAnalyticsActivity extends AppCompatActivity implements OnCha
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_expense_analytics);
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().hide();
-        }
+        if (getSupportActionBar() != null) getSupportActionBar().hide();
 
         cashbookId = getIntent().getStringExtra("cashbook_id");
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
 
         if (cashbookId == null || currentUser == null) {
-            Toast.makeText(this, "Error: No cashbook specified or user not logged in.", Toast.LENGTH_SHORT).show();
+            Log.e(TAG, "Missing cashbookId or User");
+            Toast.makeText(this, "Error: Invalid session.", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
+
+        Log.d(TAG, "Initializing Analytics for Cashbook: " + cashbookId);
 
         transactionsRef = FirebaseDatabase.getInstance().getReference("users")
                 .child(currentUser.getUid()).child("cashbooks")
@@ -86,7 +91,6 @@ public class ExpenseAnalyticsActivity extends AppCompatActivity implements OnCha
 
         initializeUI();
         setupRecyclerViews();
-        setupClickListeners();
         setupPieChart();
         loadTransactionData();
     }
@@ -96,114 +100,26 @@ public class ExpenseAnalyticsActivity extends AppCompatActivity implements OnCha
         monthlyCardsRecyclerView = findViewById(R.id.monthlyCardsRecyclerView);
         detailedLegendRecyclerView = findViewById(R.id.detailedLegendRecyclerView);
         closeButton = findViewById(R.id.closeButton);
+        noDataTextView = findViewById(R.id.noDataTextView);
+        loadingProgressBar = findViewById(R.id.loadingProgressBar);
+        contentLayout = findViewById(R.id.contentLayout);
+
+        closeButton.setOnClickListener(v -> finish());
     }
 
     private void setupPieChart() {
-        fullScreenPieChart.setOnChartValueSelectedListener(this);
         fullScreenPieChart.setRotationEnabled(true);
-        fullScreenPieChart.setHighlightPerTapEnabled(true);
-
-        int textColor = ThemeUtil.getThemeAttrColor(this, R.attr.textColorPrimary);
-
-        fullScreenPieChart.setHoleRadius(58f); // Slightly smaller hole to allow more room for labels
-        fullScreenPieChart.setTransparentCircleRadius(62f);
+        fullScreenPieChart.setHoleRadius(50f);
+        fullScreenPieChart.setTransparentCircleRadius(55f);
         fullScreenPieChart.setHoleColor(Color.TRANSPARENT);
-
         fullScreenPieChart.setDrawCenterText(true);
-        fullScreenPieChart.setRotationAngle(270);
-
         fullScreenPieChart.getDescription().setEnabled(false);
         fullScreenPieChart.getLegend().setEnabled(false);
-
-        // Disable standard entry labels (we use the formatter for combined labels)
         fullScreenPieChart.setDrawEntryLabels(false);
-
-        fullScreenPieChart.setNoDataText("No expense data available");
-        fullScreenPieChart.setNoDataTextColor(textColor);
-
-        // [FIX] Increased offsets to 50dp to prevent overlap
-        fullScreenPieChart.setExtraOffsets(50.f, 10.f, 50.f, 10.f);
-    }
-
-    @Override
-    public void onValueSelected(Entry e, Highlight h) {
-        if (e instanceof PieEntry) {
-            PieEntry pieEntry = (PieEntry) e;
-            String category = pieEntry.getLabel();
-            Toast.makeText(this, category + ": ₹" + String.format(Locale.US, "%.2f", pieEntry.getValue()),
-                    Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    @Override
-    public void onNothingSelected() {}
-
-    private void loadTransactionData() {
-        if (transactionsRef == null) return;
-
-        transactionsListener = transactionsRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                allTransactions.clear();
-                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                    TransactionModel transaction = snapshot.getValue(TransactionModel.class);
-                    if (transaction != null) {
-                        allTransactions.add(transaction);
-                    }
-                }
-                processTransactionData();
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-                ErrorHandler.handleFirebaseError(ExpenseAnalyticsActivity.this, databaseError);
-            }
-        });
-    }
-
-    private void processTransactionData() {
-        if (allTransactions == null || allTransactions.isEmpty()) {
-            if(monthlyAdapter != null) monthlyAdapter.updateData(new ArrayList<>());
-            if(legendAdapter != null) legendAdapter.updateData(new ArrayList<>());
-            fullScreenPieChart.clear();
-            fullScreenPieChart.invalidate();
-            return;
-        }
-
-        Map<String, List<TransactionModel>> transactionsByMonth = allTransactions.stream()
-                .filter(t -> "OUT".equalsIgnoreCase(t.getType()))
-                .collect(Collectors.groupingBy(t -> {
-                    Calendar cal = Calendar.getInstance();
-                    cal.setTimeInMillis(t.getTimestamp());
-                    return new SimpleDateFormat("yyyy-MM", Locale.getDefault()).format(cal.getTime());
-                }));
-
-        monthlyExpenses = new ArrayList<>();
-        for (Map.Entry<String, List<TransactionModel>> entry : transactionsByMonth.entrySet()) {
-            double total = entry.getValue().stream().mapToDouble(TransactionModel::getAmount).sum();
-            monthlyExpenses.add(new MonthlyExpense(entry.getKey(), total, entry.getValue()));
-        }
-
-        monthlyExpenses.sort(Comparator.comparing(MonthlyExpense::getMonth).reversed());
-
-        monthlyAdapter.updateData(monthlyExpenses);
-
-        if (!monthlyExpenses.isEmpty()) {
-            updatePieChartForMonth(monthlyExpenses.get(0));
-            monthlyAdapter.setSelectedPosition(0);
-            monthlyCardsRecyclerView.scrollToPosition(0);
-        } else {
-            if(legendAdapter != null) legendAdapter.updateData(new ArrayList<>());
-            fullScreenPieChart.clear();
-            fullScreenPieChart.invalidate();
-        }
     }
 
     private void setupRecyclerViews() {
-        LinearLayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, true);
-        layoutManager.setStackFromEnd(true);
-
-        monthlyCardsRecyclerView.setLayoutManager(layoutManager);
+        monthlyCardsRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         monthlyAdapter = new MonthlyCardAdapter(new ArrayList<>(), this::updatePieChartForMonth);
         monthlyCardsRecyclerView.setAdapter(monthlyAdapter);
 
@@ -212,12 +128,80 @@ public class ExpenseAnalyticsActivity extends AppCompatActivity implements OnCha
         detailedLegendRecyclerView.setAdapter(legendAdapter);
     }
 
-    private void setupClickListeners() {
-        closeButton.setOnClickListener(v -> finish());
+    private void loadTransactionData() {
+        loadingProgressBar.setVisibility(View.VISIBLE);
+
+        transactionsListener = transactionsRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                allTransactions.clear();
+                if (dataSnapshot.exists()) {
+                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                        TransactionModel transaction = snapshot.getValue(TransactionModel.class);
+                        if (transaction != null) {
+                            allTransactions.add(transaction);
+                        }
+                    }
+                    Log.d(TAG, "Loaded transactions: " + allTransactions.size());
+                } else {
+                    Log.d(TAG, "No transactions found in Firebase.");
+                }
+                processTransactionData();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                loadingProgressBar.setVisibility(View.GONE);
+                Log.e(TAG, "Firebase Error: " + databaseError.getMessage());
+                Toast.makeText(ExpenseAnalyticsActivity.this, "Failed to load data", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void processTransactionData() {
+        loadingProgressBar.setVisibility(View.GONE);
+
+        // Filter OUT Expenses
+        List<TransactionModel> expenses = allTransactions.stream()
+                .filter(t -> "OUT".equalsIgnoreCase(t.getType()))
+                .collect(Collectors.toList());
+
+        Log.d(TAG, "Total Expenses found: " + expenses.size());
+
+        if (expenses.isEmpty()) {
+            showEmptyState();
+            return;
+        }
+
+        showContentState();
+
+        // Group by Month
+        Map<String, List<TransactionModel>> transactionsByMonth = expenses.stream()
+                .collect(Collectors.groupingBy(t -> {
+                    Calendar cal = Calendar.getInstance();
+                    cal.setTimeInMillis(t.getTimestamp());
+                    return new SimpleDateFormat("yyyy-MM", Locale.getDefault()).format(cal.getTime());
+                }));
+
+        monthlyExpenses.clear();
+        for (Map.Entry<String, List<TransactionModel>> entry : transactionsByMonth.entrySet()) {
+            double total = entry.getValue().stream().mapToDouble(TransactionModel::getAmount).sum();
+            monthlyExpenses.add(new MonthlyExpense(entry.getKey(), total, entry.getValue()));
+        }
+
+        // Sort: Newest Month First
+        monthlyExpenses.sort(Comparator.comparing(MonthlyExpense::getMonth).reversed());
+
+        monthlyAdapter.updateData(monthlyExpenses);
+
+        // Default Select First
+        if (!monthlyExpenses.isEmpty()) {
+            updatePieChartForMonth(monthlyExpenses.get(0));
+        }
     }
 
     private void updatePieChartForMonth(MonthlyExpense monthlyExpense) {
-        currentSelectedMonth = monthlyExpense;
+        Log.d(TAG, "Updating Chart for: " + monthlyExpense.getMonth());
 
         Map<String, Double> expenseByCategory = monthlyExpense.getTransactions().stream()
                 .collect(Collectors.groupingBy(
@@ -227,26 +211,11 @@ public class ExpenseAnalyticsActivity extends AppCompatActivity implements OnCha
 
         ArrayList<PieEntry> entries = new ArrayList<>();
         ArrayList<LegendItem> legendItems = new ArrayList<>();
-
-        int primaryTextColor = ThemeUtil.getThemeAttrColor(this, R.attr.textColorPrimary);
-        int secondaryTextColor = ThemeUtil.getThemeAttrColor(this, R.attr.textColorSecondary);
-
-        ArrayList<Integer> colors = new ArrayList<>();
-        colors.add(Color.parseColor("#FF5252"));
-        colors.add(Color.parseColor("#448AFF"));
-        colors.add(Color.parseColor("#69F0AE"));
-        colors.add(Color.parseColor("#FFD740"));
-        colors.add(Color.parseColor("#E040FB"));
-        colors.add(Color.parseColor("#18FFFF"));
-        colors.add(Color.parseColor("#FF6E40"));
-        colors.add(Color.parseColor("#BCAAA4"));
-        colors.add(Color.parseColor("#7C4DFF"));
-        colors.add(Color.parseColor("#B2FF59"));
+        ArrayList<Integer> colors = getChartColors();
 
         int colorIndex = 0;
         for (Map.Entry<String, Double> entry : expenseByCategory.entrySet()) {
             float amount = entry.getValue().floatValue();
-            // PieEntry label is "Category Name"
             entries.add(new PieEntry(amount, entry.getKey()));
 
             int color = colors.get(colorIndex % colors.size());
@@ -261,45 +230,49 @@ public class ExpenseAnalyticsActivity extends AppCompatActivity implements OnCha
 
         legendItems.sort((a, b) -> Float.compare(b.amount, a.amount));
 
-        PieDataSet dataSet = new PieDataSet(entries, "Monthly Expenses");
+        PieDataSet dataSet = new PieDataSet(entries, "");
         dataSet.setColors(colors);
-
-        dataSet.setXValuePosition(PieDataSet.ValuePosition.OUTSIDE_SLICE);
-        dataSet.setYValuePosition(PieDataSet.ValuePosition.OUTSIDE_SLICE);
-
-        // [FIX] Optimized Line Settings for minimal overlap
-        dataSet.setValueLinePart1OffsetPercentage(80.f);
-        dataSet.setValueLinePart1Length(0.5f);
-        dataSet.setValueLinePart2Length(0.6f); // Long tail to push text away
-
-        dataSet.setValueLineColor(secondaryTextColor);
-        dataSet.setValueLineWidth(0.8f);
-
-        dataSet.setValueTextColor(primaryTextColor);
-        dataSet.setValueTextSize(10f); // Smaller text
-
-        // [FIX] Use Custom Formatter (Percent \n Label)
+        dataSet.setValueTextColor(Color.BLACK); // Force Black text
+        dataSet.setValueTextSize(10f);
         dataSet.setValueFormatter(new CustomPieChartValueFormatter());
 
-        dataSet.setSliceSpace(3f);
-        dataSet.setSelectionShift(8f);
+        // Line properties to push labels outside
+        dataSet.setYValuePosition(PieDataSet.ValuePosition.OUTSIDE_SLICE);
+        dataSet.setValueLinePart1OffsetPercentage(80.f);
+        dataSet.setValueLinePart1Length(0.4f);
+        dataSet.setValueLinePart2Length(0.4f);
 
         PieData pieData = new PieData(dataSet);
         fullScreenPieChart.setData(pieData);
-        fullScreenPieChart.setUsePercentValues(true);
 
-        // Ensure we do NOT draw separate entry labels, rely on Formatter
-        fullScreenPieChart.setDrawEntryLabels(false);
-
-        String centerText = String.format(Locale.US, "Total\n₹%.0f", monthlyExpense.getTotalExpense());
+        String centerText = "Total\n₹" + String.format(Locale.US, "%.0f", monthlyExpense.getTotalExpense());
         fullScreenPieChart.setCenterText(centerText);
-        fullScreenPieChart.setCenterTextColor(primaryTextColor);
-        fullScreenPieChart.setCenterTextSize(18f);
+        fullScreenPieChart.setCenterTextSize(16f);
+        fullScreenPieChart.setCenterTextColor(Color.BLACK);
 
-        fullScreenPieChart.animateY(1000);
-        fullScreenPieChart.invalidate();
+        fullScreenPieChart.invalidate(); // Refresh
 
         legendAdapter.updateData(legendItems);
+    }
+
+    private void showEmptyState() {
+        noDataTextView.setVisibility(View.VISIBLE);
+        contentLayout.setVisibility(View.GONE);
+    }
+
+    private void showContentState() {
+        noDataTextView.setVisibility(View.GONE);
+        contentLayout.setVisibility(View.VISIBLE);
+    }
+
+    private ArrayList<Integer> getChartColors() {
+        ArrayList<Integer> colors = new ArrayList<>();
+        colors.add(Color.parseColor("#FF5252"));
+        colors.add(Color.parseColor("#448AFF"));
+        colors.add(Color.parseColor("#69F0AE"));
+        colors.add(Color.parseColor("#FFD740"));
+        colors.add(Color.parseColor("#E040FB"));
+        return colors;
     }
 
     @Override
@@ -310,11 +283,7 @@ public class ExpenseAnalyticsActivity extends AppCompatActivity implements OnCha
         }
     }
 
-    // ... (Inner classes remain the same) ...
-    // Copy MonthlyExpense, LegendItem, MonthlyCardAdapter, LegendAdapter, ThemeUtil from previous response
-    // To save space, I am not re-printing them as they haven't changed,
-    // but ensure you keep them in the file.
-
+    // --- Data Classes ---
     static class MonthlyExpense {
         private String month; private double totalExpense; private List<TransactionModel> transactions;
         public MonthlyExpense(String month, double totalExpense, List<TransactionModel> transactions) {
@@ -334,138 +303,95 @@ public class ExpenseAnalyticsActivity extends AppCompatActivity implements OnCha
 
     interface OnMonthClickListener { void onMonthClick(MonthlyExpense monthlyExpense); }
 
+    // --- Adapters ---
     static class MonthlyCardAdapter extends RecyclerView.Adapter<MonthlyCardAdapter.ViewHolder> {
-        private List<MonthlyExpense> monthlyExpenses;
-        private OnMonthClickListener clickListener;
-        private int selectedPosition = -1;
+        private List<MonthlyExpense> list;
+        private OnMonthClickListener listener;
+        private int selectedPosition = 0;
 
-        MonthlyCardAdapter(List<MonthlyExpense> monthlyExpenses, OnMonthClickListener listener) {
-            this.monthlyExpenses = monthlyExpenses; this.clickListener = listener;
+        MonthlyCardAdapter(List<MonthlyExpense> list, OnMonthClickListener listener) {
+            this.list = list; this.listener = listener;
         }
 
         @SuppressLint("NotifyDataSetChanged")
-        public void updateData(List<MonthlyExpense> newItems) {
-            this.monthlyExpenses = newItems;
+        public void updateData(List<MonthlyExpense> newList) {
+            this.list = newList;
             this.selectedPosition = 0;
             notifyDataSetChanged();
         }
 
-        public void setSelectedPosition(int position) {
-            int oldPosition = selectedPosition; selectedPosition = position;
-            notifyItemChanged(oldPosition); notifyItemChanged(selectedPosition);
+        @NonNull @Override public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            return new ViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.item_monthly_card, parent, false));
         }
 
-        @NonNull
-        @Override
-        public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_monthly_card, parent, false);
-            return new ViewHolder(view);
-        }
-
-        @Override
-        public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-            MonthlyExpense monthlyExpense = monthlyExpenses.get(position);
-            holder.bind(monthlyExpense, position == selectedPosition);
+        @Override public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+            MonthlyExpense item = list.get(position);
+            holder.bind(item, position == selectedPosition);
             holder.itemView.setOnClickListener(v -> {
-                if (clickListener != null) clickListener.onMonthClick(monthlyExpense);
-                int oldPosition = selectedPosition;
+                int prev = selectedPosition;
                 selectedPosition = holder.getAdapterPosition();
-                notifyItemChanged(oldPosition); notifyItemChanged(selectedPosition);
+                notifyItemChanged(prev);
+                notifyItemChanged(selectedPosition);
+                listener.onMonthClick(item);
             });
         }
 
-        @Override
-        public int getItemCount() { return monthlyExpenses.size(); }
+        @Override public int getItemCount() { return list.size(); }
 
         static class ViewHolder extends RecyclerView.ViewHolder {
-            TextView monthName, totalExpense; LinearLayout cardContainer;
-            int primaryTextColor, balanceColor, surfaceColor, expenseColor;
-
-            ViewHolder(@NonNull View itemView) {
-                super(itemView);
-                monthName = itemView.findViewById(R.id.monthNameTextView);
-                totalExpense = itemView.findViewById(R.id.totalExpenseTextView);
-                cardContainer = itemView.findViewById(R.id.cardContainer);
-
-                primaryTextColor = ThemeUtil.getThemeAttrColor(itemView.getContext(), R.attr.textColorPrimary);
-                balanceColor = ThemeUtil.getThemeAttrColor(itemView.getContext(), R.attr.balanceColor);
-                surfaceColor = ThemeUtil.getThemeAttrColor(itemView.getContext(), R.attr.surfaceColor);
-                expenseColor = ThemeUtil.getThemeAttrColor(itemView.getContext(), R.attr.expenseColor);
-            }
-
-            void bind(MonthlyExpense data, boolean isSelected) {
+            TextView month, total; LinearLayout bg;
+            ViewHolder(View v) { super(v); month=v.findViewById(R.id.monthNameTextView); total=v.findViewById(R.id.totalExpenseTextView); bg=v.findViewById(R.id.cardContainer); }
+            void bind(MonthlyExpense data, boolean isSel) {
                 try {
-                    SimpleDateFormat parser = new SimpleDateFormat("yyyy-MM", Locale.getDefault());
-                    SimpleDateFormat formatter = new SimpleDateFormat("MMM yyyy", Locale.getDefault());
-                    monthName.setText(formatter.format(parser.parse(data.getMonth())));
-                } catch (ParseException e) { monthName.setText(data.getMonth()); }
+                    month.setText(new SimpleDateFormat("MMM", Locale.US).format(new SimpleDateFormat("yyyy-MM", Locale.US).parse(data.getMonth())));
+                } catch (ParseException e) { month.setText(data.getMonth()); }
+                total.setText("₹" + String.format(Locale.US, "%.0f", data.getTotalExpense()));
 
-                totalExpense.setText(String.format(Locale.US, "₹%.0f", data.getTotalExpense()));
-
-                if (isSelected) {
-                    cardContainer.setBackgroundColor(balanceColor);
-                    monthName.setTextColor(Color.WHITE); totalExpense.setTextColor(Color.WHITE);
+                // Hardcoded colors to prevent blank UI issues
+                if(isSel) {
+                    bg.setBackgroundColor(Color.parseColor("#2196F3")); // Blue
+                    month.setTextColor(Color.WHITE);
+                    total.setTextColor(Color.WHITE);
                 } else {
-                    cardContainer.setBackgroundColor(surfaceColor);
-                    monthName.setTextColor(primaryTextColor); totalExpense.setTextColor(expenseColor);
+                    bg.setBackgroundColor(Color.WHITE);
+                    month.setTextColor(Color.BLACK);
+                    total.setTextColor(Color.BLACK);
                 }
             }
         }
     }
 
     static class LegendAdapter extends RecyclerView.Adapter<LegendAdapter.ViewHolder> {
-        private List<LegendItem> legendItems;
-        LegendAdapter(List<LegendItem> items) { this.legendItems = items; }
+        private List<LegendItem> list;
+        LegendAdapter(List<LegendItem> list) { this.list = list; }
+        public void updateData(List<LegendItem> newList) { this.list = newList; notifyDataSetChanged(); }
 
-        @SuppressLint("NotifyDataSetChanged")
-        public void updateData(List<LegendItem> newItems) {
-            this.legendItems = newItems; notifyDataSetChanged();
+        @NonNull @Override public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            return new ViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.item_legend_detail, parent, false));
         }
-
-        @NonNull
-        @Override
-        public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_legend_detail, parent, false);
-            return new ViewHolder(view);
-        }
-
-        @Override
-        public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-            holder.bind(legendItems.get(position));
-        }
-
-        @Override
-        public int getItemCount() { return legendItems.size(); }
+        @Override public void onBindViewHolder(@NonNull ViewHolder holder, int position) { holder.bind(list.get(position)); }
+        @Override public int getItemCount() { return list.size(); }
 
         static class ViewHolder extends RecyclerView.ViewHolder {
-            View colorSwatch; TextView categoryName, amount, percentage;
-
-            ViewHolder(@NonNull View itemView) {
-                super(itemView);
-                colorSwatch = itemView.findViewById(R.id.categoryColorIndicator);
-                categoryName = itemView.findViewById(R.id.categoryName);
-                amount = itemView.findViewById(R.id.categoryAmount);
-                percentage = itemView.findViewById(R.id.categoryPercentage);
-            }
-
-            void bind(LegendItem item) {
-                colorSwatch.setBackgroundColor(item.color);
-                categoryName.setText(item.category);
-                amount.setText(String.format(Locale.US, "₹%.2f", item.amount));
-                percentage.setText(String.format(Locale.US, "(%.1f%%)", item.percentage));
-
-                categoryName.setTextColor(ThemeUtil.getThemeAttrColor(itemView.getContext(), R.attr.textColorPrimary));
-                amount.setTextColor(ThemeUtil.getThemeAttrColor(itemView.getContext(), R.attr.textColorPrimary));
-                percentage.setTextColor(ThemeUtil.getThemeAttrColor(itemView.getContext(), R.attr.textColorSecondary));
+            View color; TextView cat, amt, pct;
+            ViewHolder(View v) { super(v); color=v.findViewById(R.id.categoryColorIndicator); cat=v.findViewById(R.id.categoryName); amt=v.findViewById(R.id.categoryAmount); pct=v.findViewById(R.id.categoryPercentage); }
+            void bind(LegendItem i) {
+                color.setBackgroundColor(i.color);
+                cat.setText(i.category);
+                amt.setText("₹" + String.format(Locale.US, "%.2f", i.amount));
+                pct.setText(String.format(Locale.US, "(%.1f%%)", i.percentage));
+                cat.setTextColor(Color.BLACK); // Force visible color
+                amt.setTextColor(Color.BLACK);
             }
         }
     }
 
+    // Helper to get theme color safely
     static class ThemeUtil {
         static int getThemeAttrColor(Context context, int attr) {
             TypedValue typedValue = new TypedValue();
-            context.getTheme().resolveAttribute(attr, typedValue, true);
-            return typedValue.data;
+            if(context.getTheme().resolveAttribute(attr, typedValue, true)) return typedValue.data;
+            return Color.BLACK; // Fallback
         }
     }
 }
