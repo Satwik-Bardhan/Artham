@@ -8,7 +8,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DiffUtil;
@@ -59,6 +58,7 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
     @Override
     public TransactionViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view;
+        // Inflate the appropriate layout based on type
         if (viewType == VIEW_TYPE_IN) {
             view = LayoutInflater.from(parent.getContext())
                     .inflate(R.layout.item_transaction_in, parent, false);
@@ -97,14 +97,11 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
 
     class TransactionViewHolder extends RecyclerView.ViewHolder {
         // Core Views
-        TextView titleTextView, amountTextView, partyTextView, dateTextView, paymentModeTextView, transactionTimeTextView;
+        TextView categoryTextView, amountTextView, dateTextView, paymentModeTextView, remarkTextView;
         View transactionTypeIndicator;
 
         // Action Buttons
         ImageButton editButton, copyButton, deleteButton;
-
-        // Expanded Details Views (Kept for compatibility with XML, but visibility logic is handled by Dialog now)
-        LinearLayout expandedDetailsLayout;
 
         public TransactionViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -112,13 +109,14 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
         }
 
         private void initializeViews() {
-            // Core
-            titleTextView = itemView.findViewById(R.id.titleTextView);
+            // [FIX 1] Updated ID to match XML (categoryTextView)
+            categoryTextView = itemView.findViewById(R.id.categoryTextView);
+
             amountTextView = itemView.findViewById(R.id.amountTextView);
-            partyTextView = itemView.findViewById(R.id.partyTextView);
             dateTextView = itemView.findViewById(R.id.dateTextView);
             paymentModeTextView = itemView.findViewById(R.id.paymentModeTextView);
-            transactionTimeTextView = itemView.findViewById(R.id.transactionTimeTextView);
+            remarkTextView = itemView.findViewById(R.id.remarkTextView);
+
             transactionTypeIndicator = itemView.findViewById(R.id.transactionTypeIndicator);
 
             // Buttons
@@ -126,8 +124,7 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
             copyButton = itemView.findViewById(R.id.copyButton);
             deleteButton = itemView.findViewById(R.id.deleteButton);
 
-            // We find this to prevent crashes, but we won't toggle it on click anymore
-            expandedDetailsLayout = itemView.findViewById(R.id.expandedDetailsLayout);
+            // [FIX 2] Removed expandedDetailsLayout since it was removed from the XML
         }
 
         @SuppressLint({"SetTextI18n", "DefaultLocale"})
@@ -137,10 +134,18 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
             Context context = itemView.getContext();
 
             // Set Data
-            titleTextView.setText(transaction.getTransactionCategory());
-            partyTextView.setText(transaction.getPartyName() != null && !transaction.getPartyName().isEmpty()
-                    ? transaction.getPartyName() : "No Party");
+            categoryTextView.setText(transaction.getTransactionCategory());
             paymentModeTextView.setText(transaction.getPaymentMode());
+
+            // Remark Handling
+            if (remarkTextView != null) {
+                if (transaction.getRemark() != null && !transaction.getRemark().isEmpty()) {
+                    remarkTextView.setText(transaction.getRemark());
+                    remarkTextView.setVisibility(View.VISIBLE);
+                } else {
+                    remarkTextView.setVisibility(View.GONE);
+                }
+            }
 
             // Set Colors & Formatting
             if ("IN".equalsIgnoreCase(transaction.getType())) {
@@ -155,26 +160,22 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
                 if(transactionTypeIndicator != null) transactionTypeIndicator.setBackgroundColor(color);
             }
 
-            // Date & Time
+            // Date Formatting (e.g., Sep 06 • 08:30 PM)
             if (transaction.getTimestamp() > 0) {
                 Date date = new Date(transaction.getTimestamp());
-                dateTextView.setText(new SimpleDateFormat("MMM dd, yyyy", Locale.US).format(date));
-                transactionTimeTextView.setText(new SimpleDateFormat("hh:mm a", Locale.US).format(date));
+                String dateStr = new SimpleDateFormat("MMM dd", Locale.US).format(date);
+                String timeStr = new SimpleDateFormat("hh:mm a", Locale.US).format(date);
+                dateTextView.setText(dateStr + " • " + timeStr);
             }
 
-            // Ensure expanded part is hidden (since we are using Dialog now)
-            if (expandedDetailsLayout != null) {
-                expandedDetailsLayout.setVisibility(View.GONE);
-            }
-
-            // [FIXED] Click listener now calls the interface method to open the Dialog
+            // Click listener -> Open Dialog
             itemView.setOnClickListener(v -> {
                 if (listener != null) {
                     listener.onItemClick(transaction);
                 }
             });
 
-            // Button Listeners
+            // Action Button Listeners
             editButton.setOnClickListener(v -> {
                 if (listener != null) listener.onEditClick(transaction);
             });
@@ -222,8 +223,10 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
         static int getThemeAttrColor(Context context, int attr) {
             if (context == null) return Color.BLACK;
             TypedValue typedValue = new TypedValue();
-            context.getTheme().resolveAttribute(attr, typedValue, true);
-            return typedValue.data;
+            if(context.getTheme().resolveAttribute(attr, typedValue, true)) {
+                return typedValue.data;
+            }
+            return Color.BLACK; // Default
         }
     }
 }
