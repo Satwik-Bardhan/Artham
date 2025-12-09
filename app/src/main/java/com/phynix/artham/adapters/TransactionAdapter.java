@@ -5,9 +5,11 @@ import android.content.Context;
 import android.graphics.Color;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DiffUtil;
@@ -34,9 +36,9 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
 
     public interface OnItemClickListener {
         void onItemClick(TransactionModel transaction);
-        void onEditClick(TransactionModel transaction);
-        void onDeleteClick(TransactionModel transaction);
-        void onCopyClick(TransactionModel transaction);
+        void onEditClick(TransactionModel transaction);   // Can be used if needed
+        void onDeleteClick(TransactionModel transaction); // Triggered by Menu
+        void onCopyClick(TransactionModel transaction);   // Triggered by Menu
     }
 
     public TransactionAdapter(List<TransactionModel> transactionList, OnItemClickListener listener) {
@@ -87,6 +89,7 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
             newTransactions = new ArrayList<>();
         }
 
+        // Using DiffUtil to calculate changes efficiently
         TransactionDiffCallback diffCallback = new TransactionDiffCallback(this.transactionList, newTransactions);
         DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(diffCallback);
 
@@ -100,8 +103,8 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
         TextView categoryTextView, amountTextView, dateTextView, paymentModeTextView, remarkTextView;
         View transactionTypeIndicator;
 
-        // Action Buttons
-        ImageButton editButton, copyButton, deleteButton;
+        // 3-Dot Menu Button
+        ImageButton menuButton;
 
         public TransactionViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -109,22 +112,18 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
         }
 
         private void initializeViews() {
-            // [FIX 1] Updated ID to match XML (categoryTextView)
+            // Core Data Views
             categoryTextView = itemView.findViewById(R.id.categoryTextView);
-
             amountTextView = itemView.findViewById(R.id.amountTextView);
+            remarkTextView = itemView.findViewById(R.id.remarkTextView);
             dateTextView = itemView.findViewById(R.id.dateTextView);
             paymentModeTextView = itemView.findViewById(R.id.paymentModeTextView);
-            remarkTextView = itemView.findViewById(R.id.remarkTextView);
 
+            // Visual Indicators
             transactionTypeIndicator = itemView.findViewById(R.id.transactionTypeIndicator);
 
-            // Buttons
-            editButton = itemView.findViewById(R.id.editButton);
-            copyButton = itemView.findViewById(R.id.copyButton);
-            deleteButton = itemView.findViewById(R.id.deleteButton);
-
-            // [FIX 2] Removed expandedDetailsLayout since it was removed from the XML
+            // Menu Button
+            menuButton = itemView.findViewById(R.id.menuButton);
         }
 
         @SuppressLint({"SetTextI18n", "DefaultLocale"})
@@ -133,34 +132,32 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
 
             Context context = itemView.getContext();
 
-            // Set Data
+            // 1. Set Text Data
             categoryTextView.setText(transaction.getTransactionCategory());
             paymentModeTextView.setText(transaction.getPaymentMode());
 
-            // Remark Handling
-            if (remarkTextView != null) {
-                if (transaction.getRemark() != null && !transaction.getRemark().isEmpty()) {
-                    remarkTextView.setText(transaction.getRemark());
-                    remarkTextView.setVisibility(View.VISIBLE);
-                } else {
-                    remarkTextView.setVisibility(View.GONE);
-                }
+            // Handle Remark Visibility
+            if (transaction.getRemark() != null && !transaction.getRemark().isEmpty()) {
+                remarkTextView.setText(transaction.getRemark());
+                remarkTextView.setVisibility(View.VISIBLE);
+            } else {
+                remarkTextView.setVisibility(View.GONE);
             }
 
-            // Set Colors & Formatting
+            // 2. Set Colors & Amount Formatting
             if ("IN".equalsIgnoreCase(transaction.getType())) {
                 amountTextView.setText("₹" + String.format("%.2f", transaction.getAmount()));
-                int color = ThemeUtil.getThemeAttrColor(context, R.attr.incomeColor);
+                int color = ThemeUtil.getThemeAttrColor(context, R.attr.incomeColor); // Green
                 amountTextView.setTextColor(color);
-                if(transactionTypeIndicator != null) transactionTypeIndicator.setBackgroundColor(color);
+                if (transactionTypeIndicator != null) transactionTypeIndicator.setBackgroundColor(color);
             } else {
                 amountTextView.setText("- ₹" + String.format("%.2f", transaction.getAmount()));
-                int color = ThemeUtil.getThemeAttrColor(context, R.attr.expenseColor);
+                int color = ThemeUtil.getThemeAttrColor(context, R.attr.expenseColor); // Red
                 amountTextView.setTextColor(color);
-                if(transactionTypeIndicator != null) transactionTypeIndicator.setBackgroundColor(color);
+                if (transactionTypeIndicator != null) transactionTypeIndicator.setBackgroundColor(color);
             }
 
-            // Date Formatting (e.g., Sep 06 • 08:30 PM)
+            // 3. Date Formatting
             if (transaction.getTimestamp() > 0) {
                 Date date = new Date(transaction.getTimestamp());
                 String dateStr = new SimpleDateFormat("MMM dd", Locale.US).format(date);
@@ -168,26 +165,42 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
                 dateTextView.setText(dateStr + " • " + timeStr);
             }
 
-            // Click listener -> Open Dialog
+            // 4. Main Item Click -> Open Details Dialog
             itemView.setOnClickListener(v -> {
                 if (listener != null) {
                     listener.onItemClick(transaction);
                 }
             });
 
-            // Action Button Listeners
-            editButton.setOnClickListener(v -> {
-                if (listener != null) listener.onEditClick(transaction);
-            });
-            copyButton.setOnClickListener(v -> {
-                if (listener != null) listener.onCopyClick(transaction);
-            });
-            deleteButton.setOnClickListener(v -> {
-                if (listener != null) listener.onDeleteClick(transaction);
-            });
+            // 5. Menu Button Click -> Show Popup Menu
+            if (menuButton != null) {
+                menuButton.setOnClickListener(v -> {
+                    // Create Popup Menu anchored to the button
+                    PopupMenu popup = new PopupMenu(context, v);
+                    // Ensure you have created res/menu/transaction_options.xml
+                    popup.inflate(R.menu.transaction_options);
+
+                    popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                        @Override
+                        public boolean onMenuItemClick(MenuItem item) {
+                            int id = item.getItemId();
+                            if (id == R.id.action_copy) {
+                                if (listener != null) listener.onCopyClick(transaction);
+                                return true;
+                            } else if (id == R.id.action_delete) {
+                                if (listener != null) listener.onDeleteClick(transaction);
+                                return true;
+                            }
+                            return false;
+                        }
+                    });
+                    popup.show();
+                });
+            }
         }
     }
 
+    // --- DiffUtil for efficient updates ---
     private static class TransactionDiffCallback extends DiffUtil.Callback {
         private final List<TransactionModel> oldList;
         private final List<TransactionModel> newList;
@@ -212,6 +225,7 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
         public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {
             TransactionModel oldItem = oldList.get(oldItemPosition);
             TransactionModel newItem = newList.get(newItemPosition);
+            // Check for content equality to trigger redraw if needed
             return oldItem.getAmount() == newItem.getAmount() &&
                     oldItem.getTimestamp() == newItem.getTimestamp() &&
                     Objects.equals(oldItem.getType(), newItem.getType()) &&
@@ -219,14 +233,15 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
         }
     }
 
+    // --- Helper for Theme Colors ---
     static class ThemeUtil {
         static int getThemeAttrColor(Context context, int attr) {
             if (context == null) return Color.BLACK;
             TypedValue typedValue = new TypedValue();
-            if(context.getTheme().resolveAttribute(attr, typedValue, true)) {
+            if (context.getTheme().resolveAttribute(attr, typedValue, true)) {
                 return typedValue.data;
             }
-            return Color.BLACK; // Default
+            return Color.BLACK; // Default fallback
         }
     }
 }

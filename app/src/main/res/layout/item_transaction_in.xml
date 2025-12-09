@@ -111,51 +111,17 @@
 
         </LinearLayout>
 
-        <View
-            android:layout_width="1dp"
-            android:layout_height="match_parent"
-            android:background="?attr/colorOutline"
-            android:alpha="0.2"
-            android:layout_marginVertical="8dp"/>
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:gravity="center"
-            android:paddingHorizontal="8dp">
-
-            <ImageButton
-                android:id="@+id/editButton"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:src="@drawable/ic_edit"
-                app:tint="#FF9800"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Edit"
-                android:layout_marginBottom="8dp"/>
-
-            <ImageButton
-                android:id="@+id/copyButton"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:src="@drawable/ic_copy"
-                app:tint="?attr/colorPrimary"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Copy"
-                android:layout_marginBottom="8dp"/>
-
-
-            <ImageButton
-                android:id="@+id/deleteButton"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:src="@drawable/ic_delete"
-                app:tint="#F44336"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Delete"/>
-
-        </LinearLayout>
+        <ImageButton
+            android:id="@+id/menuButton"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="center_vertical|end"
+            android:layout_marginTop="4dp"
+            android:layout_marginEnd="4dp"
+            android:src="@drawable/ic_more_vert"
+            app:tint="?attr/colorOnSurfaceVariant"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Options" />
 
     </LinearLayout>
 

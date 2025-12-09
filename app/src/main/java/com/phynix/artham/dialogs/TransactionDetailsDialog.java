@@ -6,6 +6,8 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.TextUtils;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -13,7 +15,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -22,7 +23,6 @@ import androidx.cardview.widget.CardView;
 import androidx.fragment.app.DialogFragment;
 
 import com.google.android.material.button.MaterialButton;
-import com.google.android.material.chip.Chip;
 import com.phynix.artham.R;
 import com.phynix.artham.models.TransactionModel;
 import com.phynix.artham.utils.CategoryColorUtil;
@@ -61,13 +61,16 @@ public class TransactionDetailsDialog extends DialogFragment {
                 listener = (TransactionDialogListener) context;
             }
         } catch (ClassCastException e) {
-            // Optional listener
+            // Listener is optional
         }
     }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // [FIX] Apply Custom Dialog Theme to ensure colors work and avoid crashes
+        setStyle(DialogFragment.STYLE_NORMAL, R.style.Theme_Artham_Dialog);
+
         if (getArguments() != null) {
             transaction = (TransactionModel) getArguments().getSerializable(ARG_TRANSACTION);
         }
@@ -76,9 +79,11 @@ public class TransactionDetailsDialog extends DialogFragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        // [FIX] Ensure the XML file name matches this: layout_transaction_details_dialog
-        View view = inflater.inflate(R.layout.layout_transaction_details_dialog, container, false);
+        // [FIX] Use local inflater to apply the theme set in onCreate()
+        LayoutInflater themeInflater = LayoutInflater.from(requireContext());
+        View view = themeInflater.inflate(R.layout.activity_transaction_details, container, false);
 
+        // Make background transparent for rounded corners
         if (getDialog() != null && getDialog().getWindow() != null) {
             getDialog().getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
             getDialog().getWindow().requestFeature(Window.FEATURE_NO_TITLE);
@@ -91,6 +96,7 @@ public class TransactionDetailsDialog extends DialogFragment {
     @Override
     public void onStart() {
         super.onStart();
+        // [UI] Set Dialog Width to 90% of screen
         Dialog dialog = getDialog();
         if (dialog != null && dialog.getWindow() != null) {
             int width = (int) (getResources().getDisplayMetrics().widthPixels * 0.90);
@@ -106,20 +112,19 @@ public class TransactionDetailsDialog extends DialogFragment {
         // --- Hero Section ---
         TextView detailRemark = view.findViewById(R.id.detailRemark);
         TextView detailAmount = view.findViewById(R.id.detailAmount);
-        Chip detailTypeChip = view.findViewById(R.id.detailTypeChip);
+        TextView detailTypeChip = view.findViewById(R.id.detailTypeChip);
 
         TextView detailCategoryName = view.findViewById(R.id.detailCategoryName);
         View iconCard = view.findViewById(R.id.iconCard);
-        ImageView detailCategoryIcon = view.findViewById(R.id.detailCategoryIcon);
 
-        // 1. Remark
+        // 1. Remark Logic
         if (TextUtils.isEmpty(transaction.getRemark())) {
             detailRemark.setText(transaction.getTransactionCategory());
         } else {
             detailRemark.setText(transaction.getRemark());
         }
 
-        // 2. Amount & Type
+        // 2. Amount & Type Styling
         NumberFormat currencyFormat = NumberFormat.getCurrencyInstance(new Locale("en", "IN"));
         detailAmount.setText(currencyFormat.format(transaction.getAmount()));
 
@@ -130,28 +135,31 @@ public class TransactionDetailsDialog extends DialogFragment {
             detailTypeChip.setTextColor(incomeColor);
         } else {
             detailTypeChip.setText("Expense");
-            // [FIX] Changed colorError to expenseColor based on your previous logs
             int expenseColor = getThemeColor(R.attr.expenseColor);
             detailAmount.setTextColor(expenseColor);
             detailTypeChip.setTextColor(expenseColor);
         }
 
-        // 3. Category
+        // 3. Category Logic
         detailCategoryName.setText(transaction.getTransactionCategory());
         int categoryColor = CategoryColorUtil.getCategoryColor(requireContext(), transaction.getTransactionCategory());
+
+        // Apply color to Icon Card safely
         if (iconCard instanceof CardView) {
             ((CardView) iconCard).setCardBackgroundColor(categoryColor);
+        } else if (iconCard instanceof com.google.android.material.card.MaterialCardView) {
+            ((com.google.android.material.card.MaterialCardView) iconCard).setCardBackgroundColor(categoryColor);
         }
 
-        // --- Details Grid ---
+        // --- Metadata Section ---
         TextView detailDateTime = view.findViewById(R.id.detailDateTime);
         TextView detailPaymentMode = view.findViewById(R.id.detailPaymentMode);
 
         TextView detailParty = view.findViewById(R.id.detailParty);
-        View detailPartyLayout = view.findViewById(R.id.detailPartyLayout); // Now exists in XML
+        View detailPartyLayout = view.findViewById(R.id.detailPartyLayout);
 
         TextView detailTags = view.findViewById(R.id.detailTags);
-        View detailTagsLayout = view.findViewById(R.id.detailTagsLayout); // Now exists in XML
+        View detailTagsLayout = view.findViewById(R.id.detailTagsLayout);
 
         // Date
         SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd, yyyy • hh:mm a", Locale.getDefault());
@@ -160,7 +168,7 @@ public class TransactionDetailsDialog extends DialogFragment {
         // Mode
         detailPaymentMode.setText(transaction.getPaymentMode());
 
-        // Party
+        // Party Visibility
         if (TextUtils.isEmpty(transaction.getPartyName())) {
             detailPartyLayout.setVisibility(View.GONE);
         } else {
@@ -168,7 +176,7 @@ public class TransactionDetailsDialog extends DialogFragment {
             detailParty.setText(transaction.getPartyName());
         }
 
-        // Tags
+        // Tags Visibility
         if (transaction.getTags() == null || transaction.getTags().isEmpty()) {
             detailTagsLayout.setVisibility(View.GONE);
         } else {
@@ -176,35 +184,40 @@ public class TransactionDetailsDialog extends DialogFragment {
             detailTags.setText(transaction.getTags().toString().replace("[", "").replace("]", ""));
         }
 
-        // [FIX] Hide unused fields safely
-        View taxLayout = view.findViewById(R.id.detailTaxLayout);
-        if(taxLayout != null) taxLayout.setVisibility(View.GONE);
+        // Hide unused layout sections safely
+        safeHide(view, R.id.detailTaxLayout);
+        safeHide(view, R.id.detailLocationLayout);
+        safeHide(view, R.id.attachmentsLabel);
+        safeHide(view, R.id.attachmentPreview);
 
-        View locLayout = view.findViewById(R.id.detailLocationLayout);
-        if(locLayout != null) locLayout.setVisibility(View.GONE);
-
-        View attachLabel = view.findViewById(R.id.attachmentsLabel);
-        if(attachLabel != null) attachLabel.setVisibility(View.GONE);
-
-        View attachPreview = view.findViewById(R.id.attachmentPreview);
-        if(attachPreview != null) attachPreview.setVisibility(View.GONE);
-
-        // --- Actions ---
+        // --- Action Buttons ---
         MaterialButton btnEdit = view.findViewById(R.id.btnEditTransaction);
         MaterialButton btnDelete = view.findViewById(R.id.btnDeleteTransaction);
         MaterialButton btnShare = view.findViewById(R.id.btnShareTransaction);
 
+        // [OPTIMIZED CLICK LISTENERS]
+        // Dismiss dialog immediately, then trigger action after 150ms.
+        // This removes the "laggy button" feeling.
         btnEdit.setOnClickListener(v -> {
-            if (listener != null) listener.onEditTransaction(transaction);
             dismiss();
+            new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                if (listener != null) listener.onEditTransaction(transaction);
+            }, 150);
         });
 
         btnDelete.setOnClickListener(v -> {
-            if (listener != null) listener.onDeleteTransaction(transaction);
             dismiss();
+            new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                if (listener != null) listener.onDeleteTransaction(transaction);
+            }, 150);
         });
 
         btnShare.setOnClickListener(v -> shareTransactionDetails());
+    }
+
+    private void safeHide(View parent, int id) {
+        View v = parent.findViewById(id);
+        if (v != null) v.setVisibility(View.GONE);
     }
 
     private int getThemeColor(int attrResId) {

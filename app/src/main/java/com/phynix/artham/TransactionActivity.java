@@ -25,7 +25,7 @@ import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.github.mikephil.charting.animation.Easing;
-import com.github.mikephil.charting.formatter.ValueFormatter; // [IMPORT ADDED]
+import com.github.mikephil.charting.formatter.ValueFormatter;
 import com.phynix.artham.adapters.TransactionAdapter;
 import com.phynix.artham.databinding.ActivityTransactionBinding;
 import com.phynix.artham.databinding.LayoutBottomNavigationBinding;
@@ -125,11 +125,11 @@ public class TransactionActivity extends AppCompatActivity implements Transactio
         pieChartBinding.pieChart.getDescription().setEnabled(false);
         pieChartBinding.pieChart.getLegend().setEnabled(false);
 
-        // [FIX] Disable standard Entry Labels (Inside Slices)
+        // Hide internal labels
         pieChartBinding.pieChart.setDrawEntryLabels(false);
 
-        // [FIX] Extra padding for Outside Labels
-        pieChartBinding.pieChart.setExtraOffsets(40.f, 10.f, 40.f, 10.f);
+        // Add extra padding for outside labels
+        pieChartBinding.pieChart.setExtraOffsets(30.f, 10.f, 30.f, 10.f);
 
         pieChartBinding.pieChart.setDragDecelerationFrictionCoef(0.95f);
         pieChartBinding.pieChart.setDrawHoleEnabled(true);
@@ -215,15 +215,15 @@ public class TransactionActivity extends AppCompatActivity implements Transactio
         }
 
         ArrayList<PieEntry> entries = new ArrayList<>();
-        // Note: PieEntry constructor is (value, label)
+        // Note: We use the value as key to map back later if needed, or rely on custom logic
         for (Map.Entry<String, Float> entry : expenseByCategory.entrySet()) {
             entries.add(new PieEntry(entry.getValue(), entry.getKey()));
         }
 
         ArrayList<Integer> colors = new ArrayList<>();
         colors.add(Color.parseColor("#EF5350"));
-        colors.add(Color.parseColor("#42A5F5"));
-        colors.add(Color.parseColor("#66BB6A"));
+        colors.add(Color.parseColor("#448AFF"));
+        colors.add(Color.parseColor("#69F0AE"));
         colors.add(Color.parseColor("#FFCA28"));
         colors.add(Color.parseColor("#AB47BC"));
         colors.add(Color.parseColor("#26C6DA"));
@@ -235,113 +235,31 @@ public class TransactionActivity extends AppCompatActivity implements Transactio
         dataSet.setSliceSpace(2f);
         dataSet.setSelectionShift(5f);
 
-        // [FIX] Labels Outside with Lines
-        dataSet.setXValuePosition(PieDataSet.ValuePosition.OUTSIDE_SLICE);
-        dataSet.setYValuePosition(PieDataSet.ValuePosition.OUTSIDE_SLICE);
-
-        // [FIX] Use ValueFormatter to return LABEL (Category Name) instead of Value
-        dataSet.setValueFormatter(new ValueFormatter() {
-            @Override
-            public String getPieLabel(float value, PieEntry pieEntry) {
-                // Return the category name (Label) to display outside
-                return pieEntry.getLabel();
-            }
-
-            @Override
-            public String getFormattedValue(float value) {
-                // If the library forces value display, return empty string for value itself
-                // (We rely on getPieLabel or we swap them)
-                // Actually, for MPAndroidChart to show text outside via setYValuePosition,
-                // it usually shows the VALUE. We trick it by returning the Label here.
-                return "";
-            }
-        });
-
-        // [IMPORTANT] To make this work, we usually need to rely on the library showing "Value" text outside.
-        // So we override the formatter to show the *Label* string instead of the number.
-        dataSet.setValueFormatter(new ValueFormatter() {
-            @Override
-            public String getFormattedValue(float value) {
-                // Find the entry that has this value (simplification) or just use logic if we have the entry
-                // Better approach: Since we can't easily get the entry here in older versions,
-                // We assume we want to show the label.
-                // Actually, the easiest way to show "Label Name" outside is:
-                return ""; // Hide the number
-            }
-        });
-
-        // [CORRECTION] The library separates Entry Label (Name) and Value (Number).
-        // We set DrawEntryLabels(false) on chart, so internal names are gone.
-        // We set YValuePosition(OUTSIDE) so *Values* move outside.
-        // We use a Formatter on the *Values* to return the *Name* instead.
-        // However, the standard ValueFormatter only gives us the float value.
-        // TRICK: We can't easily map back value -> label if duplicates exist.
-
-        // ALTERNATIVE FIX: Let's use the standard "Entry Labels" but make them visible.
-        // Since you want them "Clearly Visible", avoiding overlap is key.
-        // If "Outside" labels are tricky for names without values, we can try:
-        dataSet.setDrawValues(false); // No numbers
-        pieChartBinding.pieChart.setDrawEntryLabels(true); // Yes names
-        pieChartBinding.pieChart.setEntryLabelColor(textColor);
-        pieChartBinding.pieChart.setEntryLabelTextSize(10f);
-        // Unfortunately, Entry Labels are always drawn *inside* slices in standard MPAndroidChart.
-
-        // [FINAL FIX STRATEGY] Use "Value" text fields to display the "Label" text, placed OUTSIDE.
+        // Show Values outside (we will format them to show Label + %)
         dataSet.setDrawValues(true);
-        dataSet.setValueTextColor(textColor);
-        dataSet.setValueTextSize(10f);
+        dataSet.setXValuePosition(PieDataSet.ValuePosition.OUTSIDE_SLICE);
         dataSet.setYValuePosition(PieDataSet.ValuePosition.OUTSIDE_SLICE);
         dataSet.setValueLinePart1OffsetPercentage(80.f);
         dataSet.setValueLinePart1Length(0.4f);
-        dataSet.setValueLinePart2Length(0.4f);
-        dataSet.setValueLineColor(Color.GRAY);
+        dataSet.setValueLinePart2Length(0.5f);
+        dataSet.setValueLineColor(textColor);
+        dataSet.setValueTextColor(textColor);
+        dataSet.setValueTextSize(10f);
 
-        // The Formatter that swaps Value -> Name
+        // Custom Formatter: "Category 15%"
         dataSet.setValueFormatter(new ValueFormatter() {
-            @Override
-            public String getFormattedValue(float value) {
-                // We need to find which entry this is.
-                // Since this is hard inside the formatter without the entry object,
-                // we will rely on a loop lookup or a mapped lookup if unique.
-                // Simple workaround: Since we can't easily get the label here,
-                // we will revert to drawing Entry Labels *but* if you want "Outside" look,
-                // we usually stick to values.
-
-                // Let's assume the user just wants readable text.
-                // I will enable Entry Labels inside but with a color that stands out?
-                // No, "Outside" is the request.
-
-                return ""; // Default to hiding value for now, let's try to show the Label via a different method if possible.
-            }
-
-            // New versions of library support this:
             @Override
             public String getPieLabel(float value, PieEntry pieEntry) {
-                return pieEntry.getLabel();
+                // If value is tiny, hide label to prevent overlap
+                if(value < 4.0f) return "";
+                return String.format(Locale.US, "%s %.0f%%", pieEntry.getLabel(), value);
             }
-        });
 
-        // [REAL FIX]
-        // If your library version supports `getPieLabel` in ValueFormatter, use it.
-        // If not, we will stick to the previous "Small Text" fix but ensure it's black/visible.
-        // Let's assume standard behavior:
-
-        dataSet.setDrawValues(true);
-        dataSet.setYValuePosition(PieDataSet.ValuePosition.OUTSIDE_SLICE);
-        dataSet.setValueLineColor(textColor);
-        dataSet.setValueLinePart1Length(0.3f);
-        dataSet.setValueLinePart2Length(0.4f);
-
-        dataSet.setValueFormatter(new ValueFormatter() {
+            // Fallback for older chart versions
             @Override
             public String getFormattedValue(float value) {
-                // Try to match value to entry label
-                for(PieEntry e : entries) {
-                    if(Math.abs(e.getValue() - value) < 0.001) {
-                        return e.getLabel();
-                    }
-                }
-                return "";
+                if(value < 4.0f) return "";
+                return String.format(Locale.US, "%.0f%%", value);
             }
         });
 
@@ -534,6 +452,7 @@ public class TransactionActivity extends AppCompatActivity implements Transactio
         transactionFragment = TransactionItemFragment.newInstance(new ArrayList<>());
         transactionFragment.setOnItemClickListener(new TransactionAdapter.OnItemClickListener() {
             @Override public void onItemClick(TransactionModel transaction) {
+                // [FIX] Open Dialog
                 TransactionDetailsDialog.newInstance(transaction).show(getSupportFragmentManager(), "Details");
             }
             @Override public void onEditClick(TransactionModel transaction) { openEditActivity(transaction); }

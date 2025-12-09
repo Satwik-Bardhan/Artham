@@ -12,27 +12,28 @@
 
         <item name="backgroundColor">@color/backgroundColor</item>
         <item name="surfaceColor">@color/surfaceColor</item>
-
         <item name="textColorPrimary">@color/textColorPrimary</item>
         <item name="textColorSecondary">@color/textColorSecondary</item>
         <item name="textColorHint">@color/textColorHint</item>
-        <item name="android:textColorPrimary">?attr/textColorPrimary</item>
-        <item name="android:textColorSecondary">?attr/textColorSecondary</item>
-        <item name="android:textColorHint">?attr/textColorHint</item>
-
         <item name="incomeColor">@color/income_green</item>
         <item name="expenseColor">@color/expense_red</item>
         <item name="balanceColor">@color/balance_blue</item>
 
+        <item name="android:textColorPrimary">?attr/textColorPrimary</item>
+        <item name="android:textColorSecondary">?attr/textColorSecondary</item>
+        <item name="android:textColorHint">?attr/textColorHint</item>
         <item name="android:colorBackground">?attr/backgroundColor</item>
-
-        <item name="bottomNavIconTextColor">@color/bottom_nav_icon_text_color</item>
-        <item name="bottomNavSelectedColor">@color/bottom_nav_selected</item>
-        <item name="bottomNavBorderColor">@color/bottom_nav_item_unselected_border</item>
-
         <item name="android:statusBarColor">?attr/backgroundColor</item>
         <item name="android:windowLightStatusBar">true</item>
 
+        <item name="colorSurface">@color/surfaceColor</item>
+        <item name="colorOnSurface">@color/textColorPrimary</item>
+        <item name="colorOnSurfaceVariant">@color/textColorSecondary</item>
+        <item name="colorOutline">@color/textColorHint</item>
+        <item name="colorError">@color/expense_red</item>
+        <item name="bottomNavIconTextColor">@color/bottom_nav_icon_text_color</item>
+        <item name="bottomNavSelectedColor">@color/bottom_nav_selected</item>
+        <item name="bottomNavBorderColor">@color/bottom_nav_item_unselected_border</item>
         <item name="dividerHorizontal">@color/divider_color</item>
 
         <item name="buttonStyle">@style/ProfessionalButton</item>
@@ -45,5 +46,14 @@
         <item name="cornerRadius">12dp</item>
         <item name="android:insetTop">0dp</item>
         <item name="android:insetBottom">0dp</item>
+    </style>
+
+    <style name="Theme.Artham.Dialog" parent="Theme.Artham">
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:backgroundDimEnabled">true</item>
+        <item name="android:windowMinWidthMajor">90%</item>
+        <item name="android:windowMinWidthMinor">90%</item>
     </style>
 </resources>

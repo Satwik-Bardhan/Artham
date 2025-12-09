@@ -14,4 +14,5 @@
     <attr name="bottomNavIconTextColor" format="color" />
     <attr name="bottomNavSelectedColor" format="color" />
     <attr name="bottomNavBorderColor" format="color" />
+
 </resources>

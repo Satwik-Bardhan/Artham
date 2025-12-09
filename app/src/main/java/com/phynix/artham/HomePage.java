@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.text.InputType;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
@@ -17,19 +18,11 @@ import android.widget.LinearLayout;
 import android.widget.TableLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.text.InputType;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.phynix.artham.databinding.ActivityHomePageBinding;
-import com.phynix.artham.databinding.ComponentBalanceCardBinding;
-import com.phynix.artham.databinding.LayoutBottomNavigationBinding;
-import com.phynix.artham.models.CashbookModel;
-import com.phynix.artham.models.TransactionModel;
-import com.phynix.artham.utils.DateTimeUtils;
-import com.phynix.artham.utils.ErrorHandler;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -38,6 +31,13 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.phynix.artham.databinding.ActivityHomePageBinding;
+import com.phynix.artham.databinding.ComponentBalanceCardBinding;
+import com.phynix.artham.databinding.LayoutBottomNavigationBinding;
+import com.phynix.artham.models.CashbookModel;
+import com.phynix.artham.models.TransactionModel;
+import com.phynix.artham.utils.DateTimeUtils;
+import com.phynix.artham.utils.ErrorHandler;
 
 import java.io.Serializable;
 import java.text.NumberFormat;
@@ -71,7 +71,6 @@ public class HomePage extends AppCompatActivity {
     // Firebase
     private FirebaseAuth mAuth;
     private DatabaseReference mDatabase;
-    // [FIX] Added listener for user profile
     private ValueEventListener transactionsListener, cashbooksListener, userProfileListener;
     private FirebaseUser currentUser;
     private DatabaseReference userRef;
@@ -83,7 +82,7 @@ public class HomePage extends AppCompatActivity {
     // State
     private String currentCashbookId;
     private String currentUserId;
-    private String fetchedUserName = null; // [FIX] Store fetched username
+    private String fetchedUserName = null;
     private boolean isLoading = false;
 
     // Utils
@@ -224,11 +223,9 @@ public class HomePage extends AppCompatActivity {
         userRef.child("cashbooks").addValueEventListener(cashbooksListener);
     }
 
-    // [FIX] New method to listen for User Profile changes (Username)
     private void startListeningForUserProfile() {
         if (userRef == null) return;
 
-        // Remove existing listener if any
         if (userProfileListener != null) {
             userRef.removeEventListener(userProfileListener);
         }
@@ -236,14 +233,8 @@ public class HomePage extends AppCompatActivity {
         userProfileListener = new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                // Fetch userName from the "users/{uid}" node
                 String name = snapshot.child("userName").getValue(String.class);
-                if (name != null && !name.isEmpty()) {
-                    fetchedUserName = name;
-                } else {
-                    fetchedUserName = null;
-                }
-                // Update the card immediately
+                fetchedUserName = (name != null && !name.isEmpty()) ? name : null;
                 updateBalanceCardUser();
             }
 
@@ -255,17 +246,10 @@ public class HomePage extends AppCompatActivity {
         userRef.addValueEventListener(userProfileListener);
     }
 
-    // [FIX] Helper method to update the Balance Card text
     private void updateBalanceCardUser() {
         if (binding == null || currentUser == null) return;
 
-        String displayName;
-        if (fetchedUserName != null) {
-            displayName = fetchedUserName;
-        } else {
-            displayName = getDisplayName(currentUser);
-        }
-
+        String displayName = (fetchedUserName != null) ? fetchedUserName : getDisplayName(currentUser);
         balanceCardBinding.userNameBottom.setText(displayName);
         balanceCardBinding.uidText.setText("UID: " + currentUserId.substring(0, 8) + "...");
     }
@@ -302,16 +286,11 @@ public class HomePage extends AppCompatActivity {
         super.onStart();
         if (currentUserId != null) {
             loadActiveCashbookId();
-            startListeningForUserProfile(); // [FIX] Start listening for profile changes
+            startListeningForUserProfile();
         } else {
             Log.e(TAG, "User is not logged in. Redirecting to Signin.");
             signOutUser();
         }
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
     }
 
     @Override
@@ -327,15 +306,6 @@ public class HomePage extends AppCompatActivity {
         binding = null;
         balanceCardBinding = null;
         bottomNavBinding = null;
-    }
-
-    private void showSignOutConfirmation() {
-        new AlertDialog.Builder(this)
-                .setTitle("Sign Out")
-                .setMessage("Are you sure you want to sign out?")
-                .setPositiveButton("Sign Out", (dialog, which) -> signOutUser())
-                .setNegativeButton("Cancel", null)
-                .show();
     }
 
     private void signOutUser() {
@@ -363,40 +333,89 @@ public class HomePage extends AppCompatActivity {
         if (currentCashbookId == null) {
             setLoadingState(false);
             allTransactions.clear();
-            updateTransactionTableAndSummary();
+            renderUI(0, 0, 0, new ArrayList<>()); // Reset UI
             return;
         }
 
         DatabaseReference transactionsRef = userRef.child("cashbooks")
                 .child(currentCashbookId).child("transactions");
 
-        transactionsListener = transactionsRef.addValueEventListener(new ValueEventListener() {
+        transactionsListener = new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                try {
-                    allTransactions.clear();
-                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                        TransactionModel transaction = snapshot.getValue(TransactionModel.class);
-                        if (transaction != null) {
-                            transaction.setTransactionId(snapshot.getKey());
-                            allTransactions.add(transaction);
+                // [FIX] Run Heavy Calculation on Background Thread to prevent ANR
+                new Thread(() -> {
+                    ArrayList<TransactionModel> tempList = new ArrayList<>();
+                    double calcTotalIn = 0;
+                    double calcTotalOut = 0;
+                    double calcTodayIn = 0;
+                    double calcTodayOut = 0;
+                    List<TransactionModel> calcTodaysTransactions = new ArrayList<>();
+
+                    try {
+                        for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                            TransactionModel transaction = snapshot.getValue(TransactionModel.class);
+                            if (transaction != null) {
+                                transaction.setTransactionId(snapshot.getKey());
+                                tempList.add(transaction);
+
+                                // Global Totals
+                                if ("IN".equalsIgnoreCase(transaction.getType())) {
+                                    calcTotalIn += transaction.getAmount();
+                                } else {
+                                    calcTotalOut += transaction.getAmount();
+                                }
+
+                                // Today's Totals & List
+                                if (isToday(transaction.getTimestamp())) {
+                                    calcTodaysTransactions.add(transaction);
+                                    if ("IN".equalsIgnoreCase(transaction.getType())) {
+                                        calcTodayIn += transaction.getAmount();
+                                    } else {
+                                        calcTodayOut += transaction.getAmount();
+                                    }
+                                }
+                            }
                         }
+
+                        // Sort Main List
+                        Collections.sort(tempList, (t1, t2) -> Long.compare(t2.getTimestamp(), t1.getTimestamp()));
+
+                        // Sort Today's List (for display)
+                        Collections.sort(calcTodaysTransactions, (t1, t2) -> Long.compare(t2.getTimestamp(), t1.getTimestamp()));
+
+                        // Final Variables for UI Thread
+                        final double finalTotalIn = calcTotalIn;
+                        final double finalTotalOut = calcTotalOut;
+                        final double finalTodayBalance = calcTodayIn - calcTodayOut;
+                        final List<TransactionModel> finalTodayList = calcTodaysTransactions;
+
+                        if (!isDestroyed() && !isFinishing()) {
+                            runOnUiThread(() -> {
+                                allTransactions = tempList;
+                                renderUI(finalTotalIn, finalTotalOut, finalTodayBalance, finalTodayList);
+                                setLoadingState(false);
+                            });
+                        }
+
+                    } catch (Exception e) {
+                        Log.e(TAG, "Error processing transactions in bg", e);
+                        runOnUiThread(() -> {
+                            setLoadingState(false);
+                            showSnackbar("Error loading data");
+                        });
                     }
-                    Collections.sort(allTransactions, (t1, t2) -> Long.compare(t2.getTimestamp(), t1.getTimestamp()));
-                    updateTransactionTableAndSummary();
-                    setLoadingState(false);
-                } catch (Exception e) {
-                    Log.e(TAG, "Error processing transactions", e);
-                    showSnackbar("Error loading transactions");
-                    setLoadingState(false);
-                }
+                }).start();
             }
+
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
                 setLoadingState(false);
                 ErrorHandler.handleFirebaseError(HomePage.this, databaseError);
             }
-        });
+        };
+
+        transactionsRef.addValueEventListener(transactionsListener);
     }
 
     private void updateUserUI() {
@@ -426,7 +445,6 @@ public class HomePage extends AppCompatActivity {
                     binding.currentCashbookText.setText(cashbookName);
                 }
 
-                // [FIX] Call shared update method
                 updateBalanceCardUser();
 
             } catch (Exception e) {
@@ -444,45 +462,24 @@ public class HomePage extends AppCompatActivity {
         return "CashFlow User";
     }
 
+    // [FIX] This method now only does UI rendering, no heavy calculation
     @SuppressLint("SetTextI18n")
-    private void updateTransactionTableAndSummary() {
+    private void renderUI(double totalIncome, double totalExpense, double todayBalance, List<TransactionModel> todaysTransactions) {
         if (binding == null) return;
         try {
             if (transactionTable != null) {
                 transactionTable.removeAllViews();
             }
 
-            double globalTotalIncome = 0, globalTotalExpense = 0;
-            for (TransactionModel transaction : allTransactions) {
-                if ("IN".equalsIgnoreCase(transaction.getType())) {
-                    globalTotalIncome += transaction.getAmount();
-                } else {
-                    globalTotalExpense += transaction.getAmount();
-                }
-            }
-            double globalBalance = globalTotalIncome - globalTotalExpense;
+            double globalBalance = totalIncome - totalExpense;
 
-            double todayIncome = 0, todayExpense = 0;
-            List<TransactionModel> todaysTransactions = new ArrayList<>();
-
-            for (TransactionModel transaction : allTransactions) {
-                if (isToday(transaction.getTimestamp())) {
-                    todaysTransactions.add(transaction);
-                    if ("IN".equalsIgnoreCase(transaction.getType())) {
-                        todayIncome += transaction.getAmount();
-                    } else {
-                        todayExpense += transaction.getAmount();
-                    }
-                }
-            }
-
-            double todayBalance = todayIncome - todayExpense;
-
+            // Update Balance Card
             balanceCardBinding.balanceText.setText(formatCurrency(globalBalance));
-            balanceCardBinding.moneyIn.setText(formatCurrency(globalTotalIncome));
-            balanceCardBinding.moneyOut.setText(formatCurrency(globalTotalExpense));
+            balanceCardBinding.moneyIn.setText(formatCurrency(totalIncome));
+            balanceCardBinding.moneyOut.setText(formatCurrency(totalExpense));
             balanceCardBinding.balanceText.setTextColor(Color.WHITE);
 
+            // Update Daily Header
             if (dailyDateText != null) {
                 dailyDateText.setText(DateTimeUtils.formatDate(System.currentTimeMillis(), "dd MMM yyyy"));
             }
@@ -498,7 +495,8 @@ public class HomePage extends AppCompatActivity {
                 }
             }
 
-            if (todaysTransactions.isEmpty()) {
+            // Update List
+            if (todaysTransactions == null || todaysTransactions.isEmpty()) {
                 if (emptyStateView != null) emptyStateView.setVisibility(View.VISIBLE);
                 if (transactionTable != null) transactionTable.setVisibility(View.GONE);
                 if (binding.transactionCount != null) binding.transactionCount.setText("TODAY (0)");
@@ -508,12 +506,13 @@ public class HomePage extends AppCompatActivity {
 
                 if (binding.transactionCount != null) binding.transactionCount.setText("TODAY (" + todaysTransactions.size() + ")");
 
+                // Inflating views here is cleaner because list size is small (Daily)
                 for (TransactionModel transaction : todaysTransactions) {
                     addTransactionRow(transaction);
                 }
             }
         } catch (Exception e) {
-            Log.e(TAG, "Error updating transaction table", e);
+            Log.e(TAG, "Error rendering transaction table", e);
         }
     }
 
@@ -668,7 +667,6 @@ public class HomePage extends AppCompatActivity {
                 userRef.child("cashbooks").removeEventListener(cashbooksListener);
                 cashbooksListener = null;
             }
-            // [FIX] Remove user profile listener
             if (userProfileListener != null) {
                 userRef.removeEventListener(userProfileListener);
                 userProfileListener = null;
@@ -687,7 +685,6 @@ public class HomePage extends AppCompatActivity {
             TypedValue typedValue = new TypedValue();
             context.getTheme().resolveAttribute(attr, typedValue, true);
             return typedValue.data;
-
         }
     }
 }
