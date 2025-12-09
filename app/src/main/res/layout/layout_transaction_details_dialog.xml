@@ -1,358 +1,277 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="16dp"
-    app:cardBackgroundColor="?attr/surfaceColor"
-    app:cardCornerRadius="20dp"
-    app:cardElevation="8dp">
+    app:cardBackgroundColor="?attr/colorSurface"
+    app:cardCornerRadius="24dp"
+    app:cardElevation="12dp">
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:scrollbars="none">
 
-        <LinearLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="20dp">
+            android:paddingBottom="24dp">
 
-            <RelativeLayout
+            <ImageButton
+                android:id="@+id/closeButton"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="8dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Close"
+                android:src="@drawable/ic_close"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:tint="?attr/colorOnSurfaceVariant" />
+
+            <TextView
+                android:id="@+id/detailRemark"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="24dp"
+                android:layout_marginTop="16dp"
+                android:fontFamily="sans-serif-medium"
+                android:lineSpacingExtra="4dp"
+                android:text="Groceries for the week"
+                android:textColor="?attr/colorOnSurface"
+                android:textSize="22sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/closeButton" />
+
+            <TextView
+                android:id="@+id/detailAmount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:fontFamily="sans-serif-black"
+                android:text="₹1,500.00"
+                android:textColor="?attr/colorPrimary"
+                android:textSize="34sp"
+                app:layout_constraintStart_toStartOf="@id/detailRemark"
+                app:layout_constraintTop_toBottomOf="@id/detailRemark" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/detailTypeChip"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:text="Expense"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                app:chipBackgroundColor="?attr/colorSurfaceVariant"
+                app:chipMinHeight="32dp"
+                app:chipStrokeWidth="0dp"
+                app:layout_constraintBottom_toBottomOf="@id/detailAmount"
+                app:layout_constraintStart_toEndOf="@id/detailAmount"
+                app:layout_constraintTop_toTopOf="@id/detailAmount" />
+
+            <View
+                android:id="@+id/divider"
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_marginTop="24dp"
+                android:alpha="0.2"
+                android:background="?attr/colorOutline"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/detailAmount" />
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/metaDataContainer"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
-                    android:text="Transaction Details"
-                    android:fontFamily="@font/app_font"
-                    android:textColor="?attr/textColorPrimary"
-                    android:textSize="18sp"
-                    android:textStyle="bold" />
+                android:paddingHorizontal="24dp"
+                android:paddingTop="24dp"
+                app:layout_constraintTop_toBottomOf="@id/divider">
 
                 <ImageView
-                    android:id="@+id/closeButton"
-                    android:layout_width="28dp"
-                    android:layout_height="28dp"
-                    android:layout_alignParentEnd="true"
-                    android:background="?attr/selectableItemBackgroundBorderless"
-                    android:src="@drawable/ic_close"
-                    app:tint="?attr/textColorSecondary"
-                    android:clickable="true"
-                    android:focusable="true"/>
-            </RelativeLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:layout_marginBottom="24dp">
-
-                <androidx.cardview.widget.CardView
-                    android:id="@+id/categoryIconCard"
-                    android:layout_width="60dp"
-                    android:layout_height="60dp"
-                    app:cardCornerRadius="20dp"
-                    app:cardElevation="0dp"
-                    app:cardBackgroundColor="?attr/backgroundColor">
-
-                    <ImageView
-                        android:id="@+id/detailCategoryIcon"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:padding="14dp"
-                        android:src="@drawable/ic_category_default"
-                        app:tint="?attr/textColorPrimary"/>
-                </androidx.cardview.widget.CardView>
+                    android:id="@+id/iconCategory"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/ic_category_default"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:tint="?attr/colorOnSurfaceVariant" />
 
                 <TextView
                     android:id="@+id/detailCategoryName"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:text="Category Name"
-                    android:fontFamily="@font/app_font"
-                    android:textColor="?attr/textColorSecondary"
-                    android:textSize="14sp" />
-
-                <TextView
-                    android:id="@+id/detailAmount"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:text="₹0.00"
-                    android:fontFamily="@font/app_font"
-                    android:textColor="?attr/incomeColor"
-                    android:textSize="32sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/detailType"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:background="@drawable/rounded_tag_background"
-                    android:paddingHorizontal="12dp"
-                    android:paddingVertical="4dp"
-                    android:text="Income"
-                    android:fontFamily="@font/app_font"
-                    android:textSize="12sp"
-                    android:textColor="?attr/textColorPrimary"/>
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:background="@drawable/rounded_input_background"
-                android:padding="16dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="12dp"
-                    android:gravity="center_vertical">
-
-                    <ImageView
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:src="@drawable/ic_schedule"
-                        app:tint="?attr/textColorSecondary"
-                        android:layout_marginEnd="12dp"/>
-
-                    <TextView
-                        android:id="@+id/detailDateTime"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="May 24, 2025 • 10:30 AM"
-                        android:fontFamily="@font/app_font"
-                        android:textColor="?attr/textColorPrimary"
-                        android:textSize="14sp"/>
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="12dp"
-                    android:gravity="center_vertical">
-
-                    <ImageView
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:src="@drawable/ic_payment"
-                        app:tint="?attr/textColorSecondary"
-                        android:layout_marginEnd="12dp"/>
-
-                    <TextView
-                        android:id="@+id/detailPaymentMode"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Online"
-                        android:fontFamily="@font/app_font"
-                        android:textColor="?attr/textColorPrimary"
-                        android:textSize="14sp"/>
-                </LinearLayout>
-
-                <LinearLayout
-                    android:id="@+id/detailPartyLayout"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="12dp"
-                    android:gravity="center_vertical">
-
-                    <ImageView
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:src="@drawable/ic_person"
-                        app:tint="?attr/textColorSecondary"
-                        android:layout_marginEnd="12dp"/>
-
-                    <TextView
-                        android:id="@+id/detailParty"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="John Doe"
-                        android:fontFamily="@font/app_font"
-                        android:textColor="?attr/textColorPrimary"
-                        android:textSize="14sp"/>
-                </LinearLayout>
-
-                <LinearLayout
-                    android:id="@+id/detailTaxLayout"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="12dp"
-                    android:gravity="center_vertical"
-                    android:visibility="gone">
-
-                    <ImageView
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:src="@drawable/ic_receipt"
-                        app:tint="?attr/textColorSecondary"
-                        android:layout_marginEnd="12dp"/>
-
-                    <TextView
-                        android:id="@+id/detailTax"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Tax Included: 5%"
-                        android:fontFamily="@font/app_font"
-                        android:textColor="?attr/textColorPrimary"
-                        android:textSize="14sp"/>
-                </LinearLayout>
-
-                <LinearLayout
-                    android:id="@+id/detailTagsLayout"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="12dp"
-                    android:gravity="center_vertical">
-
-                    <ImageView
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:src="@drawable/ic_list"
-                        app:tint="?attr/textColorSecondary"
-                        android:layout_marginEnd="12dp"/>
-
-                    <TextView
-                        android:id="@+id/detailTags"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Personal, Food"
-                        android:fontFamily="@font/app_font"
-                        android:textColor="?attr/textColorPrimary"
-                        android:textSize="14sp"/>
-                </LinearLayout>
-
-                <LinearLayout
-                    android:id="@+id/detailLocationLayout"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="12dp"
-                    android:gravity="center_vertical">
-
-                    <ImageView
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:src="@drawable/ic_location"
-                        app:tint="?attr/textColorSecondary"
-                        android:layout_marginEnd="12dp"/>
-
-                    <TextView
-                        android:id="@+id/detailLocation"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Location Name"
-                        android:fontFamily="@font/app_font"
-                        android:textColor="?attr/textColorPrimary"
-                        android:textSize="14sp"/>
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:gravity="center_vertical">
-
-                    <ImageView
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:src="@drawable/ic_note"
-                        app:tint="?attr/textColorSecondary"
-                        android:layout_marginEnd="12dp"/>
-
-                    <TextView
-                        android:id="@+id/detailRemark"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="This is a remark for the transaction."
-                        android:fontFamily="@font/app_font"
-                        android:textColor="?attr/textColorSecondary"
-                        android:textSize="14sp"
-                        android:textStyle="italic"/>
-                </LinearLayout>
-
-            </LinearLayout>
-
-            <TextView
-                android:id="@+id/attachmentsLabel"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:layout_marginBottom="8dp"
-                android:text="Attachments"
-                android:fontFamily="@font/app_font"
-                android:textColor="?attr/textColorPrimary"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                android:visibility="gone"/>
-
-            <LinearLayout
-                android:id="@+id/detailAttachmentsLayout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:visibility="gone">
+                    android:layout_marginStart="16dp"
+                    android:text="Food &amp; Dining"
+                    android:textColor="?attr/colorOnSurface"
+                    android:textSize="15sp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/iconCategory"
+                    app:layout_constraintTop_toTopOf="@id/iconCategory" />
 
                 <ImageView
-                    android:id="@+id/attachmentPreview"
-                    android:layout_width="60dp"
-                    android:layout_height="60dp"
-                    android:src="@drawable/ic_image"
-                    android:background="@drawable/rounded_input_background"
-                    android:padding="12dp"
-                    app:tint="?attr/textColorSecondary"/>
+                    android:id="@+id/iconDate"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_marginTop="20dp"
+                    android:src="@drawable/ic_schedule"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/detailCategoryName"
+                    app:tint="?attr/colorOnSurfaceVariant" />
 
-            </LinearLayout>
+                <TextView
+                    android:id="@+id/detailDateTime"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:text="May 24, 10:30 AM"
+                    android:textColor="?attr/colorOnSurface"
+                    android:textSize="15sp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/iconDate"
+                    app:layout_constraintTop_toTopOf="@id/iconDate" />
+
+                <ImageView
+                    android:id="@+id/iconPayment"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_marginTop="20dp"
+                    android:src="@drawable/ic_payment"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/detailDateTime"
+                    app:tint="?attr/colorOnSurfaceVariant" />
+
+                <TextView
+                    android:id="@+id/detailPaymentMode"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:text="Credit Card"
+                    android:textColor="?attr/colorOnSurface"
+                    android:textSize="15sp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/iconPayment"
+                    app:layout_constraintTop_toTopOf="@id/iconPayment" />
+
+                <ImageView
+                    android:id="@+id/iconParty"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_marginTop="20dp"
+                    android:src="@drawable/ic_person"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/detailPaymentMode"
+                    app:tint="?attr/colorOnSurfaceVariant" />
+
+                <TextView
+                    android:id="@+id/detailParty"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:text="Walmart"
+                    android:textColor="?attr/colorOnSurface"
+                    android:textSize="15sp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/iconParty"
+                    app:layout_constraintTop_toTopOf="@id/iconParty" />
+
+                <ImageView
+                    android:id="@+id/iconTags"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_marginTop="20dp"
+                    android:src="@drawable/ic_label"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/detailParty"
+                    app:tint="?attr/colorOnSurfaceVariant" />
+
+                <TextView
+                    android:id="@+id/detailTags"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:text="Weekly, Personal"
+                    android:textColor="?attr/colorOnSurface"
+                    android:textSize="15sp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/iconTags"
+                    app:layout_constraintTop_toTopOf="@id/iconTags" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <ImageView
+                android:id="@+id/attachmentPreview"
+                android:layout_width="match_parent"
+                android:layout_height="180dp"
+                android:layout_marginHorizontal="24dp"
+                android:layout_marginTop="24dp"
+                android:background="@drawable/rounded_surface_variant"
+                android:clipToOutline="true"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_image_placeholder"
+                android:visibility="gone"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/metaDataContainer" />
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginHorizontal="24dp"
+                android:layout_marginTop="32dp"
                 android:orientation="horizontal"
-                android:layout_marginTop="24dp">
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/attachmentPreview">
 
-                <Button
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnEditTransaction"
                     android:layout_width="0dp"
-                    android:layout_height="50dp"
+                    android:layout_height="56dp"
                     android:layout_weight="1"
                     android:text="Edit"
-                    android:background="@drawable/button_primary"
-                    android:textColor="@color/white"
-                    android:fontFamily="@font/app_font"
-                    android:textAllCaps="false"
-                    app:backgroundTint="@null"/>
+                    android:textColor="?attr/colorOnPrimary"
+                    app:backgroundTint="?attr/colorPrimary"
+                    app:cornerRadius="16dp"
+                    app:icon="@drawable/ic_edit"
+                    app:iconGravity="textStart" />
 
-                <Button
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnDeleteTransaction"
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
                     android:layout_marginStart="12dp"
-                    android:background="@drawable/button_cancel_outline"
-                    android:foreground="@drawable/ic_delete"
-                    android:foregroundTint="?attr/expenseColor"
-                    android:foregroundGravity="center"
-                    app:backgroundTint="@null"/>
+                    android:insetLeft="0dp"
+                    android:insetTop="0dp"
+                    android:insetRight="0dp"
+                    android:insetBottom="0dp"
+                    app:cornerRadius="16dp"
+                    app:icon="@drawable/ic_delete"
+                    app:iconGravity="textStart"
+                    app:iconTint="?attr/colorError"
+                    app:strokeColor="?attr/colorError" />
 
-                <Button
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnShareTransaction"
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
                     android:layout_marginStart="12dp"
-                    android:background="@drawable/button_secondary"
-                    android:foreground="@drawable/ic_share"
-                    android:foregroundTint="?attr/textColorPrimary"
-                    android:foregroundGravity="center"
-                    app:backgroundTint="@null"/>
+                    android:insetLeft="0dp"
+                    android:insetTop="0dp"
+                    android:insetRight="0dp"
+                    android:insetBottom="0dp"
+                    app:cornerRadius="16dp"
+                    app:icon="@drawable/ic_share"
+                    app:iconTint="?attr/colorOnSurface"
+                    app:strokeColor="?attr/colorOutline" />
 
             </LinearLayout>
 
-        </LinearLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>
-</androidx.cardview.widget.CardView>
+</com.google.android.material.card.MaterialCardView>

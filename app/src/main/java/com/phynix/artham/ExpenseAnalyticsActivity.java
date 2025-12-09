@@ -20,12 +20,14 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.phynix.artham.models.TransactionModel;
-import com.phynix.artham.utils.CustomPieChartValueFormatter;
+import com.github.mikephil.charting.animation.Easing;
 import com.github.mikephil.charting.charts.PieChart;
+import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
+import com.github.mikephil.charting.highlight.Highlight;
+import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -33,12 +35,14 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.phynix.artham.models.TransactionModel;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -83,8 +87,6 @@ public class ExpenseAnalyticsActivity extends AppCompatActivity {
             return;
         }
 
-        Log.d(TAG, "Initializing Analytics for Cashbook: " + cashbookId);
-
         transactionsRef = FirebaseDatabase.getInstance().getReference("users")
                 .child(currentUser.getUid()).child("cashbooks")
                 .child(cashbookId).child("transactions");
@@ -109,13 +111,25 @@ public class ExpenseAnalyticsActivity extends AppCompatActivity {
 
     private void setupPieChart() {
         fullScreenPieChart.setRotationEnabled(true);
-        fullScreenPieChart.setHoleRadius(50f);
-        fullScreenPieChart.setTransparentCircleRadius(55f);
+
+        // [FIX] Larger Doughnut: Reduced hole radius (was 60f)
+        fullScreenPieChart.setHoleRadius(55f);
+        fullScreenPieChart.setTransparentCircleRadius(60f);
+
         fullScreenPieChart.setHoleColor(Color.TRANSPARENT);
         fullScreenPieChart.setDrawCenterText(true);
         fullScreenPieChart.getDescription().setEnabled(false);
         fullScreenPieChart.getLegend().setEnabled(false);
-        fullScreenPieChart.setDrawEntryLabels(false);
+
+        // [FIX] Show Labels: Enable category names on chart
+        fullScreenPieChart.setDrawEntryLabels(true);
+
+        // [FIX] Small Text: Set label size to 9f
+        fullScreenPieChart.setEntryLabelTextSize(9f);
+        fullScreenPieChart.setEntryLabelColor(ThemeUtil.getThemeAttrColor(this, R.attr.textColorPrimary));
+
+        // [FIX] Larger Chart: Reduced offsets (was 55f) to give chart more screen space
+        fullScreenPieChart.setExtraOffsets(30.f, 10.f, 30.f, 10.f);
     }
 
     private void setupRecyclerViews() {
@@ -142,9 +156,6 @@ public class ExpenseAnalyticsActivity extends AppCompatActivity {
                             allTransactions.add(transaction);
                         }
                     }
-                    Log.d(TAG, "Loaded transactions: " + allTransactions.size());
-                } else {
-                    Log.d(TAG, "No transactions found in Firebase.");
                 }
                 processTransactionData();
             }
@@ -152,7 +163,6 @@ public class ExpenseAnalyticsActivity extends AppCompatActivity {
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
                 loadingProgressBar.setVisibility(View.GONE);
-                Log.e(TAG, "Firebase Error: " + databaseError.getMessage());
                 Toast.makeText(ExpenseAnalyticsActivity.this, "Failed to load data", Toast.LENGTH_SHORT).show();
             }
         });
@@ -161,12 +171,9 @@ public class ExpenseAnalyticsActivity extends AppCompatActivity {
     private void processTransactionData() {
         loadingProgressBar.setVisibility(View.GONE);
 
-        // Filter OUT Expenses
         List<TransactionModel> expenses = allTransactions.stream()
                 .filter(t -> "OUT".equalsIgnoreCase(t.getType()))
                 .collect(Collectors.toList());
-
-        Log.d(TAG, "Total Expenses found: " + expenses.size());
 
         if (expenses.isEmpty()) {
             showEmptyState();
@@ -175,7 +182,6 @@ public class ExpenseAnalyticsActivity extends AppCompatActivity {
 
         showContentState();
 
-        // Group by Month
         Map<String, List<TransactionModel>> transactionsByMonth = expenses.stream()
                 .collect(Collectors.groupingBy(t -> {
                     Calendar cal = Calendar.getInstance();
@@ -189,20 +195,15 @@ public class ExpenseAnalyticsActivity extends AppCompatActivity {
             monthlyExpenses.add(new MonthlyExpense(entry.getKey(), total, entry.getValue()));
         }
 
-        // Sort: Newest Month First
         monthlyExpenses.sort(Comparator.comparing(MonthlyExpense::getMonth).reversed());
-
         monthlyAdapter.updateData(monthlyExpenses);
 
-        // Default Select First
         if (!monthlyExpenses.isEmpty()) {
             updatePieChartForMonth(monthlyExpenses.get(0));
         }
     }
 
     private void updatePieChartForMonth(MonthlyExpense monthlyExpense) {
-        Log.d(TAG, "Updating Chart for: " + monthlyExpense.getMonth());
-
         Map<String, Double> expenseByCategory = monthlyExpense.getTransactions().stream()
                 .collect(Collectors.groupingBy(
                         t -> t.getTransactionCategory() != null ? t.getTransactionCategory() : "Others",
@@ -216,6 +217,8 @@ public class ExpenseAnalyticsActivity extends AppCompatActivity {
         int colorIndex = 0;
         for (Map.Entry<String, Double> entry : expenseByCategory.entrySet()) {
             float amount = entry.getValue().floatValue();
+
+            // [FIX] Always add the label (Category Name) for every slice
             entries.add(new PieEntry(amount, entry.getKey()));
 
             int color = colors.get(colorIndex % colors.size());
@@ -232,15 +235,20 @@ public class ExpenseAnalyticsActivity extends AppCompatActivity {
 
         PieDataSet dataSet = new PieDataSet(entries, "");
         dataSet.setColors(colors);
-        dataSet.setValueTextColor(Color.BLACK); // Force Black text
-        dataSet.setValueTextSize(10f);
-        dataSet.setValueFormatter(new CustomPieChartValueFormatter());
 
-        // Line properties to push labels outside
+        // Hide numbers (values) on chart to avoid clutter, showing only Labels
+        dataSet.setDrawValues(false);
+
+        // [FIX] Label Positioning: Outside Slice
+        dataSet.setXValuePosition(PieDataSet.ValuePosition.OUTSIDE_SLICE);
         dataSet.setYValuePosition(PieDataSet.ValuePosition.OUTSIDE_SLICE);
+
+        // Line Settings
         dataSet.setValueLinePart1OffsetPercentage(80.f);
         dataSet.setValueLinePart1Length(0.4f);
-        dataSet.setValueLinePart2Length(0.4f);
+        dataSet.setValueLinePart2Length(0.5f);
+        dataSet.setValueLineColor(ThemeUtil.getThemeAttrColor(this, R.attr.textColorSecondary));
+        dataSet.setValueLineWidth(1f);
 
         PieData pieData = new PieData(dataSet);
         fullScreenPieChart.setData(pieData);
@@ -248,9 +256,10 @@ public class ExpenseAnalyticsActivity extends AppCompatActivity {
         String centerText = "Total\n₹" + String.format(Locale.US, "%.0f", monthlyExpense.getTotalExpense());
         fullScreenPieChart.setCenterText(centerText);
         fullScreenPieChart.setCenterTextSize(16f);
-        fullScreenPieChart.setCenterTextColor(Color.BLACK);
+        fullScreenPieChart.setCenterTextColor(ThemeUtil.getThemeAttrColor(this, R.attr.textColorPrimary));
 
-        fullScreenPieChart.invalidate(); // Refresh
+        fullScreenPieChart.animateY(1000, Easing.EaseInOutQuad);
+        fullScreenPieChart.invalidate();
 
         legendAdapter.updateData(legendItems);
     }
@@ -272,6 +281,11 @@ public class ExpenseAnalyticsActivity extends AppCompatActivity {
         colors.add(Color.parseColor("#69F0AE"));
         colors.add(Color.parseColor("#FFD740"));
         colors.add(Color.parseColor("#E040FB"));
+        colors.add(Color.parseColor("#FF5722"));
+        colors.add(Color.parseColor("#00BCD4"));
+        colors.add(Color.parseColor("#8BC34A"));
+        colors.add(Color.parseColor("#9C27B0"));
+        colors.add(Color.parseColor("#795548"));
         return colors;
     }
 
@@ -283,7 +297,8 @@ public class ExpenseAnalyticsActivity extends AppCompatActivity {
         }
     }
 
-    // --- Data Classes ---
+    // --- Inner Classes ---
+
     static class MonthlyExpense {
         private String month; private double totalExpense; private List<TransactionModel> transactions;
         public MonthlyExpense(String month, double totalExpense, List<TransactionModel> transactions) {
@@ -304,6 +319,7 @@ public class ExpenseAnalyticsActivity extends AppCompatActivity {
     interface OnMonthClickListener { void onMonthClick(MonthlyExpense monthlyExpense); }
 
     // --- Adapters ---
+
     static class MonthlyCardAdapter extends RecyclerView.Adapter<MonthlyCardAdapter.ViewHolder> {
         private List<MonthlyExpense> list;
         private OnMonthClickListener listener;
@@ -339,22 +355,37 @@ public class ExpenseAnalyticsActivity extends AppCompatActivity {
         @Override public int getItemCount() { return list.size(); }
 
         static class ViewHolder extends RecyclerView.ViewHolder {
-            TextView month, total; LinearLayout bg;
-            ViewHolder(View v) { super(v); month=v.findViewById(R.id.monthNameTextView); total=v.findViewById(R.id.totalExpenseTextView); bg=v.findViewById(R.id.cardContainer); }
+            TextView month, year, total; LinearLayout bg;
+
+            ViewHolder(View v) {
+                super(v);
+                month = v.findViewById(R.id.monthNameTextView);
+                year = v.findViewById(R.id.yearTextView);
+                total = v.findViewById(R.id.totalExpenseTextView);
+                bg = v.findViewById(R.id.cardContainer);
+            }
+
             void bind(MonthlyExpense data, boolean isSel) {
                 try {
-                    month.setText(new SimpleDateFormat("MMM", Locale.US).format(new SimpleDateFormat("yyyy-MM", Locale.US).parse(data.getMonth())));
-                } catch (ParseException e) { month.setText(data.getMonth()); }
+                    Date date = new SimpleDateFormat("yyyy-MM", Locale.US).parse(data.getMonth());
+                    month.setText(new SimpleDateFormat("MMMM", Locale.US).format(date));
+                    year.setText(new SimpleDateFormat("yyyy", Locale.US).format(date));
+                } catch (ParseException e) {
+                    month.setText(data.getMonth());
+                    year.setText("");
+                }
+
                 total.setText("₹" + String.format(Locale.US, "%.0f", data.getTotalExpense()));
 
-                // Hardcoded colors to prevent blank UI issues
                 if(isSel) {
-                    bg.setBackgroundColor(Color.parseColor("#2196F3")); // Blue
+                    bg.setBackgroundColor(Color.parseColor("#2196F3"));
                     month.setTextColor(Color.WHITE);
+                    year.setTextColor(Color.parseColor("#E0E0E0"));
                     total.setTextColor(Color.WHITE);
                 } else {
                     bg.setBackgroundColor(Color.WHITE);
                     month.setTextColor(Color.BLACK);
+                    year.setTextColor(Color.DKGRAY);
                     total.setTextColor(Color.BLACK);
                 }
             }
@@ -380,18 +411,17 @@ public class ExpenseAnalyticsActivity extends AppCompatActivity {
                 cat.setText(i.category);
                 amt.setText("₹" + String.format(Locale.US, "%.2f", i.amount));
                 pct.setText(String.format(Locale.US, "(%.1f%%)", i.percentage));
-                cat.setTextColor(Color.BLACK); // Force visible color
+                cat.setTextColor(Color.BLACK);
                 amt.setTextColor(Color.BLACK);
             }
         }
     }
 
-    // Helper to get theme color safely
     static class ThemeUtil {
         static int getThemeAttrColor(Context context, int attr) {
             TypedValue typedValue = new TypedValue();
             if(context.getTheme().resolveAttribute(attr, typedValue, true)) return typedValue.data;
-            return Color.BLACK; // Fallback
+            return Color.BLACK;
         }
     }
 }

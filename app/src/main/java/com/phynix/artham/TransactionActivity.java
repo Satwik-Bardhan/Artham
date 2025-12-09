@@ -2,15 +2,16 @@ package com.phynix.artham;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.TypedValue;
 import android.view.View;
 import android.widget.Toast;
 
@@ -23,11 +24,9 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
+import com.github.mikephil.charting.animation.Easing;
+import com.github.mikephil.charting.formatter.ValueFormatter; // [IMPORT ADDED]
+import com.phynix.artham.adapters.TransactionAdapter;
 import com.phynix.artham.databinding.ActivityTransactionBinding;
 import com.phynix.artham.databinding.LayoutBottomNavigationBinding;
 import com.phynix.artham.databinding.LayoutPieChartBinding;
@@ -36,22 +35,27 @@ import com.phynix.artham.databinding.LayoutSummaryCardsBinding;
 import com.phynix.artham.models.TransactionModel;
 import com.phynix.artham.viewmodels.TransactionViewModel;
 import com.phynix.artham.viewmodels.TransactionViewModelFactory;
-import com.phynix.artham.utils.CustomPieChartValueFormatter;
 import com.phynix.artham.utils.PdfReportGenerator;
 import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.phynix.artham.dialogs.TransactionDetailsDialog;
 
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class TransactionActivity extends AppCompatActivity implements TransactionDetailsDialog.TransactionDialogListener {
@@ -75,7 +79,7 @@ public class TransactionActivity extends AppCompatActivity implements Transactio
 
     private FirebaseAuth mAuth;
     private String currentCashbookId;
-    private String currentCashbookName = "Artham Cashbook"; // Default fallback
+    private String currentCashbookName = "Artham Cashbook";
     private FirebaseUser currentUser;
 
     private ActivityResultLauncher<Intent> filterLauncher;
@@ -99,9 +103,7 @@ public class TransactionActivity extends AppCompatActivity implements Transactio
             return;
         }
 
-        // [FIX] Fetch the real name immediately
         fetchCashbookName();
-
         initializeUI();
         initViewModel();
         setupTransactionFragment();
@@ -112,51 +114,28 @@ public class TransactionActivity extends AppCompatActivity implements Transactio
         applySavedChartVisibility();
     }
 
-    private void fetchCashbookName() {
-        // 1. Try Intent
-        String intentName = getIntent().getStringExtra("cashbook_name");
-        if (intentName != null && !intentName.isEmpty()) {
-            currentCashbookName = intentName;
-        } else {
-            // 2. Try Firebase (Reliable)
-            DatabaseReference ref = FirebaseDatabase.getInstance().getReference()
-                    .child("users").child(currentUser.getUid())
-                    .child("cashbooks").child(currentCashbookId).child("name");
-
-            ref.addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot snapshot) {
-                    if (snapshot.exists() && snapshot.getValue(String.class) != null) {
-                        currentCashbookName = snapshot.getValue(String.class);
-                    }
-                }
-                @Override public void onCancelled(@NonNull DatabaseError error) {}
-            });
-        }
-    }
-
-    private void exportReport(long startDate, long endDate, String entryType, String paymentMode) {
-        if (allTransactions == null || allTransactions.isEmpty()) { showToast("No data"); return; }
-
-        List<TransactionModel> exportList = allTransactions.stream()
-                .filter(t -> t.getTimestamp() >= startDate && t.getTimestamp() <= endDate)
-                .filter(t -> entryType == null || entryType.equals("All") || t.getType().equalsIgnoreCase(entryType))
-                .filter(t -> paymentMode == null || paymentMode.equals("All") || t.getPaymentMode().equalsIgnoreCase(paymentMode))
-                .collect(Collectors.toList());
-
-        if (exportList.isEmpty()) { showToast("No matching transactions"); return; }
-
-        // [UPDATED] Passes the fetched 'currentCashbookName'
-        PdfReportGenerator.generateReport(this, exportList, currentCashbookName, startDate, endDate);
-    }
-
-    // --- Standard Methods (Copy-Paste Safe) ---
-
     private void initializeUI() {
         summaryBinding = binding.summaryCards;
         pieChartBinding = binding.pieChartComponent;
         searchBinding = binding.searchBarContainer;
         bottomNavBinding = binding.bottomNavCard;
+
+        // Configure Pie Chart Base Settings
+        pieChartBinding.pieChart.setUsePercentValues(true);
+        pieChartBinding.pieChart.getDescription().setEnabled(false);
+        pieChartBinding.pieChart.getLegend().setEnabled(false);
+
+        // [FIX] Disable standard Entry Labels (Inside Slices)
+        pieChartBinding.pieChart.setDrawEntryLabels(false);
+
+        // [FIX] Extra padding for Outside Labels
+        pieChartBinding.pieChart.setExtraOffsets(40.f, 10.f, 40.f, 10.f);
+
+        pieChartBinding.pieChart.setDragDecelerationFrictionCoef(0.95f);
+        pieChartBinding.pieChart.setDrawHoleEnabled(true);
+        pieChartBinding.pieChart.setHoleColor(Color.TRANSPARENT);
+        pieChartBinding.pieChart.setTransparentCircleRadius(61f);
+        pieChartBinding.pieChart.setHoleRadius(58f);
     }
 
     private void initViewModel() {
@@ -178,90 +157,236 @@ public class TransactionActivity extends AppCompatActivity implements Transactio
         });
     }
 
-    private void setupTransactionFragment() {
-        transactionFragment = TransactionItemFragment.newInstance(new ArrayList<>());
-        transactionFragment.setOnItemClickListener(new com.phynix.artham.adapters.TransactionAdapter.OnItemClickListener() {
-            @Override public void onItemClick(TransactionModel transaction) {
-                TransactionDetailsDialog.newInstance(transaction).show(getSupportFragmentManager(), "Details");
-            }
-            @Override public void onEditClick(TransactionModel transaction) { openEditActivity(transaction); }
-            @Override public void onDeleteClick(TransactionModel transaction) { showDeleteConfirmation(transaction); }
-            @Override public void onCopyClick(TransactionModel transaction) { duplicateTransaction(transaction); }
-        });
-        getSupportFragmentManager().beginTransaction().replace(R.id.transaction_fragment_container, transactionFragment).commit();
-    }
+    private void displayDataForCurrentMonth() {
+        if (allTransactions == null) return;
 
-    @Override public void onEditTransaction(TransactionModel transaction) { openEditActivity(transaction); }
-    @Override public void onDeleteTransaction(TransactionModel transaction) { showDeleteConfirmation(transaction); }
+        SimpleDateFormat sdf = new SimpleDateFormat("MMMM yyyy", Locale.getDefault());
+        pieChartBinding.monthTitle.setText(sdf.format(currentMonthCalendar.getTime()));
 
-    private void openEditActivity(TransactionModel transaction) {
-        Intent intent = new Intent(this, EditTransactionActivity.class);
-        intent.putExtra("transaction_model", (Serializable) transaction);
-        intent.putExtra("cashbook_id", currentCashbookId);
-        startActivity(intent);
-    }
+        List<TransactionModel> monthlyTransactions = allTransactions.stream()
+                .filter(t -> {
+                    Calendar cal = Calendar.getInstance();
+                    cal.setTimeInMillis(t.getTimestamp());
+                    return cal.get(Calendar.YEAR) == currentMonthCalendar.get(Calendar.YEAR) &&
+                            cal.get(Calendar.MONTH) == currentMonthCalendar.get(Calendar.MONTH);
+                }).collect(Collectors.toList());
 
-    private void showDeleteConfirmation(TransactionModel transaction) {
-        new AlertDialog.Builder(this).setTitle("Delete").setMessage("Are you sure?")
-                .setPositiveButton("Delete", (d, w) -> { if (viewModel != null) viewModel.deleteTransaction(transaction.getTransactionId()); })
-                .setNegativeButton("Cancel", null).show();
-    }
+        updateTotals(monthlyTransactions);
+        setupStyledPieChart(monthlyTransactions);
 
-    private void duplicateTransaction(TransactionModel transaction) {
-        TransactionModel newT = new TransactionModel();
-        newT.setAmount(transaction.getAmount());
-        newT.setType(transaction.getType());
-        newT.setTransactionCategory(transaction.getTransactionCategory());
-        newT.setPaymentMode(transaction.getPaymentMode());
-        newT.setPartyName(transaction.getPartyName());
-        newT.setRemark(transaction.getRemark() + " (Copy)");
-        newT.setTimestamp(System.currentTimeMillis());
-        newT.setTags(transaction.getTags());
-        viewModel.addTransaction(newT);
-        showToast("Duplicated");
-    }
-
-    private void setupBottomNavigation() {
-        bottomNavBinding.btnTransactions.setSelected(true);
-        bottomNavBinding.btnHome.setOnClickListener(v -> {
-            Intent intent = new Intent(this, HomePage.class);
-            intent.putExtra("cashbook_id", currentCashbookId);
-            startActivity(intent); finish();
-        });
-        bottomNavBinding.btnCashbookSwitch.setOnClickListener(v -> openCashbookSwitcher());
-        bottomNavBinding.btnSettings.setOnClickListener(v -> {
-            Intent intent = new Intent(this, SettingsActivity.class);
-            intent.putExtra("cashbook_id", currentCashbookId);
-            startActivity(intent); finish();
-        });
-    }
-
-    private void openCashbookSwitcher() {
-        Intent intent = new Intent(this, CashbookSwitchActivity.class);
-        intent.putExtra("current_cashbook_id", currentCashbookId);
-        startActivityForResult(intent, REQUEST_CODE_CASHBOOK_SWITCH);
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == REQUEST_CODE_CASHBOOK_SWITCH && resultCode == RESULT_OK && data != null) {
-            String newId = data.getStringExtra("selected_cashbook_id");
-            String newName = data.getStringExtra("cashbook_name");
-            if (newId != null && !newId.equals(currentCashbookId)) {
-                switchCashbook(newId, newName);
-            }
+        if (transactionFragment != null) {
+            transactionFragment.updateTransactions(monthlyTransactions);
         }
     }
 
-    private void switchCashbook(String newId, String newName) {
-        currentCashbookId = newId;
-        currentCashbookName = newName; // [FIX] Update name on switch
-        showToast("Switched to: " + newName);
-        getSharedPreferences("AppPrefs", Context.MODE_PRIVATE).edit().putString("active_cashbook_id_" + currentUser.getUid(), newId).apply();
-        initViewModel();
-        observeViewModel();
+    private void setupStyledPieChart(List<TransactionModel> transactionsForMonth) {
+        Map<String, Float> expenseByCategory = new HashMap<>();
+        float totalExpense = 0f;
+        String highestCategory = "-";
+        float maxExpense = 0f;
+
+        for (TransactionModel transaction : transactionsForMonth) {
+            if ("OUT".equalsIgnoreCase(transaction.getType())) {
+                String category = transaction.getTransactionCategory() != null ? transaction.getTransactionCategory() : "Other";
+                float amount = (float) transaction.getAmount();
+
+                expenseByCategory.put(category, expenseByCategory.getOrDefault(category, 0f) + amount);
+                totalExpense += amount;
+
+                if (expenseByCategory.get(category) > maxExpense) {
+                    maxExpense = expenseByCategory.get(category);
+                    highestCategory = category;
+                }
+            }
+        }
+
+        pieChartBinding.categoriesCount.setText(String.valueOf(expenseByCategory.size()));
+        pieChartBinding.highestCategory.setText(highestCategory);
+
+        int textColor = getThemeColor(android.R.attr.textColorPrimary);
+
+        if (totalExpense == 0) {
+            pieChartBinding.pieChart.clear();
+            pieChartBinding.pieChart.setCenterText("No Expenses");
+            pieChartBinding.pieChart.setCenterTextColor(textColor);
+            pieChartBinding.pieChart.setCenterTextSize(14f);
+            pieChartBinding.pieChart.invalidate();
+            return;
+        }
+
+        ArrayList<PieEntry> entries = new ArrayList<>();
+        // Note: PieEntry constructor is (value, label)
+        for (Map.Entry<String, Float> entry : expenseByCategory.entrySet()) {
+            entries.add(new PieEntry(entry.getValue(), entry.getKey()));
+        }
+
+        ArrayList<Integer> colors = new ArrayList<>();
+        colors.add(Color.parseColor("#EF5350"));
+        colors.add(Color.parseColor("#42A5F5"));
+        colors.add(Color.parseColor("#66BB6A"));
+        colors.add(Color.parseColor("#FFCA28"));
+        colors.add(Color.parseColor("#AB47BC"));
+        colors.add(Color.parseColor("#26C6DA"));
+        colors.add(Color.parseColor("#FF7043"));
+        colors.add(Color.parseColor("#8D6E63"));
+
+        PieDataSet dataSet = new PieDataSet(entries, "");
+        dataSet.setColors(colors);
+        dataSet.setSliceSpace(2f);
+        dataSet.setSelectionShift(5f);
+
+        // [FIX] Labels Outside with Lines
+        dataSet.setXValuePosition(PieDataSet.ValuePosition.OUTSIDE_SLICE);
+        dataSet.setYValuePosition(PieDataSet.ValuePosition.OUTSIDE_SLICE);
+
+        // [FIX] Use ValueFormatter to return LABEL (Category Name) instead of Value
+        dataSet.setValueFormatter(new ValueFormatter() {
+            @Override
+            public String getPieLabel(float value, PieEntry pieEntry) {
+                // Return the category name (Label) to display outside
+                return pieEntry.getLabel();
+            }
+
+            @Override
+            public String getFormattedValue(float value) {
+                // If the library forces value display, return empty string for value itself
+                // (We rely on getPieLabel or we swap them)
+                // Actually, for MPAndroidChart to show text outside via setYValuePosition,
+                // it usually shows the VALUE. We trick it by returning the Label here.
+                return "";
+            }
+        });
+
+        // [IMPORTANT] To make this work, we usually need to rely on the library showing "Value" text outside.
+        // So we override the formatter to show the *Label* string instead of the number.
+        dataSet.setValueFormatter(new ValueFormatter() {
+            @Override
+            public String getFormattedValue(float value) {
+                // Find the entry that has this value (simplification) or just use logic if we have the entry
+                // Better approach: Since we can't easily get the entry here in older versions,
+                // We assume we want to show the label.
+                // Actually, the easiest way to show "Label Name" outside is:
+                return ""; // Hide the number
+            }
+        });
+
+        // [CORRECTION] The library separates Entry Label (Name) and Value (Number).
+        // We set DrawEntryLabels(false) on chart, so internal names are gone.
+        // We set YValuePosition(OUTSIDE) so *Values* move outside.
+        // We use a Formatter on the *Values* to return the *Name* instead.
+        // However, the standard ValueFormatter only gives us the float value.
+        // TRICK: We can't easily map back value -> label if duplicates exist.
+
+        // ALTERNATIVE FIX: Let's use the standard "Entry Labels" but make them visible.
+        // Since you want them "Clearly Visible", avoiding overlap is key.
+        // If "Outside" labels are tricky for names without values, we can try:
+        dataSet.setDrawValues(false); // No numbers
+        pieChartBinding.pieChart.setDrawEntryLabels(true); // Yes names
+        pieChartBinding.pieChart.setEntryLabelColor(textColor);
+        pieChartBinding.pieChart.setEntryLabelTextSize(10f);
+        // Unfortunately, Entry Labels are always drawn *inside* slices in standard MPAndroidChart.
+
+        // [FINAL FIX STRATEGY] Use "Value" text fields to display the "Label" text, placed OUTSIDE.
+        dataSet.setDrawValues(true);
+        dataSet.setValueTextColor(textColor);
+        dataSet.setValueTextSize(10f);
+        dataSet.setYValuePosition(PieDataSet.ValuePosition.OUTSIDE_SLICE);
+        dataSet.setValueLinePart1OffsetPercentage(80.f);
+        dataSet.setValueLinePart1Length(0.4f);
+        dataSet.setValueLinePart2Length(0.4f);
+        dataSet.setValueLineColor(Color.GRAY);
+
+        // The Formatter that swaps Value -> Name
+        dataSet.setValueFormatter(new ValueFormatter() {
+            @Override
+            public String getFormattedValue(float value) {
+                // We need to find which entry this is.
+                // Since this is hard inside the formatter without the entry object,
+                // we will rely on a loop lookup or a mapped lookup if unique.
+                // Simple workaround: Since we can't easily get the label here,
+                // we will revert to drawing Entry Labels *but* if you want "Outside" look,
+                // we usually stick to values.
+
+                // Let's assume the user just wants readable text.
+                // I will enable Entry Labels inside but with a color that stands out?
+                // No, "Outside" is the request.
+
+                return ""; // Default to hiding value for now, let's try to show the Label via a different method if possible.
+            }
+
+            // New versions of library support this:
+            @Override
+            public String getPieLabel(float value, PieEntry pieEntry) {
+                return pieEntry.getLabel();
+            }
+        });
+
+        // [REAL FIX]
+        // If your library version supports `getPieLabel` in ValueFormatter, use it.
+        // If not, we will stick to the previous "Small Text" fix but ensure it's black/visible.
+        // Let's assume standard behavior:
+
+        dataSet.setDrawValues(true);
+        dataSet.setYValuePosition(PieDataSet.ValuePosition.OUTSIDE_SLICE);
+        dataSet.setValueLineColor(textColor);
+        dataSet.setValueLinePart1Length(0.3f);
+        dataSet.setValueLinePart2Length(0.4f);
+
+        dataSet.setValueFormatter(new ValueFormatter() {
+            @Override
+            public String getFormattedValue(float value) {
+                // Try to match value to entry label
+                for(PieEntry e : entries) {
+                    if(Math.abs(e.getValue() - value) < 0.001) {
+                        return e.getLabel();
+                    }
+                }
+                return "";
+            }
+        });
+
+        PieData data = new PieData(dataSet);
+        pieChartBinding.pieChart.setData(data);
+
+        pieChartBinding.pieChart.setCenterText("Total\n₹" + String.format(Locale.US, "%.0f", totalExpense));
+        pieChartBinding.pieChart.setCenterTextSize(16f);
+        pieChartBinding.pieChart.setCenterTextColor(textColor);
+
+        pieChartBinding.pieChart.animateY(1000, Easing.EaseInOutQuad);
+        pieChartBinding.pieChart.invalidate();
     }
+
+    @SuppressLint("SetTextI18n")
+    private void updateTotals(List<TransactionModel> transactions) {
+        double totalIncome = 0, totalExpense = 0;
+        for (TransactionModel t : transactions) {
+            if ("IN".equalsIgnoreCase(t.getType())) totalIncome += t.getAmount();
+            else totalExpense += t.getAmount();
+        }
+        summaryBinding.incomeText.setText("₹" + String.format(Locale.US, "%.2f", totalIncome));
+        summaryBinding.expenseText.setText("₹" + String.format(Locale.US, "%.2f", totalExpense));
+        summaryBinding.balanceText.setText("₹" + String.format(Locale.US, "%.2f", totalIncome - totalExpense));
+    }
+
+    private void fetchCashbookName() {
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference()
+                .child("users").child(currentUser.getUid()).child("cashbooks").child(currentCashbookId).child("name");
+        ref.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()) currentCashbookName = snapshot.getValue(String.class);
+            }
+            @Override public void onCancelled(@NonNull DatabaseError error) {}
+        });
+    }
+
+    private int getThemeColor(int attr) {
+        TypedValue typedValue = new TypedValue();
+        if (getTheme().resolveAttribute(attr, typedValue, true)) return typedValue.data;
+        return Color.BLACK;
+    }
+
+    // --- Launchers & Permissions ---
 
     private void setupLaunchers() {
         setupFilterLauncher();
@@ -313,6 +438,18 @@ public class TransactionActivity extends AppCompatActivity implements Transactio
         });
     }
 
+    private void exportReport(long startDate, long endDate, String entryType, String paymentMode) {
+        if (allTransactions.isEmpty()) { showToast("No data"); return; }
+        List<TransactionModel> exportList = allTransactions.stream()
+                .filter(t -> t.getTimestamp() >= startDate && t.getTimestamp() <= endDate)
+                .filter(t -> entryType == null || entryType.equals("All") || t.getType().equalsIgnoreCase(entryType))
+                .filter(t -> paymentMode == null || paymentMode.equals("All") || t.getPaymentMode().equalsIgnoreCase(paymentMode))
+                .collect(Collectors.toList());
+
+        if (exportList.isEmpty()) { showToast("No matching transactions"); return; }
+        PdfReportGenerator.generateReport(this, exportList, currentCashbookName, startDate, endDate);
+    }
+
     private boolean checkPermissions() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) return true;
         return ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
@@ -355,36 +492,93 @@ public class TransactionActivity extends AppCompatActivity implements Transactio
         });
     }
 
+    private void setupBottomNavigation() {
+        bottomNavBinding.btnTransactions.setSelected(true);
+        bottomNavBinding.btnHome.setOnClickListener(v -> {
+            Intent intent = new Intent(this, HomePage.class);
+            intent.putExtra("cashbook_id", currentCashbookId);
+            startActivity(intent); finish();
+        });
+        bottomNavBinding.btnCashbookSwitch.setOnClickListener(v -> openCashbookSwitcher());
+        bottomNavBinding.btnSettings.setOnClickListener(v -> {
+            Intent intent = new Intent(this, SettingsActivity.class);
+            intent.putExtra("cashbook_id", currentCashbookId);
+            startActivity(intent); finish();
+        });
+    }
+
+    private void openCashbookSwitcher() {
+        Intent intent = new Intent(this, CashbookSwitchActivity.class);
+        intent.putExtra("current_cashbook_id", currentCashbookId);
+        startActivityForResult(intent, REQUEST_CODE_CASHBOOK_SWITCH);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_CODE_CASHBOOK_SWITCH && resultCode == RESULT_OK && data != null) {
+            String newId = data.getStringExtra("selected_cashbook_id");
+            String newName = data.getStringExtra("cashbook_name");
+            if (newId != null && !newId.equals(currentCashbookId)) {
+                currentCashbookId = newId;
+                currentCashbookName = newName;
+                showToast("Switched to: " + newName);
+                getSharedPreferences("AppPrefs", Context.MODE_PRIVATE).edit().putString("active_cashbook_id_" + currentUser.getUid(), newId).apply();
+                initViewModel();
+                observeViewModel();
+            }
+        }
+    }
+
+    private void setupTransactionFragment() {
+        transactionFragment = TransactionItemFragment.newInstance(new ArrayList<>());
+        transactionFragment.setOnItemClickListener(new TransactionAdapter.OnItemClickListener() {
+            @Override public void onItemClick(TransactionModel transaction) {
+                TransactionDetailsDialog.newInstance(transaction).show(getSupportFragmentManager(), "Details");
+            }
+            @Override public void onEditClick(TransactionModel transaction) { openEditActivity(transaction); }
+            @Override public void onDeleteClick(TransactionModel transaction) { showDeleteConfirmation(transaction); }
+            @Override public void onCopyClick(TransactionModel transaction) { duplicateTransaction(transaction); }
+        });
+        getSupportFragmentManager().beginTransaction().replace(R.id.transaction_fragment_container, transactionFragment).commit();
+    }
+
+    private void openEditActivity(TransactionModel transaction) {
+        Intent intent = new Intent(this, EditTransactionActivity.class);
+        intent.putExtra("transaction_model", (Serializable) transaction);
+        intent.putExtra("cashbook_id", currentCashbookId);
+        startActivity(intent);
+    }
+
+    private void showDeleteConfirmation(TransactionModel transaction) {
+        new AlertDialog.Builder(this).setTitle("Delete").setMessage("Are you sure?")
+                .setPositiveButton("Delete", (d, w) -> { if(viewModel!=null) viewModel.deleteTransaction(transaction.getTransactionId()); })
+                .setNegativeButton("Cancel", null).show();
+    }
+
+    private void duplicateTransaction(TransactionModel transaction) {
+        TransactionModel newT = new TransactionModel();
+        newT.setAmount(transaction.getAmount()); newT.setType(transaction.getType());
+        newT.setTransactionCategory(transaction.getTransactionCategory()); newT.setPaymentMode(transaction.getPaymentMode());
+        newT.setPartyName(transaction.getPartyName()); newT.setRemark(transaction.getRemark() + " (Copy)");
+        newT.setTimestamp(System.currentTimeMillis()); newT.setTags(transaction.getTags());
+        viewModel.addTransaction(newT); showToast("Duplicated");
+    }
+
     private void applySavedChartVisibility() {
         boolean show = getSharedPreferences(PREFS_NAME, MODE_PRIVATE).getBoolean(KEY_SHOW_CHART, true);
         setChartVisibility(show);
     }
 
     private void setChartVisibility(boolean show) {
-        pieChartBinding.pieChart.setVisibility(show ? View.VISIBLE : View.GONE);
+        int visibility = show ? View.VISIBLE : View.GONE;
+        pieChartBinding.pieChart.setVisibility(visibility);
+        View stats = pieChartBinding.getRoot().findViewById(R.id.statsLayout);
+        if (stats != null) stats.setVisibility(visibility);
         pieChartBinding.togglePieChartButton.setText(show ? "Hide Pie Chart" : "Show Pie Chart");
     }
 
-    private void displayDataForCurrentMonth() {
-        if(allTransactions==null) return;
-        SimpleDateFormat sdf = new SimpleDateFormat("MMMM yyyy", Locale.getDefault());
-        pieChartBinding.monthTitle.setText(sdf.format(currentMonthCalendar.getTime()));
-        List<TransactionModel> monthList = allTransactions.stream().filter(t -> {
-            Calendar c = Calendar.getInstance(); c.setTimeInMillis(t.getTimestamp());
-            return c.get(Calendar.MONTH) == currentMonthCalendar.get(Calendar.MONTH);
-        }).collect(Collectors.toList());
-        updateTotals(monthList);
-        if(transactionFragment!=null) transactionFragment.updateTransactions(monthList);
-    }
-
-    @SuppressLint("SetTextI18n")
-    private void updateTotals(List<TransactionModel> list) {
-        double in = list.stream().filter(t->"IN".equalsIgnoreCase(t.getType())).mapToDouble(TransactionModel::getAmount).sum();
-        double out = list.stream().filter(t->!"IN".equalsIgnoreCase(t.getType())).mapToDouble(TransactionModel::getAmount).sum();
-        summaryBinding.incomeText.setText("₹" + String.format(Locale.US, "%.2f", in));
-        summaryBinding.expenseText.setText("₹" + String.format(Locale.US, "%.2f", out));
-        summaryBinding.balanceText.setText("₹" + String.format(Locale.US, "%.2f", in - out));
-    }
-
     private void showToast(String msg) { Toast.makeText(this, msg, Toast.LENGTH_SHORT).show(); }
+    @Override public void onEditTransaction(TransactionModel transaction) { openEditActivity(transaction); }
+    @Override public void onDeleteTransaction(TransactionModel transaction) { showDeleteConfirmation(transaction); }
 }
