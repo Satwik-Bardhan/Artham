@@ -17,7 +17,7 @@
         android:layout_marginTop="16dp"
         android:layout_marginBottom="8dp"
         app:cardBackgroundColor="?attr/surfaceColor"
-        app:cardCornerRadius="16dp"
+        app:cardCornerRadius="8dp"
         app:cardElevation="4dp">
 
         <androidx.constraintlayout.widget.ConstraintLayout
@@ -104,7 +104,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:cardBackgroundColor="@android:color/white"
-                app:cardCornerRadius="16dp"
+                app:cardCornerRadius="8dp"
                 app:cardElevation="2dp"
                 app:strokeWidth="0dp">
 
@@ -368,12 +368,12 @@
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnEditTransaction"
             android:layout_width="match_parent"
-            android:layout_height="56dp"
+            android:layout_height="60dp"
             android:stateListAnimator="@null"
             android:text="Edit Entry"
             android:textSize="16sp"
             android:textStyle="bold"
-            app:cornerRadius="28dp"
+            app:cornerRadius="8dp"
             app:elevation="0dp"
             app:icon="@drawable/ic_edit"
             app:iconGravity="textStart" />

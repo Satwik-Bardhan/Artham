@@ -18,13 +18,13 @@
         android:layout_marginTop="12dp"
         android:layout_marginStart="12dp"
         android:layout_marginEnd="12dp"
-        app:cardCornerRadius="20dp"
-        app:cardElevation="8dp">
+        app:cardCornerRadius="8dp"
+        app:cardElevation="4dp">
 
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="20dp">
+            android:padding="16dp">
 
             <ImageView
                 android:id="@+id/backButton"
@@ -98,7 +98,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="20dp"
-                app:cardCornerRadius="12dp"
+                app:cardCornerRadius="8dp"
                 app:cardElevation="4dp"
                 app:cardBackgroundColor="?attr/surfaceColor">
 
@@ -132,16 +132,6 @@
                         android:clickable="false"
                         android:focusable="false" />
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Default"
-                        android:textColor="?attr/textColorPrimary"
-                        android:textSize="11sp"
-                        android:textStyle="bold"
-                        android:background="@drawable/rounded_tag_background"
-                        android:paddingHorizontal="10dp"
-                        android:paddingVertical="4dp" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
@@ -174,8 +164,7 @@
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="4dp"
+                app:cardCornerRadius="8dp"
                 app:cardBackgroundColor="?attr/surfaceColor">
 
                 <LinearLayout
@@ -262,7 +251,7 @@
         app:backgroundTint="?attr/balanceColor"
         app:icon="@drawable/ic_add"
         app:iconTint="#FFFFFF"
-        app:cornerRadius="28dp"
-        app:elevation="6dp" />
+        app:cornerRadius="8dp"
+        app:elevation="4dp" />
 
 </RelativeLayout>

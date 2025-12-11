@@ -1,11 +1,13 @@
 package com.phynix.artham;
 
 import android.app.DatePickerDialog;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.text.TextUtils;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -48,6 +50,9 @@ public class EditProfileActivity extends AppCompatActivity {
     private Switch twoFactorSwitch;
     private Button cancelButton, saveProfileButton;
 
+    // [NEW] Progress Dialog for better UX
+    private ProgressDialog loadingBar;
+
     private FirebaseAuth mAuth;
     private DatabaseReference userDatabaseRef;
     private StorageReference storageReference;
@@ -56,12 +61,17 @@ public class EditProfileActivity extends AppCompatActivity {
     private Calendar dobCalendar;
     private Uri imageUri;
 
+    // Launcher to pick image from Gallery
     private final ActivityResultLauncher<Intent> imagePickerLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
                 if (result.getResultCode() == RESULT_OK && result.getData() != null && result.getData().getData() != null) {
                     imageUri = result.getData().getData();
-                    Glide.with(this).load(imageUri).into(profileImageView);
+                    // Show the selected image immediately (Circular crop)
+                    Glide.with(this)
+                            .load(imageUri)
+                            .circleCrop()
+                            .into(profileImageView);
                 }
             }
     );
@@ -74,6 +84,7 @@ public class EditProfileActivity extends AppCompatActivity {
 
         mAuth = FirebaseAuth.getInstance();
         currentUser = mAuth.getCurrentUser();
+
         if (currentUser == null) {
             Toast.makeText(this, "No user logged in.", Toast.LENGTH_SHORT).show();
             finish();
@@ -81,8 +92,9 @@ public class EditProfileActivity extends AppCompatActivity {
         }
 
         userDatabaseRef = FirebaseDatabase.getInstance().getReference("users").child(currentUser.getUid());
-        storageReference = FirebaseStorage.getInstance().getReference("profile_pictures");
-
+        // Point to "profile_pictures" folder in Storage
+// Paste your copied URL here
+        storageReference = FirebaseStorage.getInstance("gs://artham-67").getReference("profile_pictures");
         initializeUI();
         setupClickListeners();
         loadUserProfile();
@@ -103,37 +115,34 @@ public class EditProfileActivity extends AppCompatActivity {
         saveProfileButton = findViewById(R.id.saveProfileButton);
 
         dobCalendar = Calendar.getInstance();
+
+        // Initialize Progress Dialog
+        loadingBar = new ProgressDialog(this);
+        loadingBar.setTitle("Saving Profile");
+        loadingBar.setMessage("Please wait while we update your account...");
+        loadingBar.setCanceledOnTouchOutside(false);
     }
 
     private void setupClickListeners() {
         backButton.setOnClickListener(v -> finish());
         cancelButton.setOnClickListener(v -> finish());
 
-        editProfilePictureButton.setOnClickListener(v -> openImagePicker());
+        // Allow clicking BOTH the small edit icon AND the large image to pick a photo
+        View.OnClickListener pickImageListener = v -> openImagePicker();
+        editProfilePictureButton.setOnClickListener(pickImageListener);
+        profileImageView.setOnClickListener(pickImageListener);
+
         dateOfBirthLayout.setOnClickListener(v -> showDatePicker());
         saveProfileButton.setOnClickListener(v -> saveProfileChanges());
 
         changePasswordLayout.setOnClickListener(v -> showChangePasswordDialog());
-
-        twoFactorSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> Toast.makeText(this, "2FA Toggled: " + isChecked, Toast.LENGTH_SHORT).show());
+        twoFactorSwitch.setOnCheckedChangeListener((buttonView, isChecked) ->
+                Toast.makeText(this, "2FA Toggled: " + isChecked, Toast.LENGTH_SHORT).show());
     }
 
-    private void showChangePasswordDialog() {
-        if (currentUser.getEmail() == null) {
-            Toast.makeText(this, "Cannot change password: No email associated.", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        new AlertDialog.Builder(this)
-                .setTitle("Change Password")
-                .setMessage("We will send a password reset link to your email address:\n\n" + currentUser.getEmail())
-                .setPositiveButton("Send Email", (dialog, which) -> {
-                    mAuth.sendPasswordResetEmail(currentUser.getEmail())
-                            .addOnSuccessListener(aVoid -> Toast.makeText(this, "Reset email sent! Check your inbox.", Toast.LENGTH_LONG).show())
-                            .addOnFailureListener(e -> Toast.makeText(this, "Failed to send email: " + e.getMessage(), Toast.LENGTH_SHORT).show());
-                })
-                .setNegativeButton("Cancel", null)
-                .show();
+    private void openImagePicker() {
+        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        imagePickerLauncher.launch(intent);
     }
 
     private void loadUserProfile() {
@@ -151,15 +160,14 @@ public class EditProfileActivity extends AppCompatActivity {
 
                     if (user.getDateOfBirthTimestamp() > 0) {
                         updateDobText(user.getDateOfBirthTimestamp());
-                    } else {
-                        dateOfBirthText.setText("Select Date");
                     }
 
+                    // Load existing profile picture using Glide
                     if (user.getProfile() != null && !user.getProfile().isEmpty()) {
                         Glide.with(EditProfileActivity.this)
                                 .load(user.getProfile())
                                 .placeholder(R.drawable.ic_person_placeholder)
-                                .error(R.drawable.ic_person_placeholder)
+                                .circleCrop() // Make it round
                                 .into(profileImageView);
                     }
                 }
@@ -170,6 +178,101 @@ public class EditProfileActivity extends AppCompatActivity {
                 Toast.makeText(EditProfileActivity.this, "Failed to load profile.", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void saveProfileChanges() {
+        String fullName = editFullName.getText().toString().trim();
+        String phoneNumber = editPhoneNumber.getText().toString().trim();
+
+        if (TextUtils.isEmpty(fullName)) {
+            editFullName.setError("Full name is required.");
+            editFullName.requestFocus();
+            return;
+        }
+
+        if (TextUtils.isEmpty(phoneNumber)) {
+            editPhoneNumber.setError("Phone number is required.");
+            editPhoneNumber.requestFocus();
+            return;
+        }
+
+        if (phoneNumber.length() != 10) {
+            editPhoneNumber.setError("Phone number must be exactly 10 digits.");
+            editPhoneNumber.requestFocus();
+            return;
+        }
+
+        // Show loading dialog
+        loadingBar.show();
+
+        // Check if user picked a new image
+        if (imageUri != null) {
+            uploadImageAndSaveData(fullName, phoneNumber, dobCalendar.getTimeInMillis());
+        } else {
+            // Just save text data
+            saveDataToDatabase(fullName, phoneNumber, dobCalendar.getTimeInMillis(), null);
+        }
+    }
+
+    // Step 1: Upload Image to Firebase Storage
+    private void uploadImageAndSaveData(String fullName, String phoneNumber, long dobTimestamp) {
+        final StorageReference fileReference = storageReference.child(currentUser.getUid() + ".jpg");
+
+        fileReference.putFile(imageUri)
+                .addOnSuccessListener(taskSnapshot ->
+                        // Step 2: Get Download URL
+                        fileReference.getDownloadUrl().addOnSuccessListener(uri -> {
+                            String imageUrl = uri.toString();
+                            // Step 3: Save Data + Image URL to Database
+                            saveDataToDatabase(fullName, phoneNumber, dobTimestamp, imageUrl);
+                        })
+                )
+                .addOnFailureListener(e -> {
+                    loadingBar.dismiss();
+                    Toast.makeText(EditProfileActivity.this, "Image upload failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                });
+    }
+
+    // Step 3: Save Data to Realtime Database
+    private void saveDataToDatabase(String fullName, String phoneNumber, long dobTimestamp, @Nullable String imageUrl) {
+        Map<String, Object> profileUpdates = new HashMap<>();
+        profileUpdates.put("userName", fullName);
+        profileUpdates.put("phoneNumber", phoneNumber);
+
+        if (!dateOfBirthText.getText().toString().equals("Select Date")) {
+            profileUpdates.put("dateOfBirthTimestamp", dobTimestamp);
+        }
+
+        if (imageUrl != null) {
+            profileUpdates.put("profile", imageUrl);
+        }
+
+        userDatabaseRef.updateChildren(profileUpdates)
+                .addOnCompleteListener(task -> {
+                    loadingBar.dismiss();
+                    if (task.isSuccessful()) {
+                        Toast.makeText(EditProfileActivity.this, "Profile updated successfully!", Toast.LENGTH_SHORT).show();
+                        finish(); // Close activity and go back to Settings
+                    } else {
+                        Toast.makeText(EditProfileActivity.this, "Failed to update database.", Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
+    // --- Helper Methods ---
+
+    private void showChangePasswordDialog() {
+        if (currentUser.getEmail() == null) return;
+        new AlertDialog.Builder(this)
+                .setTitle("Change Password")
+                .setMessage("Send reset link to: " + currentUser.getEmail() + "?")
+                .setPositiveButton("Send", (dialog, which) -> {
+                    mAuth.sendPasswordResetEmail(currentUser.getEmail())
+                            .addOnSuccessListener(aVoid -> Toast.makeText(this, "Email sent!", Toast.LENGTH_SHORT).show())
+                            .addOnFailureListener(e -> Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
     }
 
     private void showDatePicker() {
@@ -187,85 +290,5 @@ public class EditProfileActivity extends AppCompatActivity {
         dobCalendar.setTimeInMillis(timestamp);
         SimpleDateFormat sdf = new SimpleDateFormat("MMMM dd, yyyy", Locale.US);
         dateOfBirthText.setText(sdf.format(dobCalendar.getTime()));
-    }
-
-    private void openImagePicker() {
-        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-        imagePickerLauncher.launch(intent);
-    }
-
-    private void saveProfileChanges() {
-        String fullName = editFullName.getText().toString().trim();
-        String phoneNumber = editPhoneNumber.getText().toString().trim();
-
-        if (TextUtils.isEmpty(fullName)) {
-            editFullName.setError("Full name is required.");
-            editFullName.requestFocus();
-            return;
-        }
-
-        // [FIX] Validate Phone Number Length
-        if (TextUtils.isEmpty(phoneNumber)) {
-            editPhoneNumber.setError("Phone number is required.");
-            editPhoneNumber.requestFocus();
-            return;
-        }
-
-        if (phoneNumber.length() != 10) {
-            editPhoneNumber.setError("Phone number must be exactly 10 digits.");
-            editPhoneNumber.requestFocus();
-            return;
-        }
-
-        saveProfileButton.setEnabled(false);
-        saveProfileButton.setText("Saving...");
-
-        if (imageUri != null) {
-            uploadImageAndSaveData(fullName, phoneNumber, dobCalendar.getTimeInMillis());
-        } else {
-            saveDataToDatabase(fullName, phoneNumber, dobCalendar.getTimeInMillis(), null);
-        }
-    }
-
-    private void uploadImageAndSaveData(String fullName, String phoneNumber, long dobTimestamp) {
-        final StorageReference fileReference = storageReference.child(currentUser.getUid() + ".jpg");
-
-        fileReference.putFile(imageUri)
-                .addOnSuccessListener(taskSnapshot -> fileReference.getDownloadUrl().addOnSuccessListener(uri -> {
-                    String imageUrl = uri.toString();
-                    saveDataToDatabase(fullName, phoneNumber, dobTimestamp, imageUrl);
-                }))
-                .addOnFailureListener(e -> {
-                    Toast.makeText(EditProfileActivity.this, "Image upload failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                    saveProfileButton.setEnabled(true);
-                    saveProfileButton.setText("Save Changes");
-                });
-    }
-
-    private void saveDataToDatabase(String fullName, String phoneNumber, long dobTimestamp, @Nullable String imageUrl) {
-        Map<String, Object> profileUpdates = new HashMap<>();
-        profileUpdates.put("userName", fullName);
-        profileUpdates.put("phoneNumber", phoneNumber);
-
-        if (!dateOfBirthText.getText().toString().equals("Select Date")) {
-            profileUpdates.put("dateOfBirthTimestamp", dobTimestamp);
-        }
-
-        if (imageUrl != null) {
-            profileUpdates.put("profile", imageUrl);
-        }
-
-        userDatabaseRef.updateChildren(profileUpdates)
-                .addOnCompleteListener(task -> {
-                    saveProfileButton.setEnabled(true);
-                    saveProfileButton.setText("Save Changes");
-
-                    if (task.isSuccessful()) {
-                        Toast.makeText(EditProfileActivity.this, "Profile updated successfully!", Toast.LENGTH_SHORT).show();
-                        finish();
-                    } else {
-                        Toast.makeText(EditProfileActivity.this, "Failed to update database.", Toast.LENGTH_SHORT).show();
-                    }
-                });
     }
 }

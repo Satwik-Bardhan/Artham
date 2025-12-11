@@ -29,8 +29,8 @@
             android:layout_marginEnd="8dp"
             android:layout_weight="1"
             app:cardBackgroundColor="?attr/surfaceColor"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="3dp">
+            app:cardCornerRadius="8dp"
+            app:cardElevation="2dp">
 
             <LinearLayout
                 android:id="@+id/dateSelectorLayout"
@@ -67,8 +67,8 @@
             android:layout_marginStart="8dp"
             android:layout_weight="0.8"
             app:cardBackgroundColor="?attr/surfaceColor"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="3dp">
+            app:cardCornerRadius="8dp"
+            app:cardElevation="2dp">
 
             <LinearLayout
                 android:id="@+id/timeSelectorLayout"

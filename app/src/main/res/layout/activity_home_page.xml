@@ -39,8 +39,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     app:cardBackgroundColor="?attr/surfaceColor"
-                    app:cardCornerRadius="16dp"
-                    app:cardElevation="8dp">
+                    app:cardCornerRadius="8dp"
+                    app:cardElevation="4dp">
 
                     <LinearLayout
                         android:id="@+id/userBox"
@@ -114,7 +114,7 @@
                         android:layout_marginEnd="12dp"
                         android:layout_weight="1"
                         app:cardCornerRadius="8dp"
-                        app:cardElevation="6dp">
+                        app:cardElevation="2dp">
 
                         <LinearLayout
                             android:id="@+id/cashInButton"
@@ -148,7 +148,7 @@
                         android:layout_marginStart="12dp"
                         android:layout_weight="1"
                         app:cardCornerRadius="8dp"
-                        app:cardElevation="6dp">
+                        app:cardElevation="2dp">
 
                         <LinearLayout
                             android:id="@+id/cashOutButton"
@@ -186,8 +186,8 @@
             android:layout_height="0dp"
             android:layout_weight="1"
             app:cardBackgroundColor="?attr/surfaceColor"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="6dp"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="2dp"
             android:layout_marginTop="8dp">
 
             <LinearLayout

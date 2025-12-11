@@ -6,8 +6,8 @@
     android:layout_marginTop="12dp"
     android:layout_marginHorizontal="4dp"
     app:cardBackgroundColor="?attr/surfaceColor"
-    app:cardCornerRadius="10dp"
-    app:cardElevation="4dp">
+    app:cardCornerRadius="8dp"
+    app:cardElevation="2dp">
 
     <LinearLayout
         android:id="@+id/dailySummaryHeader"

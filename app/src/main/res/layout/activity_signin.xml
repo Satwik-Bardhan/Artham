@@ -13,28 +13,22 @@
         android:id="@+id/headerCard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
         android:layout_marginTop="12dp"
         android:layout_marginStart="12dp"
         android:layout_marginEnd="12dp"
         app:cardBackgroundColor="?attr/surfaceColor"
-        app:cardCornerRadius="20dp"
-        app:cardElevation="8dp"
-        android:layout_alignParentTop="true">
+        app:cardCornerRadius="8dp"
+        app:cardElevation="4dp">
 
-        <LinearLayout
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingTop="28dp"
-            android:paddingBottom="20dp"
             android:paddingStart="20dp"
             android:paddingEnd="20dp"
-            android:gravity="center_horizontal">
-
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center_vertical">
+            android:paddingTop="24dp"
+            android:paddingBottom="18dp"
+            android:gravity="center_vertical">
 
                 <ImageView
                     android:id="@+id/backButton"
@@ -50,6 +44,12 @@
                     app:tint="?attr/textColorPrimary"
                     android:padding="6dp"
                     android:importantForAccessibility="yes" />
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:gravity="center_horizontal">
 
                 <TextView
                     android:id="@+id/headerTitle"
@@ -57,14 +57,23 @@
                     android:layout_height="wrap_content"
                     android:text="ARTHAM"
                     android:textColor="?attr/textColorPrimary"
-                    android:textSize="28sp"
+                    android:textSize="22sp"
                     android:textStyle="bold"
-                    android:fontFamily="@font/inter_bold"
-                    android:layout_centerInParent="true"
                     android:maxLines="1"
                     android:ellipsize="end" />
 
-                <ImageView
+            <TextView
+                android:id="@+id/headerSubtitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Welcome Back User"
+                android:textColor="?attr/textColorSecondary"
+                android:textSize="13sp"
+                android:layout_marginTop="3dp"  />
+            </LinearLayout>
+
+
+            <ImageView
                     android:id="@+id/helpButton"
                     android:layout_width="36dp"
                     android:layout_height="36dp"
@@ -79,17 +88,7 @@
                     android:importantForAccessibility="yes" />
             </RelativeLayout>
 
-            <TextView
-                android:id="@+id/headerSubtitle"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Welcome Back User"
-                android:textColor="?attr/textColorSecondary"
-                android:textSize="16sp"
-                android:fontFamily="@font/inter_italic"
-                android:gravity="center_horizontal"
-                android:layout_marginTop="6dp" />
-        </LinearLayout>
+
     </androidx.cardview.widget.CardView>
 
     <androidx.core.widget.NestedScrollView
@@ -111,7 +110,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
                 android:layout_marginBottom="20dp"
-                app:cardCornerRadius="12dp"
+                app:cardCornerRadius="8dp"
                 app:cardElevation="4dp"
                 app:cardBackgroundColor="?attr/surfaceColor">
 
@@ -276,8 +275,8 @@
                 android:clickable="true"
                 android:focusable="true"
                 app:cardBackgroundColor="@color/white"
-                app:cardCornerRadius="32dp"
-                app:cardElevation="4dp">
+                app:cardCornerRadius="8dp"
+                app:cardElevation="2dp">
 
                 <ImageView
                     android:id="@+id/btnGoogleSignIn"

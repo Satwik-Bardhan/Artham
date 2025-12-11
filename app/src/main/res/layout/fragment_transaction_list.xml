@@ -9,8 +9,8 @@
         android:id="@+id/transactionsCard"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:cardCornerRadius="12dp"
-        app:cardElevation="4dp"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="2dp"
         app:cardBackgroundColor="?attr/surfaceColor">
 
         <LinearLayout

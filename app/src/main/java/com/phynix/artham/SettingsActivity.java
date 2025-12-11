@@ -14,6 +14,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.phynix.artham.databinding.ActivitySettingsBinding;
 import com.phynix.artham.models.CashbookModel;
 import com.phynix.artham.models.Users;
@@ -49,10 +50,8 @@ public class SettingsActivity extends AppCompatActivity {
     // Listeners
     private ValueEventListener userProfileListener;
     private ValueEventListener cashbookNameListener;
-    private ValueEventListener cashbooksListener;
 
     // Data
-    private List<CashbookModel> cashbooks = new ArrayList<>();
     private String currentCashbookId;
 
     @Override
@@ -154,10 +153,6 @@ public class SettingsActivity extends AppCompatActivity {
         }
     }
 
-    private int dpToPx(int dp) {
-        return Math.round(dp * getResources().getDisplayMetrics().density);
-    }
-
     @Override
     protected void onStart() {
         super.onStart();
@@ -169,8 +164,9 @@ public class SettingsActivity extends AppCompatActivity {
                 binding.primarySettingsLayout.activeCashbookName.setText("No Active Cashbook");
             }
 
-            String displayPath = "Cloud ID: " + (currentUser.getEmail() != null ? currentUser.getEmail() : currentUser.getUid());
-            binding.primarySettingsLayout.dataLocation.setText(displayPath);
+            // [UPDATED] Simple & Private Location Badge
+            // We removed the messy URL. Now it just confirms the provider and security status.
+            binding.primarySettingsLayout.dataLocation.setText("Google Cloud • Private Storage");
         }
     }
 
@@ -182,28 +178,43 @@ public class SettingsActivity extends AppCompatActivity {
 
     private void startListeningForUserProfile() {
         if (userRef == null) return;
+
+        if (userProfileListener != null) {
+            userRef.removeEventListener(userProfileListener);
+        }
+
         userProfileListener = new ValueEventListener() {
             @SuppressLint("SetTextI18n")
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if (!dataSnapshot.exists()) return;
+
                 Users userProfile = dataSnapshot.getValue(Users.class);
+
+                // 1. Update User Name
                 if (userProfile != null && !TextUtils.isEmpty(userProfile.getUserName())) {
                     binding.primarySettingsLayout.userName.setText(userProfile.getUserName());
                 } else if (currentUser.getDisplayName() != null && !currentUser.getDisplayName().isEmpty()) {
                     binding.primarySettingsLayout.userName.setText(currentUser.getDisplayName());
                 } else {
-                    // [FIX] Updated from "CashFlow User" to "Artham User"
                     binding.primarySettingsLayout.userName.setText("Artham User");
                 }
 
+                // 2. Update Profile Picture
                 if (userProfile != null && userProfile.getProfile() != null && !userProfile.getProfile().isEmpty()) {
                     Glide.with(SettingsActivity.this)
                             .load(userProfile.getProfile())
                             .placeholder(R.drawable.ic_person_placeholder)
                             .error(R.drawable.ic_person_placeholder)
+                            .diskCacheStrategy(DiskCacheStrategy.NONE)
+                            .skipMemoryCache(true)
+                            .circleCrop()
                             .into(binding.primarySettingsLayout.profileImg);
+                } else {
+                    binding.primarySettingsLayout.profileImg.setImageResource(R.drawable.ic_person_placeholder);
                 }
 
+                // 3. Update UID & Date
                 binding.primarySettingsLayout.uidText.setText("UID: " + currentUser.getUid().substring(0, 8) + "...");
 
                 if (currentUser.getMetadata() != null) {
@@ -212,11 +223,13 @@ public class SettingsActivity extends AppCompatActivity {
                     binding.primarySettingsLayout.createdDate.setText("Created on " + creationDate);
                 }
             }
+
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
                 ErrorHandler.handleFirebaseError(SettingsActivity.this, databaseError);
             }
         };
+
         userRef.addValueEventListener(userProfileListener);
     }
 
@@ -302,16 +315,12 @@ public class SettingsActivity extends AppCompatActivity {
         }
     }
 
-    static class ThemeUtil {
-        static int getThemeAttrColor(Context context, int attr) {
-            TypedValue typedValue = new TypedValue();
-            context.getTheme().resolveAttribute(attr, typedValue, true);
-            return typedValue.data;
-        }
-    }
-
     private void saveActiveCashbookId(String cashbookId) {
         SharedPreferences prefs = getSharedPreferences("AppPrefs", Context.MODE_PRIVATE);
         prefs.edit().putString("active_cashbook_id_" + currentUser.getUid(), cashbookId).apply();
+    }
+
+    private int dpToPx(int dp) {
+        return Math.round(dp * getResources().getDisplayMetrics().density);
     }
 }

@@ -97,4 +97,6 @@ dependencies {
 
     // App Distribution SDK
     implementation("com.google.firebase:firebase-appdistribution:16.0.0-beta14")
+
+    implementation("com.google.android.material:material:1.12.0")
 }
