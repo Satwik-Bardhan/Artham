@@ -33,6 +33,7 @@ import com.phynix.artham.databinding.LayoutPieChartBinding;
 import com.phynix.artham.databinding.LayoutSearchBarBinding;
 import com.phynix.artham.databinding.LayoutSummaryCardsBinding;
 import com.phynix.artham.models.TransactionModel;
+import com.phynix.artham.utils.SnackbarHelper; // [NEW IMPORT]
 import com.phynix.artham.viewmodels.TransactionViewModel;
 import com.phynix.artham.viewmodels.TransactionViewModelFactory;
 import com.phynix.artham.utils.PdfReportGenerator;
@@ -46,7 +47,6 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.phynix.artham.dialogs.TransactionDetailsDialog;
 
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
@@ -58,7 +58,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class TransactionActivity extends AppCompatActivity implements TransactionDetailsDialog.TransactionDialogListener {
+public class TransactionActivity extends AppCompatActivity {
 
     private static final int STORAGE_PERMISSION_CODE = 101;
     private static final int REQUEST_CODE_CASHBOOK_SWITCH = 1001;
@@ -85,6 +85,26 @@ public class TransactionActivity extends AppCompatActivity implements Transactio
     private ActivityResultLauncher<Intent> filterLauncher;
     private ActivityResultLauncher<Intent> downloadLauncher;
 
+    private final ActivityResultLauncher<Intent> detailsLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                    String action = result.getData().getStringExtra("action");
+
+                    if ("delete".equals(action)) {
+                        String txId = result.getData().getStringExtra("transaction_id");
+                        if (txId != null && viewModel != null) {
+                            viewModel.deleteTransaction(txId);
+                            showSnackbar("Transaction deleted");
+                        }
+                    } else if ("duplicate".equals(action)) {
+                        TransactionModel tx = (TransactionModel) result.getData().getSerializableExtra("transaction");
+                        if (tx != null) duplicateTransaction(tx);
+                    }
+                }
+            }
+    );
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -98,7 +118,7 @@ public class TransactionActivity extends AppCompatActivity implements Transactio
         currentMonthCalendar = Calendar.getInstance();
 
         if (currentCashbookId == null || currentUser == null) {
-            showToast("Error: No active cashbook found.");
+            showSnackbar("Error: No active cashbook found.");
             finish();
             return;
         }
@@ -120,15 +140,11 @@ public class TransactionActivity extends AppCompatActivity implements Transactio
         searchBinding = binding.searchBarContainer;
         bottomNavBinding = binding.bottomNavCard;
 
-        // Configure Pie Chart Base Settings
         pieChartBinding.pieChart.setUsePercentValues(true);
         pieChartBinding.pieChart.getDescription().setEnabled(false);
         pieChartBinding.pieChart.getLegend().setEnabled(false);
 
-        // Hide internal labels
-        pieChartBinding.pieChart.setDrawEntryLabels(false);
-
-        // Add extra padding for outside labels
+        pieChartBinding.pieChart.setDrawEntryLabels(true);
         pieChartBinding.pieChart.setExtraOffsets(30.f, 10.f, 30.f, 10.f);
 
         pieChartBinding.pieChart.setDragDecelerationFrictionCoef(0.95f);
@@ -153,7 +169,7 @@ public class TransactionActivity extends AppCompatActivity implements Transactio
             if (transactionFragment != null) transactionFragment.showLoading(isLoading);
         });
         viewModel.getErrorMessage().observe(this, error -> {
-            if (error != null) { showToast(error); viewModel.clearError(); }
+            if (error != null) { showSnackbar(error); viewModel.clearError(); }
         });
     }
 
@@ -215,9 +231,12 @@ public class TransactionActivity extends AppCompatActivity implements Transactio
         }
 
         ArrayList<PieEntry> entries = new ArrayList<>();
-        // Note: We use the value as key to map back later if needed, or rely on custom logic
         for (Map.Entry<String, Float> entry : expenseByCategory.entrySet()) {
-            entries.add(new PieEntry(entry.getValue(), entry.getKey()));
+            String label = entry.getKey();
+            if (label.length() > 5) {
+                label = label.substring(0, 5) + "..";
+            }
+            entries.add(new PieEntry(entry.getValue(), label));
         }
 
         ArrayList<Integer> colors = new ArrayList<>();
@@ -235,7 +254,6 @@ public class TransactionActivity extends AppCompatActivity implements Transactio
         dataSet.setSliceSpace(2f);
         dataSet.setSelectionShift(5f);
 
-        // Show Values outside (we will format them to show Label + %)
         dataSet.setDrawValues(true);
         dataSet.setXValuePosition(PieDataSet.ValuePosition.OUTSIDE_SLICE);
         dataSet.setYValuePosition(PieDataSet.ValuePosition.OUTSIDE_SLICE);
@@ -246,27 +264,21 @@ public class TransactionActivity extends AppCompatActivity implements Transactio
         dataSet.setValueTextColor(textColor);
         dataSet.setValueTextSize(10f);
 
-        // Custom Formatter: "Category 15%"
+        pieChartBinding.pieChart.setEntryLabelColor(textColor);
+        pieChartBinding.pieChart.setEntryLabelTextSize(10f);
+
         dataSet.setValueFormatter(new ValueFormatter() {
             @Override
-            public String getPieLabel(float value, PieEntry pieEntry) {
-                // If value is tiny, hide label to prevent overlap
-                if(value < 4.0f) return "";
-                return String.format(Locale.US, "%s %.0f%%", pieEntry.getLabel(), value);
-            }
-
-            // Fallback for older chart versions
-            @Override
             public String getFormattedValue(float value) {
-                if(value < 4.0f) return "";
-                return String.format(Locale.US, "%.0f%%", value);
+                return "";
             }
         });
 
         PieData data = new PieData(dataSet);
         pieChartBinding.pieChart.setData(data);
 
-        pieChartBinding.pieChart.setCenterText("Total\n₹" + String.format(Locale.US, "%.0f", totalExpense));
+        String centerText = "Total\n₹" + String.format(Locale.US, "%.0f", totalExpense);
+        pieChartBinding.pieChart.setCenterText(centerText);
         pieChartBinding.pieChart.setCenterTextSize(16f);
         pieChartBinding.pieChart.setCenterTextColor(textColor);
 
@@ -304,17 +316,26 @@ public class TransactionActivity extends AppCompatActivity implements Transactio
         return Color.BLACK;
     }
 
-    // --- Launchers & Permissions ---
-
     private void setupLaunchers() {
         setupFilterLauncher();
         setupDownloadLauncher();
     }
 
     private void setupFilterLauncher() {
+        searchBinding.clearSearchButton.setOnClickListener(v -> {
+            searchBinding.searchEditText.setText("");
+        });
+
         searchBinding.searchEditText.addTextChangedListener(new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            @Override public void onTextChanged(CharSequence s, int start, int before, int count) { if(viewModel!=null) viewModel.filter(s.toString(), 0,0,"All",null,null); }
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (s.length() > 0) {
+                    searchBinding.clearSearchButton.setVisibility(View.VISIBLE);
+                } else {
+                    searchBinding.clearSearchButton.setVisibility(View.GONE);
+                }
+                if(viewModel!=null) viewModel.filter(s.toString(), 0,0,"All",null,null);
+            }
             @Override public void afterTextChanged(Editable s) {}
         });
         searchBinding.filterButton.setOnClickListener(v -> {
@@ -357,14 +378,14 @@ public class TransactionActivity extends AppCompatActivity implements Transactio
     }
 
     private void exportReport(long startDate, long endDate, String entryType, String paymentMode) {
-        if (allTransactions.isEmpty()) { showToast("No data"); return; }
+        if (allTransactions.isEmpty()) { showSnackbar("No data"); return; }
         List<TransactionModel> exportList = allTransactions.stream()
                 .filter(t -> t.getTimestamp() >= startDate && t.getTimestamp() <= endDate)
                 .filter(t -> entryType == null || entryType.equals("All") || t.getType().equalsIgnoreCase(entryType))
                 .filter(t -> paymentMode == null || paymentMode.equals("All") || t.getPaymentMode().equalsIgnoreCase(paymentMode))
                 .collect(Collectors.toList());
 
-        if (exportList.isEmpty()) { showToast("No matching transactions"); return; }
+        if (exportList.isEmpty()) { showSnackbar("No matching transactions"); return; }
         PdfReportGenerator.generateReport(this, exportList, currentCashbookName, startDate, endDate);
     }
 
@@ -382,7 +403,7 @@ public class TransactionActivity extends AppCompatActivity implements Transactio
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == STORAGE_PERMISSION_CODE && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) showToast("Permission granted");
+        if (requestCode == STORAGE_PERMISSION_CODE && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) showSnackbar("Permission granted");
     }
 
     private void setupClickListeners() {
@@ -405,7 +426,7 @@ public class TransactionActivity extends AppCompatActivity implements Transactio
             getSharedPreferences(PREFS_NAME, MODE_PRIVATE).edit().putBoolean(KEY_SHOW_CHART, !visible).apply();
         });
         binding.downloadReportButton.setOnClickListener(v -> {
-            if(allTransactions.isEmpty()){ showToast("No data"); return; }
+            if(allTransactions.isEmpty()){ showSnackbar("No data"); return; }
             downloadLauncher.launch(new Intent(this, DownloadOptionsActivity.class));
         });
     }
@@ -440,7 +461,7 @@ public class TransactionActivity extends AppCompatActivity implements Transactio
             if (newId != null && !newId.equals(currentCashbookId)) {
                 currentCashbookId = newId;
                 currentCashbookName = newName;
-                showToast("Switched to: " + newName);
+                showSnackbar("Switched to: " + newName);
                 getSharedPreferences("AppPrefs", Context.MODE_PRIVATE).edit().putString("active_cashbook_id_" + currentUser.getUid(), newId).apply();
                 initViewModel();
                 observeViewModel();
@@ -452,8 +473,10 @@ public class TransactionActivity extends AppCompatActivity implements Transactio
         transactionFragment = TransactionItemFragment.newInstance(new ArrayList<>());
         transactionFragment.setOnItemClickListener(new TransactionAdapter.OnItemClickListener() {
             @Override public void onItemClick(TransactionModel transaction) {
-                // [FIX] Open Dialog
-                TransactionDetailsDialog.newInstance(transaction).show(getSupportFragmentManager(), "Details");
+                Intent intent = new Intent(TransactionActivity.this, TransactionDetailsActivity.class);
+                intent.putExtra(TransactionDetailsActivity.EXTRA_TRANSACTION, transaction);
+                intent.putExtra("cashbook_id", currentCashbookId);
+                detailsLauncher.launch(intent);
             }
             @Override public void onEditClick(TransactionModel transaction) { openEditActivity(transaction); }
             @Override public void onDeleteClick(TransactionModel transaction) { showDeleteConfirmation(transaction); }
@@ -481,7 +504,7 @@ public class TransactionActivity extends AppCompatActivity implements Transactio
         newT.setTransactionCategory(transaction.getTransactionCategory()); newT.setPaymentMode(transaction.getPaymentMode());
         newT.setPartyName(transaction.getPartyName()); newT.setRemark(transaction.getRemark() + " (Copy)");
         newT.setTimestamp(System.currentTimeMillis()); newT.setTags(transaction.getTags());
-        viewModel.addTransaction(newT); showToast("Duplicated");
+        viewModel.addTransaction(newT); showSnackbar("Duplicated");
     }
 
     private void applySavedChartVisibility() {
@@ -497,7 +520,9 @@ public class TransactionActivity extends AppCompatActivity implements Transactio
         pieChartBinding.togglePieChartButton.setText(show ? "Hide Pie Chart" : "Show Pie Chart");
     }
 
-    private void showToast(String msg) { Toast.makeText(this, msg, Toast.LENGTH_SHORT).show(); }
-    @Override public void onEditTransaction(TransactionModel transaction) { openEditActivity(transaction); }
-    @Override public void onDeleteTransaction(TransactionModel transaction) { showDeleteConfirmation(transaction); }
+    // [FIX] Snackbar with Helper logic
+    private void showSnackbar(String msg) {
+        View anchor = (bottomNavBinding != null) ? bottomNavBinding.getRoot() : null;
+        SnackbarHelper.show(this, msg, anchor);
+    }
 }

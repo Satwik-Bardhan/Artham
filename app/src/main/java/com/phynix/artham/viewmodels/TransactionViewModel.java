@@ -102,7 +102,6 @@ public class TransactionViewModel extends AndroidViewModel {
     }
 
     /**
-     * [FIX] ADDED THIS METHOD TO FIX THE BUILD ERROR
      * Adds a new transaction.
      */
     public void addTransaction(TransactionModel transaction) {
@@ -114,13 +113,28 @@ public class TransactionViewModel extends AndroidViewModel {
             if (!success) {
                 errorMessage.postValue("Failed to add transaction.");
             }
-            // No need to manually refresh, the listener in TransactionActivity will catch it.
-            // Or, if that's removed, we can call loadTransactions() here.
         });
     }
 
     /**
-     * [FIX] ADDED THIS METHOD TO FIX THE BUILD ERROR
+     * [FIXED] Added this method to solve the error in EditTransactionActivity
+     * Updates an existing transaction.
+     */
+    public void updateTransaction(TransactionModel transaction) {
+        if (cashbookId == null) {
+            errorMessage.postValue("Error: No cashbook selected.");
+            return;
+        }
+        // Assuming your DataRepository has an updateTransaction method.
+        // If not, 'addTransaction' usually works for updates too if the ID is set.
+        repository.updateTransaction(cashbookId, transaction, success -> {
+            if (!success) {
+                errorMessage.postValue("Failed to update transaction.");
+            }
+        });
+    }
+
+    /**
      * Deletes a transaction.
      */
     public void deleteTransaction(String transactionId) {
@@ -132,7 +146,6 @@ public class TransactionViewModel extends AndroidViewModel {
             if (!success) {
                 errorMessage.postValue("Failed to delete transaction.");
             }
-            // No need to manually refresh, the listener in TransactionActivity will catch it.
         });
     }
 

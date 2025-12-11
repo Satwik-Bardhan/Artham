@@ -1,5 +1,13 @@
 package com.phynix.artham;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.os.Build;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import com.google.firebase.appdistribution.FirebaseAppDistribution;
+import com.google.firebase.appdistribution.InterruptionLevel;
+
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
@@ -19,6 +27,8 @@ import android.widget.TableLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -38,19 +48,22 @@ import com.phynix.artham.models.CashbookModel;
 import com.phynix.artham.models.TransactionModel;
 import com.phynix.artham.utils.DateTimeUtils;
 import com.phynix.artham.utils.ErrorHandler;
+import com.phynix.artham.utils.SnackbarHelper;
 
 import java.io.Serializable;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-import android.icu.util.Calendar;
 
 public class HomePage extends AppCompatActivity {
 
     private static final String TAG = "HomePage";
     private static final int REQUEST_CODE_CASHBOOK_SWITCH = 1001;
+    // Permission request code for Notifications
+    private static final int PERMISSION_REQUEST_CODE_NOTIFICATIONS = 101;
 
     // ViewBinding
     private ActivityHomePageBinding binding;
@@ -60,13 +73,10 @@ public class HomePage extends AppCompatActivity {
     // UI Elements
     private View dailySummaryHeader;
     private TextView dailyDateText, dailyBalanceText;
-    private ImageView dailySummaryArrowIcon;
 
     private LinearLayout transactionSection;
     private LinearLayout emptyStateView;
     private TableLayout transactionTable;
-
-    private boolean isDailyListExpanded = true;
 
     // Firebase
     private FirebaseAuth mAuth;
@@ -88,19 +98,25 @@ public class HomePage extends AppCompatActivity {
     // Utils
     private NumberFormat currencyFormat;
 
+    // Launchers
+    private final ActivityResultLauncher<Intent> detailsLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                // Refresh logic if needed
+            }
+    );
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Initialize ViewBinding
         binding = ActivityHomePageBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        // Initialize child bindings
         balanceCardBinding = binding.balanceCardView;
         bottomNavBinding = binding.bottomNavCard;
 
-        // Initialize Views manually from the included layout
+        // Initialize Views
         dailySummaryHeader = findViewById(R.id.dailySummaryHeader);
         dailyDateText = findViewById(R.id.dailyDateText);
         dailyBalanceText = findViewById(R.id.dailyBalanceText);
@@ -118,7 +134,7 @@ public class HomePage extends AppCompatActivity {
         currentUser = mAuth.getCurrentUser();
 
         if (currentUser == null) {
-            Log.e(TAG, "No authenticated user found. Redirecting to login.");
+            Log.e(TAG, "No authenticated user found.");
             signOutUser();
             return;
         }
@@ -133,6 +149,51 @@ public class HomePage extends AppCompatActivity {
         setupUI();
         setupClickListeners();
         setupBottomNavigation();
+
+        // [NEW] Check permissions and show "Shake to Feedback" notification
+        checkNotificationPermissionAndShowFeedback();
+    }
+
+    // [NEW] Logic to check Android 13+ Notification Permission
+    private void checkNotificationPermissionAndShowFeedback() {
+        if (Build.VERSION.SDK_INT >= 33) { // Android 13 (Tiramisu) or higher
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                // Permission not granted, ask for it
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.POST_NOTIFICATIONS}, PERMISSION_REQUEST_CODE_NOTIFICATIONS);
+            } else {
+                // Permission already granted, enable feedback
+                showFeedbackNotification();
+            }
+        } else {
+            // Older Android versions don't need runtime permission
+            showFeedbackNotification();
+        }
+    }
+
+    // [NEW] Logic to actually trigger the Firebase App Distribution notification
+    private void showFeedbackNotification() {
+        try {
+            FirebaseAppDistribution.getInstance().showFeedbackNotification(
+                    "Shake your phone to start feedback!",
+                    InterruptionLevel.HIGH
+            );
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to show feedback notification", e);
+        }
+    }
+
+    // [NEW] Handle the user's response to the permission popup
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == PERMISSION_REQUEST_CODE_NOTIFICATIONS) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                showFeedbackNotification();
+            } else {
+                // Permission denied. You might want to show a Snackbar explaining why.
+                showSnackbar("Notifications disabled. Enable them to use Shake-to-Feedback.");
+            }
+        }
     }
 
     private void setupBottomNavigation() {
@@ -259,26 +320,14 @@ public class HomePage extends AppCompatActivity {
         binding.cashInButton.setContentDescription("Add cash in transaction");
         binding.cashOutButton.setContentDescription("Add cash out transaction");
         binding.userBox.setContentDescription("User information and cashbook selector");
+
+        // Ensure section is always visible
+        if (transactionSection != null) transactionSection.setVisibility(View.VISIBLE);
     }
 
     private void setupClickListeners() {
         binding.cashInButton.setOnClickListener(v -> openCashInOutActivity("IN"));
         binding.cashOutButton.setOnClickListener(v -> openCashInOutActivity("OUT"));
-
-        if (dailySummaryHeader != null) {
-            dailySummaryHeader.setOnClickListener(v -> toggleDailyList());
-        }
-    }
-
-    private void toggleDailyList() {
-        isDailyListExpanded = !isDailyListExpanded;
-        if (isDailyListExpanded) {
-            if (transactionSection != null) transactionSection.setVisibility(View.VISIBLE);
-            if (dailySummaryArrowIcon != null) dailySummaryArrowIcon.animate().rotation(0).setDuration(200).start();
-        } else {
-            if (transactionSection != null) transactionSection.setVisibility(View.GONE);
-            if (dailySummaryArrowIcon != null) dailySummaryArrowIcon.animate().rotation(180).setDuration(200).start();
-        }
     }
 
     @Override
@@ -343,7 +392,6 @@ public class HomePage extends AppCompatActivity {
         transactionsListener = new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                // [FIX] Run Heavy Calculation on Background Thread to prevent ANR
                 new Thread(() -> {
                     ArrayList<TransactionModel> tempList = new ArrayList<>();
                     double calcTotalIn = 0;
@@ -359,14 +407,12 @@ public class HomePage extends AppCompatActivity {
                                 transaction.setTransactionId(snapshot.getKey());
                                 tempList.add(transaction);
 
-                                // Global Totals
                                 if ("IN".equalsIgnoreCase(transaction.getType())) {
                                     calcTotalIn += transaction.getAmount();
                                 } else {
                                     calcTotalOut += transaction.getAmount();
                                 }
 
-                                // Today's Totals & List
                                 if (isToday(transaction.getTimestamp())) {
                                     calcTodaysTransactions.add(transaction);
                                     if ("IN".equalsIgnoreCase(transaction.getType())) {
@@ -378,13 +424,9 @@ public class HomePage extends AppCompatActivity {
                             }
                         }
 
-                        // Sort Main List
                         Collections.sort(tempList, (t1, t2) -> Long.compare(t2.getTimestamp(), t1.getTimestamp()));
-
-                        // Sort Today's List (for display)
                         Collections.sort(calcTodaysTransactions, (t1, t2) -> Long.compare(t2.getTimestamp(), t1.getTimestamp()));
 
-                        // Final Variables for UI Thread
                         final double finalTotalIn = calcTotalIn;
                         final double finalTotalOut = calcTotalOut;
                         final double finalTodayBalance = calcTodayIn - calcTodayOut;
@@ -462,7 +504,6 @@ public class HomePage extends AppCompatActivity {
         return "CashFlow User";
     }
 
-    // [FIX] This method now only does UI rendering, no heavy calculation
     @SuppressLint("SetTextI18n")
     private void renderUI(double totalIncome, double totalExpense, double todayBalance, List<TransactionModel> todaysTransactions) {
         if (binding == null) return;
@@ -473,13 +514,11 @@ public class HomePage extends AppCompatActivity {
 
             double globalBalance = totalIncome - totalExpense;
 
-            // Update Balance Card
             balanceCardBinding.balanceText.setText(formatCurrency(globalBalance));
             balanceCardBinding.moneyIn.setText(formatCurrency(totalIncome));
             balanceCardBinding.moneyOut.setText(formatCurrency(totalExpense));
             balanceCardBinding.balanceText.setTextColor(Color.WHITE);
 
-            // Update Daily Header
             if (dailyDateText != null) {
                 dailyDateText.setText(DateTimeUtils.formatDate(System.currentTimeMillis(), "dd MMM yyyy"));
             }
@@ -495,7 +534,6 @@ public class HomePage extends AppCompatActivity {
                 }
             }
 
-            // Update List
             if (todaysTransactions == null || todaysTransactions.isEmpty()) {
                 if (emptyStateView != null) emptyStateView.setVisibility(View.VISIBLE);
                 if (transactionTable != null) transactionTable.setVisibility(View.GONE);
@@ -506,7 +544,6 @@ public class HomePage extends AppCompatActivity {
 
                 if (binding.transactionCount != null) binding.transactionCount.setText("TODAY (" + todaysTransactions.size() + ")");
 
-                // Inflating views here is cleaner because list size is small (Daily)
                 for (TransactionModel transaction : todaysTransactions) {
                     addTransactionRow(transaction);
                 }
@@ -543,11 +580,17 @@ public class HomePage extends AppCompatActivity {
         if (rowMode != null) rowMode.setText(transaction.getPaymentMode());
 
         if ("IN".equalsIgnoreCase(transaction.getType())) {
-            if (rowIn != null) rowIn.setText(formatCurrency(transaction.getAmount()));
+            if (rowIn != null) {
+                rowIn.setText(formatCurrency(transaction.getAmount()));
+                rowIn.setTextColor(ThemeUtil.getThemeAttrColor(this, R.attr.incomeColor)); // Green
+            }
             if (rowOut != null) rowOut.setText("-");
         } else {
             if (rowIn != null) rowIn.setText("-");
-            if (rowOut != null) rowOut.setText(formatCurrency(transaction.getAmount()));
+            if (rowOut != null) {
+                rowOut.setText(formatCurrency(transaction.getAmount()));
+                rowOut.setTextColor(ThemeUtil.getThemeAttrColor(this, R.attr.expenseColor)); // Red
+            }
         }
 
         rowView.setOnClickListener(v -> openTransactionDetail(transaction));
@@ -556,10 +599,10 @@ public class HomePage extends AppCompatActivity {
     }
 
     private void openTransactionDetail(TransactionModel transaction) {
-        Intent intent = new Intent(this, EditTransactionActivity.class);
-        intent.putExtra("transaction_model", (Serializable) transaction);
+        Intent intent = new Intent(this, TransactionDetailsActivity.class);
+        intent.putExtra(TransactionDetailsActivity.EXTRA_TRANSACTION, transaction);
         intent.putExtra("cashbook_id", currentCashbookId);
-        startActivity(intent);
+        detailsLauncher.launch(intent);
     }
 
     private void openCashInOutActivity(String type) {
@@ -649,10 +692,10 @@ public class HomePage extends AppCompatActivity {
         binding.userBox.setEnabled(!loading);
     }
 
+    // [FIX] Updated Snackbar to use Helper
     private void showSnackbar(String message) {
-        if (binding != null) {
-            Snackbar.make(binding.getRoot(), message, Snackbar.LENGTH_SHORT).show();
-        }
+        View anchor = (bottomNavBinding != null) ? bottomNavBinding.getRoot() : null;
+        SnackbarHelper.show(this, message, anchor);
     }
 
     private void removeFirebaseListeners() {

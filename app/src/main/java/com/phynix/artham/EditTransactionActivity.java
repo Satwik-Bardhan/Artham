@@ -1,11 +1,17 @@
 package com.phynix.artham;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.speech.RecognizerIntent;
 import android.text.TextUtils;
 import android.view.View;
@@ -22,14 +28,17 @@ import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.phynix.artham.models.TransactionModel;
+import com.phynix.artham.utils.SnackbarHelper;
 import com.phynix.artham.viewmodels.TransactionViewModel;
 import com.phynix.artham.viewmodels.TransactionViewModelFactory;
 
@@ -44,6 +53,7 @@ public class EditTransactionActivity extends AppCompatActivity {
     private static final String TAG = "EditTransactionActivity";
     private static final String PREFS_NAME = "AppSettingsPrefs";
     private static final String KEY_CALCULATOR = "calculator_enabled";
+    private static final int CONTACT_PERMISSION_CODE = 200;
 
     // UI Components
     private ImageView backButton, menuButton, timePickerIcon, swapButton;
@@ -65,7 +75,8 @@ public class EditTransactionActivity extends AppCompatActivity {
     private String currentCashbookId;
     private Calendar calendar;
 
-    // Activity Launchers
+    // --- Activity Launchers ---
+
     private final ActivityResultLauncher<Intent> categoryLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
@@ -73,6 +84,7 @@ public class EditTransactionActivity extends AppCompatActivity {
                     String category = result.getData().getStringExtra("selected_category");
                     if (category != null) {
                         selectedCategoryTextView.setText(category);
+                        selectedCategoryTextView.setTextColor(ContextCompat.getColor(this, R.color.primary_blue));
                         currentTransaction.setTransactionCategory(category);
                     }
                 }
@@ -91,13 +103,22 @@ public class EditTransactionActivity extends AppCompatActivity {
             }
     );
 
+    private final ActivityResultLauncher<Intent> contactPickerLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+                    Uri contactUri = result.getData().getData();
+                    retrieveContactName(contactUri);
+                }
+            }
+    );
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_transaction);
         if (getSupportActionBar() != null) getSupportActionBar().hide();
 
-        // 1. Get Data from Intent
         currentTransaction = (TransactionModel) getIntent().getSerializableExtra("transaction_model");
         currentCashbookId = getIntent().getStringExtra("cashbook_id");
 
@@ -110,7 +131,6 @@ public class EditTransactionActivity extends AppCompatActivity {
         calendar = Calendar.getInstance();
         calendar.setTimeInMillis(currentTransaction.getTimestamp());
 
-        // 2. Initialize ViewModel and UI
         initViewModel();
         initializeUI();
         populateData();
@@ -127,19 +147,16 @@ public class EditTransactionActivity extends AppCompatActivity {
     }
 
     private void initializeUI() {
-        // Headers & Navigation
         backButton = findViewById(R.id.backButton);
         menuButton = findViewById(R.id.menuButton);
         headerSubtitle = findViewById(R.id.headerSubtitle);
 
-        // Date & Time
         dateTextView = findViewById(R.id.dateTextView);
         timeTextView = findViewById(R.id.timeTextView);
         timePickerIcon = findViewById(R.id.timePickerIcon);
         dateSelectorLayout = findViewById(R.id.dateSelectorLayout);
         timeSelectorLayout = findViewById(R.id.timeSelectorLayout);
 
-        // Toggles
         inOutToggle = findViewById(R.id.inOutToggle);
         radioIn = findViewById(R.id.radioIn);
         radioOut = findViewById(R.id.radioOut);
@@ -150,13 +167,13 @@ public class EditTransactionActivity extends AppCompatActivity {
         radioOnline = findViewById(R.id.radioOnline);
         radioCard = findViewById(R.id.radioCard);
 
-        // Fields
         amountEditText = findViewById(R.id.amountEditText);
         calculatorButton = findViewById(R.id.calculatorButton);
 
         selectedCategoryTextView = findViewById(R.id.selectedCategoryTextView);
+
+        // [FIXED] Removed the fallback check for R.id.categoryInputLayout
         categorySelectorLayout = findViewById(R.id.categorySelectorLayout);
-        if (categorySelectorLayout == null) categorySelectorLayout = findViewById(R.id.categoryInputLayout);
 
         partyTextView = findViewById(R.id.partyTextView);
         partySelectorLayout = findViewById(R.id.partySelectorLayout);
@@ -167,12 +184,10 @@ public class EditTransactionActivity extends AppCompatActivity {
         tagsEditText = findViewById(R.id.tagsEditText);
         locationButton = findViewById(R.id.locationButton);
 
-        // Tax
         taxCheckbox = findViewById(R.id.taxCheckbox);
         taxAmountLayout = findViewById(R.id.taxAmountLayout);
         taxAmountEditText = findViewById(R.id.taxAmountEditText);
 
-        // History & Actions
         createdDateText = findViewById(R.id.createdDateText);
         updatedDateText = findViewById(R.id.updatedDateText);
 
@@ -181,40 +196,39 @@ public class EditTransactionActivity extends AppCompatActivity {
     }
 
     private void populateData() {
-        // Amount
         if (currentTransaction.getAmount() == (long) currentTransaction.getAmount()) {
             amountEditText.setText(String.format(Locale.US, "%d", (long) currentTransaction.getAmount()));
         } else {
             amountEditText.setText(String.valueOf(currentTransaction.getAmount()));
         }
 
-        // Type
         if ("IN".equalsIgnoreCase(currentTransaction.getType())) radioIn.setChecked(true);
         else radioOut.setChecked(true);
 
-        // Payment Mode
         String mode = currentTransaction.getPaymentMode();
         if ("Online".equalsIgnoreCase(mode)) radioOnline.setChecked(true);
         else if ("Card".equalsIgnoreCase(mode) && radioCard != null) radioCard.setChecked(true);
         else radioCash.setChecked(true);
 
-        // Category & Party
         selectedCategoryTextView.setText(currentTransaction.getTransactionCategory());
-        partyTextView.setText(currentTransaction.getPartyName() != null ? currentTransaction.getPartyName() : "Select Party");
 
-        // Text Fields
+        String party = currentTransaction.getPartyName();
+        if (party != null && !party.isEmpty()) {
+            partyTextView.setText(party);
+            partyTextView.setTextColor(ContextCompat.getColor(this, R.color.primary_blue));
+        } else {
+            partyTextView.setText("Select Party");
+        }
+
         if (currentTransaction.getRemark() != null) remarkEditText.setText(currentTransaction.getRemark());
         if (currentTransaction.getTags() != null) tagsEditText.setText(currentTransaction.getTags());
 
-        // Date & Time
         updateDateText();
         updateTimeText();
 
-        // Last Modified Header
         SimpleDateFormat headerDateFormat = new SimpleDateFormat("MMM dd, yyyy", Locale.US);
         if (headerSubtitle != null) headerSubtitle.setText("Last modified: " + headerDateFormat.format(new Date()));
 
-        // History Section
         SimpleDateFormat historySdf = new SimpleDateFormat("dd MMM yyyy, hh:mm a", Locale.getDefault());
         if (createdDateText != null) createdDateText.setText(historySdf.format(currentTransaction.getTimestamp()));
         if (updatedDateText != null) updatedDateText.setText(historySdf.format(System.currentTimeMillis()));
@@ -224,7 +238,6 @@ public class EditTransactionActivity extends AppCompatActivity {
         if (backButton != null) backButton.setOnClickListener(v -> finish());
         if (cancelButton != null) cancelButton.setOnClickListener(v -> finish());
 
-        // Date & Time
         View.OnClickListener dateListener = v -> showDatePicker();
         if (dateSelectorLayout != null) dateSelectorLayout.setOnClickListener(dateListener);
         if (dateTextView != null) dateTextView.setOnClickListener(dateListener);
@@ -234,11 +247,9 @@ public class EditTransactionActivity extends AppCompatActivity {
         if (timeTextView != null) timeTextView.setOnClickListener(timeListener);
         if (timePickerIcon != null) timePickerIcon.setOnClickListener(timeListener);
 
-        // Tools
         if (calculatorButton != null) calculatorButton.setOnClickListener(v -> checkAndOpenCalculator());
         if (voiceInputButton != null) voiceInputButton.setOnClickListener(v -> startVoiceInput());
 
-        // Selectors
         if (categorySelectorLayout != null) {
             categorySelectorLayout.setOnClickListener(v -> {
                 Intent intent = new Intent(this, ChooseCategoryActivity.class);
@@ -249,17 +260,21 @@ public class EditTransactionActivity extends AppCompatActivity {
         }
 
         if (partySelectorLayout != null) {
-            partySelectorLayout.setOnClickListener(v -> openPartySelector());
+            partySelectorLayout.setOnClickListener(v -> {
+                if (checkContactPermission()) {
+                    openContactPicker();
+                } else {
+                    requestContactPermission();
+                }
+            });
         }
 
-        // Tax Logic
         if (taxCheckbox != null) {
             taxCheckbox.setOnCheckedChangeListener((bv, isChecked) -> {
                 if (taxAmountLayout != null) taxAmountLayout.setVisibility(isChecked ? View.VISIBLE : View.GONE);
             });
         }
 
-        // Swap Type
         if (swapButton != null) {
             swapButton.setOnClickListener(v -> {
                 if (radioIn.isChecked()) radioOut.setChecked(true);
@@ -267,7 +282,6 @@ public class EditTransactionActivity extends AppCompatActivity {
             });
         }
 
-        // Main Actions
         if (saveChangesButton != null) saveChangesButton.setOnClickListener(v -> saveChanges());
         if (menuButton != null) menuButton.setOnClickListener(v -> showMoreOptionsMenu(v));
     }
@@ -280,7 +294,6 @@ public class EditTransactionActivity extends AppCompatActivity {
         }
 
         try {
-            // 1. Update the Model Object
             currentTransaction.setAmount(Double.parseDouble(amountStr));
             currentTransaction.setType(radioIn.isChecked() ? "IN" : "OUT");
 
@@ -293,13 +306,13 @@ public class EditTransactionActivity extends AppCompatActivity {
             currentTransaction.setTimestamp(calendar.getTimeInMillis());
 
             String party = partyTextView.getText().toString();
-            currentTransaction.setPartyName(party.equals("Select Party") || party.equals("Select Party (Customer/Supplier)") ? "" : party);
+            if(party.equals("Select Party")) party = "";
+            currentTransaction.setPartyName(party);
 
             currentTransaction.setRemark(remarkEditText.getText().toString().trim());
             if (tagsEditText != null) currentTransaction.setTags(tagsEditText.getText().toString().trim());
 
-            // 2. Save via ViewModel
-            viewModel.addTransaction(currentTransaction);
+            viewModel.updateTransaction(currentTransaction);
 
             showSnackbar("Transaction Updated");
             finish();
@@ -336,7 +349,6 @@ public class EditTransactionActivity extends AppCompatActivity {
     }
 
     private void duplicateTransaction() {
-        // Create a copy with a NEW ID
         TransactionModel copy = new TransactionModel();
         copy.setAmount(currentTransaction.getAmount());
         copy.setTransactionCategory(currentTransaction.getTransactionCategory());
@@ -374,7 +386,46 @@ public class EditTransactionActivity extends AppCompatActivity {
         startActivity(Intent.createChooser(intent, "Share Transaction"));
     }
 
-    // --- Helper UI Methods ---
+    private void openContactPicker() {
+        Intent intent = new Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI);
+        contactPickerLauncher.launch(intent);
+    }
+
+    private boolean checkContactPermission() {
+        return ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private void requestContactPermission() {
+        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_CONTACTS}, CONTACT_PERMISSION_CODE);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == CONTACT_PERMISSION_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                openContactPicker();
+            } else {
+                Toast.makeText(this, "Permission Denied. Cannot access contacts.", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    @SuppressLint("Range")
+    private void retrieveContactName(Uri contactUri) {
+        try (Cursor cursor = getContentResolver().query(contactUri, null, null, null, null)) {
+            if (cursor != null && cursor.moveToFirst()) {
+                String name = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
+                if (name != null) {
+                    partyTextView.setText(name);
+                    partyTextView.setTextColor(ContextCompat.getColor(this, R.color.primary_blue));
+                    currentTransaction.setPartyName(name);
+                }
+            }
+        } catch (Exception e) {
+            Toast.makeText(this, "Failed to get contact name", Toast.LENGTH_SHORT).show();
+        }
+    }
 
     private void updateDateText() {
         SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy", Locale.US);
@@ -402,12 +453,6 @@ public class EditTransactionActivity extends AppCompatActivity {
             updateTimeText();
         }, calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), false).show();
     }
-
-    private void showSnackbar(String message) {
-        Snackbar.make(findViewById(android.R.id.content), message, Snackbar.LENGTH_SHORT).show();
-    }
-
-    // --- Calculator & Voice Logic ---
 
     private void checkAndOpenCalculator() {
         SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
@@ -475,12 +520,10 @@ public class EditTransactionActivity extends AppCompatActivity {
     private String safeEvaluate(String expression) {
         try {
             expression = expression.replace("%", "/100");
-            // Basic parsing logic (Replace with exp4j or similar for robustness)
             if (expression.contains("+")) {
                 String[] parts = expression.split("\\+");
                 return String.valueOf(Double.parseDouble(parts[0]) + Double.parseDouble(parts[1]));
             }
-            // ... (Add other operators as needed)
             return expression;
         } catch (Exception e) { return "Error"; }
     }
@@ -494,18 +537,7 @@ public class EditTransactionActivity extends AppCompatActivity {
         } catch (Exception e) { Toast.makeText(this, "Calculator not found", Toast.LENGTH_SHORT).show(); }
     }
 
-    private void openPartySelector() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        final EditText input = new EditText(this);
-        input.setHint("Enter party name");
-        String currentParty = partyTextView.getText().toString();
-        if (!currentParty.equals("Select Party") && !currentParty.equals("Select Party (Customer/Supplier)")) {
-            input.setText(currentParty);
-        }
-        builder.setTitle("Edit Party")
-                .setView(input)
-                .setPositiveButton("OK", (dialog, which) -> partyTextView.setText(input.getText().toString()))
-                .setNegativeButton("Cancel", null)
-                .show();
+    private void showSnackbar(String message) {
+        SnackbarHelper.show(this, message, R.id.footerLayout);
     }
 }

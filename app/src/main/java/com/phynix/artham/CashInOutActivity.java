@@ -61,7 +61,6 @@ public class CashInOutActivity extends AppCompatActivity {
     private LinearLayout dateSelectorLayout, timeSelectorLayout, categorySelectorLayout;
     private RadioGroup inOutToggle, cashOnlineToggle;
 
-    // [UPDATE] Added radioCard
     private RadioButton radioIn, radioOut, radioCash, radioOnline, radioCard;
 
     private ImageView swapButton;
@@ -71,7 +70,10 @@ public class CashInOutActivity extends AppCompatActivity {
     private EditText amountEditText;
     private ImageView calculatorButton, voiceInputButton, locationButton;
     private Button quickAmount100, quickAmount500, quickAmount1000, quickAmount5000;
+
+    // Attachment Buttons
     private ImageView cameraButton, scanButton, attachFileButton;
+
     private TextView partyTextView;
     private LinearLayout partySelectorLayout;
     private Button saveEntryButton, saveAndAddNewButton, clearButton;
@@ -126,7 +128,10 @@ public class CashInOutActivity extends AppCompatActivity {
 
         initializeUI();
         initializeDateTime();
+
+        // 1. Setup Click Listeners (includes Attachment "Coming Soon" Logic)
         setupClickListeners();
+
         setupActivityLaunchers();
         setupInitialState(transactionType);
 
@@ -158,11 +163,9 @@ public class CashInOutActivity extends AppCompatActivity {
         // Payment Method
         cashOnlineToggle = findViewById(R.id.cashOnlineToggle);
         radioCash = findViewById(R.id.radioCash);
-
-        // [UPDATE] Initialize RadioCard
         radioCard = findViewById(R.id.radioCard);
-
         radioOnline = findViewById(R.id.radioOnline);
+
         taxCheckbox = findViewById(R.id.taxCheckbox);
         taxAmountLayout = findViewById(R.id.taxAmountLayout);
         taxAmountEditText = findViewById(R.id.taxAmountEditText);
@@ -283,9 +286,20 @@ public class CashInOutActivity extends AppCompatActivity {
 
         setupQuickAmountButtons();
 
-        if (cameraButton != null) cameraButton.setOnClickListener(v -> openCamera());
-        if (scanButton != null) scanButton.setOnClickListener(v -> openScanner());
-        if (attachFileButton != null) attachFileButton.setOnClickListener(v -> openFilePicker());
+        // [FEATURE] Attachments "Coming Soon"
+        View.OnClickListener comingSoonListener = v -> {
+            Toast.makeText(this, "Feature coming soon", Toast.LENGTH_SHORT).show();
+        };
+
+        if (cameraButton != null) cameraButton.setOnClickListener(comingSoonListener);
+        if (scanButton != null) scanButton.setOnClickListener(comingSoonListener);
+        if (attachFileButton != null) attachFileButton.setOnClickListener(comingSoonListener);
+
+        /* If you want to re-enable actual camera/file logic later, uncomment these:
+           if (cameraButton != null) cameraButton.setOnClickListener(v -> openCamera());
+           if (scanButton != null) scanButton.setOnClickListener(v -> openScanner());
+           if (attachFileButton != null) attachFileButton.setOnClickListener(v -> openFilePicker());
+        */
 
         if (removeAttachedImage != null) {
             removeAttachedImage.setOnClickListener(v -> {
@@ -325,7 +339,6 @@ public class CashInOutActivity extends AppCompatActivity {
         }
     }
 
-    // [FIXED] Added Null Checks to prevent Crash
     private void setupQuickAmountButtons() {
         View.OnClickListener quickAmountClickListener = v -> {
             clearQuickAmountSelections();
@@ -343,7 +356,6 @@ public class CashInOutActivity extends AppCompatActivity {
         if (quickAmount5000 != null) quickAmount5000.setOnClickListener(quickAmountClickListener);
     }
 
-    // [FIXED] Added Null Checks
     private void clearQuickAmountSelections() {
         if (quickAmount100 != null) quickAmount100.setSelected(false);
         if (quickAmount500 != null) quickAmount500.setSelected(false);
@@ -382,6 +394,7 @@ public class CashInOutActivity extends AppCompatActivity {
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
                     if (result.getResultCode() == RESULT_OK) {
+                        // Placeholder logic for now since button is disabled/toast only
                         attachedImageUri = Uri.parse("file://dummy/image.jpg");
                         if (result.getData() != null && result.getData().getData() != null) {
                             attachedImageUri = result.getData().getData();
@@ -612,6 +625,8 @@ public class CashInOutActivity extends AppCompatActivity {
         categoryLauncher.launch(intent);
     }
 
+    // --- Original Attachment Logic (Kept for reference or future use) ---
+    /*
     private void openCamera() {
         Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
         if (cameraIntent.resolveActivity(getPackageManager()) != null) {
@@ -630,13 +645,14 @@ public class CashInOutActivity extends AppCompatActivity {
 
     private void openFilePicker() {
         Intent fileIntent = new Intent(Intent.ACTION_GET_CONTENT);
-        fileIntent.setType("*/*");
+        fileIntent.setType("*\/*");
         try {
             filePickerLauncher.launch(Intent.createChooser(fileIntent, "Select File"));
         } catch (Exception e) {
             Toast.makeText(this, "File picker not available", Toast.LENGTH_SHORT).show();
         }
     }
+    */
 
     private void openPartySelector() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);

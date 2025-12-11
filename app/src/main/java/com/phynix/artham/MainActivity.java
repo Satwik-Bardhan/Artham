@@ -10,13 +10,14 @@ import com.phynix.artham.utils.ErrorHandler;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
+// [NEW IMPORTS] for App Distribution Feedback
+import com.google.firebase.appdistribution.FirebaseAppDistribution;
+import com.google.firebase.appdistribution.InterruptionLevel;
 
 /**
  * MainActivity serves as the application entry point and authentication router.
  * This activity determines whether to navigate to SigninActivity or HomePage
  * based on the user's authentication status.
- *
- * [FIXED] Removed all Guest Mode logic for a cleaner, auth-focused flow.
  */
 public class MainActivity extends AppCompatActivity {
 
@@ -26,8 +27,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         // The theme is applied by MyApplication before this activity starts
         super.onCreate(savedInstanceState);
-        // [FIX] No layout is needed for this router activity
-        // setContentView(R.layout.activity_main);
+        // No layout is needed for this router activity
 
         Log.d(TAG, getString(R.string.log_main_activity_started));
 
@@ -35,6 +35,17 @@ public class MainActivity extends AppCompatActivity {
             FirebaseCrashlytics.getInstance().log(getString(R.string.log_app_startup_initiated));
         } catch (Exception e) {
             Log.d(TAG, getString(R.string.log_crashlytics_unavailable));
+        }
+
+        // [NEW] Force the Feedback Notification to appear
+        // This helps confirm the tester is recognized and the SDK is working.
+        try {
+            FirebaseAppDistribution.getInstance().showFeedbackNotification(
+                    "Shake your phone to start feedback!",
+                    InterruptionLevel.HIGH
+            );
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to show App Distribution notification", e);
         }
 
         checkAuthenticationAndNavigate();
@@ -57,8 +68,6 @@ public class MainActivity extends AppCompatActivity {
                 // User is signed in, navigate to Home
                 Log.d(TAG, getString(R.string.log_authenticated_user_found, currentUser.getUid()));
                 navigationIntent = new Intent(this, HomePage.class);
-                // [FIX] Removed isGuest flag, it's no longer needed
-                // navigationIntent.putExtra("isGuest", false);
 
                 try {
                     FirebaseCrashlytics crashlytics = FirebaseCrashlytics.getInstance();

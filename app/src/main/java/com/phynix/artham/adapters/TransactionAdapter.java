@@ -184,10 +184,19 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
                         @Override
                         public boolean onMenuItemClick(MenuItem item) {
                             int id = item.getItemId();
-                            if (id == R.id.action_copy) {
+
+                            // [NEW] Handle Edit
+                            if (id == R.id.action_edit) {
+                                if (listener != null) listener.onEditClick(transaction);
+                                return true;
+                            }
+                            // Existing Copy logic
+                            else if (id == R.id.action_copy) {
                                 if (listener != null) listener.onCopyClick(transaction);
                                 return true;
-                            } else if (id == R.id.action_delete) {
+                            }
+                            // Existing Delete logic
+                            else if (id == R.id.action_delete) {
                                 if (listener != null) listener.onDeleteClick(transaction);
                                 return true;
                             }

@@ -2,11 +2,11 @@ package com.phynix.artham;
 
 import android.app.Activity;
 import android.app.DatePickerDialog;
-import android.content.Context; // [FIX] Added context import
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.util.TypedValue; // [FIX] Added for ThemeUtil
+import android.util.TypedValue;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -19,7 +19,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.google.android.material.snackbar.Snackbar;
+import com.phynix.artham.utils.SnackbarHelper; // [NEW IMPORT]
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -30,16 +30,6 @@ import java.util.Set;
 
 /**
  * FiltersActivity - Advanced transaction filtering
- *
- * Features:
- * - Date range filtering (Today, Week, Month, Custom)
- * - Transaction type filtering (Income/Expense)
- * - Payment mode filtering (Cash/Online)
- * - Category filtering
- * - Search by remarks
- * - Tag filtering
- *
- * Updated: November 2025 - Fixed layout and theme issues
  */
 public class FiltersActivity extends AppCompatActivity {
 
@@ -65,7 +55,6 @@ public class FiltersActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // [FIX] Point to the correct layout file
         setContentView(R.layout.activity_filters);
         if (getSupportActionBar() != null) {
             getSupportActionBar().hide();
@@ -80,9 +69,6 @@ public class FiltersActivity extends AppCompatActivity {
         Log.d(TAG, "FiltersActivity created");
     }
 
-    /**
-     * Initialize all UI components
-     */
     private void initializeUI() {
         // Header
         backButton = findViewById(R.id.backButton);
@@ -121,9 +107,6 @@ public class FiltersActivity extends AppCompatActivity {
         endCalendar = Calendar.getInstance();
     }
 
-    /**
-     * Receive initial filter values from intent
-     */
     private void receiveInitialFilters() {
         Intent intent = getIntent();
         long initialStartDate = intent.getLongExtra("startDate", 0);
@@ -132,13 +115,13 @@ public class FiltersActivity extends AppCompatActivity {
         if (initialStartDate > 0) {
             startCalendar.setTimeInMillis(initialStartDate);
         } else {
-            startCalendar.setTimeInMillis(0); // [FIX] Ensure it's 0 if not provided
+            startCalendar.setTimeInMillis(0);
         }
 
         if (initialEndDate > 0) {
             endCalendar.setTimeInMillis(initialEndDate);
         } else {
-            endCalendar.setTimeInMillis(0); // [FIX] Ensure it's 0 if not provided
+            endCalendar.setTimeInMillis(0);
         }
 
         entryType = intent.getStringExtra("entryType");
@@ -150,38 +133,26 @@ public class FiltersActivity extends AppCompatActivity {
         if (categories != null) {
             selectedCategories = new HashSet<>(categories);
         }
-
-        Log.d(TAG, "Initial filters received: entryType=" + entryType + ", categories=" + selectedCategories.size());
     }
 
-    /**
-     * Setup category launcher for activity result
-     */
     private void setupCategoryLauncher() {
         categoryLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
                     if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
-                        // [FIX] This should be 'selected_category', not 'selected_categories' from ChooseCategoryActivity
                         String returnedCategory = result.getData().getStringExtra("selected_category");
                         if (returnedCategory != null) {
-                            // This filter UI seems to only support one category, but the logic supports many.
-                            // For simplicity, we'll replace the set with the one new category.
                             selectedCategories.clear();
                             if (!"No Category".equals(returnedCategory)) {
                                 selectedCategories.add(returnedCategory);
                             }
                             updateUIWithCurrentFilters();
-                            Log.d(TAG, "Category updated: " + selectedCategories.size());
                         }
                     }
                 }
         );
     }
 
-    /**
-     * Setup all click listeners
-     */
     private void setupClickListeners() {
         backButton.setOnClickListener(v -> finish());
         resetButton.setOnClickListener(v -> clearAllFilters());
@@ -198,12 +169,10 @@ public class FiltersActivity extends AppCompatActivity {
         // Category Listener
         categorySelectorLayout.setOnClickListener(v -> {
             Intent categoryIntent = new Intent(this, ChooseCategoryActivity.class);
-            // Pass the first (and likely only) category back
             if (!selectedCategories.isEmpty()) {
                 categoryIntent.putExtra("selected_category", selectedCategories.iterator().next());
             }
             categoryLauncher.launch(categoryIntent);
-            Log.d(TAG, "Category selector opened");
         });
 
         // Party Listener
@@ -212,27 +181,20 @@ public class FiltersActivity extends AppCompatActivity {
 
         // Radio Group Listeners
         inOutToggle.setOnCheckedChangeListener((group, checkedId) -> {
-            if (checkedId == R.id.radioIn) {
-                entryType = "IN";
-            } else if (checkedId == R.id.radioOut) {
-                entryType = "OUT";
-            }
+            if (checkedId == R.id.radioIn) entryType = "IN";
+            else if (checkedId == R.id.radioOut) entryType = "OUT";
             updateActiveFilterCount();
         });
 
         cashOnlineToggle.setOnCheckedChangeListener((group, checkedId) -> {
-            if (checkedId == R.id.radioCash) {
-                paymentMode = "Cash";
-            } else if (checkedId == R.id.radioOnline) {
-                paymentMode = "Online";
-            }
+            if (checkedId == R.id.radioCash) paymentMode = "Cash";
+            else if (checkedId == R.id.radioOnline) paymentMode = "Online";
             updateActiveFilterCount();
         });
     }
 
     private void showDatePicker(boolean isStartDate) {
         Calendar calendarToShow = isStartDate ? startCalendar : endCalendar;
-        // [FIX] Ensure calendar is not 0
         if (calendarToShow.getTimeInMillis() == 0) {
             calendarToShow = Calendar.getInstance();
         }
@@ -242,10 +204,8 @@ public class FiltersActivity extends AppCompatActivity {
                 (view, year, month, dayOfMonth) -> {
                     if (isStartDate) {
                         startCalendar.set(year, month, dayOfMonth, 0, 0, 0);
-                        Log.d(TAG, "Start date set to: " + year + "-" + (month + 1) + "-" + dayOfMonth);
                     } else {
                         endCalendar.set(year, month, dayOfMonth, 23, 59, 59);
-                        Log.d(TAG, "End date set to: " + year + "-" + (month + 1) + "-" + dayOfMonth);
                     }
                     updateUIWithCurrentFilters();
                 },
@@ -269,7 +229,6 @@ public class FiltersActivity extends AppCompatActivity {
 
         updateUIWithCurrentFilters();
         showSnackbar("Filter set to Today");
-        Log.d(TAG, "Date range set to Today");
     }
 
     private void setDateRangeToThisWeek() {
@@ -287,7 +246,6 @@ public class FiltersActivity extends AppCompatActivity {
 
         updateUIWithCurrentFilters();
         showSnackbar("Filter set to This Week");
-        Log.d(TAG, "Date range set to This Week");
     }
 
     private void setDateRangeToThisMonth() {
@@ -305,7 +263,6 @@ public class FiltersActivity extends AppCompatActivity {
 
         updateUIWithCurrentFilters();
         showSnackbar("Filter set to This Month");
-        Log.d(TAG, "Date range set to This Month");
     }
 
     private void clearAllFilters() {
@@ -317,12 +274,11 @@ public class FiltersActivity extends AppCompatActivity {
 
         searchTransactionInput.setText("");
         filterTagsInput.setText("");
-        inOutToggle.clearCheck(); // This will default to nothing, which is fine
+        inOutToggle.clearCheck();
         cashOnlineToggle.clearCheck();
 
         updateUIWithCurrentFilters();
         showSnackbar("All filters cleared");
-        Log.d(TAG, "All filters cleared");
     }
 
     private void updateUIWithCurrentFilters() {
@@ -330,7 +286,6 @@ public class FiltersActivity extends AppCompatActivity {
         int hintColor = ThemeUtil.getThemeAttrColor(this, R.attr.textColorHint);
         int primaryColor = ThemeUtil.getThemeAttrColor(this, R.attr.textColorPrimary);
 
-        // Update start date display
         if (startCalendar.getTimeInMillis() != 0) {
             startDateText.setText(sdf.format(startCalendar.getTime()));
             startDateText.setTextColor(primaryColor);
@@ -339,7 +294,6 @@ public class FiltersActivity extends AppCompatActivity {
             startDateText.setTextColor(hintColor);
         }
 
-        // Update end date display
         if (endCalendar.getTimeInMillis() != 0) {
             endDateText.setText(sdf.format(endCalendar.getTime()));
             endDateText.setTextColor(primaryColor);
@@ -348,12 +302,10 @@ public class FiltersActivity extends AppCompatActivity {
             endDateText.setTextColor(hintColor);
         }
 
-        // Update category display
         if (selectedCategories.isEmpty()) {
             selectedCategoryTextView.setText("Select Category");
             selectedCategoryTextView.setTextColor(hintColor);
         } else {
-            // Display the first selected category
             selectedCategoryTextView.setText(selectedCategories.iterator().next());
             selectedCategoryTextView.setTextColor(primaryColor);
         }
@@ -361,14 +313,10 @@ public class FiltersActivity extends AppCompatActivity {
         updateActiveFilterCount();
     }
 
-    /**
-     * Update the active filters count badge
-     */
     private void updateActiveFilterCount() {
         int count = 0;
 
         if (startCalendar.getTimeInMillis() != 0) count++;
-        // [FIX] Don't count end date if it's the same as start date (e.g. "Today")
         if (endCalendar.getTimeInMillis() != 0 && endCalendar.getTimeInMillis() > startCalendar.getTimeInMillis()) count++;
         if (!"All".equals(entryType) && inOutToggle.getCheckedRadioButtonId() != -1) count++;
         if (!"All".equals(paymentMode) && cashOnlineToggle.getCheckedRadioButtonId() != -1) count++;
@@ -383,13 +331,8 @@ public class FiltersActivity extends AppCompatActivity {
             activeFiltersCount.setText("0");
             activeFiltersCount.setVisibility(View.GONE);
         }
-
-        Log.d(TAG, "Active filter count: " + count);
     }
 
-    /**
-     * Apply filters and return to calling activity
-     */
     private void applyFiltersAndFinish() {
         Intent resultIntent = new Intent();
         resultIntent.putExtra("startDate", startCalendar.getTimeInMillis());
@@ -401,16 +344,15 @@ public class FiltersActivity extends AppCompatActivity {
         resultIntent.putExtra("tagsQuery", filterTagsInput.getText().toString());
 
         setResult(Activity.RESULT_OK, resultIntent);
-
-        Log.d(TAG, "Filters applied and returning to caller");
         finish();
     }
 
+    // [FIX] Updated to use Helper
     private void showSnackbar(String message) {
-        Snackbar.make(findViewById(android.R.id.content), message, Snackbar.LENGTH_SHORT).show();
+        // Anchor to the Apply button so the snackbar floats above it
+        SnackbarHelper.show(this, message, applyFiltersButton);
     }
 
-    // [FIX] Added a simple helper class to resolve theme attributes
     static class ThemeUtil {
         static int getThemeAttrColor(Context context, int attr) {
             TypedValue typedValue = new TypedValue();
