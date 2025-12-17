@@ -5,7 +5,9 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.util.TypedValue;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -20,8 +22,6 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.flask.colorpicker.ColorPickerView;
-import com.flask.colorpicker.builder.ColorPickerDialogBuilder;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -35,6 +35,7 @@ import com.phynix.artham.utils.CategoryColorUtil;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class ChooseCategoryActivity extends AppCompatActivity
         implements CategoryAdapter.OnCategoryClickListener, CategoryAdapter.OnCategoryActionListener {
@@ -56,6 +57,7 @@ public class ChooseCategoryActivity extends AppCompatActivity
 
     private String previouslySelectedCategoryName = "";
     private String currentCashbookId;
+    private String transactionType = "OUT";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,13 +68,24 @@ public class ChooseCategoryActivity extends AppCompatActivity
         mAuth = FirebaseAuth.getInstance();
         FirebaseUser currentUser = mAuth.getCurrentUser();
 
+        // 1. GET DATA
         currentCashbookId = getIntent().getStringExtra("cashbook_id");
         previouslySelectedCategoryName = getIntent().getStringExtra("selected_category");
+        if (getIntent().hasExtra("transaction_type")) {
+            transactionType = getIntent().getStringExtra("transaction_type");
+        }
 
+        // 2. DEBUGGING CHECK (This will tell us if ID is missing)
+        if (currentCashbookId == null) {
+            Toast.makeText(this, "CRITICAL ERROR: Cashbook ID is Missing!", Toast.LENGTH_LONG).show();
+        }
+
+        // 3. INIT FIREBASE
         if (currentUser != null && currentCashbookId != null) {
             userCategoriesRef = FirebaseDatabase.getInstance().getReference("users")
                     .child(currentUser.getUid()).child("cashbooks")
-                    .child(currentCashbookId).child("categories");
+                    .child(currentCashbookId).child("categories")
+                    .child(transactionType);
         }
 
         initializeUI();
@@ -97,7 +110,6 @@ public class ChooseCategoryActivity extends AppCompatActivity
 
     private void setupRecyclerView() {
         categoriesRecyclerView.setLayoutManager(new GridLayoutManager(this, 2));
-        // Pass 'this' for both the click listener and the action listener
         categoryAdapter = new CategoryAdapter(allCategories, this, this, this);
         categoriesRecyclerView.setAdapter(categoryAdapter);
     }
@@ -105,19 +117,30 @@ public class ChooseCategoryActivity extends AppCompatActivity
     private void setupListeners() {
         findViewById(R.id.backButton).setOnClickListener(v -> finish());
 
-        // Add New Category Button
-        addNewCategoryButton.setOnClickListener(v -> showAddCategoryDialog(null));
+        // [UPDATED] Robust Click Listener
+        addNewCategoryButton.setOnClickListener(v -> {
+            // Debug Toast to confirm click is registered
+            // Toast.makeText(this, "Button Clicked...", Toast.LENGTH_SHORT).show();
 
-        // [FIX] Use the inner clickable ID from XML layout
+            if (userCategoriesRef == null) {
+                // If this shows, your CashInOutActivity is NOT sending the ID correctly
+                new AlertDialog.Builder(this)
+                        .setTitle("Connection Error")
+                        .setMessage("Cashbook ID is missing. Please go back to the previous screen and try again.")
+                        .setPositiveButton("OK", null)
+                        .show();
+            } else {
+                showAddCategoryDialog(null);
+            }
+        });
+
         findViewById(R.id.noCategoryClickable).setOnClickListener(v -> {
             radioNoCategory.setChecked(true);
-            // Add a small delay so user sees the radio button selection
             new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
                 returnCategory("No Category");
             }, 150);
         });
 
-        // Quick Suggestion Buttons
         if (quickFoodButton != null) quickFoodButton.setOnClickListener(v -> returnCategory("Food"));
         if (quickTransportButton != null) quickTransportButton.setOnClickListener(v -> returnCategory("Transport"));
         if (quickShoppingButton != null) quickShoppingButton.setOnClickListener(v -> returnCategory("Shopping"));
@@ -159,7 +182,7 @@ public class ChooseCategoryActivity extends AppCompatActivity
             @SuppressLint("NotifyDataSetChanged")
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                populatePredefinedCategories(); // Reset to base list
+                populatePredefinedCategories();
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                     CategoryModel customCategory = snapshot.getValue(CategoryModel.class);
                     if (customCategory != null) {
@@ -200,8 +223,6 @@ public class ChooseCategoryActivity extends AppCompatActivity
         returnCategory(category.getName());
     }
 
-    // --- Interface Methods for Edit/Delete ---
-
     @Override
     public void onEditCategory(CategoryModel category) {
         showAddCategoryDialog(category);
@@ -225,64 +246,65 @@ public class ChooseCategoryActivity extends AppCompatActivity
     }
 
     private void showAddCategoryDialog(CategoryModel categoryToEdit) {
-        if (userCategoriesRef == null) {
-            Toast.makeText(this, "You must be logged in to manage categories.", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
         final boolean isEditMode = categoryToEdit != null;
         final String oldName = isEditMode ? categoryToEdit.getName() : "";
 
-        final EditText categoryNameEditText = new EditText(this);
+        // Use 'ChooseCategoryActivity.this' to ensure correct context
+        final EditText categoryNameEditText = new EditText(ChooseCategoryActivity.this);
         categoryNameEditText.setHint("Category Name");
         categoryNameEditText.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_FLAG_CAP_WORDS);
         if (isEditMode) {
             categoryNameEditText.setText(categoryToEdit.getName());
         }
 
-        LinearLayout container = new LinearLayout(this);
-        container.setPadding(48, 16, 48, 0);
+        LinearLayout container = new LinearLayout(ChooseCategoryActivity.this);
+        container.setOrientation(LinearLayout.VERTICAL);
+        // Using DP for padding to prevent layout issues
+        int paddingPx = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 20, getResources().getDisplayMetrics());
+        container.setPadding(paddingPx, paddingPx/2, paddingPx, 0);
         container.addView(categoryNameEditText);
 
-        new AlertDialog.Builder(this)
+        new AlertDialog.Builder(ChooseCategoryActivity.this)
                 .setTitle(isEditMode ? "Edit Category" : "Add New Category")
                 .setView(container)
-                .setPositiveButton("Choose Color", (dialog, which) -> {
+                .setPositiveButton("Save", (dialog, which) -> {
                     String newCategoryName = categoryNameEditText.getText().toString().trim();
                     if (!newCategoryName.isEmpty()) {
-                        int initialColor = isEditMode ? android.graphics.Color.parseColor(categoryToEdit.getColorHex())
-                                : ContextCompat.getColor(this, R.color.category_default);
-                        showColorPickerDialog(newCategoryName, initialColor, isEditMode, oldName);
+
+                        // Auto-generate random color
+                        String colorHex;
+                        if (isEditMode) {
+                            colorHex = categoryToEdit.getColorHex();
+                        } else {
+                            colorHex = getRandomColorHex();
+                        }
+
+                        if (isEditMode && !oldName.equals(newCategoryName)) {
+                            deleteCategoryFromFirebase(oldName);
+                        }
+                        saveCategoryToFirebase(newCategoryName, colorHex);
+
                     } else {
-                        Toast.makeText(this, "Category name cannot be empty.", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(ChooseCategoryActivity.this, "Name cannot be empty.", Toast.LENGTH_SHORT).show();
                     }
                 })
                 .setNegativeButton("Cancel", null)
                 .show();
     }
 
-    private void showColorPickerDialog(String categoryName, int initialColor, boolean isEditMode, String oldName) {
-        ColorPickerDialogBuilder
-                .with(this)
-                .setTitle("Choose Category Color")
-                .initialColor(initialColor)
-                .wheelType(ColorPickerView.WHEEL_TYPE.FLOWER)
-                .density(12)
-                .setPositiveButton("Save", (dialog, chosenColor, allColors) -> {
-                    String colorHex = String.format("#%06X", (0xFFFFFF & chosenColor));
-                    if (isEditMode && !oldName.equals(categoryName)) {
-                        // If renamed, delete the old key
-                        deleteCategoryFromFirebase(oldName);
-                    }
-                    saveCategoryToFirebase(categoryName, colorHex);
-                })
-                .setNegativeButton("Cancel", (dialog, which) -> {})
-                .build()
-                .show();
+    private String getRandomColorHex() {
+        Random random = new Random();
+        int r = random.nextInt(200) + 55;
+        int g = random.nextInt(200) + 55;
+        int b = random.nextInt(200) + 55;
+        return String.format("#%02X%02X%02X", r, g, b);
     }
 
     private void saveCategoryToFirebase(String name, String colorHex) {
-        if (userCategoriesRef == null) return;
+        if (userCategoriesRef == null) {
+            Toast.makeText(this, "Database Error: Not Connected.", Toast.LENGTH_SHORT).show();
+            return;
+        }
         CategoryModel newCategory = new CategoryModel(name, colorHex, true);
         userCategoriesRef.child(name).setValue(newCategory)
                 .addOnSuccessListener(aVoid -> Toast.makeText(this, "Category Saved", Toast.LENGTH_SHORT).show())
@@ -297,13 +319,5 @@ public class ChooseCategoryActivity extends AppCompatActivity
 
     private boolean isNoCategory(String name) {
         return name == null || name.isEmpty() || "No Category".equals(name) || "Select Category".equals(name);
-    }
-
-    static class ThemeUtil {
-        static int getThemeAttrColor(Context context, int attr) {
-            TypedValue typedValue = new TypedValue();
-            context.getTheme().resolveAttribute(attr, typedValue, true);
-            return typedValue.data;
-        }
     }
 }

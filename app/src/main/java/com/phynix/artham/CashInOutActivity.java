@@ -129,9 +129,7 @@ public class CashInOutActivity extends AppCompatActivity {
         initializeUI();
         initializeDateTime();
 
-        // 1. Setup Click Listeners (includes Attachment "Coming Soon" Logic)
         setupClickListeners();
-
         setupActivityLaunchers();
         setupInitialState(transactionType);
 
@@ -276,7 +274,10 @@ public class CashInOutActivity extends AppCompatActivity {
         }
 
         if (voiceInputButton != null) voiceInputButton.setOnClickListener(v -> startVoiceInput());
+
+        // Open Category Selector
         if (categorySelectorLayout != null) categorySelectorLayout.setOnClickListener(v -> openCategorySelector());
+
         if (partySelectorLayout != null) partySelectorLayout.setOnClickListener(v -> openPartySelector());
         if (locationButton != null) locationButton.setOnClickListener(v -> getCurrentLocation());
 
@@ -286,7 +287,6 @@ public class CashInOutActivity extends AppCompatActivity {
 
         setupQuickAmountButtons();
 
-        // [FEATURE] Attachments "Coming Soon"
         View.OnClickListener comingSoonListener = v -> {
             Toast.makeText(this, "Feature coming soon", Toast.LENGTH_SHORT).show();
         };
@@ -294,12 +294,6 @@ public class CashInOutActivity extends AppCompatActivity {
         if (cameraButton != null) cameraButton.setOnClickListener(comingSoonListener);
         if (scanButton != null) scanButton.setOnClickListener(comingSoonListener);
         if (attachFileButton != null) attachFileButton.setOnClickListener(comingSoonListener);
-
-        /* If you want to re-enable actual camera/file logic later, uncomment these:
-           if (cameraButton != null) cameraButton.setOnClickListener(v -> openCamera());
-           if (scanButton != null) scanButton.setOnClickListener(v -> openScanner());
-           if (attachFileButton != null) attachFileButton.setOnClickListener(v -> openFilePicker());
-        */
 
         if (removeAttachedImage != null) {
             removeAttachedImage.setOnClickListener(v -> {
@@ -375,6 +369,10 @@ public class CashInOutActivity extends AppCompatActivity {
         } else if (checkedId == R.id.radioOut) {
             updateHeaderForTransactionType("OUT");
         }
+
+        // Reset category when switching types to prevent mismatched categories
+        selectedCategory = "Other";
+        selectedCategoryTextView.setText(selectedCategory);
     }
 
     private void setupActivityLaunchers() {
@@ -394,7 +392,6 @@ public class CashInOutActivity extends AppCompatActivity {
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
                     if (result.getResultCode() == RESULT_OK) {
-                        // Placeholder logic for now since button is disabled/toast only
                         attachedImageUri = Uri.parse("file://dummy/image.jpg");
                         if (result.getData() != null && result.getData().getData() != null) {
                             attachedImageUri = result.getData().getData();
@@ -619,40 +616,22 @@ public class CashInOutActivity extends AppCompatActivity {
         }
     }
 
+    // [UPDATED] Passes cashbook_id and transaction_type to enable adding/loading categories
     private void openCategorySelector() {
         Intent intent = new Intent(this, ChooseCategoryActivity.class);
+
+        // 1. Pass the currently selected category name
         intent.putExtra("selected_category", selectedCategory);
+
+        // 2. Pass the Transaction Type ("IN" or "OUT")
+        String type = radioIn.isChecked() ? "IN" : "OUT";
+        intent.putExtra("transaction_type", type);
+
+        // 3. [IMPORTANT] Pass the Cashbook ID so the button works
+        intent.putExtra("cashbook_id", currentCashbookId);
+
         categoryLauncher.launch(intent);
     }
-
-    // --- Original Attachment Logic (Kept for reference or future use) ---
-    /*
-    private void openCamera() {
-        Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-        if (cameraIntent.resolveActivity(getPackageManager()) != null) {
-            cameraLauncher.launch(cameraIntent);
-        } else {
-            Toast.makeText(this, "Camera not available", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    private void openScanner() {
-        attachedQrData = "Scanned Data Code";
-        attachedQrText.setText("QR Code Scanned");
-        updateAttachmentVisibility();
-        Toast.makeText(this, "Simulated Scan Complete", Toast.LENGTH_SHORT).show();
-    }
-
-    private void openFilePicker() {
-        Intent fileIntent = new Intent(Intent.ACTION_GET_CONTENT);
-        fileIntent.setType("*\/*");
-        try {
-            filePickerLauncher.launch(Intent.createChooser(fileIntent, "Select File"));
-        } catch (Exception e) {
-            Toast.makeText(this, "File picker not available", Toast.LENGTH_SHORT).show();
-        }
-    }
-    */
 
     private void openPartySelector() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -761,7 +740,7 @@ public class CashInOutActivity extends AppCompatActivity {
         transaction.setAmount(Double.parseDouble(amountEditText.getText().toString().trim()));
         transaction.setType(radioIn.isChecked() ? "IN" : "OUT");
 
-        // [UPDATE] Logic for Payment Mode including Card
+        // Logic for Payment Mode including Card
         String paymentMode = "Cash";
         if (radioCard != null && radioCard.isChecked()) {
             paymentMode = "Card";
