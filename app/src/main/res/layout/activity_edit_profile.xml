@@ -8,17 +8,55 @@
     android:background="?attr/backgroundColor"
     android:fitsSystemWindows="true">
 
+    <LinearLayout
+        android:id="@+id/bottom_buttons_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:orientation="horizontal"
+        android:paddingHorizontal="16dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="24dp"
+        android:background="?attr/backgroundColor"
+        android:elevation="8dp">
+
+        <Button
+            android:id="@+id/cancelButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Cancel"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#757575"
+            android:paddingHorizontal="24dp"
+            android:layout_marginEnd="8dp" />
+
+        <Button
+            android:id="@+id/saveProfileButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Save Changes"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="?attr/incomeColor"
+            android:paddingHorizontal="24dp"
+            android:layout_marginStart="8dp" />
+    </LinearLayout>
+
     <androidx.core.widget.NestedScrollView
         android:id="@+id/main_scroll_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_above="@id/bottom_buttons_layout"
+        android:layout_alignParentTop="true"
         android:fillViewport="true">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:gravity="center_horizontal">
+            android:gravity="center_horizontal"
+            android:paddingBottom="16dp">
 
             <androidx.cardview.widget.CardView
                 android:id="@+id/headerCard"
@@ -79,6 +117,7 @@
 
                 </RelativeLayout>
             </androidx.cardview.widget.CardView>
+
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -260,139 +299,6 @@
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
-            <androidx.cardview.widget.CardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="16dp"
-                android:layout_marginBottom="16dp"
-                app:cardCornerRadius="8dp"
-                app:cardElevation="4dp"
-                app:cardBackgroundColor="?attr/surfaceColor">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="16dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Security Settings"
-                        android:textColor="?attr/textColorPrimary"
-                        android:textSize="16sp"
-                        android:textStyle="bold"
-                        android:layout_marginBottom="16dp" />
-
-                    <LinearLayout
-                        android:id="@+id/changePasswordLayout"
-                        android:layout_width="match_parent"
-                        android:layout_height="50dp"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:background="@drawable/rounded_dark_background"
-                        android:paddingHorizontal="16dp"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:layout_marginBottom="12dp">
-
-                        <ImageView
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
-                            android:src="@drawable/ic_lock"
-                            app:tint="?attr/textColorPrimary"
-                            android:layout_marginEnd="12dp" />
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="Change Password"
-                            android:textColor="?attr/textColorPrimary"
-                            android:textSize="14sp" />
-
-                        <ImageView
-                            android:layout_width="16dp"
-                            android:layout_height="16dp"
-                            android:src="@drawable/ic_arrow_right"
-                            app:tint="?attr/textColorSecondary" />
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="60dp"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:background="@drawable/rounded_dark_background"
-                        android:paddingHorizontal="16dp">
-
-                        <ImageView
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
-                            android:src="@drawable/ic_shield_check"
-                            app:tint="?attr/incomeColor"
-                            android:layout_marginEnd="12dp" />
-
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Two-Factor Authentication"
-                                android:textColor="?attr/textColorPrimary"
-                                android:textSize="14sp" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Enabled"
-                                android:textColor="?attr/incomeColor"
-                                android:textSize="11sp" />
-                        </LinearLayout>
-
-                        <Switch
-                            android:id="@+id/twoFactorSwitch"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:checked="true" />
-                    </LinearLayout>
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:paddingHorizontal="16dp"
-                android:paddingBottom="24dp"
-                android:layout_marginTop="8dp">
-
-                <Button
-                    android:id="@+id/cancelButton"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="Cancel"
-                    android:textColor="#FFFFFF"
-                    android:backgroundTint="#757575"
-                    android:paddingHorizontal="24dp"
-                    android:layout_marginEnd="8dp" />
-
-                <Button
-                    android:id="@+id/saveProfileButton"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="Save Changes"
-                    android:textColor="#FFFFFF"
-                    android:backgroundTint="?attr/incomeColor"
-                    android:paddingHorizontal="24dp"
-                    android:layout_marginStart="8dp" />
-            </LinearLayout>
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 </RelativeLayout>

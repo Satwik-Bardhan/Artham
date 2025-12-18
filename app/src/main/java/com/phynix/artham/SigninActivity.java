@@ -2,14 +2,9 @@ package com.phynix.artham;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.util.Log;
-import android.util.Patterns;
 import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -26,16 +21,12 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.phynix.artham.viewmodels.SigninViewModel;
 
 public class SigninActivity extends AppCompatActivity {
 
     private static final String TAG = "SigninActivity";
 
-    private EditText emailInput;
-    private Button btnSignInEmail;
     private LinearLayout btnGoogleSignIn;
     private ImageView backButton, helpButton;
     private ProgressBar loadingIndicator;
@@ -80,54 +71,9 @@ public class SigninActivity extends AppCompatActivity {
         initializeUI();
         setupClickListeners();
         observeViewModel();
-
-        // Handle incoming Email Links
-        checkIntentForEmailLink(getIntent());
-    }
-
-    @Override
-    protected void onNewIntent(Intent intent) {
-        super.onNewIntent(intent);
-        setIntent(intent);
-        checkIntentForEmailLink(intent);
-    }
-
-    private void checkIntentForEmailLink(Intent intent) {
-        if (intent != null && intent.getData() != null) {
-            String emailLink = intent.getData().toString();
-            FirebaseAuth auth = FirebaseAuth.getInstance();
-
-            if (auth.isSignInWithEmailLink(emailLink)) {
-                SharedPreferences prefs = getSharedPreferences("ArthamPrefs", MODE_PRIVATE);
-                String email = prefs.getString("email_for_signin", "");
-
-                if (TextUtils.isEmpty(email)) {
-                    // Email not saved locally (user might be on a different device)
-                    emailInput.requestFocus();
-                    btnSignInEmail.setText("Verify Link & Sign In");
-                    Toast.makeText(this, "Please enter your email to complete the sign-in", Toast.LENGTH_LONG).show();
-
-                    // Override the button listener to verify instead of send
-                    btnSignInEmail.setOnClickListener(v -> {
-                        String userEmail = emailInput.getText().toString().trim();
-                        if (TextUtils.isEmpty(userEmail)) {
-                            emailInput.setError("Email required");
-                            return;
-                        }
-                        viewModel.signInWithEmailLink(userEmail, emailLink);
-                    });
-                } else {
-                    // We have the email, complete sign in automatically
-                    emailInput.setText(email);
-                    viewModel.signInWithEmailLink(email, emailLink);
-                }
-            }
-        }
     }
 
     private void initializeUI() {
-        emailInput = findViewById(R.id.emailInput);
-        btnSignInEmail = findViewById(R.id.btnSignInEmail);
         btnGoogleSignIn = findViewById(R.id.btnGoogleSignIn);
         loadingIndicator = findViewById(R.id.loadingIndicator);
         backButton = findViewById(R.id.backButton);
@@ -135,27 +81,11 @@ public class SigninActivity extends AppCompatActivity {
     }
 
     private void setupClickListeners() {
-        // Send Magic Link
-        btnSignInEmail.setOnClickListener(v -> {
-            String email = emailInput.getText().toString().trim();
-            if (TextUtils.isEmpty(email) || !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-                emailInput.setError("Enter a valid email");
-                emailInput.requestFocus();
-                return;
-            }
-
-            // Save email to SharedPrefs to use when the link is clicked
-            SharedPreferences prefs = getSharedPreferences("ArthamPrefs", MODE_PRIVATE);
-            prefs.edit().putString("email_for_signin", email).apply();
-
-            viewModel.sendEmailLink(email);
-        });
-
         // Google Sign In
         btnGoogleSignIn.setOnClickListener(v -> signInWithGoogle());
 
         backButton.setOnClickListener(v -> onBackPressed());
-        helpButton.setOnClickListener(v -> Toast.makeText(this, "Enter your email to receive a passwordless login link", Toast.LENGTH_SHORT).show());
+        helpButton.setOnClickListener(v -> Toast.makeText(this, "Sign in with your Google account to continue.", Toast.LENGTH_SHORT).show());
     }
 
     private void observeViewModel() {
@@ -178,9 +108,7 @@ public class SigninActivity extends AppCompatActivity {
 
         viewModel.getLoading().observe(this, isLoading -> {
             loadingIndicator.setVisibility(isLoading ? View.VISIBLE : View.GONE);
-            btnSignInEmail.setEnabled(!isLoading);
             btnGoogleSignIn.setEnabled(!isLoading);
-            emailInput.setEnabled(!isLoading);
         });
     }
 

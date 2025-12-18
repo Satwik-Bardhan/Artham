@@ -5,7 +5,6 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.firebase.auth.ActionCodeSettings;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -24,48 +23,6 @@ public class SigninViewModel extends ViewModel {
 
     public SigninViewModel() {
         mAuth = FirebaseAuth.getInstance();
-    }
-
-    // --- Magic Link Logic ---
-    public void sendEmailLink(String email) {
-        _loading.setValue(true);
-
-        ActionCodeSettings actionCodeSettings =
-                ActionCodeSettings.newBuilder()
-                        // TODO: Verify this URL matches your Firebase Console -> Authentication -> Sign-in method -> Email Link
-                        .setUrl("https://satvik-artham.firebaseapp.com/finishSignUp")
-                        .setHandleCodeInApp(true)
-                        .setAndroidPackageName(
-                                "com.phynix.artham", // UPDATED PACKAGE NAME
-                                true,
-                                "1")
-                        .build();
-
-        mAuth.sendSignInLinkToEmail(email, actionCodeSettings)
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        _error.setValue("Magic link sent to " + email + ". Check your inbox!");
-                    } else {
-                        _error.setValue("Failed to send link: " +
-                                (task.getException() != null ? task.getException().getMessage() : "Unknown error"));
-                    }
-                    _loading.setValue(false);
-                });
-    }
-
-    public void signInWithEmailLink(String email, String emailLink) {
-        _loading.setValue(true);
-        mAuth.signInWithEmailLink(email, emailLink)
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        FirebaseUser user = task.getResult().getUser();
-                        _user.setValue(user);
-                    } else {
-                        _error.setValue("Sign in failed: " +
-                                (task.getException() != null ? task.getException().getMessage() : "Invalid link"));
-                    }
-                    _loading.setValue(false);
-                });
     }
 
     // --- Google Sign In Logic ---

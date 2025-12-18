@@ -12,7 +12,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -20,7 +19,6 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
@@ -46,8 +44,7 @@ public class EditProfileActivity extends AppCompatActivity {
     private ImageView profileImageView, editProfilePictureButton, backButton;
     private EditText editFullName, editPhoneNumber;
     private TextView displayEmail, dateOfBirthText;
-    private LinearLayout dateOfBirthLayout, changePasswordLayout;
-    private Switch twoFactorSwitch;
+    private LinearLayout dateOfBirthLayout;
     private Button cancelButton, saveProfileButton;
 
     // [NEW] Progress Dialog for better UX
@@ -93,7 +90,6 @@ public class EditProfileActivity extends AppCompatActivity {
 
         userDatabaseRef = FirebaseDatabase.getInstance().getReference("users").child(currentUser.getUid());
         // Point to "profile_pictures" folder in Storage
-// Paste your copied URL here
         storageReference = FirebaseStorage.getInstance("gs://artham-67").getReference("profile_pictures");
         initializeUI();
         setupClickListeners();
@@ -109,8 +105,6 @@ public class EditProfileActivity extends AppCompatActivity {
         displayEmail = findViewById(R.id.displayEmail);
         dateOfBirthText = findViewById(R.id.dateOfBirthText);
         dateOfBirthLayout = findViewById(R.id.dateOfBirthLayout);
-        changePasswordLayout = findViewById(R.id.changePasswordLayout);
-        twoFactorSwitch = findViewById(R.id.twoFactorSwitch);
         cancelButton = findViewById(R.id.cancelButton);
         saveProfileButton = findViewById(R.id.saveProfileButton);
 
@@ -134,10 +128,6 @@ public class EditProfileActivity extends AppCompatActivity {
 
         dateOfBirthLayout.setOnClickListener(v -> showDatePicker());
         saveProfileButton.setOnClickListener(v -> saveProfileChanges());
-
-        changePasswordLayout.setOnClickListener(v -> showChangePasswordDialog());
-        twoFactorSwitch.setOnCheckedChangeListener((buttonView, isChecked) ->
-                Toast.makeText(this, "2FA Toggled: " + isChecked, Toast.LENGTH_SHORT).show());
     }
 
     private void openImagePicker() {
@@ -260,20 +250,6 @@ public class EditProfileActivity extends AppCompatActivity {
     }
 
     // --- Helper Methods ---
-
-    private void showChangePasswordDialog() {
-        if (currentUser.getEmail() == null) return;
-        new AlertDialog.Builder(this)
-                .setTitle("Change Password")
-                .setMessage("Send reset link to: " + currentUser.getEmail() + "?")
-                .setPositiveButton("Send", (dialog, which) -> {
-                    mAuth.sendPasswordResetEmail(currentUser.getEmail())
-                            .addOnSuccessListener(aVoid -> Toast.makeText(this, "Email sent!", Toast.LENGTH_SHORT).show())
-                            .addOnFailureListener(e -> Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show());
-                })
-                .setNegativeButton("Cancel", null)
-                .show();
-    }
 
     private void showDatePicker() {
         new DatePickerDialog(this,

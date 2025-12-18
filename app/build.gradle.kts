@@ -37,7 +37,7 @@ android {
 
                 // MAKE SURE THIS LINE IS HERE AND HAS YOUR REAL EMAIL
                 testers = "satwikbardhan67@gmail.com"
-                groups = "clg-frnds, family, clg-juniors, ttn-frnds"
+                groups = "clg-frnds, family, clg-juniors, ttn-frnds, extras"
 
             }
         }
