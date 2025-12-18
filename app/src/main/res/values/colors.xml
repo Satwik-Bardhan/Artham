@@ -37,4 +37,7 @@
     <color name="category_education">#3F51B5</color>
     <color name="category_other">#9E9E9E</color>
     <color name="violet_500">#673AB7</color>
+
+    <color name="selected_item_bg">#E0E0E0</color>
+    <color name="purple_500">#6200EE</color>
 </resources>

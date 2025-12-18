@@ -1,144 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="?attr/backgroundColor"
-    android:padding="16dp">
+    android:background="#FFFFFF">
 
-    <androidx.cardview.widget.CardView
+    <EditText
+        android:id="@+id/searchEditText"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        app:cardCornerRadius="8dp"
-        app:cardElevation="2dp"
-        app:cardBackgroundColor="?attr/surfaceColor">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:paddingHorizontal="16dp">
-
-            <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@drawable/ic_search"
-                android:layout_marginEnd="12dp"
-                app:tint="?attr/textColorSecondary" />
-
-            <EditText
-                android:id="@+id/search_category"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:hint="Search categories..."
-                android:background="@android:color/transparent"
-                android:textColor="?attr/textColorPrimary"
-                android:textColorHint="?attr/textColorHint"
-                android:textSize="16sp"
-                android:inputType="text"
-                android:imeOptions="actionSearch"
-                android:maxLines="1"
-                android:importantForAutofill="no" />
-
-            <ImageView
-                android:id="@+id/clearSearchButton"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@drawable/ic_clear"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:clickable="true"
-                android:focusable="true"
-                android:padding="4dp"
-                android:visibility="gone"
-                app:tint="?attr/textColorSecondary"
-                android:contentDescription="Clear search" />
-        </LinearLayout>
-    </androidx.cardview.widget.CardView>
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Categories"
-        android:textColor="?attr/textColorPrimary"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="12dp" />
-
-    <androidx.cardview.widget.CardView
+        android:layout_height="50dp"
+        android:layout_margin="16dp"
+        android:background="@drawable/rounded_edittext_bg"
+        android:drawableStart="@android:drawable/ic_menu_search"
+        android:drawablePadding="12dp"
+        android:hint="Search category..."
+        android:padding="12dp"
+        android:textSize="14sp" />
+z
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/categoriesRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        app:cardCornerRadius="8dp"
-        app:cardElevation="2dp"
-        app:cardBackgroundColor="?attr/surfaceColor">
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/categories_recycler_view"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:clipToPadding="false"
-            android:scrollbars="vertical"
-            android:padding="8dp"
-            android:overScrollMode="never"
-            tools:listitem="@layout/list_item_category_filter" />
-    </androidx.cardview.widget.CardView>
+        android:padding="8dp"
+        android:clipToPadding="false"
+        android:scrollbars="vertical" />
 
     <LinearLayout
-        android:id="@+id/no_categories_layout"
+        android:id="@+id/noCategoriesLayout"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:gravity="center"
+        android:layout_height="match_parent"
         android:orientation="vertical"
-        android:padding="32dp"
-        android:visibility="gone">
+        android:gravity="center"
+        android:visibility="gone"
+        android:background="#FFFFFF">
 
         <ImageView
-            android:layout_width="80dp"
-            android:layout_height="80dp"
-            android:src="@drawable/ic_category_outline"
-            android:layout_marginBottom="20dp"
-            android:contentDescription="No categories icon"
-            app:tint="?attr/textColorHint" />
-
-        <TextView
-            android:id="@+id/no_categories_message"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="No Categories Found"
-            android:textColor="?attr/textColorPrimary"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="8dp"
-            android:gravity="center" />
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:src="@android:drawable/ic_menu_help"
+            android:alpha="0.5"/>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="You don't have any categories in this cashbook"
-            android:textColor="?attr/textColorSecondary"
-            android:textSize="14sp"
-            android:gravity="center"
-            android:layout_marginBottom="20dp" />
-
-        <Button
-            android:id="@+id/add_new_category_button"
-            android:layout_width="wrap_content"
-            android:layout_height="48dp"
-            android:text="ADD NEW CATEGORY"
-            android:textColor="#FFFFFF"
-            android:textSize="14sp"
-            android:textStyle="bold"
-            android:background="@drawable/add_category_button"
-            android:drawableStart="@drawable/ic_add"
-            android:drawablePadding="8dp"
-            android:paddingHorizontal="20dp"
-            app:drawableTint="#FFFFFF" />
+            android:layout_marginTop="16dp"
+            android:text="No categories found"
+            android:textSize="16sp"
+            android:textColor="#757575"/>
     </LinearLayout>
 
 </LinearLayout>

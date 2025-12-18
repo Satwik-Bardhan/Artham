@@ -1,84 +1,48 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="?attr/backgroundColor"
     android:fitsSystemWindows="true"
-    tools:context=".CategoryActivity">
+    android:layout_height="match_parent">
 
-    <androidx.cardview.widget.CardView
-        android:id="@+id/headerCard"
-        android:layout_width="match_parent"
+    <ImageView
+        android:id="@+id/back_button"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:padding="10dp"
+        android:src="@drawable/ic_arrow_left"
+        android:layout_margin="10dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        app:cardBackgroundColor="?attr/surfaceColor"
-        app:cardCornerRadius="8dp"
-        app:cardElevation="4dp">
-
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="20dp">
-
-            <ImageView
-                android:id="@+id/back_button"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:layout_alignParentStart="true"
-                android:layout_centerVertical="true"
-                android:clickable="true"
-                android:contentDescription="Back"
-                android:focusable="true"
-                android:padding="8dp"
-                android:src="@drawable/ic_arrow_left"
-                app:tint="?attr/textColorPrimary" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerInParent="true"
-                android:text="Manage Categories"
-                android:textColor="?attr/textColorPrimary"
-                android:textSize="22sp"
-                android:textStyle="bold" />
-        </RelativeLayout>
-    </androidx.cardview.widget.CardView>
+        android:text="Manage Categories"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:layout_toEndOf="@id/back_button"
+        android:layout_alignTop="@id/back_button"
+        android:layout_marginTop="8dp"/>
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/headerCard"
-        android:paddingHorizontal="16dp">
+        android:layout_below="@id/back_button"
+        android:padding="16dp">
 
-        <androidx.cardview.widget.CardView
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/categoryChipGroup"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:cardBackgroundColor="?attr/surfaceColor"
-            app:cardCornerRadius="8dp"
-            app:cardElevation="4dp">
+            app:chipSpacing="10dp"/>
 
-            <com.google.android.material.chip.ChipGroup
-                android:id="@+id/categoryChipGroup"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:padding="16dp"
-                app:chipSpacing="8dp" />
-
-        </androidx.cardview.widget.CardView>
     </androidx.core.widget.NestedScrollView>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_add_category"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
         android:layout_margin="24dp"
-        android:contentDescription="Add New Category"
-        android:src="@drawable/ic_add"
-        app:backgroundTint="?attr/balanceColor"
-        app:tint="@color/white" />
-
+        android:src="@drawable/ic_add"/>
 </RelativeLayout>

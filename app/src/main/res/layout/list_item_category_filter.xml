@@ -1,50 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
     android:gravity="center_vertical"
-    android:paddingVertical="12dp"
-    android:paddingStart="16dp"
-    android:paddingEnd="16dp"
-    android:background="@drawable/ripple_background"
-    android:clickable="true"
-    android:focusable="true">
-
-    <View
-        android:id="@+id/categoryColorDot"
-        android:layout_width="16dp"
-        android:layout_height="16dp"
-        android:background="@drawable/category_color_circle"
-        android:layout_marginEnd="12dp" />
-
-    <ImageView
-        android:id="@+id/categoryIcon"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
-        android:src="@drawable/ic_category_default"
-        android:layout_marginEnd="12dp"
-        android:contentDescription="Category icon"
-        app:tint="?attr/balanceColor" />
-
-    <TextView
-        android:id="@+id/category_name"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:text="Category Name"
-        android:textColor="?attr/textColorPrimary"
-        android:textSize="16sp"
-        android:ellipsize="end"
-        android:maxLines="1" />
+    android:padding="12dp"
+    android:background="?android:attr/selectableItemBackground">
 
     <CheckBox
         android:id="@+id/category_checkbox"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:buttonTint="@color/checkbox_tint_selector"
-        android:clickable="false"
-        android:focusable="false" />
+        android:minWidth="0dp"
+        android:minHeight="0dp"/>
+
+    <TextView
+        android:id="@+id/category_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Category Name"
+        android:textSize="16sp"
+        android:textColor="#000000"
+        android:layout_marginStart="12dp"/>
 
 </LinearLayout>

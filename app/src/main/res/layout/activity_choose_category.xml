@@ -1,23 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main_root_layout"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="?attr/backgroundColor"
     android:fitsSystemWindows="true"
-    tools:context=".ChooseCategoryActivity">
+    android:layout_height="match_parent"
+    android:background="#F5F5F5">
 
     <androidx.cardview.widget.CardView
         android:id="@+id/headerCard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        app:cardBackgroundColor="?attr/surfaceColor"
-        android:layout_marginTop="12dp"
-        android:layout_marginStart="12dp"
-        android:layout_marginEnd="12dp"
+        android:layout_margin="12dp"
         app:cardCornerRadius="12dp"
         app:cardElevation="4dp">
 
@@ -30,42 +24,16 @@
                 android:id="@+id/backButton"
                 android:layout_width="32dp"
                 android:layout_height="32dp"
-                android:clickable="true"
-                android:contentDescription="Go Back"
-                android:focusable="true"
-                android:padding="6dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@drawable/ic_arrow_left"
-                app:tint="?attr/textColorPrimary"
-                android:layout_alignParentStart="true"
                 android:layout_centerVertical="true" />
 
-            <LinearLayout
+            <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:gravity="center"
-                android:layout_centerInParent="true">
-
-                <TextView
-                    android:id="@+id/headerTitle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Select Category"
-                    android:textColor="?attr/textColorPrimary"
-                    android:textSize="20sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/headerSubtitle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:text="Manage your transaction types"
-                    android:textColor="?attr/textColorSecondary"
-                    android:textSize="12sp" />
-            </LinearLayout>
-
+                android:text="Select Category"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:layout_centerInParent="true"/>
         </RelativeLayout>
     </androidx.cardview.widget.CardView>
 
@@ -73,8 +41,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@id/headerCard"
-        android:layout_above="@+id/addNewCategoryButton"
-        android:clipToPadding="false"
+        android:layout_marginBottom="80dp"
         android:padding="16dp">
 
         <LinearLayout
@@ -82,137 +49,89 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <androidx.cardview.widget.CardView
-                android:id="@+id/noCategoryCard"
+            <LinearLayout
+                android:id="@+id/noCategoryClickable"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="20dp"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="2dp"
-                app:cardBackgroundColor="?attr/surfaceColor">
+                android:background="@android:color/white"
+                android:padding="16dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
 
-                <LinearLayout
-                    android:id="@+id/noCategoryClickable"
-                    android:layout_width="match_parent"
+                <RadioButton
+                    android:id="@+id/radioNoCategory"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:background="?attr/selectableItemBackground"
-                    android:padding="16dp"
-                    android:clickable="true"
-                    android:focusable="true">
+                    android:clickable="false"
+                    android:focusable="false"/>
 
-                    <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:src="@drawable/ic_block"
-                        app:tint="?attr/textColorSecondary"
-                        android:layout_marginEnd="16dp" />
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="No Category"
-                        android:textColor="?attr/textColorPrimary"
-                        android:textSize="16sp"
-                        android:textStyle="bold"/>
-
-                    <RadioButton
-                        android:id="@+id/radioNoCategory"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:checked="false"
-                        android:clickable="false"
-                        android:focusable="false"
-                        android:buttonTint="?attr/colorAccent"/>
-
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="No Category"
+                    android:textSize="16sp"
+                    android:layout_marginStart="12dp"/>
+            </LinearLayout>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Quick Suggestions"
-                android:textColor="?attr/textColorPrimary"
-                android:textSize="16sp"
                 android:textStyle="bold"
-                android:layout_marginBottom="12dp"
-                android:layout_marginStart="4dp" />
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="10dp"/>
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginBottom="20dp"
-                android:weightSum="3">
+                android:orientation="horizontal">
 
                 <Button
                     android:id="@+id/quickCategoryFood"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
                     android:layout_weight="1"
+                    android:layout_height="wrap_content"
                     android:text="Food"
-                    android:textColor="#FFFFFF"
-                    android:textSize="12sp"
-                    android:backgroundTint="#FF9800"
-                    android:layout_marginEnd="8dp" />
-
+                    android:layout_marginEnd="5dp"/>
                 <Button
                     android:id="@+id/quickCategoryTransport"
                     android:layout_width="0dp"
+                    android:layout_weight="1.1"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
                     android:text="Transport"
-                    android:textColor="#FFFFFF"
-                    android:textSize="12sp"
-                    android:backgroundTint="#2196F3"
-                    android:layout_marginEnd="8dp" />
-
+                    android:layout_marginEnd="5dp"/>
                 <Button
                     android:id="@+id/quickCategoryShopping"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Shopping"
-                    android:textColor="#FFFFFF"
-                    android:textSize="12sp"
-                    android:backgroundTint="#E91E63" />
+                    android:layout_height="wrap_content"
+                    android:text="Shopping"/>
             </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginBottom="12dp"
-                android:paddingHorizontal="4dp">
-
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="10dp">
                 <TextView
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Your Categories"
-                    android:textColor="?attr/textColorPrimary"
-                    android:textSize="16sp"
-                    android:textStyle="bold" />
-
+                    android:layout_height="wrap_content"
+                    android:text="All Categories"
+                    android:textStyle="bold"/>
                 <TextView
                     android:id="@+id/categoryCount"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Loading..."
-                    android:textColor="?attr/textColorSecondary"
-                    android:textSize="12sp" />
+                    android:text="0 items"/>
             </LinearLayout>
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/categoriesRecyclerView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:nestedScrollingEnabled="false"
-                android:clipToPadding="false"
-                android:paddingBottom="80dp" />
+                android:nestedScrollingEnabled="false"/>
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
@@ -221,17 +140,12 @@
         android:id="@+id/addNewCategoryButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
         android:layout_margin="24dp"
         android:text="Create New"
-        android:textColor="#FFFFFF"
-        android:textSize="14sp"
-        android:textStyle="bold"
-        app:backgroundTint="?attr/colorAccent"
+        android:textColor="#FFF"
         app:icon="@drawable/ic_add"
-        app:iconTint="#FFFFFF"
-        app:cornerRadius="28dp"
-        app:elevation="6dp" />
+        app:iconTint="#FFF"/>
 
 </RelativeLayout>

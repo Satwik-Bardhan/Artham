@@ -171,8 +171,6 @@ public class EditTransactionActivity extends AppCompatActivity {
         calculatorButton = findViewById(R.id.calculatorButton);
 
         selectedCategoryTextView = findViewById(R.id.selectedCategoryTextView);
-
-        // [FIXED] Removed the fallback check for R.id.categoryInputLayout
         categorySelectorLayout = findViewById(R.id.categorySelectorLayout);
 
         partyTextView = findViewById(R.id.partyTextView);
@@ -250,11 +248,17 @@ public class EditTransactionActivity extends AppCompatActivity {
         if (calculatorButton != null) calculatorButton.setOnClickListener(v -> checkAndOpenCalculator());
         if (voiceInputButton != null) voiceInputButton.setOnClickListener(v -> startVoiceInput());
 
+        // [UPDATED] Pass the transaction type (IN/OUT) to ChooseCategoryActivity
         if (categorySelectorLayout != null) {
             categorySelectorLayout.setOnClickListener(v -> {
                 Intent intent = new Intent(this, ChooseCategoryActivity.class);
                 intent.putExtra("selected_category", selectedCategoryTextView.getText().toString());
                 intent.putExtra("cashbook_id", currentCashbookId);
+
+                // Determine type based on radio button
+                String type = radioIn.isChecked() ? "IN" : "OUT";
+                intent.putExtra("transaction_type", type);
+
                 categoryLauncher.launch(intent);
             });
         }
