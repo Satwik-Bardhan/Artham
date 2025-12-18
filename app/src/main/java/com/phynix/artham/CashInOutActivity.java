@@ -1,15 +1,18 @@
 package com.phynix.artham;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.provider.ContactsContract;
 import android.speech.RecognizerIntent;
 import android.text.TextUtils;
 import android.util.Log;
@@ -50,6 +53,7 @@ public class CashInOutActivity extends AppCompatActivity {
 
     private static final String TAG = "CashInOutActivity";
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1001;
+    private static final int CONTACTS_PERMISSION_REQUEST_CODE = 1002;
     private static final String PREFS_NAME = "AppSettingsPrefs";
     private static final String KEY_CALCULATOR = "calculator_enabled";
 
@@ -68,8 +72,10 @@ public class CashInOutActivity extends AppCompatActivity {
     private ImageView calculatorButton, voiceInputButton, locationButton;
     private Button quickAmount100, quickAmount500, quickAmount1000, quickAmount5000;
     private ImageView cameraButton, scanButton, attachFileButton;
-    private TextView partyTextView;
-    private LinearLayout partySelectorLayout;
+    // [UPDATED] Party Elements
+    private TextInputEditText partyTextView;
+    private ImageView contactBookButton;
+
     private Button saveEntryButton, saveAndAddNewButton, clearButton;
 
     private LinearLayout attachedFilesSection;
@@ -100,6 +106,8 @@ public class CashInOutActivity extends AppCompatActivity {
     private ActivityResultLauncher<Intent> cameraLauncher;
     private ActivityResultLauncher<Intent> categoryLauncher;
     private ActivityResultLauncher<Intent> filePickerLauncher;
+    // [NEW] Launcher for Contacts
+    private ActivityResultLauncher<Intent> contactPickerLauncher;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -195,9 +203,9 @@ public class CashInOutActivity extends AppCompatActivity {
         scanButton = findViewById(R.id.scanButton);
         attachFileButton = findViewById(R.id.attachFileButton);
 
-        // Party & Reference
+        // [UPDATED] Party Elements
         partyTextView = findViewById(R.id.partyTextView);
-        partySelectorLayout = findViewById(R.id.partySelectorLayout);
+        contactBookButton = findViewById(R.id.contactBookButton);
 
         // Tags & Location
         tagsEditText = findViewById(R.id.tagsEditText);
@@ -272,11 +280,19 @@ public class CashInOutActivity extends AppCompatActivity {
         });
         voiceInputButton.setOnClickListener(v -> startVoiceInput());
         categorySelectorLayout.setOnClickListener(v -> openCategorySelector());
-        partySelectorLayout.setOnClickListener(v -> openPartySelector());
+
+        // [UPDATED] Party Listeners
+        // Click on the text box opens manual entry dialog
+        partyTextView.setOnClickListener(v -> openPartySelector());
+        // Click on the icon opens system contact picker
+        contactBookButton.setOnClickListener(v -> openContactPicker());
+
         locationButton.setOnClickListener(v -> getCurrentLocation());
         saveEntryButton.setOnClickListener(v -> saveTransaction(false));
         saveAndAddNewButton.setOnClickListener(v -> saveTransaction(true));
-        clearButton.setOnClickListener(v -> clearForm());
+
+        // [UPDATED] Clear button resets everything (keeps transaction type = false)
+        clearButton.setOnClickListener(v -> clearForm(false));
 
         setupQuickAmountButtons();
 
@@ -402,6 +418,19 @@ public class CashInOutActivity extends AppCompatActivity {
                             attachedPdfText.setText(attachedFileUri.getLastPathSegment());
                             updateAttachmentVisibility();
                             Toast.makeText(this, "File attached", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                }
+        );
+
+        // [NEW] Contact Picker Launcher
+        contactPickerLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                        Uri contactUri = result.getData().getData();
+                        if (contactUri != null) {
+                            fetchContactName(contactUri);
                         }
                     }
                 }
@@ -643,6 +672,35 @@ public class CashInOutActivity extends AppCompatActivity {
                 .show();
     }
 
+    // [NEW] Open Contact Picker
+    private void openContactPicker() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_CONTACTS}, CONTACTS_PERMISSION_REQUEST_CODE);
+        } else {
+            launchContactPicker();
+        }
+    }
+
+    private void launchContactPicker() {
+        Intent intent = new Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI);
+        contactPickerLauncher.launch(intent);
+    }
+
+    @SuppressLint("Range")
+    private void fetchContactName(Uri contactUri) {
+        try (Cursor cursor = getContentResolver().query(contactUri, null, null, null, null)) {
+            if (cursor != null && cursor.moveToFirst()) {
+                String name = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
+                if (name != null) {
+                    selectedParty = name;
+                    partyTextView.setText(name);
+                }
+            }
+        } catch (Exception e) {
+            Toast.makeText(this, "Failed to load contact", Toast.LENGTH_SHORT).show();
+        }
+    }
+
     private void getCurrentLocation() {
         if (fusedLocationClient == null) return;
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -669,6 +727,12 @@ public class CashInOutActivity extends AppCompatActivity {
             } else {
                 Toast.makeText(this, "Location permission denied", Toast.LENGTH_SHORT).show();
             }
+        } else if (requestCode == CONTACTS_PERMISSION_REQUEST_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                launchContactPicker();
+            } else {
+                Toast.makeText(this, "Contacts permission denied", Toast.LENGTH_SHORT).show();
+            }
         }
     }
 
@@ -693,7 +757,8 @@ public class CashInOutActivity extends AppCompatActivity {
 
         Toast.makeText(this, "Entry Saved", Toast.LENGTH_SHORT).show();
         if (addNew) {
-            clearForm();
+            // [UPDATED] Pass true to keep the current transaction type
+            clearForm(true);
         } else {
             finish();
         }
@@ -741,12 +806,13 @@ public class CashInOutActivity extends AppCompatActivity {
         return transaction;
     }
 
-    private void clearForm() {
+    // [UPDATED] clearForm now takes a boolean parameter
+    private void clearForm(boolean keepTransactionType) {
         amountEditText.setText("");
         remarkEditText.setText("");
         tagsEditText.setText("");
         selectedCategoryTextView.setText("Select Category");
-        partyTextView.setText("Select Party (Customer/Supplier)");
+        partyTextView.setText(""); // Cleared text
 
         selectedCategory = "Other";
         selectedParty = null;
@@ -759,7 +825,11 @@ public class CashInOutActivity extends AppCompatActivity {
 
         clearQuickAmountSelections();
 
-        radioIn.setChecked(true);
+        // Only reset transaction type if NOT keeping it (e.g., standard clear button)
+        if (!keepTransactionType) {
+            radioIn.setChecked(true);
+        }
+
         radioCash.setChecked(true);
         taxCheckbox.setChecked(false);
         taxAmountLayout.setVisibility(View.GONE);
@@ -768,7 +838,11 @@ public class CashInOutActivity extends AppCompatActivity {
         startRealTimeClock();
 
         amountEditText.requestFocus();
-        Toast.makeText(this, "Form cleared", Toast.LENGTH_SHORT).show();
+
+        // Show message only if explicitly cleared by button, not auto-cleared on save
+        if (!keepTransactionType) {
+            Toast.makeText(this, "Form cleared", Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override

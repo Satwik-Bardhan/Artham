@@ -4,52 +4,47 @@
     android:id="@+id/partySelectorLayout"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
+    android:orientation="horizontal"
+    android:layout_marginTop="16dp"
     android:paddingBottom="10dp"
-    android:layout_marginTop="16dp">
+    android:gravity="center_vertical">
 
-    <TextView
-        android:layout_width="wrap_content"
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:layout_marginStart="4dp"
-        android:text="Party (Optional)"
-        android:textColor="?attr/textColorPrimary"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        android:fontFamily="@font/app_font" />
+        android:layout_weight="1"
+        android:hint="Party (Optional)"
+        app:hintTextColor="?attr/textColorSecondary"
+        app:boxBackgroundColor="?attr/surfaceColor"
+        app:boxCornerRadiusBottomEnd="12dp"
+        app:boxCornerRadiusBottomStart="12dp"
+        app:boxCornerRadiusTopEnd="12dp"
+        app:boxCornerRadiusTopStart="12dp"
+        app:boxStrokeWidth="0dp">
 
-    <androidx.cardview.widget.CardView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:cardBackgroundColor="?attr/surfaceColor"
-        app:cardCornerRadius="8dp"
-        app:cardElevation="2dp">
-
-        <LinearLayout
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/partyTextView"
             android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:background="?attr/selectableItemBackground"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:paddingHorizontal="16dp">
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/app_font"
+            android:inputType="textPersonName"
+            android:focusable="false"
+            android:clickable="true"
+            android:cursorVisible="false"
+            android:textColor="?attr/textColorPrimary" />
+    </com.google.android.material.textfield.TextInputLayout>
 
-            <TextView
-                android:id="@+id/partyTextView"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Select Party"
-                android:textColor="?attr/textColorSecondary"
-                android:textSize="15sp"
-                android:fontFamily="@font/app_font"/>
+    <ImageView
+        android:id="@+id/contactBookButton"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginStart="8dp"
+        android:padding="12dp"
+        android:background="@drawable/rounded_input_background"
+        android:src="@drawable/ic_contact_phone"
+        app:tint="?attr/balanceColor"
+        android:clickable="true"
+        android:focusable="true"
+        android:contentDescription="Select Contact"/>
 
-            <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@drawable/ic_contact_phone"
-                app:tint="?attr/textColorSecondary" />
-
-        </LinearLayout>
-    </androidx.cardview.widget.CardView>
 </LinearLayout>

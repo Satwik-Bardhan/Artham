@@ -116,12 +116,13 @@
                             android:layout_height="40dp"
                             android:layout_marginEnd="16dp"
                             app:cardBackgroundColor="#334CAF50"
-                            app:cardCornerRadius="20dp">
+                            app:cardCornerRadius="20dp"
+                            app:cardElevation="0dp">
 
                             <ImageView
                                 android:layout_width="match_parent"
                                 android:layout_height="match_parent"
-                                android:padding="8dp"
+                                android:padding="10dp"
                                 android:src="@drawable/ic_cloud_sync"
                                 app:tint="#4CAF50" />
                         </androidx.cardview.widget.CardView>
@@ -195,12 +196,13 @@
                             android:layout_height="40dp"
                             android:layout_marginEnd="16dp"
                             app:cardBackgroundColor="#332196F3"
-                            app:cardCornerRadius="20dp">
+                            app:cardCornerRadius="20dp"
+                            app:cardElevation="0dp">
 
                             <ImageView
                                 android:layout_width="match_parent"
                                 android:layout_height="match_parent"
-                                android:padding="8dp"
+                                android:padding="10dp"
                                 android:src="@drawable/ic_calculator"
                                 app:tint="#2196F3" />
                         </androidx.cardview.widget.CardView>
@@ -280,12 +282,13 @@
                             android:layout_height="40dp"
                             android:layout_marginEnd="16dp"
                             app:cardBackgroundColor="#33FF9800"
-                            app:cardCornerRadius="20dp">
+                            app:cardCornerRadius="20dp"
+                            app:cardElevation="0dp">
 
                             <ImageView
                                 android:layout_width="match_parent"
                                 android:layout_height="match_parent"
-                                android:padding="8dp"
+                                android:padding="10dp"
                                 android:src="@drawable/ic_language"
                                 app:tint="#FF9800" />
                         </androidx.cardview.widget.CardView>
@@ -358,12 +361,13 @@
                             android:layout_height="48dp"
                             android:layout_marginEnd="16dp"
                             app:cardBackgroundColor="#33607D8B"
-                            app:cardCornerRadius="24dp">
+                            app:cardCornerRadius="24dp"
+                            app:cardElevation="0dp">
 
                             <ImageView
                                 android:layout_width="match_parent"
                                 android:layout_height="match_parent"
-                                android:padding="10dp"
+                                android:padding="12dp"
                                 android:src="@drawable/logo"
                                 app:tint="#607D8B" />
                         </androidx.cardview.widget.CardView>

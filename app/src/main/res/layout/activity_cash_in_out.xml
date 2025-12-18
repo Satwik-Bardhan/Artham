@@ -153,10 +153,10 @@
 
             <include layout="@layout/layout_amount" />
 
+            <include layout="@layout/layout_remark" />
             <include layout="@layout/layout_category" />
             <include layout="@layout/layout_party_reference" />
 
-            <include layout="@layout/layout_remark" />
 
             <include layout="@layout/layout_tags_location" />
 
