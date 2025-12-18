@@ -2,23 +2,22 @@ package com.phynix.artham;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.text.method.PasswordTransformationMethod;
 import android.util.Log;
 import android.util.Patterns;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.cardview.widget.CardView;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -27,6 +26,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.phynix.artham.viewmodels.SigninViewModel;
 
@@ -34,17 +34,14 @@ public class SigninActivity extends AppCompatActivity {
 
     private static final String TAG = "SigninActivity";
 
-    private EditText emailEditText, passwordEditText;
-    private Button signinButton;
-    private TextView forgotPasswordText, signUpText;
-    private ImageView togglePasswordVisibility, backButton, helpButton;
-    private CardView googleSignInCard;
+    private EditText emailInput;
+    private Button btnSignInEmail;
+    private LinearLayout btnGoogleSignIn;
+    private ImageView backButton, helpButton;
     private ProgressBar loadingIndicator;
 
     private SigninViewModel viewModel;
     private GoogleSignInClient mGoogleSignInClient;
-
-    private boolean isPasswordVisible = false;
 
     private final ActivityResultLauncher<Intent> googleSignInLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
@@ -55,8 +52,6 @@ public class SigninActivity extends AppCompatActivity {
                         GoogleSignInAccount account = task.getResult(ApiException.class);
                         if (account != null) {
                             viewModel.firebaseAuthWithGoogle(account);
-                        } else {
-                            Toast.makeText(this, "Google sign in failed.", Toast.LENGTH_SHORT).show();
                         }
                     } catch (ApiException e) {
                         Log.w(TAG, "Google sign in failed", e);
@@ -69,11 +64,13 @@ public class SigninActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_signin);
-        if (getSupportActionBar() != null) getSupportActionBar().hide();
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().hide();
+        }
 
         viewModel = new ViewModelProvider(this).get(SigninViewModel.class);
 
-        // [FIX] Use auto-generated web client ID
+        // Configure Google Sign In
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(getString(R.string.default_web_client_id))
                 .requestEmail()
@@ -83,111 +80,112 @@ public class SigninActivity extends AppCompatActivity {
         initializeUI();
         setupClickListeners();
         observeViewModel();
+
+        // Handle incoming Email Links
+        checkIntentForEmailLink(getIntent());
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        checkIntentForEmailLink(intent);
+    }
+
+    private void checkIntentForEmailLink(Intent intent) {
+        if (intent != null && intent.getData() != null) {
+            String emailLink = intent.getData().toString();
+            FirebaseAuth auth = FirebaseAuth.getInstance();
+
+            if (auth.isSignInWithEmailLink(emailLink)) {
+                SharedPreferences prefs = getSharedPreferences("ArthamPrefs", MODE_PRIVATE);
+                String email = prefs.getString("email_for_signin", "");
+
+                if (TextUtils.isEmpty(email)) {
+                    // Email not saved locally (user might be on a different device)
+                    emailInput.requestFocus();
+                    btnSignInEmail.setText("Verify Link & Sign In");
+                    Toast.makeText(this, "Please enter your email to complete the sign-in", Toast.LENGTH_LONG).show();
+
+                    // Override the button listener to verify instead of send
+                    btnSignInEmail.setOnClickListener(v -> {
+                        String userEmail = emailInput.getText().toString().trim();
+                        if (TextUtils.isEmpty(userEmail)) {
+                            emailInput.setError("Email required");
+                            return;
+                        }
+                        viewModel.signInWithEmailLink(userEmail, emailLink);
+                    });
+                } else {
+                    // We have the email, complete sign in automatically
+                    emailInput.setText(email);
+                    viewModel.signInWithEmailLink(email, emailLink);
+                }
+            }
+        }
     }
 
     private void initializeUI() {
-        emailEditText = findViewById(R.id.email);
-        passwordEditText = findViewById(R.id.password);
-        signinButton = findViewById(R.id.signinButton);
-        forgotPasswordText = findViewById(R.id.forgotPassword);
-        signUpText = findViewById(R.id.signUpText);
-        togglePasswordVisibility = findViewById(R.id.togglePasswordVisibility);
-        googleSignInCard = findViewById(R.id.googleSigninCard);
+        emailInput = findViewById(R.id.emailInput);
+        btnSignInEmail = findViewById(R.id.btnSignInEmail);
+        btnGoogleSignIn = findViewById(R.id.btnGoogleSignIn);
         loadingIndicator = findViewById(R.id.loadingIndicator);
         backButton = findViewById(R.id.backButton);
         helpButton = findViewById(R.id.helpButton);
     }
 
+    private void setupClickListeners() {
+        // Send Magic Link
+        btnSignInEmail.setOnClickListener(v -> {
+            String email = emailInput.getText().toString().trim();
+            if (TextUtils.isEmpty(email) || !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                emailInput.setError("Enter a valid email");
+                emailInput.requestFocus();
+                return;
+            }
+
+            // Save email to SharedPrefs to use when the link is clicked
+            SharedPreferences prefs = getSharedPreferences("ArthamPrefs", MODE_PRIVATE);
+            prefs.edit().putString("email_for_signin", email).apply();
+
+            viewModel.sendEmailLink(email);
+        });
+
+        // Google Sign In
+        btnGoogleSignIn.setOnClickListener(v -> signInWithGoogle());
+
+        backButton.setOnClickListener(v -> onBackPressed());
+        helpButton.setOnClickListener(v -> Toast.makeText(this, "Enter your email to receive a passwordless login link", Toast.LENGTH_SHORT).show());
+    }
+
     private void observeViewModel() {
         viewModel.getUser().observe(this, firebaseUser -> {
             if (firebaseUser != null) {
-                updateUI(firebaseUser);
+                Toast.makeText(this, "Welcome to Artham!", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(this, HomePage.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+                finish();
             }
         });
 
         viewModel.getError().observe(this, errorMessage -> {
             if (errorMessage != null && !errorMessage.isEmpty()) {
-                Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, errorMessage, Toast.LENGTH_LONG).show();
                 viewModel.clearError();
             }
         });
 
         viewModel.getLoading().observe(this, isLoading -> {
-            setLoading(isLoading);
+            loadingIndicator.setVisibility(isLoading ? View.VISIBLE : View.GONE);
+            btnSignInEmail.setEnabled(!isLoading);
+            btnGoogleSignIn.setEnabled(!isLoading);
+            emailInput.setEnabled(!isLoading);
         });
-    }
-
-    private void setupClickListeners() {
-        signinButton.setOnClickListener(v -> attemptEmailPasswordSignIn());
-        googleSignInCard.setOnClickListener(v -> signInWithGoogle());
-        signUpText.setOnClickListener(v -> startActivity(new Intent(this, SignupActivity.class)));
-
-        forgotPasswordText.setOnClickListener(v -> {
-            // [FIX] Safety check before getting text
-            if (emailEditText != null && emailEditText.getText() != null) {
-                Intent intent = new Intent(this, ForgotPasswordActivity.class);
-                intent.putExtra("email", emailEditText.getText().toString().trim());
-                startActivity(intent);
-            }
-        });
-
-        togglePasswordVisibility.setOnClickListener(v -> togglePasswordVisibility());
-        backButton.setOnClickListener(v -> onBackPressed());
-        helpButton.setOnClickListener(v -> Toast.makeText(this, "Help button clicked", Toast.LENGTH_SHORT).show());
-    }
-
-    private void attemptEmailPasswordSignIn() {
-        // [FIX] Add explicit null checks to prevent crashes
-        if (emailEditText == null || passwordEditText == null) return;
-        if (emailEditText.getText() == null || passwordEditText.getText() == null) return;
-
-        String email = emailEditText.getText().toString().trim();
-        String password = passwordEditText.getText().toString().trim();
-
-        if (TextUtils.isEmpty(email) || !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            emailEditText.setError("A valid email is required.");
-            emailEditText.requestFocus();
-            return;
-        }
-        if (TextUtils.isEmpty(password)) {
-            passwordEditText.setError("Password is required.");
-            passwordEditText.requestFocus();
-            return;
-        }
-
-        viewModel.signInWithEmail(email, password);
     }
 
     private void signInWithGoogle() {
         Intent signInIntent = mGoogleSignInClient.getSignInIntent();
         googleSignInLauncher.launch(signInIntent);
-    }
-
-    private void togglePasswordVisibility() {
-        if (isPasswordVisible) {
-            passwordEditText.setTransformationMethod(new PasswordTransformationMethod());
-            togglePasswordVisibility.setImageResource(R.drawable.ic_visibility_off);
-        } else {
-            passwordEditText.setTransformationMethod(null);
-            togglePasswordVisibility.setImageResource(R.drawable.ic_visibility_on);
-        }
-        isPasswordVisible = !isPasswordVisible;
-        passwordEditText.setSelection(passwordEditText.length());
-    }
-
-    private void setLoading(boolean isLoading) {
-        loadingIndicator.setVisibility(isLoading ? View.VISIBLE : View.GONE);
-        signinButton.setEnabled(!isLoading);
-        googleSignInCard.setEnabled(!isLoading);
-    }
-
-    private void updateUI(FirebaseUser user) {
-        if (user != null) {
-            Toast.makeText(this, "Sign In Successful", Toast.LENGTH_SHORT).show();
-            Intent intent = new Intent(this, HomePage.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(intent);
-            finish();
-        }
     }
 }

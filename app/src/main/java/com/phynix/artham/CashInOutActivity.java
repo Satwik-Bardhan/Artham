@@ -26,6 +26,7 @@ import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -39,8 +40,6 @@ import com.google.android.material.textfield.TextInputLayout;
 import com.phynix.artham.models.TransactionModel;
 import com.phynix.artham.viewmodels.CashInOutViewModel;
 import com.phynix.artham.viewmodels.CashInOutViewModelFactory;
-
-import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -60,9 +59,7 @@ public class CashInOutActivity extends AppCompatActivity {
     private TextView dateTextView, timeTextView, selectedCategoryTextView;
     private LinearLayout dateSelectorLayout, timeSelectorLayout, categorySelectorLayout;
     private RadioGroup inOutToggle, cashOnlineToggle;
-
-    private RadioButton radioIn, radioOut, radioCash, radioOnline, radioCard;
-
+    private RadioButton radioIn, radioOut, radioCash, radioOnline;
     private ImageView swapButton;
     private CheckBox taxCheckbox;
     private TextInputLayout taxAmountLayout;
@@ -70,10 +67,7 @@ public class CashInOutActivity extends AppCompatActivity {
     private EditText amountEditText;
     private ImageView calculatorButton, voiceInputButton, locationButton;
     private Button quickAmount100, quickAmount500, quickAmount1000, quickAmount5000;
-
-    // Attachment Buttons
     private ImageView cameraButton, scanButton, attachFileButton;
-
     private TextView partyTextView;
     private LinearLayout partySelectorLayout;
     private Button saveEntryButton, saveAndAddNewButton, clearButton;
@@ -128,7 +122,6 @@ public class CashInOutActivity extends AppCompatActivity {
 
         initializeUI();
         initializeDateTime();
-
         setupClickListeners();
         setupActivityLaunchers();
         setupInitialState(transactionType);
@@ -137,6 +130,21 @@ public class CashInOutActivity extends AppCompatActivity {
         updateAttachmentVisibility();
 
         Log.d(TAG, "CashInOutActivity initialized for cashbook: " + currentCashbookId);
+    }
+
+    // [UPDATED] Use onResume to check settings and hide/show calculator
+    @Override
+    protected void onResume() {
+        super.onResume();
+        checkCalculatorSetting();
+    }
+
+    private void checkCalculatorSetting() {
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        boolean isCalculatorEnabled = prefs.getBoolean(KEY_CALCULATOR, true);
+        if (calculatorButton != null) {
+            calculatorButton.setVisibility(isCalculatorEnabled ? View.VISIBLE : View.GONE);
+        }
     }
 
     private void initializeUI() {
@@ -161,9 +169,7 @@ public class CashInOutActivity extends AppCompatActivity {
         // Payment Method
         cashOnlineToggle = findViewById(R.id.cashOnlineToggle);
         radioCash = findViewById(R.id.radioCash);
-        radioCard = findViewById(R.id.radioCard);
         radioOnline = findViewById(R.id.radioOnline);
-
         taxCheckbox = findViewById(R.id.taxCheckbox);
         taxAmountLayout = findViewById(R.id.taxAmountLayout);
         taxAmountEditText = findViewById(R.id.taxAmountEditText);
@@ -244,75 +250,52 @@ public class CashInOutActivity extends AppCompatActivity {
     }
 
     private void setupClickListeners() {
-        if (backButton != null) backButton.setOnClickListener(v -> finish());
-        if (menuButton != null) menuButton.setOnClickListener(v -> showMenuOptions());
+        backButton.setOnClickListener(v -> finish());
+        menuButton.setOnClickListener(v -> showMenuOptions());
 
-        if (dateSelectorLayout != null) {
-            dateSelectorLayout.setOnClickListener(v -> {
-                stopRealTimeClock();
-                showDatePicker();
-            });
-        }
-        if (timeSelectorLayout != null) {
-            timeSelectorLayout.setOnClickListener(v -> {
-                stopRealTimeClock();
-                showTimePicker();
-            });
-        }
+        dateSelectorLayout.setOnClickListener(v -> {
+            stopRealTimeClock();
+            showDatePicker();
+        });
+        timeSelectorLayout.setOnClickListener(v -> {
+            stopRealTimeClock();
+            showTimePicker();
+        });
 
-        if (swapButton != null) swapButton.setOnClickListener(v -> swapTransactionType());
-        if (inOutToggle != null) inOutToggle.setOnCheckedChangeListener(this::onTransactionTypeChanged);
+        swapButton.setOnClickListener(v -> swapTransactionType());
+        inOutToggle.setOnCheckedChangeListener(this::onTransactionTypeChanged);
 
-        if (calculatorButton != null) calculatorButton.setOnClickListener(v -> checkAndOpenCalculator());
+        calculatorButton.setOnClickListener(v -> checkAndOpenCalculator());
 
-        if (taxCheckbox != null) {
-            taxCheckbox.setOnCheckedChangeListener((bv, isChecked) -> {
-                if (taxAmountLayout != null) {
-                    taxAmountLayout.setVisibility(isChecked ? View.VISIBLE : View.GONE);
-                }
-            });
-        }
-
-        if (voiceInputButton != null) voiceInputButton.setOnClickListener(v -> startVoiceInput());
-
-        // Open Category Selector
-        if (categorySelectorLayout != null) categorySelectorLayout.setOnClickListener(v -> openCategorySelector());
-
-        if (partySelectorLayout != null) partySelectorLayout.setOnClickListener(v -> openPartySelector());
-        if (locationButton != null) locationButton.setOnClickListener(v -> getCurrentLocation());
-
-        if (saveEntryButton != null) saveEntryButton.setOnClickListener(v -> saveTransaction(false));
-        if (saveAndAddNewButton != null) saveAndAddNewButton.setOnClickListener(v -> saveTransaction(true));
-        if (clearButton != null) clearButton.setOnClickListener(v -> clearForm());
+        taxCheckbox.setOnCheckedChangeListener((bv, isChecked) -> {
+            taxAmountLayout.setVisibility(isChecked ? View.VISIBLE : View.GONE);
+        });
+        voiceInputButton.setOnClickListener(v -> startVoiceInput());
+        categorySelectorLayout.setOnClickListener(v -> openCategorySelector());
+        partySelectorLayout.setOnClickListener(v -> openPartySelector());
+        locationButton.setOnClickListener(v -> getCurrentLocation());
+        saveEntryButton.setOnClickListener(v -> saveTransaction(false));
+        saveAndAddNewButton.setOnClickListener(v -> saveTransaction(true));
+        clearButton.setOnClickListener(v -> clearForm());
 
         setupQuickAmountButtons();
 
-        View.OnClickListener comingSoonListener = v -> {
-            Toast.makeText(this, "Feature coming soon", Toast.LENGTH_SHORT).show();
-        };
+        cameraButton.setOnClickListener(v -> openCamera());
+        scanButton.setOnClickListener(v -> openScanner());
+        attachFileButton.setOnClickListener(v -> openFilePicker());
 
-        if (cameraButton != null) cameraButton.setOnClickListener(comingSoonListener);
-        if (scanButton != null) scanButton.setOnClickListener(comingSoonListener);
-        if (attachFileButton != null) attachFileButton.setOnClickListener(comingSoonListener);
-
-        if (removeAttachedImage != null) {
-            removeAttachedImage.setOnClickListener(v -> {
-                attachedImageUri = null;
-                updateAttachmentVisibility();
-            });
-        }
-        if (removeAttachedQr != null) {
-            removeAttachedQr.setOnClickListener(v -> {
-                attachedQrData = null;
-                updateAttachmentVisibility();
-            });
-        }
-        if (removeAttachedPdf != null) {
-            removeAttachedPdf.setOnClickListener(v -> {
-                attachedFileUri = null;
-                updateAttachmentVisibility();
-            });
-        }
+        removeAttachedImage.setOnClickListener(v -> {
+            attachedImageUri = null;
+            updateAttachmentVisibility();
+        });
+        removeAttachedQr.setOnClickListener(v -> {
+            attachedQrData = null;
+            updateAttachmentVisibility();
+        });
+        removeAttachedPdf.setOnClickListener(v -> {
+            attachedFileUri = null;
+            updateAttachmentVisibility();
+        });
     }
 
     private void updateAttachmentVisibility() {
@@ -320,16 +303,14 @@ public class CashInOutActivity extends AppCompatActivity {
         boolean hasQr = attachedQrData != null;
         boolean hasFile = attachedFileUri != null;
 
-        if (attachedImageLayout != null) attachedImageLayout.setVisibility(hasImage ? View.VISIBLE : View.GONE);
-        if (attachedQrLayout != null) attachedQrLayout.setVisibility(hasQr ? View.VISIBLE : View.GONE);
-        if (attachedPdfLayout != null) attachedPdfLayout.setVisibility(hasFile ? View.VISIBLE : View.GONE);
+        attachedImageLayout.setVisibility(hasImage ? View.VISIBLE : View.GONE);
+        attachedQrLayout.setVisibility(hasQr ? View.VISIBLE : View.GONE);
+        attachedPdfLayout.setVisibility(hasFile ? View.VISIBLE : View.GONE);
 
-        if (attachedFilesSection != null) {
-            if (hasImage || hasQr || hasFile) {
-                attachedFilesSection.setVisibility(View.VISIBLE);
-            } else {
-                attachedFilesSection.setVisibility(View.GONE);
-            }
+        if (hasImage || hasQr || hasFile) {
+            attachedFilesSection.setVisibility(View.VISIBLE);
+        } else {
+            attachedFilesSection.setVisibility(View.GONE);
         }
     }
 
@@ -343,18 +324,17 @@ public class CashInOutActivity extends AppCompatActivity {
             amountEditText.setText(cleanAmount);
             showQuickAmountSelectionFeedback(clickedButton);
         };
-
-        if (quickAmount100 != null) quickAmount100.setOnClickListener(quickAmountClickListener);
-        if (quickAmount500 != null) quickAmount500.setOnClickListener(quickAmountClickListener);
-        if (quickAmount1000 != null) quickAmount1000.setOnClickListener(quickAmountClickListener);
-        if (quickAmount5000 != null) quickAmount5000.setOnClickListener(quickAmountClickListener);
+        quickAmount100.setOnClickListener(quickAmountClickListener);
+        quickAmount500.setOnClickListener(quickAmountClickListener);
+        quickAmount1000.setOnClickListener(quickAmountClickListener);
+        quickAmount5000.setOnClickListener(quickAmountClickListener);
     }
 
     private void clearQuickAmountSelections() {
-        if (quickAmount100 != null) quickAmount100.setSelected(false);
-        if (quickAmount500 != null) quickAmount500.setSelected(false);
-        if (quickAmount1000 != null) quickAmount1000.setSelected(false);
-        if (quickAmount5000 != null) quickAmount5000.setSelected(false);
+        quickAmount100.setSelected(false);
+        quickAmount500.setSelected(false);
+        quickAmount1000.setSelected(false);
+        quickAmount5000.setSelected(false);
     }
 
     private void showQuickAmountSelectionFeedback(Button selectedButton) {
@@ -369,10 +349,6 @@ public class CashInOutActivity extends AppCompatActivity {
         } else if (checkedId == R.id.radioOut) {
             updateHeaderForTransactionType("OUT");
         }
-
-        // Reset category when switching types to prevent mismatched categories
-        selectedCategory = "Other";
-        selectedCategoryTextView.setText(selectedCategory);
     }
 
     private void setupActivityLaunchers() {
@@ -616,21 +592,38 @@ public class CashInOutActivity extends AppCompatActivity {
         }
     }
 
-    // [UPDATED] Passes cashbook_id and transaction_type to enable adding/loading categories
     private void openCategorySelector() {
         Intent intent = new Intent(this, ChooseCategoryActivity.class);
-
-        // 1. Pass the currently selected category name
         intent.putExtra("selected_category", selectedCategory);
-
-        // 2. Pass the Transaction Type ("IN" or "OUT")
-        String type = radioIn.isChecked() ? "IN" : "OUT";
-        intent.putExtra("transaction_type", type);
-
-        // 3. [IMPORTANT] Pass the Cashbook ID so the button works
         intent.putExtra("cashbook_id", currentCashbookId);
-
+        intent.putExtra("transaction_type", radioIn.isChecked() ? "IN" : "OUT");
         categoryLauncher.launch(intent);
+    }
+
+    private void openCamera() {
+        Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+        if (cameraIntent.resolveActivity(getPackageManager()) != null) {
+            cameraLauncher.launch(cameraIntent);
+        } else {
+            Toast.makeText(this, "Camera not available", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void openScanner() {
+        attachedQrData = "Scanned Data Code";
+        attachedQrText.setText("QR Code Scanned");
+        updateAttachmentVisibility();
+        Toast.makeText(this, "Simulated Scan Complete", Toast.LENGTH_SHORT).show();
+    }
+
+    private void openFilePicker() {
+        Intent fileIntent = new Intent(Intent.ACTION_GET_CONTENT);
+        fileIntent.setType("*/*");
+        try {
+            filePickerLauncher.launch(Intent.createChooser(fileIntent, "Select File"));
+        } catch (Exception e) {
+            Toast.makeText(this, "File picker not available", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void openPartySelector() {
@@ -739,16 +732,7 @@ public class CashInOutActivity extends AppCompatActivity {
 
         transaction.setAmount(Double.parseDouble(amountEditText.getText().toString().trim()));
         transaction.setType(radioIn.isChecked() ? "IN" : "OUT");
-
-        // Logic for Payment Mode including Card
-        String paymentMode = "Cash";
-        if (radioCard != null && radioCard.isChecked()) {
-            paymentMode = "Card";
-        } else if (radioOnline != null && radioOnline.isChecked()) {
-            paymentMode = "Online";
-        }
-        transaction.setPaymentMode(paymentMode);
-
+        transaction.setPaymentMode(radioCash.isChecked() ? "Cash" : "Online");
         transaction.setTransactionCategory(selectedCategory);
         transaction.setTimestamp(calendar.getTimeInMillis());
         transaction.setRemark(remarkEditText.getText().toString().trim());

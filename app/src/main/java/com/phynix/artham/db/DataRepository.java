@@ -21,15 +21,14 @@ import java.util.List;
 
 /**
  * DataRepository - Centralized data access layer for CashFlow app
- * [FIX] Handles Firebase (authenticated users) operations ONLY.
- * All guest and SQLite logic has been removed.
+ * Handles Firebase (authenticated users) operations ONLY.
  */
 public class DataRepository {
 
     private static final String TAG = "DataRepository";
     private static volatile DataRepository INSTANCE;
 
-    private final DatabaseReference rootRef; // [FIX] Changed to root reference
+    private final DatabaseReference rootRef;
     private final FirebaseAuth mAuth;
 
     public interface DataCallback<T> {
@@ -42,7 +41,6 @@ public class DataRepository {
 
     private DataRepository(Application application) {
         mAuth = FirebaseAuth.getInstance();
-        // [FIX] Get the root reference, user-specific paths will be determined in each method
         rootRef = FirebaseDatabase.getInstance().getReference();
     }
 
@@ -58,18 +56,23 @@ public class DataRepository {
     }
 
     /**
-     * [FIX] Helper to get the current user's DB reference.
+     * Helper to get the current user's DB reference.
      * Returns null if not authenticated.
      */
     private DatabaseReference getUserDatabaseRef() {
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if (currentUser != null && !currentUser.isAnonymous()) {
-            return rootRef.child("users").child(currentUser.getUid());
+            DatabaseReference userRef = rootRef.child("users").child(currentUser.getUid());
+
+            // [UPDATED] Keep this data synced for offline usage and automatic backup
+            userRef.keepSynced(true);
+
+            return userRef;
         }
         return null;
     }
 
-    // --- ENHANCED TRANSACTION METHODS ---
+    // --- TRANSACTION METHODS ---
 
     public void getAllTransactions(String cashbookId, DataCallback<List<TransactionModel>> callback, ErrorCallback errorCallback) {
         DatabaseReference userDatabase = getUserDatabaseRef();
@@ -92,7 +95,7 @@ public class DataRepository {
                                     transactions.add(transaction);
                                 }
                             }
-                            // [FIX] Sort by timestamp, newest first
+                            // Sort by timestamp, newest first
                             Collections.sort(transactions, (t1, t2) ->
                                     Long.compare(t2.getTimestamp(), t1.getTimestamp()));
                             callback.onCallback(transactions);
@@ -175,7 +178,7 @@ public class DataRepository {
                 });
     }
 
-    // --- ENHANCED CASHBOOK METHODS ---
+    // --- CASHBOOK METHODS ---
 
     public void getCashbooks(DataCallback<List<CashbookModel>> callback, ErrorCallback errorCallback) {
         DatabaseReference userDatabase = getUserDatabaseRef();
@@ -229,7 +232,7 @@ public class DataRepository {
         String cashbookId = userDatabase.child("cashbooks").push().getKey();
         if (cashbookId != null) {
             CashbookModel newCashbook = new CashbookModel(cashbookId, name.trim());
-            newCashbook.setUserId(userDatabase.getKey()); // Set the user ID
+            newCashbook.setUserId(userDatabase.getKey());
 
             userDatabase.child("cashbooks").child(cashbookId).setValue(newCashbook)
                     .addOnSuccessListener(aVoid -> {
@@ -289,9 +292,6 @@ public class DataRepository {
                                 originalCashbook.setCurrent(false);
                                 originalCashbook.setLastModified(System.currentTimeMillis());
                                 originalCashbook.setCreatedDate(System.currentTimeMillis());
-                                // Note: This duplicates transactions, which might not be intended.
-                                // A true duplicate might start with 0 transactions.
-                                // For this code, we'll duplicate everything.
 
                                 userDatabase.child("cashbooks").child(newCashbookId).setValue(originalCashbook)
                                         .addOnSuccessListener(aVoid -> {
