@@ -21,14 +21,13 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="20dp"
         app:cardBackgroundColor="?attr/surfaceColor"
-        app:cardCornerRadius="12dp"
+        app:cardCornerRadius="8dp"
         app:cardElevation="2dp">
 
         <LinearLayout
             android:id="@+id/categorySelectorLayout"
             android:layout_width="match_parent"
             android:layout_height="50dp"
-            android:background="@drawable/selector_ripple"
             android:clickable="true"
             android:focusable="true"
             android:gravity="center_vertical"

@@ -153,127 +153,14 @@
 
             <include layout="@layout/layout_amount" />
 
-            <include layout="@layout/layout_remark" />
             <include layout="@layout/layout_category" />
             <include layout="@layout/layout_party_reference" />
 
+            <include layout="@layout/layout_remark" />
 
             <include layout="@layout/layout_tags_location" />
 
             <include layout="@layout/layout_attachments" />
-
-            <LinearLayout
-                android:id="@+id/attachedFilesSection"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:layout_marginTop="16dp"
-                android:visibility="gone">
-
-                <LinearLayout
-                    android:id="@+id/attachedImageLayout"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:background="@drawable/rounded_input_background"
-                    android:padding="8dp"
-                    android:layout_marginBottom="8dp"
-                    android:visibility="gone">
-
-                    <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:src="@drawable/ic_image"
-                        app:tint="?attr/textColorSecondary"/>
-
-                    <TextView
-                        android:id="@+id/attachedImageText"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_marginStart="12dp"
-                        android:text="Image.jpg"
-                        android:fontFamily="@font/app_font"
-                        android:textColor="?attr/textColorPrimary"/>
-
-                    <ImageView
-                        android:id="@+id/removeAttachedImage"
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:src="@drawable/ic_close"
-                        app:tint="?attr/expenseColor"/>
-                </LinearLayout>
-
-                <LinearLayout
-                    android:id="@+id/attachedPdfLayout"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:background="@drawable/rounded_input_background"
-                    android:padding="8dp"
-                    android:layout_marginBottom="8dp"
-                    android:visibility="gone">
-
-                    <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:src="@drawable/ic_description"
-                        app:tint="?attr/textColorSecondary"/>
-
-                    <TextView
-                        android:id="@+id/attachedPdfText"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_marginStart="12dp"
-                        android:text="Document.pdf"
-                        android:fontFamily="@font/app_font"
-                        android:textColor="?attr/textColorPrimary"/>
-
-                    <ImageView
-                        android:id="@+id/removeAttachedPdf"
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:src="@drawable/ic_close"
-                        app:tint="?attr/expenseColor"/>
-                </LinearLayout>
-
-                <LinearLayout
-                    android:id="@+id/attachedQrLayout"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:background="@drawable/rounded_input_background"
-                    android:padding="8dp"
-                    android:visibility="gone">
-
-                    <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:src="@drawable/ic_qr_code"
-                        app:tint="?attr/textColorSecondary"/>
-
-                    <TextView
-                        android:id="@+id/attachedQrText"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_marginStart="12dp"
-                        android:text="QR Data"
-                        android:fontFamily="@font/app_font"
-                        android:textColor="?attr/textColorPrimary"/>
-
-                    <ImageView
-                        android:id="@+id/removeAttachedQr"
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:src="@drawable/ic_close"
-                        app:tint="?attr/expenseColor"/>
-                </LinearLayout>
-            </LinearLayout>
 
             <View
                 android:layout_width="match_parent"

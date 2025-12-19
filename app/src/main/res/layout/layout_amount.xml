@@ -33,10 +33,10 @@
             android:hint="Enter amount"
             app:hintTextColor="?attr/textColorSecondary"
             app:boxBackgroundColor="?attr/surfaceColor"
-            app:boxCornerRadiusBottomEnd="12dp"
-            app:boxCornerRadiusBottomStart="12dp"
-            app:boxCornerRadiusTopEnd="12dp"
-            app:boxCornerRadiusTopStart="12dp"
+            app:boxCornerRadiusBottomEnd="8dp"
+            app:boxCornerRadiusBottomStart="8dp"
+            app:boxCornerRadiusTopEnd="8dp"
+            app:boxCornerRadiusTopStart="8dp"
             app:boxStrokeWidth="0dp">
 
             <com.google.android.material.textfield.TextInputEditText

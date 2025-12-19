@@ -72,7 +72,8 @@ public class CashInOutActivity extends AppCompatActivity {
     private ImageView calculatorButton, voiceInputButton, locationButton;
     private Button quickAmount100, quickAmount500, quickAmount1000, quickAmount5000;
     private ImageView cameraButton, scanButton, attachFileButton;
-    // [UPDATED] Party Elements
+
+    // Party Elements
     private TextInputEditText partyTextView;
     private ImageView contactBookButton;
 
@@ -106,7 +107,6 @@ public class CashInOutActivity extends AppCompatActivity {
     private ActivityResultLauncher<Intent> cameraLauncher;
     private ActivityResultLauncher<Intent> categoryLauncher;
     private ActivityResultLauncher<Intent> filePickerLauncher;
-    // [NEW] Launcher for Contacts
     private ActivityResultLauncher<Intent> contactPickerLauncher;
 
     @Override
@@ -140,7 +140,6 @@ public class CashInOutActivity extends AppCompatActivity {
         Log.d(TAG, "CashInOutActivity initialized for cashbook: " + currentCashbookId);
     }
 
-    // [UPDATED] Use onResume to check settings and hide/show calculator
     @Override
     protected void onResume() {
         super.onResume();
@@ -203,7 +202,7 @@ public class CashInOutActivity extends AppCompatActivity {
         scanButton = findViewById(R.id.scanButton);
         attachFileButton = findViewById(R.id.attachFileButton);
 
-        // [UPDATED] Party Elements
+        // Party Elements
         partyTextView = findViewById(R.id.partyTextView);
         contactBookButton = findViewById(R.id.contactBookButton);
 
@@ -281,24 +280,25 @@ public class CashInOutActivity extends AppCompatActivity {
         voiceInputButton.setOnClickListener(v -> startVoiceInput());
         categorySelectorLayout.setOnClickListener(v -> openCategorySelector());
 
-        // [UPDATED] Party Listeners
-        // Click on the text box opens manual entry dialog
+        // Party Listeners
         partyTextView.setOnClickListener(v -> openPartySelector());
-        // Click on the icon opens system contact picker
         contactBookButton.setOnClickListener(v -> openContactPicker());
 
         locationButton.setOnClickListener(v -> getCurrentLocation());
+
+        // Save Actions
         saveEntryButton.setOnClickListener(v -> saveTransaction(false));
         saveAndAddNewButton.setOnClickListener(v -> saveTransaction(true));
 
-        // [UPDATED] Clear button resets everything (keeps transaction type = false)
+        // Clear Action (resets everything)
         clearButton.setOnClickListener(v -> clearForm(false));
 
         setupQuickAmountButtons();
 
-        cameraButton.setOnClickListener(v -> openCamera());
-        scanButton.setOnClickListener(v -> openScanner());
-        attachFileButton.setOnClickListener(v -> openFilePicker());
+        // Attachments - Coming Soon
+        cameraButton.setOnClickListener(v -> showComingSoon("Camera"));
+        scanButton.setOnClickListener(v -> showComingSoon("QR Scanner"));
+        attachFileButton.setOnClickListener(v -> showComingSoon("File Attachment"));
 
         removeAttachedImage.setOnClickListener(v -> {
             attachedImageUri = null;
@@ -312,6 +312,10 @@ public class CashInOutActivity extends AppCompatActivity {
             attachedFileUri = null;
             updateAttachmentVisibility();
         });
+    }
+
+    private void showComingSoon(String feature) {
+        Toast.makeText(this, feature + " feature coming soon!", Toast.LENGTH_SHORT).show();
     }
 
     private void updateAttachmentVisibility() {
@@ -423,7 +427,7 @@ public class CashInOutActivity extends AppCompatActivity {
                 }
         );
 
-        // [NEW] Contact Picker Launcher
+        // Contact Picker Launcher
         contactPickerLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
@@ -629,32 +633,7 @@ public class CashInOutActivity extends AppCompatActivity {
         categoryLauncher.launch(intent);
     }
 
-    private void openCamera() {
-        Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-        if (cameraIntent.resolveActivity(getPackageManager()) != null) {
-            cameraLauncher.launch(cameraIntent);
-        } else {
-            Toast.makeText(this, "Camera not available", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    private void openScanner() {
-        attachedQrData = "Scanned Data Code";
-        attachedQrText.setText("QR Code Scanned");
-        updateAttachmentVisibility();
-        Toast.makeText(this, "Simulated Scan Complete", Toast.LENGTH_SHORT).show();
-    }
-
-    private void openFilePicker() {
-        Intent fileIntent = new Intent(Intent.ACTION_GET_CONTENT);
-        fileIntent.setType("*/*");
-        try {
-            filePickerLauncher.launch(Intent.createChooser(fileIntent, "Select File"));
-        } catch (Exception e) {
-            Toast.makeText(this, "File picker not available", Toast.LENGTH_SHORT).show();
-        }
-    }
-
+    // Party Selector Dialog (Manual Entry)
     private void openPartySelector() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         final EditText input = new EditText(this);
@@ -672,7 +651,7 @@ public class CashInOutActivity extends AppCompatActivity {
                 .show();
     }
 
-    // [NEW] Open Contact Picker
+    // Contact Picker (System Contacts)
     private void openContactPicker() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_CONTACTS}, CONTACTS_PERMISSION_REQUEST_CODE);
@@ -757,7 +736,7 @@ public class CashInOutActivity extends AppCompatActivity {
 
         Toast.makeText(this, "Entry Saved", Toast.LENGTH_SHORT).show();
         if (addNew) {
-            // [UPDATED] Pass true to keep the current transaction type
+            // Keep transaction type for the next entry
             clearForm(true);
         } else {
             finish();
@@ -806,13 +785,16 @@ public class CashInOutActivity extends AppCompatActivity {
         return transaction;
     }
 
-    // [UPDATED] clearForm now takes a boolean parameter
+    /**
+     * Clears the form fields.
+     * @param keepTransactionType If true, preserves the selected IN/OUT toggle state.
+     */
     private void clearForm(boolean keepTransactionType) {
         amountEditText.setText("");
         remarkEditText.setText("");
         tagsEditText.setText("");
         selectedCategoryTextView.setText("Select Category");
-        partyTextView.setText(""); // Cleared text
+        partyTextView.setText(""); // Clear party text
 
         selectedCategory = "Other";
         selectedParty = null;
@@ -825,7 +807,7 @@ public class CashInOutActivity extends AppCompatActivity {
 
         clearQuickAmountSelections();
 
-        // Only reset transaction type if NOT keeping it (e.g., standard clear button)
+        // Only reset the transaction type if NOT keeping it (e.g. clicking the Clear button)
         if (!keepTransactionType) {
             radioIn.setChecked(true);
         }
@@ -839,7 +821,7 @@ public class CashInOutActivity extends AppCompatActivity {
 
         amountEditText.requestFocus();
 
-        // Show message only if explicitly cleared by button, not auto-cleared on save
+        // Only show "Form cleared" if it was a manual clear action
         if (!keepTransactionType) {
             Toast.makeText(this, "Form cleared", Toast.LENGTH_SHORT).show();
         }
