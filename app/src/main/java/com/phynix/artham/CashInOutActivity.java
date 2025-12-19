@@ -59,7 +59,7 @@ public class CashInOutActivity extends AppCompatActivity {
 
     // UI Elements
     private TextView headerTitle, headerSubtitle;
-    private ImageView backButton, menuButton;
+    private ImageView backButton; // Removed menuButton
     private TextView dateTextView, timeTextView, selectedCategoryTextView;
     private LinearLayout dateSelectorLayout, timeSelectorLayout, categorySelectorLayout;
     private RadioGroup inOutToggle, cashOnlineToggle;
@@ -159,7 +159,7 @@ public class CashInOutActivity extends AppCompatActivity {
         headerTitle = findViewById(R.id.headerTitle);
         headerSubtitle = findViewById(R.id.headerSubtitle);
         backButton = findViewById(R.id.back_button);
-        menuButton = findViewById(R.id.menu_button);
+        // menuButton removed
 
         // Date & Time
         dateTextView = findViewById(R.id.dateTextView);
@@ -258,7 +258,7 @@ public class CashInOutActivity extends AppCompatActivity {
 
     private void setupClickListeners() {
         backButton.setOnClickListener(v -> finish());
-        menuButton.setOnClickListener(v -> showMenuOptions());
+        // menuButton listener removed
 
         dateSelectorLayout.setOnClickListener(v -> {
             stopRealTimeClock();
@@ -713,16 +713,6 @@ public class CashInOutActivity extends AppCompatActivity {
                 Toast.makeText(this, "Contacts permission denied", Toast.LENGTH_SHORT).show();
             }
         }
-    }
-
-    private void showMenuOptions() {
-        String[] options = {"Duplicate Entry", "Save as Template"};
-        new AlertDialog.Builder(this)
-                .setTitle("Menu Options")
-                .setItems(options, (dialog, which) -> {
-                    Toast.makeText(this, "Feature coming soon", Toast.LENGTH_SHORT).show();
-                })
-                .show();
     }
 
     private void saveTransaction(boolean addNew) {

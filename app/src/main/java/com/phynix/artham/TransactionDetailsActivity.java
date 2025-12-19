@@ -78,7 +78,7 @@ public class TransactionDetailsActivity extends AppCompatActivity {
         closeButton.setOnClickListener(v -> finish());
 
         View menuButton = findViewById(R.id.menuButton);
-        menuButton.setOnClickListener(this::showPopupMenu);
+
 
         TextView detailAmount = findViewById(R.id.detailAmount);
         TextView detailType = findViewById(R.id.detailType);
@@ -158,27 +158,7 @@ public class TransactionDetailsActivity extends AppCompatActivity {
         editLauncher.launch(intent);
     }
 
-    private void showPopupMenu(View view) {
-        PopupMenu popup = new PopupMenu(this, view);
-        popup.inflate(R.menu.transaction_detail_menu);
 
-        popup.setOnMenuItemClickListener(item -> {
-            int id = item.getItemId();
-
-            if (id == R.id.action_share_transaction) {
-                shareTransactionDetails();
-                return true;
-            } else if (id == R.id.action_duplicate_transaction) {
-                duplicateTransaction();
-                return true;
-            } else if (id == R.id.action_delete_transaction) {
-                showDeleteConfirmation();
-                return true;
-            }
-            return false;
-        });
-        popup.show();
-    }
 
     private void deleteTransaction() {
         viewModel.deleteTransaction(transaction.getTransactionId());

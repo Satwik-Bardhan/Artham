@@ -287,7 +287,6 @@ public class EditTransactionActivity extends AppCompatActivity {
         }
 
         if (saveChangesButton != null) saveChangesButton.setOnClickListener(v -> saveChanges());
-        if (menuButton != null) menuButton.setOnClickListener(v -> showMoreOptionsMenu(v));
     }
 
     private void saveChanges() {
@@ -326,25 +325,7 @@ public class EditTransactionActivity extends AppCompatActivity {
         }
     }
 
-    private void showMoreOptionsMenu(View anchorView) {
-        PopupMenu popup = new PopupMenu(this, anchorView);
-        popup.getMenuInflater().inflate(R.menu.transaction_detail_menu, popup.getMenu());
-        popup.setOnMenuItemClickListener(item -> {
-            int itemId = item.getItemId();
-            if (itemId == R.id.action_share_transaction) {
-                shareTransaction();
-                return true;
-            } else if (itemId == R.id.action_duplicate_transaction) {
-                duplicateTransaction();
-                return true;
-            } else if (itemId == R.id.action_delete_transaction) {
-                showDeleteConfirmationDialog();
-                return true;
-            }
-            return false;
-        });
-        popup.show();
-    }
+
 
     private void deleteTransaction() {
         viewModel.deleteTransaction(currentTransaction.getTransactionId());
