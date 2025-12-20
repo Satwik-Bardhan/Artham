@@ -9,6 +9,7 @@
         <item name="android:textStyle">bold</item>
         <item name="android:textAllCaps">true</item>
         <item name="android:layout_marginBottom">8dp</item>
+        <item name="android:fontFamily">@font/app_font</item>
     </style>
 
     <style name="SettingsItem">
@@ -22,6 +23,7 @@
         <item name="android:background">?attr/selectableItemBackground</item>
         <item name="android:clickable">true</item>
         <item name="android:focusable">true</item>
+        <item name="android:fontFamily">@font/app_font</item>
     </style>
 
     <style name="SettingsItemSwitch" parent="SettingsItem">
@@ -41,21 +43,22 @@
         <item name="android:layout_height">wrap_content</item>
         <item name="android:textColor">?attr/textColorPrimary</item>
         <item name="android:padding">8dp</item>
+        <item name="android:fontFamily">@font/app_font</item>
     </style>
 
     <style name="BottomNavItem">
         <item name="android:layout_width">0dp</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_weight">1</item>
-        <item name="android:background">@drawable/bottom_nav_item_selector</item>
+        <item name="android:background">?attr/selectableItemBackgroundBorderless</item>
         <item name="android:clickable">true</item>
         <item name="android:drawablePadding">4dp</item>
         <item name="android:focusable">true</item>
         <item name="android:gravity">center</item>
         <item name="android:padding">8dp</item>
-        <item name="android:textColor">@color/bottom_nav_item_color_selector</item>
         <item name="android:textSize">10sp</item>
-        <item name="android:drawableTint">@color/bottom_nav_item_color_selector</item>
+        <item name="android:textColor">?attr/bottomNavIconTextColor</item>
+        <item name="android:drawableTint">?attr/bottomNavIconTextColor</item>
     </style>
 
     <style name="CalcButton" parent="Widget.MaterialComponents.Button.OutlinedButton">
@@ -68,6 +71,7 @@
         <item name="android:textColor">?attr/textColorPrimary</item>
         <item name="strokeColor">?attr/dividerHorizontal</item>
         <item name="cornerRadius">12dp</item>
+        <item name="android:fontFamily">@font/app_font</item>
     </style>
 
     <style name="TransactionDetailRow">
@@ -82,7 +86,7 @@
         <item name="android:layout_width">20dp</item>
         <item name="android:layout_height">20dp</item>
         <item name="android:layout_marginEnd">16dp</item>
-        <item name="tint">?attr/textColorSecondary</item>
+        <item name="android:tint">?attr/textColorSecondary</item>
     </style>
 
     <style name="TransactionDetailText">
@@ -90,6 +94,7 @@
         <item name="android:layout_height">wrap_content</item>
         <item name="android:textSize">14sp</item>
         <item name="android:textColor">?attr/textColorPrimary</item>
+        <item name="android:fontFamily">@font/app_font</item>
     </style>
 
     <style name="DetailRowStyle">
@@ -113,7 +118,7 @@
         <item name="android:layout_marginStart">22dp</item>
         <item name="android:textSize">15sp</item>
         <item name="android:textColor">?attr/textColorPrimary</item>
-        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:fontFamily">@font/app_font</item>
     </style>
 
     <style name="DetailLabelStyle">
@@ -146,7 +151,7 @@
         <item name="android:fontFamily">@font/app_font</item>
     </style>
 
-    <style name="CircleImageView">
+    <style name="CircleImageView" parent="ShapeAppearance.Material3.Corner.Full">
         <item name="cornerFamily">rounded</item>
         <item name="cornerSize">50%</item>
     </style>

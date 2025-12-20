@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Keep original names for Material Design compatibility -->
+
     <attr name="backgroundColor" format="color" />
     <attr name="surfaceColor" format="color" />
     <attr name="dividerHorizontal" format="reference|color" />
@@ -20,12 +20,4 @@
     <attr name="primary_blue" format="color" />
     <attr name="secondary_green" format="color" />
 
-    <!-- Declare these as styleable to avoid conflicts -->
-    <declare-styleable name="ArthamTheme">
-        <attr name="backgroundColor" />
-        <attr name="surfaceColor" />
-        <attr name="textColorPrimary" />
-        <attr name="textColorSecondary" />
-        <attr name="textColorHint" />
-    </declare-styleable>
 </resources>

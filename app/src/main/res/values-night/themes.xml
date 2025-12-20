@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
     <style name="Theme.Artham" parent="Theme.MaterialComponents.DayNight.NoActionBar">
 
         <item name="android:fontFamily">@font/app_font</item>
@@ -23,21 +24,37 @@
         <item name="android:textColorSecondary">?attr/textColorSecondary</item>
         <item name="android:textColorHint">?attr/textColorHint</item>
 
-        <!-- Financial colors -->
         <item name="incomeColor">@color/income_green</item>
         <item name="expenseColor">@color/expense_red</item>
         <item name="balanceColor">@color/balance_blue</item>
 
-        <!-- Bottom navigation colors -->
         <item name="bottomNavIconTextColor">@color/bottom_nav_icon_text_color</item>
         <item name="bottomNavSelectedColor">@color/bottom_nav_selected</item>
         <item name="bottomNavBorderColor">@color/bottom_nav_item_unselected_border</item>
+        <item name="dividerHorizontal">@color/divider_color</item>
 
         <item name="android:statusBarColor">?attr/backgroundColor</item>
         <item name="android:windowLightStatusBar">false</item>
 
-        <item name="dividerHorizontal">@color/divider_color</item>
-
         <item name="buttonStyle">@style/ProfessionalButton</item>
     </style>
+
+    <style name="Theme.Artham.Dialog" parent="Theme.Artham">
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:backgroundDimEnabled">true</item>
+        <item name="android:windowMinWidthMajor">90%</item>
+        <item name="android:windowMinWidthMinor">90%</item>
+    </style>
+
+    <style name="ProfessionalButton" parent="Widget.MaterialComponents.Button">
+        <item name="android:fontFamily">@font/app_font</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textStyle">bold</item>
+        <item name="cornerRadius">12dp</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+    </style>
+
 </resources>
