@@ -82,14 +82,14 @@
         <item name="android:layout_width">20dp</item>
         <item name="android:layout_height">20dp</item>
         <item name="android:layout_marginEnd">16dp</item>
-        <item name="tint">?attr/colorOnSurfaceVariant</item>
+        <item name="tint">?attr/textColorSecondary</item>
     </style>
 
     <style name="TransactionDetailText">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:textSize">14sp</item>
-        <item name="android:textColor">?attr/colorOnSurface</item>
+        <item name="android:textColor">?attr/textColorPrimary</item>
     </style>
 
     <style name="DetailRowStyle">
@@ -121,7 +121,7 @@
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_marginTop">24dp</item>
         <item name="android:textSize">12sp</item>
-        <item name="android:textColor">#757575</item>
+        <item name="android:textColor">?attr/textColorSecondary</item>
         <item name="android:fontFamily">@font/app_font</item>
         <item name="android:textAllCaps">true</item>
         <item name="android:letterSpacing">0.05</item>
@@ -142,13 +142,13 @@
         <item name="android:paddingStart">16dp</item>
         <item name="android:paddingEnd">4dp</item>
         <item name="android:textSize">16sp</item>
-        <item name="android:textColor">#212121</item>
+        <item name="android:textColor">?attr/textColorPrimary</item>
         <item name="android:fontFamily">@font/app_font</item>
     </style>
 
-        <style name="CircleImageView">
-            <item name="cornerFamily">rounded</item>
-            <item name="cornerSize">50%</item>
-        </style>
+    <style name="CircleImageView">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
 
 </resources>

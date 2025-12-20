@@ -1,28 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="backgroundColor">#F5F5F5</color>
-    <color name="surfaceColor">#FFFFFFFF</color>
-    <color name="textColorPrimary">#FF000000</color>
-    <color name="textColorSecondary">#8A000000</color>
-    <color name="textColorHint">#66000000</color>
-    <color name="divider_color">#E0E0E0</color>
-
-    <color name="income_green">#4CAF50</color>
-    <color name="expense_red">#F44336</color>
-    <color name="balance_blue">#2196F3</color>
-
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
-    <color name="transparent">@android:color/transparent</color>
-
     <color name="primary_blue">#2196F3</color>
     <color name="primary_blue_dark">#1976D2</color>
     <color name="secondary_green">#4CAF50</color>
     <color name="secondary_green_dark">#388E3C</color>
 
-    <color name="bottom_nav_icon_text_color">#FF000000</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="transparent">@android:color/transparent</color>
+
+    <color name="backgroundColor">#F5F5F5</color>
+    <color name="surfaceColor">#FFFFFF</color>
+    <color name="divider_color">#E0E0E0</color>
+
+    <color name="textColorPrimary">#DE000000</color>
+    <color name="textColorSecondary">#8A000000</color>
+    <color name="textColorHint">#61000000</color>
+
+    <color name="income_green">#4CAF50</color>
+    <color name="expense_red">#F44336</color>
+    <color name="balance_blue">#2196F3</color>
+
+    <color name="violet_bg">#F3E5F5</color>
+    <color name="violet_surface">#EDE7F6</color>
+    <color name="violet_divider">#D1C4E9</color>
+    <color name="violet_primary">#673AB7</color>
+    <color name="violet_text">#311B92</color>
+    <color name="violet_500">#673AB7</color>
+
+    <color name="bottom_nav_icon_text_color">#757575</color>
     <color name="bottom_nav_selected">#2196F3</color>
     <color name="bottom_nav_item_unselected_border">#E0E0E0</color>
+    <color name="bottom_nav_item_color_selector">#616161</color>
 
     <color name="category_default">#757575</color>
     <color name="category_food">#FFB300</color>
@@ -36,14 +45,12 @@
     <color name="category_health">#F44336</color>
     <color name="category_education">#3F51B5</color>
     <color name="category_other">#9E9E9E</color>
-    <color name="violet_500">#673AB7</color>
 
     <color name="selected_item_bg">#E0E0E0</color>
     <color name="purple_500">#6200EE</color>
-
-
     <color name="teal_700">#00796B</color>
     <color name="teal_500">#009688</color>
     <color name="text_primary">#1F2937</color>
     <color name="text_secondary">#6B7280</color>
+
 </resources>

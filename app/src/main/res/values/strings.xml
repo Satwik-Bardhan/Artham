@@ -29,7 +29,7 @@
     <string name="com.google.firebase.crashlytics.mapping_file_id">none</string>
 
     <string name="log_main_activity_started">MainActivity started - checking authentication status</string>
-    <string name="log_app_startup_initiated">MainActivity: App startup initiated</string>
+    <string name="log_app_startup_initiated">MainActivity&#58; App startup initiated</string>
     <string name="log_crashlytics_unavailable">Crashlytics not available</string>
     <string name="log_no_authenticated_user">No authenticated user found - navigating to Sign-in</string>
     <string name="log_authenticated_user_found">Authenticated user found: %1$s - navigating to HomePage</string>
@@ -57,9 +57,9 @@
     <string name="msg_guest_signup_prompt">Sign up to access more features like multiple cashbooks and cloud sync.</string>
     <string name="btn_sign_up">Sign Up</string>
     <string name="btn_continue_guest">Continue as Guest</string>
-    <string name="uid_guest">UID: GUEST</string>
+    <string name="uid_guest">UID&#58; GUEST</string>
     <string name="guest_user">Guest User</string>
-    <string name="msg_guest_mode_info">Guest Mode: Data will not be saved after app restart</string>
+    <string name="msg_guest_mode_info">Guest Mode&#58; Data will not be saved after app restart</string>
 
     <string name="error_no_cashbooks">No cashbooks available</string>
     <string name="title_switch_cashbook">Switch Cashbook</string>
@@ -82,7 +82,7 @@
     <string name="error_transactions_cancelled">Transactions listener cancelled</string>
 
     <string name="default_cashbook_name">My Cashbook</string>
-    <string name="uid_format">UID: %1$s</string>
+    <string name="uid_format">UID&#58; %1$s</string>
     <string name="default_user_name">User</string>
     <string name="log_ui_updated">UI updated with cashbook: %1$s</string>
     <string name="error_updating_ui">Error updating user UI</string>
@@ -149,7 +149,7 @@
     <string name="dropdown_hint_text">Tap to switch or manage cashbooks</string>
     <string name="current_book_display">Current Book</string>
 
-    <string name="format_balance">Balance: ₹%.2f</string>
+    <string name="format_balance">Balance&#58; ₹%.2f</string>
     <string name="format_current_cashbook">%1$s (Current)</string>
     <string name="format_cashbook_copy">%1$s - Copy</string>
 
@@ -222,7 +222,7 @@
     <string name="sort_most_transactions">Most Transactions</string>
 
     <string name="sample_cashbook_name">Personal Finance</string>
-    <string name="sample_last_modified">Last modified: 3 hours ago</string>
+    <string name="sample_last_modified">Last modified&#58; 3 hours ago</string>
     <string name="sample_balance">₹15,750</string>
     <string name="sample_transaction_count">247</string>
     <string name="sample_created_date">Jan 2025</string>
@@ -231,7 +231,7 @@
     <string name="transactions_label">Transactions</string>
     <string name="created_label">Created</string>
 
-    <string name="last_modified_format">Last modified: %s</string>
+    <string name="last_modified_format">Last modified&#58; %s</string>
 
     <string name="favorite_button_desc">Toggle favorite</string>
     <string name="more_options_desc">More options</string>
@@ -247,8 +247,8 @@
     <string name="show_pie_chart">Show Pie Chart</string>
     <string name="hide_pie_chart">Hide Pie Chart</string>
     <string name="already_on_transactions">Already on Transactions</string>
-    <string name="cashbook_switched">Switched to: %s</string>
-    <string name="no_cashbook_found">Error: No active cashbook found</string>
+    <string name="cashbook_switched">Switched to&#58; %s</string>
+    <string name="no_cashbook_found">Error&#58; No active cashbook found</string>
 
     <string name="already_on_settings">Already on Settings</string>
     <string name="help_support_coming_soon">Help &amp; Support - Coming Soon</string>
@@ -265,6 +265,7 @@
     <string name="status_inactive">INACTIVE</string>
 
     <string name="cashbook_name_hint">Enter cashbook name</string>
-    <string name="cashbook_description_hint">Optional: Add description (e.g., Personal, Business)</string>
+    <string name="cashbook_description_hint">Optional&#58; Add description (e.g., Personal, Business)</string>
     <string name="cashbook_create_info">Cashbooks help you organize and manage your transactions by category or purpose.</string>
+    <string name="artham_manager">Artham Manager</string>
 </resources>

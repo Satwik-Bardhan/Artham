@@ -16,7 +16,7 @@
         android:hint="Search category..."
         android:padding="12dp"
         android:textSize="14sp" />
-z
+    z
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/categoriesRecyclerView"
         android:layout_width="match_parent"

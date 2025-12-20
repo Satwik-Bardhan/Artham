@@ -2,10 +2,11 @@
 <resources>
     <color name="backgroundColor">#121212</color>
     <color name="surfaceColor">#1E1E1E</color>
+    <color name="divider_color">#424242</color>
+
     <color name="textColorPrimary">#FFFFFFFF</color>
     <color name="textColorSecondary">#B3FFFFFF</color>
     <color name="textColorHint">#80FFFFFF</color>
-    <color name="divider_color">#424242</color>
 
     <color name="income_green">#81C784</color>
     <color name="expense_red">#EF5350</color>
@@ -23,6 +24,12 @@
     <color name="bottom_nav_icon_text_color">#FFFFFFFF</color>
     <color name="bottom_nav_selected">#42A5F5</color>
     <color name="bottom_nav_item_unselected_border">#424242</color>
+    <color name="bottom_nav_item_color_selector">#BDBDBD</color> <color name="violet_bg">#2D2D2D</color>
+    <color name="violet_surface">#3C3C3C</color>
+    <color name="violet_divider">#555555</color>
+    <color name="violet_primary">#9575CD</color>
+    <color name="violet_text">#EDE7F6</color>
+    <color name="violet_500">#673AB7</color>
 
     <color name="category_default">#A1A1A1</color>
     <color name="category_food">#FFD54F</color>
@@ -36,5 +43,11 @@
     <color name="category_health">#EF5350</color>
     <color name="category_education">#7986CB</color>
     <color name="category_other">#BDBDBD</color>
-    <color name="violet_500">#673AB7</color>
+
+    <color name="selected_item_bg">#333333</color>
+    <color name="purple_500">#BB86FC</color>
+    <color name="teal_700">#03DAC6</color>
+    <color name="teal_500">#03DAC6</color>
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#B0BEC5</color>
 </resources>

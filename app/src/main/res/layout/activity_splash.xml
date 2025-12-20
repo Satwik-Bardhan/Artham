@@ -20,7 +20,7 @@
             android:layout_width="80dp"
             android:layout_height="80dp"
             android:contentDescription="@string/app_logo_description"
-            android:src="@drawable/logo" />
+            android:src="@drawable/ic_launcher_playstore" />
 
         <TextView
             android:id="@+id/app_name"

@@ -1,5 +1,5 @@
 [versions]
-agp = "8.13.1"
+agp = "8.2.2"
 junit = "4.13.2"
 junitVersion = "1.1.5"
 espressoCore = "3.5.1"
@@ -32,7 +32,7 @@ swipeRefreshLayout = "1.1.0"
 mpandroidchart = "v3.1.0"
 colorpicker = "0.0.15"
 playServicesAuth = "20.7.0"
-crashlyticsGradle = "2.9.9"
+crashlyticsGradle = "3.0.1"
 
 [libraries]
 # Firebase BOM
