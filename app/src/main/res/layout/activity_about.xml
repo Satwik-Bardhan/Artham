@@ -3,9 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/backgroundColor"
-    android:fitsSystemWindows="true"
-    >
+    android:background="?attr/chk_backgroundColor"
+    android:fitsSystemWindows="true">
 
     <androidx.cardview.widget.CardView
         android:id="@+id/headerCard"
@@ -27,6 +26,8 @@
                 android:layout_height="32dp"
                 android:layout_centerVertical="true"
                 android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:focusable="true"
                 android:src="@drawable/ic_arrow_left"
                 app:tint="?attr/chk_textColorPrimary" />
 
@@ -82,10 +83,10 @@
                 android:layout_marginTop="24dp"
                 android:layout_marginBottom="24dp"
                 android:gravity="center"
+                android:lineSpacingExtra="4dp"
                 android:text="Your personal finance assistant for tracking income, expenses, and managing your wealth efficiently with Artham."
                 android:textColor="?attr/chk_textColorPrimary"
-                android:textSize="15sp"
-                android:lineSpacingExtra="4dp"/>
+                android:textSize="15sp" />
 
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
@@ -105,20 +106,21 @@
                         android:layout_height="wrap_content"
                         android:background="?android:attr/selectableItemBackground"
                         android:clickable="true"
+                        android:drawableStart="@drawable/ic_download"
+                        android:drawablePadding="16dp"
                         android:focusable="true"
+                        android:gravity="center_vertical"
                         android:padding="16dp"
                         android:text="Check for Updates"
-                        android:drawableStart="@drawable/ic_download"
-                        android:drawablePadding="12dp"
-                        app:drawableTint="?attr/chk_textColorPrimary"
                         android:textColor="?attr/chk_textColorPrimary"
-                        android:textSize="16sp" />
+                        android:textSize="16sp"
+                        app:drawableTint="?attr/chk_textColorPrimary" />
 
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
-                        android:background="?attr/dividerHorizontal"
-                        android:layout_marginHorizontal="16dp"/>
+                        android:layout_marginHorizontal="16dp"
+                        android:background="?attr/chk_dividerHorizontal" />
 
                     <TextView
                         android:id="@+id/privacyPolicy"
@@ -126,17 +128,21 @@
                         android:layout_height="wrap_content"
                         android:background="?android:attr/selectableItemBackground"
                         android:clickable="true"
+                        android:drawableStart="@drawable/ic_shield_check"
+                        android:drawablePadding="16dp"
                         android:focusable="true"
+                        android:gravity="center_vertical"
                         android:padding="16dp"
                         android:text="Privacy Policy"
                         android:textColor="?attr/chk_textColorPrimary"
-                        android:textSize="16sp" />
+                        android:textSize="16sp"
+                        app:drawableTint="?attr/chk_textColorPrimary" />
 
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
-                        android:background="?attr/dividerHorizontal"
-                        android:layout_marginHorizontal="16dp"/>
+                        android:layout_marginHorizontal="16dp"
+                        android:background="?attr/chk_dividerHorizontal" />
 
                     <TextView
                         android:id="@+id/termsOfService"
@@ -144,17 +150,21 @@
                         android:layout_height="wrap_content"
                         android:background="?android:attr/selectableItemBackground"
                         android:clickable="true"
+                        android:drawableStart="@drawable/ic_description"
+                        android:drawablePadding="16dp"
                         android:focusable="true"
+                        android:gravity="center_vertical"
                         android:padding="16dp"
                         android:text="Terms of Service"
                         android:textColor="?attr/chk_textColorPrimary"
-                        android:textSize="16sp" />
+                        android:textSize="16sp"
+                        app:drawableTint="?attr/chk_textColorPrimary" />
 
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
-                        android:background="?attr/dividerHorizontal"
-                        android:layout_marginHorizontal="16dp"/>
+                        android:layout_marginHorizontal="16dp"
+                        android:background="?attr/chk_dividerHorizontal" />
 
                     <TextView
                         android:id="@+id/rateApp"
@@ -162,11 +172,15 @@
                         android:layout_height="wrap_content"
                         android:background="?android:attr/selectableItemBackground"
                         android:clickable="true"
+                        android:drawableStart="@drawable/ic_star_filled"
+                        android:drawablePadding="16dp"
                         android:focusable="true"
+                        android:gravity="center_vertical"
                         android:padding="16dp"
                         android:text="Rate Us"
                         android:textColor="?attr/chk_textColorPrimary"
-                        android:textSize="16sp" />
+                        android:textSize="16sp"
+                        app:drawableTint="?attr/chk_textColorPrimary" />
 
                 </LinearLayout>
             </androidx.cardview.widget.CardView>

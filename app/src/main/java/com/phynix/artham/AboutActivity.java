@@ -8,11 +8,15 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import com.phynix.artham.utils.ThemeManager; // Import this
 
 public class AboutActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // 1. Apply Theme BEFORE super.onCreate()
+        ThemeManager.applyActivityTheme(this);
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_about);
 
@@ -27,7 +31,6 @@ public class AboutActivity extends AppCompatActivity {
         // Check for Updates
         TextView checkUpdates = findViewById(R.id.checkUpdates);
         checkUpdates.setOnClickListener(v -> {
-            // Opens the app page in the Play Store
             final String appPackageName = getPackageName();
             try {
                 startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + appPackageName)));
@@ -38,11 +41,11 @@ public class AboutActivity extends AppCompatActivity {
 
         // Privacy Policy Link
         TextView privacyPolicy = findViewById(R.id.privacyPolicy);
-        privacyPolicy.setOnClickListener(v -> openWebPage("https://www.google.com/policies/privacy/")); // Replace with your actual URL
+        privacyPolicy.setOnClickListener(v -> openWebPage("https://www.google.com/policies/privacy/"));
 
         // Terms of Service Link
         TextView termsOfService = findViewById(R.id.termsOfService);
-        termsOfService.setOnClickListener(v -> openWebPage("https://www.google.com/policies/terms/")); // Replace with your actual URL
+        termsOfService.setOnClickListener(v -> openWebPage("https://www.google.com/policies/terms/"));
 
         // Rate App
         TextView rateApp = findViewById(R.id.rateApp);

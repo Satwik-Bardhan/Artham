@@ -17,6 +17,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@drawable/cash_card"
+        android:backgroundTint="?attr/colorPrimary"
+        android:backgroundTintMode="src_in"
         android:gravity="center"
         android:orientation="vertical"
         android:padding="16dp">

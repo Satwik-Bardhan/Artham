@@ -86,7 +86,7 @@
                     android:background="@drawable/button_download"
                     android:gravity="center"
                     android:paddingHorizontal="16dp"
-                    app:backgroundTint="@null"
+                    app:backgroundTint="?attr/colorPrimary"
                     android:text="Download"
                     android:textColor="#FFFFFF" />
             </RelativeLayout>

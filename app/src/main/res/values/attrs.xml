@@ -2,12 +2,17 @@
 <resources>
     <attr name="chk_backgroundColor" format="color|reference" />
     <attr name="chk_surfaceColor" format="color|reference" />
-    <attr name="chk_dividerHorizontal" format="color|reference" />
-    <attr name="chk_dividerVertical" format="color|reference" />
+    <attr name="chk_selectedItemColor" format="color|reference" />
 
     <attr name="chk_textColorPrimary" format="color|reference" />
     <attr name="chk_textColorSecondary" format="color|reference" />
     <attr name="chk_textColorHint" format="color|reference" />
+
+    <attr name="chk_dividerHorizontal" format="color|reference" />
+    <attr name="chk_dividerVertical" format="color|reference" />
+
+    <attr name="chk_primary_blue" format="color|reference" />
+    <attr name="chk_secondary_green" format="color|reference" />
 
     <attr name="chk_incomeColor" format="color|reference" />
     <attr name="chk_expenseColor" format="color|reference" />
@@ -16,7 +21,4 @@
     <attr name="chk_bottomNavIconTextColor" format="color|reference" />
     <attr name="chk_bottomNavSelectedColor" format="color|reference" />
     <attr name="chk_bottomNavBorderColor" format="color|reference" />
-
-    <attr name="chk_primary_blue" format="color|reference" />
-    <attr name="chk_secondary_green" format="color|reference" />
 </resources>
