@@ -20,6 +20,23 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    // =========================================================
+    // RESOURCE ORGANIZATION CONFIGURATION
+    // =========================================================
+    sourceSets {
+        getByName("main") {
+            res.srcDirs(
+                "src/main/res", // Default folder (Values, Layouts, etc.)
+
+                // Your New Organized Graphics Folders
+                "src/main/res-graphics/icons",
+                "src/main/res-graphics/backgrounds",
+                "src/main/res-graphics/illustrations",
+                "src/main/res-graphics/buttons"
+            )
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -56,11 +73,10 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-livedata:2.8.4")
 
     // --- Firebase (Using BoM for version management) ---
-    //
     implementation(platform("com.google.firebase:firebase-bom:33.1.2"))
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-database")
-    implementation("com.google.firebase:firebase-storage") // Added Storage here
+    implementation("com.google.firebase:firebase-storage")
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-crashlytics")
     implementation("com.google.firebase:firebase-appdistribution:16.0.0-beta14")
