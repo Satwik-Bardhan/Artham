@@ -1,21 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="primary_blue">#2196F3</color>
-    <color name="primary_blue_dark">#1976D2</color>
-    <color name="secondary_green">#4CAF50</color>
-    <color name="secondary_green_dark">#388E3C</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="transparent">@android:color/transparent</color>
 
-    <color name="backgroundColor">#F5F5F5</color>
-    <color name="surfaceColor">#FFFFFF</color>
-    <color name="divider_color">#E0E0E0</color>
-    <color name="selected_item_bg">#E0E0E0</color>
 
-    <color name="textColorPrimary">#DE000000</color>
-    <color name="textColorSecondary">#8A000000</color>
-    <color name="textColorHint">#61000000</color>
+    <color name="light_primary">#2196F3</color>
+    <color name="light_primary_variant">#1976D2</color>
+    <color name="light_secondary">#4CAF50</color>
+    <color name="light_secondary_variant">#388E3C</color>
+
+    <color name="light_background">#F5F5F5</color>
+    <color name="light_surface">#FFFFFF</color>
+    <color name="light_divider">#E0E0E0</color>
+    <color name="light_selected_item">#E0E0E0</color>
+
+    <color name="light_text_primary">#DE000000</color>
+    <color name="light_text_secondary">#8A000000</color>
+    <color name="light_text_hint">#61000000</color>
+
+
+    <color name="dark_primary">#90CAF9</color>
+    <color name="dark_primary_variant">#1976D2</color>
+    <color name="dark_secondary">#81C784</color>
+    <color name="dark_secondary_variant">#388E3C</color>
+
+    <color name="dark_background">#121212</color>
+    <color name="dark_surface">#1E1E1E</color>
+    <color name="dark_divider">#2C2C2C</color>
+    <color name="dark_selected_item">#33FFFFFF</color>
+
+    <color name="dark_text_primary">#FFFFFF</color>
+    <color name="dark_text_secondary">#B3FFFFFF</color>
+    <color name="dark_text_hint">#80FFFFFF</color>
+
+
+    <color name="purple_primary">#9C27B0</color>
+    <color name="purple_primary_variant">#7B1FA2</color>
+    <color name="purple_secondary">#E1BEE7</color>
+
+    <color name="purple_background">#F3E5F5</color>
+    <color name="purple_surface">#FFFFFF</color>
+    <color name="purple_divider">#D1C4E9</color>
+    <color name="purple_selected_item">#E1BEE7</color>
+
+    <color name="purple_text_primary">#4A148C</color>
+    <color name="purple_text_secondary">#7B1FA2</color>
+    <color name="purple_text_hint">#9E9E9E</color>
+
 
     <color name="income_green">#4CAF50</color>
     <color name="expense_red">#F44336</color>
@@ -24,16 +56,12 @@
     <color name="bottom_nav_icon_text_color">#757575</color>
     <color name="bottom_nav_selected">#2196F3</color>
     <color name="bottom_nav_item_unselected_border">#E0E0E0</color>
-
     <color name="bottom_nav_item_color_selector">#616161</color>
 
+    <color name="category_default">#9E9E9E</color>
     <color name="category_food">#FF7043</color>
     <color name="category_utilities">#26A69A</color>
     <color name="category_entertainment">#9C27B0</color>
-
-    <color name="category_default">#9E9E9E</color>
-    <color name="purple_500">#6200EE</color>
-
     <color name="category_transport">#03A9F4</color>
     <color name="category_rent">#FF9800</color>
     <color name="category_salary">#4CAF50</color>
@@ -42,4 +70,21 @@
     <color name="category_health">#F44336</color>
     <color name="category_education">#3F51B5</color>
     <color name="category_other">#607D8B</color>
+
+
+    <color name="primary_blue">@color/light_primary</color>
+    <color name="primary_blue_dark">@color/light_primary_variant</color>
+    <color name="secondary_green">@color/light_secondary</color>
+    <color name="secondary_green_dark">@color/light_secondary_variant</color>
+
+    <color name="backgroundColor">@color/light_background</color>
+    <color name="surfaceColor">@color/light_surface</color>
+    <color name="divider_color">@color/light_divider</color>
+    <color name="selected_item_bg">@color/light_selected_item</color>
+
+    <color name="textColorPrimary">@color/light_text_primary</color>
+    <color name="textColorSecondary">@color/light_text_secondary</color>
+    <color name="textColorHint">@color/light_text_hint</color>
+    <color name="purple_500">@color/purple_primary</color>
+
 </resources>
