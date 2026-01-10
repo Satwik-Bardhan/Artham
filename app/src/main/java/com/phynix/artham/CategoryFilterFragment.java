@@ -1,6 +1,5 @@
 package com.phynix.artham;
 
-import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -17,11 +16,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 import com.phynix.artham.adapters.CategorySelectionAdapter;
 import com.phynix.artham.models.CategoryModel;
 import com.phynix.artham.utils.CategoryColorUtil;
@@ -50,7 +45,7 @@ public class CategoryFilterFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_category_filter, container, false);
+        View view = inflater.inflate(R.layout.dialog_category_selection, container, false);
 
         categoriesRecyclerView = view.findViewById(R.id.categoriesRecyclerView);
         searchEditText = view.findViewById(R.id.searchEditText);

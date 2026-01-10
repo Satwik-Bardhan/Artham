@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/chk_backgroundColor">
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/transactionRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:paddingTop="8dp"
+        android:paddingBottom="80dp"
+        android:scrollbars="vertical"
+        android:overScrollMode="never"
+        android:background="?attr/chk_backgroundColor"
+        tools:listitem="@layout/item_transaction_card" />
+
+    <LinearLayout
+        android:id="@+id/emptyStateLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="32dp"
+        android:visibility="gone"
+        tools:visibility="gone">
+
+        <ImageView
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:src="@drawable/ic_receipt_long"
+            android:layout_marginBottom="24dp"
+            android:contentDescription="Empty list icon"
+            app:tint="?attr/chk_dividerHorizontal"
+            android:background="@drawable/bg_circle_soft"
+            android:padding="20dp"
+            android:alpha="0.7" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="No Transactions Yet"
+            android:fontFamily="@font/app_font"
+            android:textColor="?attr/chk_textColorPrimary"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp"
+            android:gravity="center" />
+
+        <TextView
+            android:id="@+id/emptyStateText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Start tracking by adding your first income or expense."
+            android:fontFamily="@font/app_font"
+            android:textColor="?attr/chk_textColorSecondary"
+            android:textSize="15sp"
+            android:gravity="center"
+            android:layout_marginBottom="32dp"
+            android:lineSpacingMultiplier="1.2" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/addTransactionButton"
+            android:layout_width="wrap_content"
+            android:layout_height="56dp"
+            android:text="Add Transaction"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:fontFamily="@font/app_font"
+            android:textColor="#FFFFFF"
+            app:icon="@drawable/ic_add"
+            app:iconTint="#FFFFFF"
+            app:backgroundTint="?attr/chk_primary_blue"
+            app:cornerRadius="28dp"
+            android:elevation="4dp"
+            android:paddingHorizontal="24dp"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/loadingLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="32dp"
+        android:background="?attr/chk_backgroundColor"
+        android:visibility="gone"
+        android:elevation="10dp"
+        android:clickable="true"
+        android:focusable="true">
+
+        <ProgressBar
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginBottom="16dp"
+            android:indeterminateTint="?attr/chk_primary_blue" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Loading..."
+            android:fontFamily="@font/app_font"
+            android:textColor="?attr/chk_textColorSecondary"
+            android:textSize="14sp" />
+    </LinearLayout>
+
+</RelativeLayout>

@@ -17,8 +17,8 @@
 
         <ImageView
             android:id="@+id/logo"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
             android:contentDescription="@string/app_logo_description"
             android:src="@drawable/logo" />
 
@@ -26,21 +26,23 @@
             android:id="@+id/app_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:fontFamily="@font/inter_bold"
+            android:layout_marginTop="16dp"
+            android:fontFamily="@font/app_font"
             android:text="@string/app_name"
             android:textColor="?attr/chk_textColorPrimary"
-            android:textSize="24sp" />
+            android:textSize="28sp"
+            android:textStyle="bold" />
 
         <TextView
             android:id="@+id/tagline"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="5dp"
-            android:fontFamily="@font/inter_italic"
+            android:layout_marginTop="8dp"
+            android:fontFamily="@font/app_font"
             android:text="_Track Your Finance_"
             android:textColor="?attr/chk_textColorSecondary"
-            android:textSize="14sp" />
+            android:textSize="14sp"
+            android:textStyle="italic" />
 
     </LinearLayout>
 
@@ -51,8 +53,9 @@
         android:layout_alignParentBottom="true"
         android:contentDescription="@string/bottom_design_description"
         android:scaleType="fitXY"
-        android:src="@drawable/background" />
-
+        android:src="@drawable/background"
+        app:tint="?attr/chk_primary_blue"
+        android:alpha="0.3" />
     <ProgressBar
         android:id="@+id/splash_progress"
         android:layout_width="32dp"
@@ -60,7 +63,7 @@
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="80dp"
         android:layout_above="@id/bottom_waves"
-        android:indeterminateTint="?attr/chk_textColorPrimary"
+        android:indeterminateTint="?attr/chk_balanceColor"
         android:visibility="gone" />
 
 </RelativeLayout>

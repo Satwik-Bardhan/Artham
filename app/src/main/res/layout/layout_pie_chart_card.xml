@@ -1,13 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/pieChartCard"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:clickable="true"
     android:focusable="true"
-    app:cardCornerRadius="8dp"
-    app:cardElevation="2dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="0dp"
+    app:strokeWidth="1dp"
+    app:strokeColor="?attr/chk_dividerHorizontal"
     app:cardBackgroundColor="?attr/chk_surfaceColor">
 
     <LinearLayout
@@ -24,17 +28,18 @@
             android:gravity="center_vertical"
             android:clickable="true"
             android:focusable="true"
-            android:padding="8dp"
-            android:layout_marginBottom="8dp">
+            android:background="?attr/selectableItemBackground"
+            android:paddingVertical="4dp"
+            android:layout_marginBottom="12dp">
 
             <ImageButton
                 android:id="@+id/monthBackwardButton"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
-                android:src="@drawable/ic_arrow_left"
+                android:src="@drawable/ic_chevron_left"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="Previous Month"
-                app:tint="?attr/chk_textColorPrimary" />
+                app:tint="?attr/chk_textColorSecondary" />
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -47,18 +52,20 @@
                     android:id="@+id/monthTitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="September 2025"
+                    tools:text="September 2025"
+                    android:fontFamily="@font/app_font"
                     android:textColor="?attr/chk_textColorPrimary"
-                    android:textSize="20sp"
-                    android:textStyle="normal" />
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Click to view more details"
-                    android:textColor="?attr/chk_balanceColor"
+                    android:text="Tap to view analysis"
+                    android:fontFamily="@font/app_font"
+                    android:textColor="?attr/chk_primary_blue"
                     android:textSize="12sp"
-                    android:textStyle="normal" />
+                    android:layout_marginTop="2dp" />
 
             </LinearLayout>
 
@@ -66,42 +73,47 @@
                 android:id="@+id/monthForwardButton"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
-                android:src="@drawable/ic_arrow_right"
+                android:src="@drawable/ic_chevron_right"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="Next Month"
-                app:tint="?attr/chk_textColorPrimary" />
+                app:tint="?attr/chk_textColorSecondary" />
 
         </LinearLayout>
 
         <com.github.mikephil.charting.charts.PieChart
             android:id="@+id/pieChart"
             android:layout_width="match_parent"
-            android:layout_height="300dp"
-            android:layout_marginTop="10dp" />
+            android:layout_height="280dp"
+            android:layout_marginTop="8dp" />
 
         <TextView
             android:id="@+id/togglePieChartButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="16dp"
             android:background="?attr/selectableItemBackground"
             android:clickable="true"
             android:focusable="true"
-            android:padding="8dp"
-            android:text="Hide Pie Chart"
-            android:textColor="?attr/chk_balanceColor"
-            android:textSize="14sp"
-            android:textStyle="bold" />
+            android:paddingHorizontal="12dp"
+            android:paddingVertical="8dp"
+            android:text="Hide Chart"
+            android:fontFamily="@font/app_font"
+            android:textColor="?attr/chk_textColorSecondary"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:textAllCaps="true"/>
 
         <LinearLayout
             android:id="@+id/statsLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:background="?attr/chk_backgroundColor"
-            android:padding="12dp"
-            android:orientation="horizontal">
+            android:layout_marginTop="16dp"
+            android:background="@drawable/bg_rounded_square_soft"
+            android:paddingVertical="16dp"
+            android:paddingHorizontal="8dp"
+            android:orientation="horizontal"
+            android:baselineAligned="false">
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -114,22 +126,28 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Categories"
+                    android:fontFamily="@font/app_font"
                     android:textColor="?attr/chk_textColorSecondary"
-                    android:textSize="12sp" />
+                    android:textSize="12sp"
+                    android:textAllCaps="true"
+                    android:letterSpacing="0.05"/>
 
                 <TextView
                     android:id="@+id/categoriesCount"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="0"
+                    tools:text="12"
+                    android:fontFamily="@font/app_font"
                     android:textColor="?attr/chk_textColorPrimary"
-                    android:textSize="16sp"
-                    android:textStyle="bold" />
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="4dp"/>
             </LinearLayout>
 
             <View
                 android:layout_width="1dp"
-                android:layout_height="match_parent"
+                android:layout_height="32dp"
+                android:layout_gravity="center_vertical"
                 android:background="?attr/chk_dividerHorizontal" />
 
             <LinearLayout
@@ -142,20 +160,28 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Highest Expense"
+                    android:text="Top Expense"
+                    android:fontFamily="@font/app_font"
                     android:textColor="?attr/chk_textColorSecondary"
-                    android:textSize="12sp" />
+                    android:textSize="12sp"
+                    android:textAllCaps="true"
+                    android:letterSpacing="0.05"/>
 
                 <TextView
                     android:id="@+id/highestCategory"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="-"
-                    android:textColor="?attr/chk_textColorPrimary"
-                    android:textSize="16sp"
-                    android:textStyle="bold" />
+                    tools:text="Food"
+                    android:fontFamily="@font/app_font"
+                    android:textColor="?attr/chk_expenseColor"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="4dp"
+                    android:maxLines="1"
+                    android:ellipsize="end"
+                    android:paddingHorizontal="4dp"/>
             </LinearLayout>
 
         </LinearLayout>
     </LinearLayout>
-</androidx.cardview.widget.CardView>
+</com.google.android.material.card.MaterialCardView>

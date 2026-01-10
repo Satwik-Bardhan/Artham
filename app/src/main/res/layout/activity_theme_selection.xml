@@ -29,6 +29,7 @@
                 android:contentDescription="Back Button"
                 android:focusable="true"
                 android:padding="8dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@drawable/ic_arrow_left"
                 app:tint="?attr/chk_textColorPrimary"
                 android:layout_alignParentStart="true"
@@ -39,6 +40,7 @@
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
                 android:text="Choose Theme"
+                android:fontFamily="@font/app_font"
                 android:textColor="?attr/chk_textColorPrimary"
                 android:textSize="20sp"
                 android:textStyle="bold" />
@@ -57,6 +59,7 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
             android:text="Appearance"
+            android:fontFamily="@font/app_font"
             android:textColor="?attr/chk_textColorPrimary"
             android:textSize="18sp"
             android:textStyle="bold" />
@@ -114,6 +117,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Light Theme"
+                            android:fontFamily="@font/app_font"
                             android:textColor="#212121"
                             android:textSize="16sp"
                             android:textStyle="bold" />
@@ -122,6 +126,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Clean &amp; Classic"
+                            android:fontFamily="@font/app_font"
                             android:textColor="#757575"
                             android:textSize="12sp" />
                     </LinearLayout>
@@ -183,6 +188,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Dark Theme"
+                            android:fontFamily="@font/app_font"
                             android:textColor="#FFFFFF"
                             android:textSize="16sp"
                             android:textStyle="bold" />
@@ -191,6 +197,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Easy on the eyes"
+                            android:fontFamily="@font/app_font"
                             android:textColor="#B0B0B0"
                             android:textSize="12sp" />
                     </LinearLayout>
@@ -213,10 +220,10 @@
                 android:clickable="true"
                 android:focusable="true"
                 android:foreground="?android:attr/selectableItemBackground"
-                app:cardBackgroundColor="#F3E5F5"
+                app:cardBackgroundColor="#1D0B2E"
                 app:cardCornerRadius="12dp"
                 app:cardElevation="2dp"
-                app:strokeColor="#E1BEE7"
+                app:strokeColor="#2D1B4E"
                 app:strokeWidth="1dp">
 
                 <LinearLayout
@@ -229,7 +236,7 @@
                     <androidx.cardview.widget.CardView
                         android:layout_width="48dp"
                         android:layout_height="48dp"
-                        app:cardBackgroundColor="#E1BEE7"
+                        app:cardBackgroundColor="#351B57"
                         app:cardCornerRadius="24dp"
                         app:cardElevation="0dp">
 
@@ -238,7 +245,7 @@
                             android:layout_height="match_parent"
                             android:padding="12dp"
                             android:src="@drawable/ic_star_filled"
-                            app:tint="#9C27B0" />
+                            app:tint="#B388FF" />
                     </androidx.cardview.widget.CardView>
 
                     <LinearLayout
@@ -252,15 +259,17 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Purple Theme"
-                            android:textColor="#4A148C"
+                            android:fontFamily="@font/app_font"
+                            android:textColor="#EDE7F6"
                             android:textSize="16sp"
                             android:textStyle="bold" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Vibrant &amp; Unique"
-                            android:textColor="#7B1FA2"
+                            android:text="Deep &amp; Vibrant"
+                            android:fontFamily="@font/app_font"
+                            android:textColor="#B39DDB"
                             android:textSize="12sp" />
                     </LinearLayout>
 
@@ -268,7 +277,7 @@
                         android:id="@+id/radioPurple"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:buttonTint="#9C27B0"
+                        android:buttonTint="#B388FF"
                         android:clickable="false"
                         android:duplicateParentState="true" />
                 </LinearLayout>

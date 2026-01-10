@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="?attr/chk_surfaceColor"
+    android:padding="24dp">
+
+    <TextView
+        android:id="@+id/dialogTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="New Cashbook"
+        android:fontFamily="@font/app_font"
+        android:textColor="?attr/chk_textColorPrimary"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="20dp" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:hint="Cashbook Name"
+
+        app:boxBackgroundColor="?attr/chk_backgroundColor"
+        app:boxCornerRadiusBottomEnd="12dp"
+        app:boxCornerRadiusBottomStart="12dp"
+        app:boxCornerRadiusTopEnd="12dp"
+        app:boxCornerRadiusTopStart="12dp"
+
+        app:boxStrokeColor="?attr/chk_primary_blue"
+        app:cursorColor="?attr/chk_primary_blue"
+
+        app:hintTextColor="?attr/chk_primary_blue"
+        android:textColorHint="?attr/chk_textColorSecondary"
+
+        app:counterEnabled="true"
+        app:counterMaxLength="50"
+        app:counterTextColor="?attr/chk_textColorSecondary"
+
+        app:endIconMode="clear_text"
+        app:endIconTint="?attr/chk_textColorSecondary">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/cashbookNameInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textCapWords"
+            android:maxLength="50"
+            android:fontFamily="@font/app_font"
+            android:textColor="?attr/chk_textColorPrimary"
+            android:textColorHint="?attr/chk_textColorSecondary"
+            android:textSize="16sp"
+            android:singleLine="true"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
+        android:hint="Description (Optional)"
+
+        app:boxBackgroundColor="?attr/chk_backgroundColor"
+        app:boxCornerRadiusBottomEnd="12dp"
+        app:boxCornerRadiusBottomStart="12dp"
+        app:boxCornerRadiusTopEnd="12dp"
+        app:boxCornerRadiusTopStart="12dp"
+
+        app:boxStrokeColor="?attr/chk_primary_blue"
+        app:cursorColor="?attr/chk_primary_blue"
+
+        app:hintTextColor="?attr/chk_primary_blue"
+        android:textColorHint="?attr/chk_textColorSecondary"
+
+        app:counterEnabled="true"
+        app:counterMaxLength="200"
+        app:counterTextColor="?attr/chk_textColorSecondary"
+
+        app:endIconMode="clear_text"
+        app:endIconTint="?attr/chk_textColorSecondary">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/cashbookDescInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="top|start"
+            android:inputType="textMultiLine|textCapSentences"
+            android:lines="3"
+            android:maxLength="200"
+            android:fontFamily="@font/app_font"
+            android:textColor="?attr/chk_textColorPrimary"
+            android:textColorHint="?attr/chk_textColorSecondary"
+            android:textSize="16sp" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"
+        android:text="Create separate books for personal, business, or travel expenses."
+        android:fontFamily="@font/app_font"
+        android:textColor="?attr/chk_textColorSecondary"
+        android:textSize="12sp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="end">
+
+        <Button
+            android:id="@+id/btnCancel"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Cancel"
+            android:textColor="?attr/chk_textColorSecondary"
+            android:fontFamily="@font/app_font"
+            android:textStyle="bold"/>
+
+        <Button
+            android:id="@+id/btnSave"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="Create"
+            android:backgroundTint="?attr/chk_primary_blue"
+            android:textColor="#FFFFFF"
+            android:fontFamily="@font/app_font"
+            android:textStyle="bold"
+            app:cornerRadius="8dp"/>
+    </LinearLayout>
+
+</LinearLayout>

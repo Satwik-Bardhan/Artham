@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.util.TypedValue;
 import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
@@ -31,7 +30,7 @@ public class CategoryActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_category);
+        setContentView(R.layout.activity_category_management);
 
         categoryChipGroup = findViewById(R.id.categoryChipGroup);
         currentCashbookId = getIntent().getStringExtra("cashbook_id");

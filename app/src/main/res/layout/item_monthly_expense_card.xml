@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/card_root"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginEnd="12dp"
+    android:layout_marginVertical="4dp"
+    android:layout_marginStart="2dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="2dp"
+    app:strokeWidth="1dp"
+    app:strokeColor="?attr/chk_dividerHorizontal"
+    app:cardBackgroundColor="?attr/chk_surfaceColor"
+    android:clickable="true"
+    android:focusable="true">
+
+    <LinearLayout
+        android:id="@+id/cardContainer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:minWidth="120dp"
+        android:orientation="vertical"
+        android:paddingVertical="16dp"
+        android:paddingHorizontal="16dp"
+        android:gravity="center">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="8dp">
+
+
+            <TextView
+                android:id="@+id/monthNameTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:text="JANUARY"
+                android:textSize="12sp"
+                android:fontFamily="@font/app_font"
+                android:textStyle="bold"
+                android:letterSpacing="0.05"
+                android:textAllCaps="true"
+                android:textColor="?attr/chk_textColorSecondary"/>
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/totalExpenseTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="₹24,500"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:fontFamily="@font/app_font"
+            android:textColor="?attr/chk_textColorPrimary"/>
+
+        <TextView
+            android:id="@+id/yearTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="2025"
+            android:textSize="11sp"
+            android:fontFamily="@font/app_font"
+            android:layout_marginTop="4dp"
+            android:background="@drawable/bg_tag_small"
+            android:paddingHorizontal="8dp"
+            android:paddingVertical="2dp"
+            android:textColor="?attr/chk_textColorSecondary"/>
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

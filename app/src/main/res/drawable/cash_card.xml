@@ -4,8 +4,9 @@
 
     <gradient
         android:angle="45"
-        android:endColor="#2C3E50"
-        android:startColor="#1A2938"
+        android:startColor="?attr/chk_card_start"
+        android:endColor="?attr/chk_card_end"
         android:type="linear" />
-    <corners android:radius="10dp" />
+
+    <corners android:radius="1odp" />
 </shape>

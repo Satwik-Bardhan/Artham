@@ -14,8 +14,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
-        android:layout_marginTop="12dp"
         android:layout_marginStart="12dp"
+        android:layout_marginTop="12dp"
         android:layout_marginEnd="12dp"
         app:cardBackgroundColor="?attr/chk_surfaceColor"
         app:cardCornerRadius="12dp"
@@ -24,11 +24,11 @@
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:gravity="center_vertical"
             android:paddingStart="16dp"
-            android:paddingEnd="16dp"
             android:paddingTop="16dp"
-            android:paddingBottom="16dp"
-            android:gravity="center_vertical">
+            android:paddingEnd="16dp"
+            android:paddingBottom="16dp">
 
             <ImageView
                 android:id="@+id/backButton"
@@ -36,24 +36,25 @@
                 android:layout_height="32dp"
                 android:layout_alignParentStart="true"
                 android:layout_centerVertical="true"
-                android:src="@drawable/ic_arrow_left"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:clickable="true"
                 android:focusable="true"
-                app:tint="?attr/chk_textColorPrimary"
-                android:padding="4dp" />
+                android:padding="4dp"
+                android:src="@drawable/ic_arrow_left"
+                app:tint="?attr/chk_textColorPrimary" />
 
             <LinearLayout
-                android:orientation="vertical"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
-                android:gravity="center_horizontal">
+                android:gravity="center_horizontal"
+                android:orientation="vertical">
 
                 <TextView
                     android:id="@+id/headerTitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:fontFamily="@font/app_font"
                     android:text="Artham"
                     android:textColor="?attr/chk_textColorPrimary"
                     android:textSize="20sp"
@@ -63,6 +64,7 @@
                     android:id="@+id/headerSubtitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:fontFamily="@font/app_font"
                     android:text="Welcome Back"
                     android:textColor="?attr/chk_textColorSecondary"
                     android:textSize="12sp" />
@@ -74,12 +76,12 @@
                 android:layout_height="32dp"
                 android:layout_alignParentEnd="true"
                 android:layout_centerVertical="true"
-                android:src="@drawable/ic_help"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:clickable="true"
                 android:focusable="true"
-                app:tint="?attr/chk_balanceColor"
-                android:padding="4dp" />
+                android:padding="4dp"
+                android:src="@drawable/ic_help"
+                app:tint="?attr/chk_balanceColor" />
         </RelativeLayout>
     </androidx.cardview.widget.CardView>
 
@@ -98,81 +100,84 @@
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                app:cardBackgroundColor="?attr/chk_surfaceColor"
                 app:cardCornerRadius="12dp"
                 app:cardElevation="4dp"
-                app:cardBackgroundColor="?attr/chk_surfaceColor"
-                app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintVertical_bias="0.1">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:gravity="center_horizontal"
                     android:orientation="vertical"
-                    android:padding="24dp"
-                    android:gravity="center_horizontal">
+                    android:padding="24dp">
 
                     <ImageView
-                        android:layout_width="56dp"
-                        android:layout_height="56dp"
-                        android:src="@drawable/logo"
-                        android:layout_marginBottom="16dp"/>
+                        android:layout_width="80dp"
+                        android:layout_height="80dp"
+                        android:layout_marginBottom="16dp"
+                        android:src="@drawable/logo" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginBottom="8dp"
+                        android:fontFamily="@font/app_font"
                         android:text="Let's get started"
-                        android:textSize="24sp"
                         android:textColor="?attr/chk_textColorPrimary"
-                        android:textStyle="bold"
-                        android:layout_marginBottom="8dp"/>
+                        android:textSize="22sp"
+                        android:textStyle="bold" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginBottom="12dp"
+                        android:fontFamily="@font/app_font"
                         android:text="Sign in to access your financial dashboard"
-                        android:textSize="14sp"
-                        android:textColor="?attr/chk_textColorSecondary"
                         android:textAlignment="center"
-                        android:layout_marginBottom="12dp"/>
+                        android:textColor="?attr/chk_textColorSecondary"
+                        android:textSize="14sp" />
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Track your income, manage expenses, and visualize your financial growth all in one secure place."
-                        android:textSize="13sp"
-                        android:textColor="?attr/chk_textColorSecondary"
-                        android:textAlignment="center"
+                        android:layout_marginHorizontal="8dp"
+                        android:layout_marginBottom="32dp"
+                        android:fontFamily="@font/app_font"
                         android:gravity="center"
                         android:lineSpacingExtra="3dp"
-                        android:layout_marginBottom="24dp"
-                        android:layout_marginHorizontal="8dp"/>
+                        android:text="Track your income, manage expenses, and visualize your financial growth all in one secure place."
+                        android:textAlignment="center"
+                        android:textColor="?attr/chk_textColorSecondary"
+                        android:textSize="13sp" />
 
                     <ProgressBar
                         android:id="@+id/loadingIndicator"
                         android:layout_width="32dp"
                         android:layout_height="32dp"
                         android:layout_gravity="center_horizontal"
+                        android:layout_marginBottom="16dp"
                         android:indeterminateTint="?attr/chk_balanceColor"
-                        android:visibility="gone"
-                        android:layout_marginBottom="16dp" />
+                        android:visibility="gone" />
 
                     <LinearLayout
                         android:id="@+id/btnGoogleSignIn"
                         android:layout_width="match_parent"
                         android:layout_height="56dp"
+                        android:layout_marginBottom="16dp"
                         android:background="@drawable/button_google"
-                        android:orientation="horizontal"
-                        android:gravity="center"
                         android:clickable="true"
                         android:focusable="true"
-                        android:layout_marginBottom="16dp">
+                        android:gravity="center"
+                        android:orientation="horizontal">
 
                         <ImageView
                             android:layout_width="24dp"
                             android:layout_height="24dp"
-                            android:src="@drawable/google"
-                            android:layout_marginEnd="12dp"/>
+                            android:layout_marginEnd="12dp"
+                            android:src="@drawable/google" />
 
                         <TextView
                             android:layout_width="wrap_content"
@@ -180,8 +185,8 @@
                             android:text="Continue with Google"
                             android:textSize="16sp"
                             android:textStyle="bold"
-                            android:textColor="#000000"/>
-                    </LinearLayout>
+                            android:fontFamily="@font/app_font"
+                            android:textColor="?attr/chk_textColorPrimary" />                    </LinearLayout>
 
                 </LinearLayout>
             </androidx.cardview.widget.CardView>

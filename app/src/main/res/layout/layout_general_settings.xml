@@ -3,32 +3,34 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:paddingBottom="16dp">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="12dp"
+        android:layout_marginStart="4dp"
         android:text="General Settings"
-        android:layout_marginStart="2dp"
+        android:fontFamily="@font/app_font"
         android:textColor="?attr/chk_textColorPrimary"
         android:textSize="18sp"
         android:textStyle="bold"
-        android:drawablePadding="8dp"
-        app:drawableTint="?attr/chk_balanceColor" />
+        android:drawablePadding="8dp" />
 
-    <androidx.cardview.widget.CardView
+    <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:cardCornerRadius="8dp"
+        android:layout_marginHorizontal="2dp"
+        app:cardCornerRadius="12dp"
         app:cardElevation="2dp"
+        app:strokeWidth="0dp"
         app:cardBackgroundColor="?attr/chk_surfaceColor">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="8dp">
+            android:orientation="vertical">
 
             <LinearLayout
                 android:id="@+id/helpSupport"
@@ -38,7 +40,7 @@
                 android:gravity="center_vertical"
                 android:clickable="true"
                 android:focusable="true"
-                android:background="@drawable/settings_item_ripple"
+                android:background="?attr/selectableItemBackground"
                 android:paddingHorizontal="16dp"
                 android:paddingVertical="16dp">
 
@@ -47,7 +49,8 @@
                     android:layout_height="24dp"
                     android:src="@drawable/ic_help_support"
                     android:layout_marginEnd="16dp"
-                    app:tint="?attr/chk_incomeColor" />
+                    app:tint="?attr/chk_incomeColor"
+                    android:contentDescription="Help" />
 
                 <LinearLayout
                     android:layout_width="0dp"
@@ -59,6 +62,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Help &amp; Support"
+                        android:fontFamily="@font/app_font"
                         android:textColor="?attr/chk_textColorPrimary"
                         android:textSize="16sp"
                         android:textStyle="bold" />
@@ -67,23 +71,25 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="FAQ, Contact us"
+                        android:fontFamily="@font/app_font"
                         android:textColor="?attr/chk_textColorSecondary"
-                        android:textSize="14sp"
+                        android:textSize="13sp"
                         android:layout_marginTop="2dp" />
                 </LinearLayout>
 
                 <ImageView
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:src="@drawable/ic_arrow_right"
-                    app:tint="?attr/chk_textColorSecondary" />
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_chevron_right"
+                    app:tint="?attr/chk_textColorSecondary"
+                    android:contentDescription="Arrow" />
             </LinearLayout>
 
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
                 android:background="?attr/chk_dividerHorizontal"
-                android:layout_marginHorizontal="16dp" />
+                android:layout_marginStart="56dp" />
 
             <LinearLayout
                 android:id="@+id/appSettings"
@@ -93,16 +99,17 @@
                 android:gravity="center_vertical"
                 android:clickable="true"
                 android:focusable="true"
-                android:background="@drawable/settings_item_ripple"
+                android:background="?attr/selectableItemBackground"
                 android:paddingHorizontal="16dp"
                 android:paddingVertical="16dp">
 
                 <ImageView
                     android:layout_width="24dp"
                     android:layout_height="24dp"
-                    android:src="@drawable/ic_app_settings"
+                    android:src="@drawable/ic_settings"
                     android:layout_marginEnd="16dp"
-                    app:tint="@color/category_food" />
+                    app:tint="?attr/chk_primary_blue"
+                    android:contentDescription="Settings" />
 
                 <LinearLayout
                     android:layout_width="0dp"
@@ -114,6 +121,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="App Settings"
+                        android:fontFamily="@font/app_font"
                         android:textColor="?attr/chk_textColorPrimary"
                         android:textSize="16sp"
                         android:textStyle="bold" />
@@ -121,24 +129,26 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Language, Theme, Security, Backup"
+                        android:text="Language, Theme, Security"
+                        android:fontFamily="@font/app_font"
                         android:textColor="?attr/chk_textColorSecondary"
-                        android:textSize="14sp"
+                        android:textSize="13sp"
                         android:layout_marginTop="2dp" />
                 </LinearLayout>
 
                 <ImageView
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:src="@drawable/ic_arrow_right"
-                    app:tint="?attr/chk_textColorSecondary" />
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_chevron_right"
+                    app:tint="?attr/chk_textColorSecondary"
+                    android:contentDescription="Arrow" />
             </LinearLayout>
 
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
                 android:background="?attr/chk_dividerHorizontal"
-                android:layout_marginHorizontal="16dp" />
+                android:layout_marginStart="56dp" />
 
             <LinearLayout
                 android:id="@+id/yourProfile"
@@ -148,16 +158,17 @@
                 android:gravity="center_vertical"
                 android:clickable="true"
                 android:focusable="true"
-                android:background="@drawable/settings_item_ripple"
+                android:background="?attr/selectableItemBackground"
                 android:paddingHorizontal="16dp"
                 android:paddingVertical="16dp">
 
                 <ImageView
                     android:layout_width="24dp"
                     android:layout_height="24dp"
-                    android:src="@drawable/ic_your_profile"
+                    android:src="@drawable/ic_person"
                     android:layout_marginEnd="16dp"
-                    app:tint="?attr/chk_balanceColor" />
+                    app:tint="?attr/chk_balanceColor"
+                    android:contentDescription="Profile" />
 
                 <LinearLayout
                     android:layout_width="0dp"
@@ -169,6 +180,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Your Profile"
+                        android:fontFamily="@font/app_font"
                         android:textColor="?attr/chk_textColorPrimary"
                         android:textSize="16sp"
                         android:textStyle="bold" />
@@ -176,24 +188,26 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Name, Mobile Number, Email"
+                        android:text="Name, Mobile, Email"
+                        android:fontFamily="@font/app_font"
                         android:textColor="?attr/chk_textColorSecondary"
-                        android:textSize="14sp"
+                        android:textSize="13sp"
                         android:layout_marginTop="2dp" />
                 </LinearLayout>
 
                 <ImageView
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:src="@drawable/ic_arrow_right"
-                    app:tint="?attr/chk_textColorSecondary" />
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_chevron_right"
+                    app:tint="?attr/chk_textColorSecondary"
+                    android:contentDescription="Arrow" />
             </LinearLayout>
 
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
                 android:background="?attr/chk_dividerHorizontal"
-                android:layout_marginHorizontal="16dp" />
+                android:layout_marginStart="56dp" />
 
             <LinearLayout
                 android:id="@+id/aboutCashFlow"
@@ -203,16 +217,17 @@
                 android:gravity="center_vertical"
                 android:clickable="true"
                 android:focusable="true"
-                android:background="@drawable/settings_item_ripple"
+                android:background="?attr/selectableItemBackground"
                 android:paddingHorizontal="16dp"
                 android:paddingVertical="16dp">
 
                 <ImageView
                     android:layout_width="24dp"
                     android:layout_height="24dp"
-                    android:src="@drawable/ic_about_info"
+                    android:src="@drawable/ic_info"
                     android:layout_marginEnd="16dp"
-                    app:tint="@color/category_utilities" />
+                    app:tint="?attr/chk_expenseColor"
+                    android:contentDescription="Info" />
 
                 <LinearLayout
                     android:layout_width="0dp"
@@ -224,6 +239,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="About Artham"
+                        android:fontFamily="@font/app_font"
                         android:textColor="?attr/chk_textColorPrimary"
                         android:textSize="16sp"
                         android:textStyle="bold" />
@@ -231,19 +247,21 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Privacy Policy, T&amp;C, About us"
+                        android:text="Privacy Policy, T&amp;C, Version"
+                        android:fontFamily="@font/app_font"
                         android:textColor="?attr/chk_textColorSecondary"
-                        android:textSize="14sp"
+                        android:textSize="13sp"
                         android:layout_marginTop="2dp" />
                 </LinearLayout>
 
                 <ImageView
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:src="@drawable/ic_arrow_right"
-                    app:tint="?attr/chk_textColorSecondary" />
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_chevron_right"
+                    app:tint="?attr/chk_textColorSecondary"
+                    android:contentDescription="Arrow" />
             </LinearLayout>
 
         </LinearLayout>
-    </androidx.cardview.widget.CardView>
+    </com.google.android.material.card.MaterialCardView>
 </LinearLayout>

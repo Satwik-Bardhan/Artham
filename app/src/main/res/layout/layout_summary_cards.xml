@@ -1,18 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    app:cardCornerRadius="8dp"
+    android:layout_marginTop="8dp"
+    android:layout_marginBottom="12dp"
+    app:cardCornerRadius="12dp"
     app:cardElevation="2dp"
+    app:strokeWidth="0dp"
     app:cardBackgroundColor="?attr/chk_surfaceColor">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="8dp"
-        android:gravity="center_horizontal">
+        android:padding="8dp">
 
         <LinearLayout
             android:id="@+id/balanceCard"
@@ -20,36 +24,39 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:background="?attr/chk_balanceColor"
-            android:padding="4dp"
-            android:layout_marginBottom="5dp"
+            android:background="@drawable/bg_stats_bar_balance"
+            android:paddingVertical="12dp"
+            android:paddingHorizontal="16dp"
+            android:layout_marginBottom="8dp"
             android:clickable="true"
             android:focusable="true">
 
             <ImageView
-                android:layout_width="28dp"
-                android:layout_height="28dp"
-                android:src="@drawable/ic_account_balance"
-                android:layout_marginEnd="12dp"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_account_balance_wallet"
+                android:layout_marginEnd="16dp"
                 app:tint="@android:color/white"
-                android:contentDescription="Balance icon" />
+                android:contentDescription="Balance" />
 
             <TextView
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="Balance"
+                android:layout_weight="1"
+                android:text="Total Balance"
+                android:fontFamily="@font/app_font"
                 android:textColor="@android:color/white"
                 android:textSize="14sp"
-                android:textStyle="bold"
-                android:layout_marginEnd="12dp" />
+                android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/balanceText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="₹0"
+                tools:text="₹24,500"
+                android:fontFamily="@font/app_font"
                 android:textColor="@android:color/white"
-                android:textSize="18sp"
+                android:textSize="16sp"
                 android:textStyle="bold" />
         </LinearLayout>
 
@@ -59,36 +66,39 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:background="?attr/chk_incomeColor"
-            android:padding="4dp"
-            android:layout_marginBottom="5dp"
+            android:background="@drawable/bg_stats_bar_income"
+            android:paddingVertical="12dp"
+            android:paddingHorizontal="16dp"
+            android:layout_marginBottom="8dp"
             android:clickable="true"
             android:focusable="true">
 
             <ImageView
-                android:layout_width="28dp"
-                android:layout_height="28dp"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
                 android:src="@drawable/ic_trending_up"
-                android:layout_marginEnd="12dp"
+                android:layout_marginEnd="16dp"
                 app:tint="@android:color/white"
-                android:contentDescription="Income icon" />
+                android:contentDescription="Income" />
 
             <TextView
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_weight="1"
                 android:text="Income"
+                android:fontFamily="@font/app_font"
                 android:textColor="@android:color/white"
                 android:textSize="14sp"
-                android:textStyle="bold"
-                android:layout_marginEnd="12dp" />
+                android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/incomeText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="₹0"
+                tools:text="₹45,000"
+                android:fontFamily="@font/app_font"
                 android:textColor="@android:color/white"
-                android:textSize="18sp"
+                android:textSize="16sp"
                 android:textStyle="bold" />
         </LinearLayout>
 
@@ -98,37 +108,40 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:background="?attr/chk_expenseColor"
-            android:padding="4dp"
+            android:background="@drawable/bg_stats_bar_expense"
+            android:paddingVertical="12dp"
+            android:paddingHorizontal="16dp"
             android:clickable="true"
             android:focusable="true">
 
             <ImageView
-                android:layout_width="28dp"
-                android:layout_height="28dp"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
                 android:src="@drawable/ic_trending_down"
-                android:layout_marginEnd="12dp"
+                android:layout_marginEnd="16dp"
                 app:tint="@android:color/white"
-                android:contentDescription="Expense icon" />
+                android:contentDescription="Expense" />
 
             <TextView
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_weight="1"
                 android:text="Expense"
+                android:fontFamily="@font/app_font"
                 android:textColor="@android:color/white"
                 android:textSize="14sp"
-                android:textStyle="bold"
-                android:layout_marginEnd="12dp" />
+                android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/expenseText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="₹0"
+                tools:text="₹12,000"
+                android:fontFamily="@font/app_font"
                 android:textColor="@android:color/white"
-                android:textSize="18sp"
+                android:textSize="16sp"
                 android:textStyle="bold" />
         </LinearLayout>
 
     </LinearLayout>
-</androidx.cardview.widget.CardView>
+</com.google.android.material.card.MaterialCardView>

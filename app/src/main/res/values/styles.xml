@@ -37,8 +37,15 @@
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:textColor">?attr/chk_textColorPrimary</item>
-        <item name="android:padding">8dp</item>
+        <item name="android:padding">12dp</item>
         <item name="android:fontFamily">@font/app_font</item>
+    </style>
+
+    <style name="DividerStyle">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">1dp</item>
+        <item name="android:background">?attr/chk_dividerHorizontal</item>
+        <item name="android:layout_marginHorizontal">16dp</item>
     </style>
 
     <style name="BottomNavItem">
@@ -54,93 +61,52 @@
         <item name="android:textSize">10sp</item>
         <item name="android:textColor">?attr/chk_bottomNavIconTextColor</item>
         <item name="android:drawableTint">?attr/chk_bottomNavIconTextColor</item>
+        <item name="android:fontFamily">@font/app_font</item>
     </style>
 
-    <style name="CalcButton" parent="Widget.MaterialComponents.Button.OutlinedButton">
+    <style name="CalcButton" parent="Widget.MaterialComponents.Button.TextButton">
         <item name="android:layout_width">0dp</item>
         <item name="android:layout_height">60dp</item>
         <item name="android:layout_columnWeight">1</item>
-        <item name="android:layout_margin">4dp</item>
-        <item name="android:textSize">18sp</item>
+        <item name="android:layout_rowWeight">1</item>
+        <item name="android:layout_margin">2dp</item>
+        <item name="android:textColor">?attr/chk_textColorPrimary</item>
+        <item name="android:textSize">20sp</item>
+        <item name="android:fontFamily">@font/app_font</item>
         <item name="android:textStyle">bold</item>
-        <item name="android:textColor">?attr/chk_textColorPrimary</item>
-        <item name="strokeColor">?attr/chk_dividerHorizontal</item>
         <item name="cornerRadius">12dp</item>
-        <item name="android:fontFamily">@font/app_font</item>
-    </style>
-
-    <style name="TransactionDetailRow">
-        <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:orientation">horizontal</item>
-        <item name="android:gravity">center_vertical</item>
-        <item name="android:layout_marginBottom">16dp</item>
-    </style>
-
-    <style name="TransactionDetailIcon">
-        <item name="android:layout_width">20dp</item>
-        <item name="android:layout_height">20dp</item>
-        <item name="android:layout_marginEnd">16dp</item>
-        <item name="android:tint">?attr/chk_textColorSecondary</item>
-    </style>
-
-    <style name="TransactionDetailText">
-        <item name="android:layout_width">wrap_content</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:textSize">14sp</item>
-        <item name="android:textColor">?attr/chk_textColorPrimary</item>
-        <item name="android:fontFamily">@font/app_font</item>
-    </style>
-
-    <style name="DetailRowStyle">
-        <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:orientation">horizontal</item>
-        <item name="android:gravity">center_vertical</item>
-        <item name="android:layout_marginBottom">20dp</item>
-    </style>
-
-    <style name="DetailIconStyle">
-        <item name="android:layout_width">20dp</item>
-        <item name="android:layout_height">20dp</item>
-        <item name="android:layout_marginStart">6dp</item>
-        <item name="android:tint">?attr/chk_textColorSecondary</item>
-    </style>
-
-    <style name="DetailTextStyle">
-        <item name="android:layout_width">wrap_content</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_marginStart">22dp</item>
-        <item name="android:textSize">15sp</item>
-        <item name="android:textColor">?attr/chk_textColorPrimary</item>
-        <item name="android:fontFamily">@font/app_font</item>
+        <item name="rippleColor">?attr/chk_dividerHorizontal</item>
     </style>
 
     <style name="DetailLabelStyle">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_marginTop">24dp</item>
+        <item name="android:layout_marginTop">20dp</item>
         <item name="android:textSize">12sp</item>
         <item name="android:textColor">?attr/chk_textColorSecondary</item>
         <item name="android:fontFamily">@font/app_font</item>
-        <item name="android:textAllCaps">true</item>
-        <item name="android:letterSpacing">0.05</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:layout_marginBottom">8dp</item>
     </style>
 
     <style name="DetailRowContainer">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_marginTop">12dp</item>
         <item name="android:gravity">center_vertical</item>
         <item name="android:orientation">horizontal</item>
+        <item name="android:layout_marginBottom">20dp</item>
+    </style>
+
+    <style name="DetailIconStyle">
+        <item name="android:layout_width">24dp</item>
+        <item name="android:layout_height">24dp</item>
+        <item name="android:layout_marginEnd">16dp</item>
+        <item name="android:tint">?attr/chk_primary_blue</item>
     </style>
 
     <style name="DetailValueStyle">
-        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_weight">1</item>
-        <item name="android:paddingStart">16dp</item>
-        <item name="android:paddingEnd">4dp</item>
         <item name="android:textSize">16sp</item>
         <item name="android:textColor">?attr/chk_textColorPrimary</item>
         <item name="android:fontFamily">@font/app_font</item>

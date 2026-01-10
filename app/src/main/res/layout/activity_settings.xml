@@ -55,6 +55,7 @@
                         android:contentDescription="Back Button"
                         android:focusable="true"
                         android:padding="6dp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
                         android:src="@drawable/ic_arrow_left"
                         app:tint="?attr/chk_textColorPrimary" />
 
@@ -70,8 +71,9 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Settings"
+                            android:fontFamily="@font/app_font"
                             android:textColor="?attr/chk_textColorPrimary"
-                            android:textSize="24sp"
+                            android:textSize="22sp"
                             android:textStyle="bold" />
 
                         <TextView
@@ -79,39 +81,39 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="2dp"
                             android:text="Manage your preferences"
+                            android:fontFamily="@font/app_font"
                             android:textColor="?attr/chk_textColorSecondary"
                             android:textSize="12sp" />
                     </LinearLayout>
-
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
             <include
                 android:id="@+id/primarySettingsLayout"
-                layout="@layout/layout_primary_settings"
+                layout="@layout/layout_profile_card"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp" />
+                android:layout_marginTop="12dp" />
 
             <include
                 android:id="@+id/generalSettingsLayout"
                 layout="@layout/layout_general_settings"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp" />
+                android:layout_marginTop="12dp" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="2dp"
-                android:layout_marginTop="10dp"
+                android:layout_marginTop="16dp"
                 android:layout_marginBottom="12dp"
                 android:drawablePadding="8dp"
                 android:text="Account Actions"
                 android:textColor="?attr/chk_textColorPrimary"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                app:drawableTint="#FF5722" />
+                android:fontFamily="@font/app_font"
+                android:textSize="16sp"
+                android:textStyle="bold"/>
 
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
@@ -133,8 +135,8 @@
                     android:padding="20dp">
 
                     <ImageView
-                        android:layout_width="28dp"
-                        android:layout_height="28dp"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
                         android:layout_marginEnd="16dp"
                         android:src="@drawable/ic_logout"
                         app:tint="?attr/chk_expenseColor" />
@@ -149,6 +151,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Logout"
+                            android:fontFamily="@font/app_font"
                             android:textColor="?attr/chk_expenseColor"
                             android:textSize="16sp"
                             android:textStyle="bold" />
@@ -158,6 +161,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="2dp"
                             android:text="Sign out from your account"
+                            android:fontFamily="@font/app_font"
                             android:textColor="?attr/chk_textColorSecondary"
                             android:textSize="12sp" />
                     </LinearLayout>
@@ -178,9 +182,9 @@
                 android:drawablePadding="8dp"
                 android:text="Our Promise"
                 android:textColor="?attr/chk_textColorPrimary"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                app:drawableTint="?attr/chk_incomeColor" />
+                android:fontFamily="@font/app_font"
+                android:textSize="16sp"
+                android:textStyle="bold" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -217,6 +221,7 @@
                             android:layout_height="wrap_content"
                             android:gravity="center"
                             android:text="100% Safe"
+                            android:fontFamily="@font/app_font"
                             android:textColor="?attr/chk_textColorPrimary"
                             android:textSize="14sp"
                             android:textStyle="bold" />
@@ -226,6 +231,7 @@
                             android:layout_height="wrap_content"
                             android:gravity="center"
                             android:text="&amp; Secure"
+                            android:fontFamily="@font/app_font"
                             android:textColor="?attr/chk_textColorSecondary"
                             android:textSize="12sp" />
                     </LinearLayout>
@@ -259,6 +265,7 @@
                             android:layout_height="wrap_content"
                             android:gravity="center"
                             android:text="Auto Backup"
+                            android:fontFamily="@font/app_font"
                             android:textColor="?attr/chk_textColorPrimary"
                             android:textSize="14sp"
                             android:textStyle="bold" />
@@ -268,6 +275,7 @@
                             android:layout_height="wrap_content"
                             android:gravity="center"
                             android:text="Enabled"
+                            android:fontFamily="@font/app_font"
                             android:textColor="?attr/chk_textColorSecondary"
                             android:textSize="12sp" />
                     </LinearLayout>
@@ -286,10 +294,11 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:drawablePadding="8dp"
-                    android:paddingVertical="16dp"
+                    android:paddingVertical="14dp"
                     android:background="@drawable/button_delete"
                     android:text="Delete Account"
                     app:backgroundTint="@null"
+                    android:fontFamily="@font/app_font"
                     android:textColor="#FFFFFF"
                     android:textSize="16sp"
                     android:textStyle="bold" />
@@ -310,11 +319,11 @@
                     android:orientation="horizontal"
                     android:padding="16dp">
 
-
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="ARTHAM"
+                        android:fontFamily="@font/app_font"
                         android:textColor="?attr/chk_textColorPrimary"
                         android:textSize="14sp"
                         android:textStyle="bold" />
@@ -330,6 +339,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Version 1.0.11"
+                        android:fontFamily="@font/app_font"
                         android:textColor="?attr/chk_textColorSecondary"
                         android:textSize="14sp" />
                 </LinearLayout>

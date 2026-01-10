@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/rootView"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F5F5F5"
-    android:fitsSystemWindows="true"
-    android:id="@+id/rootView">
+    android:background="?attr/chk_backgroundColor"
+    android:fitsSystemWindows="true">
 
     <LinearLayout
         android:id="@+id/headerLayout"
@@ -14,7 +14,7 @@
         android:orientation="horizontal"
         android:gravity="center_vertical"
         android:padding="16dp"
-        android:background="#FFFFFF"
+        android:background="?attr/chk_surfaceColor"
         android:elevation="4dp">
 
         <TextView
@@ -25,7 +25,8 @@
             android:text="Expense Analytics"
             android:textSize="20sp"
             android:textStyle="bold"
-            android:textColor="#000000"/>
+            android:fontFamily="@font/app_font"
+            android:textColor="?attr/chk_textColorPrimary"/>
 
         <ImageButton
             android:id="@+id/closeButton"
@@ -33,7 +34,7 @@
             android:layout_height="48dp"
             android:src="@drawable/ic_close"
             android:background="?attr/selectableItemBackgroundBorderless"
-            app:tint="#000000"
+            app:tint="?attr/chk_textColorPrimary"
             android:contentDescription="Close" />
     </LinearLayout>
 
@@ -43,7 +44,8 @@
         android:layout_height="wrap_content"
         android:text="No expense data available"
         android:textSize="18sp"
-        android:textColor="#757575"
+        android:fontFamily="@font/app_font"
+        android:textColor="?attr/chk_textColorSecondary"
         android:layout_centerInParent="true"
         android:visibility="gone"/>
 
@@ -52,6 +54,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
+        android:indeterminateTint="?attr/chk_primary_blue"
         android:visibility="visible"/>
 
     <LinearLayout
@@ -82,7 +85,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="16dp"
-            android:background="#FFFFFF"/>
+            android:background="?attr/chk_surfaceColor"
+            android:elevation="8dp"/>
 
     </LinearLayout>
 </RelativeLayout>

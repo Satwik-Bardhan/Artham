@@ -2,12 +2,13 @@
     android:width="24dp"
     android:height="24dp"
     android:viewportWidth="512"
-    android:viewportHeight="512"
-    android:tint="?attr/colorOnSurface">
+    android:viewportHeight="512">
+
     <path
-        android:fillColor="@color/bottom_nav_item_color_selector"
+        android:fillColor="@android:color/white"
         android:pathData="M390.7,458.1H121.3c-7.4,0 -13.5,-6 -13.5,-13.5c0,-7.4 6,-13.5 13.5,-13.5h269.5c7.4,0 13.5,6 13.5,13.5C404.2,452.1 398.2,458.1 390.7,458.1z" />
+
     <path
-        android:fillColor="@color/bottom_nav_item_color_selector"
+        android:fillColor="@android:color/white"
         android:pathData="M444.6,53.9c-7.4,0 -13.5,6 -13.5,13.5v404.2c0,7.4 -6,13.5 -13.5,13.5H121.3c-22.3,0 -40.4,-18.1 -40.4,-40.4c0,-22.3 18.1,-40.4 40.4,-40.4h242.5c22.3,0 40.4,-18.1 40.4,-40.4V40.4c0,-22.3 -18.1,-40.4 -40.4,-40.4H94.3C72,0 53.9,18.1 53.9,40.4v404.2c0,37.1 30.2,67.4 67.4,67.4h296.4c22.3,0 40.4,-18.1 40.4,-40.4V67.4C458.1,59.9 452.1,53.9 444.6,53.9zM94.3,26.9h269.5c7.4,0 13.5,6 13.5,13.5v323.4c0,7.4 -6,13.5 -13.5,13.5H121.3c-15.1,0 -29.2,5 -40.4,13.5V40.4C80.8,33 86.9,26.9 94.3,26.9z" />
 </vector>

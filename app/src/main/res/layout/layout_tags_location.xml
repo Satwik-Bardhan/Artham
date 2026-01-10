@@ -9,10 +9,12 @@
     android:gravity="center_vertical">
 
     <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:hint="Tags (comma separated)"
+        android:textColorHint="?attr/chk_textColorSecondary"
         app:hintTextColor="?attr/chk_textColorSecondary"
         app:boxBackgroundColor="?attr/chk_surfaceColor"
         app:boxCornerRadiusBottomEnd="12dp"
@@ -25,9 +27,11 @@
             android:id="@+id/tagsEditText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="@null"
             android:fontFamily="@font/app_font"
             android:inputType="text"
-            android:textColor="?attr/chk_textColorPrimary" />
+            android:textColor="?attr/chk_textColorPrimary"
+            android:textColorHint="?attr/chk_textColorSecondary" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <ImageView

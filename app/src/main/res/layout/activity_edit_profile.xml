@@ -17,29 +17,33 @@
         android:paddingHorizontal="16dp"
         android:paddingTop="12dp"
         android:paddingBottom="24dp"
-        android:background="?attr/chk_backgroundColor"
-        android:elevation="8dp">
+        android:background="?attr/chk_surfaceColor"
+        android:elevation="16dp">
 
         <Button
             android:id="@+id/cancelButton"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="56dp"
             android:layout_weight="1"
             android:text="Cancel"
-            android:textColor="#FFFFFF"
-            android:backgroundTint="#757575"
-            android:paddingHorizontal="24dp"
+            android:fontFamily="@font/app_font"
+            android:textStyle="bold"
+            android:textColor="?attr/chk_expenseColor"
+            android:background="@drawable/button_cancel_outline"
+            app:backgroundTint="@null"
             android:layout_marginEnd="8dp" />
 
         <Button
             android:id="@+id/saveProfileButton"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:layout_height="56dp"
+            android:layout_weight="1.2"
             android:text="Save Changes"
-            android:textColor="#FFFFFF"
-            android:backgroundTint="?attr/chk_incomeColor"
-            android:paddingHorizontal="24dp"
+            android:fontFamily="@font/app_font"
+            android:textStyle="bold"
+            android:textColor="@android:color/white"
+            android:background="@drawable/button_primary"
+            app:backgroundTint="@null"
             android:layout_marginStart="8dp" />
     </LinearLayout>
 
@@ -101,8 +105,9 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Edit Profile"
+                            android:fontFamily="@font/app_font"
                             android:textColor="?attr/chk_textColorPrimary"
-                            android:textSize="24sp"
+                            android:textSize="22sp"
                             android:textStyle="bold" />
 
                         <TextView
@@ -110,6 +115,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="2dp"
+                            android:fontFamily="@font/app_font"
                             android:text="Update your personal details"
                             android:textColor="?attr/chk_textColorSecondary"
                             android:textSize="12sp" />
@@ -160,13 +166,14 @@
                             android:padding="6dp"
                             android:clickable="true"
                             android:focusable="true"
-                            app:tint="#FFFFFF" />
+                            app:tint="@android:color/white" />
                     </androidx.cardview.widget.CardView>
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Tap to change profile picture"
+                        android:fontFamily="@font/app_font"
                         android:textColor="?attr/chk_textColorSecondary"
                         android:textSize="12sp" />
                 </LinearLayout>
@@ -193,6 +200,7 @@
                         android:text="Full Name"
                         android:textColor="?attr/chk_textColorPrimary"
                         android:textSize="14sp"
+                        android:fontFamily="@font/app_font"
                         android:textStyle="bold"
                         android:layout_marginBottom="4dp" />
                     <EditText
@@ -204,6 +212,7 @@
                         android:inputType="textPersonName"
                         android:background="@drawable/rounded_input_background"
                         android:paddingHorizontal="12dp"
+                        android:fontFamily="@font/app_font"
                         android:textColor="?attr/chk_textColorPrimary"
                         android:textColorHint="?attr/chk_textColorHint"
                         android:layout_marginBottom="16dp" />
@@ -214,6 +223,7 @@
                         android:text="Email Address"
                         android:textColor="?attr/chk_textColorPrimary"
                         android:textSize="14sp"
+                        android:fontFamily="@font/app_font"
                         android:textStyle="bold"
                         android:layout_marginBottom="4dp" />
                     <LinearLayout
@@ -230,14 +240,15 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="artham.user@example.com"
-                            android:textColor="?attr/chk_textColorPrimary"
-                            android:textSize="16sp" />
+                            android:fontFamily="@font/app_font"
+                            android:textColor="?attr/chk_textColorSecondary"
+                            android:textSize="15sp" />
 
                         <ImageView
                             android:layout_width="16dp"
                             android:layout_height="16dp"
                             android:src="@drawable/ic_lock"
-                            app:tint="?attr/chk_textColorSecondary" />
+                            app:tint="?attr/chk_textColorHint" />
                     </LinearLayout>
 
                     <TextView
@@ -246,6 +257,7 @@
                         android:text="Phone Number"
                         android:textColor="?attr/chk_textColorPrimary"
                         android:textSize="14sp"
+                        android:fontFamily="@font/app_font"
                         android:textStyle="bold"
                         android:layout_marginBottom="4dp" />
                     <EditText
@@ -257,6 +269,7 @@
                         android:inputType="phone"
                         android:background="@drawable/rounded_input_background"
                         android:paddingHorizontal="12dp"
+                        android:fontFamily="@font/app_font"
                         android:textColor="?attr/chk_textColorPrimary"
                         android:textColorHint="?attr/chk_textColorHint"
                         android:layout_marginBottom="16dp" />
@@ -267,6 +280,7 @@
                         android:text="Date of Birth"
                         android:textColor="?attr/chk_textColorPrimary"
                         android:textSize="14sp"
+                        android:fontFamily="@font/app_font"
                         android:textStyle="bold"
                         android:layout_marginBottom="4dp" />
                     <LinearLayout
@@ -287,8 +301,9 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="January 15, 1990"
+                            android:fontFamily="@font/app_font"
                             android:textColor="?attr/chk_textColorPrimary"
-                            android:textSize="16sp" />
+                            android:textSize="15sp" />
 
                         <ImageView
                             android:layout_width="20dp"

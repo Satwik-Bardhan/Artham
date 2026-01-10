@@ -22,12 +22,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.github.mikephil.charting.animation.Easing;
 import com.github.mikephil.charting.charts.PieChart;
-import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
-import com.github.mikephil.charting.highlight.Highlight;
-import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -74,7 +71,7 @@ public class ExpenseAnalyticsActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_expense_analytics);
+        setContentView(R.layout.activity_full_screen_chart);
         if (getSupportActionBar() != null) getSupportActionBar().hide();
 
         cashbookId = getIntent().getStringExtra("cashbook_id");
@@ -337,7 +334,7 @@ public class ExpenseAnalyticsActivity extends AppCompatActivity {
         }
 
         @NonNull @Override public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            return new ViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.item_monthly_card, parent, false));
+            return new ViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.item_monthly_expense_card, parent, false));
         }
 
         @Override public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
@@ -398,7 +395,7 @@ public class ExpenseAnalyticsActivity extends AppCompatActivity {
         public void updateData(List<LegendItem> newList) { this.list = newList; notifyDataSetChanged(); }
 
         @NonNull @Override public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            return new ViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.item_legend_detail, parent, false));
+            return new ViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.item_category_report, parent, false));
         }
         @Override public void onBindViewHolder(@NonNull ViewHolder holder, int position) { holder.bind(list.get(position)); }
         @Override public int getItemCount() { return list.size(); }

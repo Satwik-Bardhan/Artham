@@ -19,6 +19,7 @@
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:text="Food"
+        android:fontFamily="@font/app_font"
         android:textColor="?attr/chk_textColorPrimary"
         android:textSize="14sp" />
 
@@ -27,6 +28,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="₹5,000"
+        android:fontFamily="@font/app_font"
         android:textColor="?attr/chk_textColorSecondary"
         android:textSize="14sp" />
 
@@ -35,6 +37,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="40%"
+        android:fontFamily="@font/app_font"
         android:textColor="?attr/chk_balanceColor"
         android:textSize="14sp"
         android:textStyle="bold"

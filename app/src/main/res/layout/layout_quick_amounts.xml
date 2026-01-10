@@ -3,58 +3,70 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="20dp"
+    android:layout_marginBottom="8dp"
     android:orientation="horizontal">
 
-    <Button
+    <android.widget.Button
         android:id="@+id/quickAmount100"
         android:layout_width="0dp"
-        android:layout_height="35dp"
-        android:layout_marginEnd="4dp"
+        android:layout_height="40dp"
         android:layout_weight="1"
-        android:background="@drawable/quick_amount_selector"
+        android:layout_marginEnd="8dp"
+        android:background="@drawable/bg_quick_amount_chip"
         android:text="₹100"
-        android:textColor="@color/quick_amount_text_selector"
-        android:textSize="12sp"
+        android:fontFamily="@font/app_font"
+        android:textColor="?attr/chk_primary_blue"
+        android:textSize="13sp"
         android:textStyle="bold"
-        app:backgroundTint="@null" />
+        android:stateListAnimator="@null"
+        app:backgroundTint="@null"
+        android:textAllCaps="false"/>
 
-    <Button
+    <android.widget.Button
         android:id="@+id/quickAmount500"
         android:layout_width="0dp"
-        android:layout_height="35dp"
-        android:layout_marginEnd="4dp"
+        android:layout_height="40dp"
         android:layout_weight="1"
-        android:background="@drawable/quick_amount_selector"
+        android:layout_marginEnd="8dp"
+        android:background="@drawable/bg_quick_amount_chip"
         android:text="₹500"
-        android:textColor="@color/button_text_selector"
-        android:textSize="12sp"
+        android:fontFamily="@font/app_font"
+        android:textColor="?attr/chk_primary_blue"
+        android:textSize="13sp"
         android:textStyle="bold"
-        app:backgroundTint="@null" />
+        android:stateListAnimator="@null"
+        app:backgroundTint="@null"
+        android:textAllCaps="false"/>
 
-    <Button
+    <android.widget.Button
         android:id="@+id/quickAmount1000"
         android:layout_width="0dp"
-        android:layout_height="35dp"
-        android:layout_marginEnd="4dp"
+        android:layout_height="40dp"
         android:layout_weight="1"
-        android:background="@drawable/quick_amount_selector"
+        android:layout_marginEnd="8dp"
+        android:background="@drawable/bg_quick_amount_chip"
         android:text="₹1K"
-        android:textColor="@color/button_text_selector"
-        android:textSize="12sp"
+        android:fontFamily="@font/app_font"
+        android:textColor="?attr/chk_primary_blue"
+        android:textSize="13sp"
         android:textStyle="bold"
-        app:backgroundTint="@null" />
+        android:stateListAnimator="@null"
+        app:backgroundTint="@null"
+        android:textAllCaps="false"/>
 
-    <Button
+    <android.widget.Button
         android:id="@+id/quickAmount5000"
         android:layout_width="0dp"
-        android:layout_height="35dp"
+        android:layout_height="40dp"
         android:layout_weight="1"
-        android:background="@drawable/quick_amount_selector"
+        android:background="@drawable/bg_quick_amount_chip"
         android:text="₹5K"
-        android:textColor="@color/button_text_selector"
-        android:textSize="12sp"
+        android:fontFamily="@font/app_font"
+        android:textColor="?attr/chk_primary_blue"
+        android:textSize="13sp"
         android:textStyle="bold"
-        app:backgroundTint="@null" />
+        android:stateListAnimator="@null"
+        app:backgroundTint="@null"
+        android:textAllCaps="false"/>
 
 </LinearLayout>

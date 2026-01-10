@@ -55,16 +55,17 @@
                     android:textColor="?attr/chk_textColorPrimary"
                     android:textSize="20sp"
                     android:textStyle="bold"
-                    android:fontFamily="sans-serif-medium" />
+                    android:fontFamily="@font/app_font" />
 
                 <TextView
                     android:id="@+id/headerSubtitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Download Report"
-                    android:textColor="?attr/chk_textColorPrimary"
-                    android:textSize="18sp"
-                    android:layout_marginTop="4dp" />
+                    android:textColor="?attr/chk_textColorSecondary"
+                    android:textSize="14sp"
+                    android:fontFamily="@font/app_font"
+                    android:layout_marginTop="2dp" />
             </LinearLayout>
         </RelativeLayout>
     </androidx.cardview.widget.CardView>
@@ -88,14 +89,15 @@
                 android:textColor="?attr/chk_textColorPrimary"
                 android:textSize="16sp"
                 android:textStyle="bold"
+                android:fontFamily="@font/app_font"
                 android:layout_marginBottom="12dp" />
 
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="20dp"
-                app:cardCornerRadius="8dp"
-                app:cardElevation="4dp"
+                android:layout_marginBottom="24dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="2dp"
                 app:cardBackgroundColor="?attr/chk_surfaceColor">
 
                 <LinearLayout
@@ -108,7 +110,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
-                        android:layout_marginBottom="12dp">
+                        android:layout_marginBottom="16dp">
 
                         <LinearLayout
                             android:id="@+id/startDateLayout"
@@ -121,8 +123,7 @@
                             android:paddingHorizontal="12dp"
                             android:layout_marginEnd="8dp"
                             android:clickable="true"
-                            android:focusable="true"
-                            android:foreground="?attr/selectableItemBackground">
+                            android:focusable="true">
 
                             <TextView
                                 android:id="@+id/startDateText"
@@ -130,22 +131,15 @@
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
                                 android:text="Start Date"
-                                android:textColor="?attr/chk_textColorHint"
+                                android:textColor="?attr/chk_textColorPrimary"
                                 android:textSize="14sp"
-                                android:clickable="false"
-                                android:focusable="false"
-                                android:longClickable="false"
-                                android:duplicateParentState="true"/>
+                                android:fontFamily="@font/app_font"/>
 
                             <ImageView
-                                android:layout_width="16dp"
-                                android:layout_height="16dp"
+                                android:layout_width="18dp"
+                                android:layout_height="18dp"
                                 android:src="@drawable/ic_calendar"
-                                app:tint="?attr/chk_textColorSecondary"
-                                android:clickable="false"
-                                android:focusable="false"
-                                android:longClickable="false"
-                                android:duplicateParentState="true"/>
+                                app:tint="?attr/chk_textColorSecondary"/>
                         </LinearLayout>
 
                         <LinearLayout
@@ -159,8 +153,7 @@
                             android:paddingHorizontal="12dp"
                             android:layout_marginStart="8dp"
                             android:clickable="true"
-                            android:focusable="true"
-                            android:foreground="?attr/selectableItemBackground">
+                            android:focusable="true">
 
                             <TextView
                                 android:id="@+id/endDateText"
@@ -168,22 +161,15 @@
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
                                 android:text="End Date"
-                                android:textColor="?attr/chk_textColorHint"
+                                android:textColor="?attr/chk_textColorPrimary"
                                 android:textSize="14sp"
-                                android:clickable="false"
-                                android:focusable="false"
-                                android:longClickable="false"
-                                android:duplicateParentState="true"/>
+                                android:fontFamily="@font/app_font"/>
 
                             <ImageView
-                                android:layout_width="16dp"
-                                android:layout_height="16dp"
+                                android:layout_width="18dp"
+                                android:layout_height="18dp"
                                 android:src="@drawable/ic_calendar"
-                                app:tint="?attr/chk_textColorSecondary"
-                                android:clickable="false"
-                                android:focusable="false"
-                                android:longClickable="false"
-                                android:duplicateParentState="true"/>
+                                app:tint="?attr/chk_textColorSecondary"/>
                         </LinearLayout>
                     </LinearLayout>
 
@@ -193,8 +179,9 @@
                         android:text="Quick Options"
                         android:textColor="?attr/chk_textColorSecondary"
                         android:textSize="12sp"
+                        android:fontFamily="@font/app_font"
                         android:textStyle="bold"
-                        android:layout_marginBottom="8dp" />
+                        android:layout_marginBottom="12dp" />
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -204,37 +191,43 @@
                         <Button
                             android:id="@+id/todayButton"
                             android:layout_width="0dp"
-                            android:layout_height="36dp"
+                            android:layout_height="40dp"
                             android:layout_weight="1"
                             android:text="Today"
                             android:textColor="?attr/chk_textColorPrimary"
                             android:textSize="12sp"
+                            android:fontFamily="@font/app_font"
+                            android:textAllCaps="false"
                             android:background="@drawable/quick_option_button"
                             app:backgroundTint="@null"
-                            android:layout_marginEnd="4dp" />
+                            android:layout_marginEnd="6dp" />
 
                         <Button
                             android:id="@+id/thisWeekButton"
                             android:layout_width="0dp"
-                            android:layout_height="36dp"
+                            android:layout_height="40dp"
                             android:layout_weight="1"
                             android:text="This Week"
                             android:textColor="?attr/chk_textColorPrimary"
                             android:textSize="12sp"
+                            android:fontFamily="@font/app_font"
+                            android:textAllCaps="false"
                             android:background="@drawable/quick_option_button"
                             app:backgroundTint="@null"
-                            android:layout_marginEnd="4dp" />
+                            android:layout_marginEnd="6dp" />
 
                         <Button
                             android:id="@+id/thisMonthButton"
                             android:layout_width="0dp"
-                            android:layout_height="36dp"
+                            android:layout_height="40dp"
                             android:layout_weight="1"
                             android:text="This Month"
                             android:textColor="?attr/chk_textColorPrimary"
-                            app:backgroundTint="@null"
                             android:textSize="12sp"
-                            android:background="@drawable/quick_option_button" />
+                            android:fontFamily="@font/app_font"
+                            android:textAllCaps="false"
+                            android:background="@drawable/quick_option_button"
+                            app:backgroundTint="@null"/>
                     </LinearLayout>
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
@@ -246,21 +239,22 @@
                 android:textColor="?attr/chk_textColorPrimary"
                 android:textSize="16sp"
                 android:textStyle="bold"
+                android:fontFamily="@font/app_font"
                 android:layout_marginBottom="12dp" />
 
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="20dp"
-                app:cardCornerRadius="8dp"
-                app:cardElevation="4dp"
+                android:layout_marginBottom="24dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="2dp"
                 app:cardBackgroundColor="?attr/chk_surfaceColor">
 
                 <RadioGroup
                     android:id="@+id/entryTypeRadioGroup"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:padding="16dp">
+                    android:padding="8dp">
 
                     <RadioButton
                         android:id="@+id/radioAll"
@@ -268,7 +262,9 @@
                         android:layout_height="wrap_content"
                         android:text="All Transactions"
                         android:textColor="?attr/chk_textColorPrimary"
+                        android:buttonTint="?attr/chk_primary_blue"
                         android:checked="true"
+                        android:fontFamily="@font/app_font"
                         android:padding="12dp"/>
 
                     <RadioButton
@@ -277,6 +273,8 @@
                         android:layout_height="wrap_content"
                         android:text="Income Only"
                         android:textColor="?attr/chk_textColorPrimary"
+                        android:buttonTint="?attr/chk_incomeColor"
+                        android:fontFamily="@font/app_font"
                         android:padding="12dp"/>
 
                     <RadioButton
@@ -285,6 +283,8 @@
                         android:layout_height="wrap_content"
                         android:text="Expense Only"
                         android:textColor="?attr/chk_textColorPrimary"
+                        android:buttonTint="?attr/chk_expenseColor"
+                        android:fontFamily="@font/app_font"
                         android:padding="12dp"/>
                 </RadioGroup>
             </androidx.cardview.widget.CardView>
@@ -296,21 +296,22 @@
                 android:textColor="?attr/chk_textColorPrimary"
                 android:textSize="16sp"
                 android:textStyle="bold"
+                android:fontFamily="@font/app_font"
                 android:layout_marginBottom="12dp" />
 
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="20dp"
-                app:cardCornerRadius="8dp"
-                app:cardElevation="4dp"
+                android:layout_marginBottom="24dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="2dp"
                 app:cardBackgroundColor="?attr/chk_surfaceColor">
 
                 <RadioGroup
                     android:id="@+id/paymentModeRadioGroup"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:padding="16dp">
+                    android:padding="8dp">
 
                     <RadioButton
                         android:id="@+id/radioAllModes"
@@ -318,10 +319,10 @@
                         android:layout_height="wrap_content"
                         android:text="All Modes"
                         android:textColor="?attr/chk_textColorPrimary"
+                        android:buttonTint="?attr/chk_primary_blue"
                         android:checked="true"
+                        android:fontFamily="@font/app_font"
                         android:drawablePadding="12dp"
-                        android:gravity="center_vertical"
-                        app:drawableTint="?attr/chk_balanceColor"
                         android:padding="12dp"/>
 
                     <RadioButton
@@ -330,8 +331,9 @@
                         android:layout_height="wrap_content"
                         android:text="Cash"
                         android:textColor="?attr/chk_textColorPrimary"
+                        android:buttonTint="?attr/chk_primary_blue"
+                        android:fontFamily="@font/app_font"
                         android:drawablePadding="12dp"
-                        android:gravity="center_vertical"
                         android:padding="12dp"/>
 
                     <RadioButton
@@ -340,8 +342,9 @@
                         android:layout_height="wrap_content"
                         android:text="Card"
                         android:textColor="?attr/chk_textColorPrimary"
+                        android:buttonTint="?attr/chk_primary_blue"
+                        android:fontFamily="@font/app_font"
                         android:drawablePadding="12dp"
-                        android:gravity="center_vertical"
                         android:padding="12dp"/>
 
                     <RadioButton
@@ -350,9 +353,9 @@
                         android:layout_height="wrap_content"
                         android:text="Online"
                         android:textColor="?attr/chk_textColorPrimary"
+                        android:buttonTint="?attr/chk_primary_blue"
+                        android:fontFamily="@font/app_font"
                         android:drawablePadding="12dp"
-                        android:gravity="center_vertical"
-                        app:drawableTint="#9C27B0"
                         android:padding="12dp"/>
                 </RadioGroup>
             </androidx.cardview.widget.CardView>
@@ -364,13 +367,14 @@
                 android:textColor="?attr/chk_textColorPrimary"
                 android:textSize="16sp"
                 android:textStyle="bold"
+                android:fontFamily="@font/app_font"
                 android:layout_marginBottom="12dp" />
 
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardCornerRadius="8dp"
-                app:cardElevation="4dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="2dp"
                 app:cardBackgroundColor="?attr/chk_surfaceColor">
 
                 <LinearLayout
@@ -382,10 +386,13 @@
                     <Button
                         android:id="@+id/formatPdfButton"
                         android:layout_width="0dp"
-                        android:layout_height="48dp"
+                        android:layout_height="50dp"
                         android:layout_weight="1"
                         android:text="PDF"
-                        android:textColor="#FFFFFF"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:fontFamily="@font/app_font"
+                        android:textColor="@android:color/white"
                         android:background="@drawable/format_button_selected"
                         app:backgroundTint="@null"
                         android:layout_marginEnd="8dp" />
@@ -393,15 +400,22 @@
                     <Button
                         android:id="@+id/formatExcelButton"
                         android:layout_width="0dp"
-                        android:layout_height="48dp"
+                        android:layout_height="50dp"
                         android:layout_weight="1"
                         android:text="EXCEL"
-                        android:textColor="?attr/chk_textColorSecondary"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:fontFamily="@font/app_font"
+                        android:textColor="?attr/chk_textColorPrimary"
                         app:backgroundTint="@null"
                         android:background="@drawable/format_button_unselected"
                         android:layout_marginStart="8dp" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="80dp" />
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
@@ -412,10 +426,12 @@
         android:layout_alignParentBottom="true"
         android:layout_margin="16dp"
         android:text="DOWNLOAD REPORT"
-        android:textColor="#FFFFFF"
+        android:textColor="@android:color/white"
         android:textSize="16sp"
         android:textStyle="bold"
-        android:background="@drawable/button_download"
-        app:backgroundTint="@null" />
+        android:fontFamily="@font/app_font"
+        android:background="@drawable/button_primary"
+        app:backgroundTint="@null"
+        android:elevation="4dp"/>
 
 </RelativeLayout>

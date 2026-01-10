@@ -63,10 +63,10 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
         // Inflate the appropriate layout based on type
         if (viewType == VIEW_TYPE_IN) {
             view = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.item_transaction_in, parent, false);
+                    .inflate(R.layout.item_transaction, parent, false);
         } else {
             view = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.item_transaction_out, parent, false);
+                    .inflate(R.layout.item_transaction_expense, parent, false);
         }
         return new TransactionViewHolder(view);
     }

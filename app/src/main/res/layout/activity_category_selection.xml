@@ -5,13 +5,14 @@
     android:layout_width="match_parent"
     android:fitsSystemWindows="true"
     android:layout_height="match_parent"
-    android:background="#F5F5F5">
+    android:background="?attr/chk_backgroundColor">
 
     <androidx.cardview.widget.CardView
         android:id="@+id/headerCard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="12dp"
+        app:cardBackgroundColor="?attr/chk_surfaceColor"
         app:cardCornerRadius="8dp"
         app:cardElevation="4dp">
 
@@ -25,7 +26,11 @@
                 android:layout_width="32dp"
                 android:layout_height="32dp"
                 android:src="@drawable/ic_arrow_left"
-                android:layout_centerVertical="true" />
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:focusable="true"
+                android:layout_centerVertical="true"
+                app:tint="?attr/chk_textColorPrimary" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -33,6 +38,8 @@
                 android:text="Select Category"
                 android:textSize="20sp"
                 android:textStyle="bold"
+                android:fontFamily="@font/app_font"
+                android:textColor="?attr/chk_textColorPrimary"
                 android:layout_centerInParent="true"/>
         </RelativeLayout>
     </androidx.cardview.widget.CardView>
@@ -53,23 +60,28 @@
                 android:id="@+id/noCategoryClickable"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@android:color/white"
+                android:background="@drawable/rounded_input_background"
                 android:padding="16dp"
                 android:gravity="center_vertical"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:clickable="true"
+                android:focusable="true">
 
                 <RadioButton
                     android:id="@+id/radioNoCategory"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:clickable="false"
-                    android:focusable="false"/>
+                    android:focusable="false"
+                    android:buttonTint="?attr/chk_primary_blue"/>
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="No Category"
                     android:textSize="16sp"
+                    android:fontFamily="@font/app_font"
+                    android:textColor="?attr/chk_textColorPrimary"
                     android:layout_marginStart="12dp"/>
             </LinearLayout>
 
@@ -78,8 +90,10 @@
                 android:layout_height="wrap_content"
                 android:text="Quick Suggestions"
                 android:textStyle="bold"
-                android:layout_marginTop="20dp"
-                android:layout_marginBottom="10dp"/>
+                android:fontFamily="@font/app_font"
+                android:textColor="?attr/chk_textColorSecondary"
+                android:layout_marginTop="24dp"
+                android:layout_marginBottom="12dp"/>
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -92,38 +106,61 @@
                     android:layout_weight="1"
                     android:layout_height="wrap_content"
                     android:text="Food"
-                    android:layout_marginEnd="5dp"/>
+                    android:background="@drawable/rounded_input_background"
+                    android:textColor="?attr/chk_textColorPrimary"
+                    android:textAllCaps="false"
+                    android:fontFamily="@font/app_font"
+                    app:backgroundTint="@null"
+                    android:layout_marginEnd="8dp"/>
+
                 <Button
                     android:id="@+id/quickCategoryTransport"
                     android:layout_width="0dp"
-                    android:layout_weight="1.1"
+                    android:layout_weight="1"
                     android:layout_height="wrap_content"
                     android:text="Transport"
-                    android:layout_marginEnd="5dp"/>
+                    android:background="@drawable/rounded_input_background"
+                    android:textColor="?attr/chk_textColorPrimary"
+                    android:textAllCaps="false"
+                    android:fontFamily="@font/app_font"
+                    app:backgroundTint="@null"
+                    android:layout_marginEnd="8dp"/>
+
                 <Button
                     android:id="@+id/quickCategoryShopping"
                     android:layout_width="0dp"
                     android:layout_weight="1"
                     android:layout_height="wrap_content"
-                    android:text="Shopping"/>
+                    android:text="Shopping"
+                    android:background="@drawable/rounded_input_background"
+                    android:textColor="?attr/chk_textColorPrimary"
+                    android:textAllCaps="false"
+                    android:fontFamily="@font/app_font"
+                    app:backgroundTint="@null"/>
             </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:layout_marginTop="20dp"
-                android:layout_marginBottom="10dp">
+                android:layout_marginTop="24dp"
+                android:layout_marginBottom="12dp">
+
                 <TextView
                     android:layout_width="0dp"
                     android:layout_weight="1"
                     android:layout_height="wrap_content"
                     android:text="All Categories"
+                    android:fontFamily="@font/app_font"
+                    android:textColor="?attr/chk_textColorPrimary"
                     android:textStyle="bold"/>
+
                 <TextView
                     android:id="@+id/categoryCount"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:fontFamily="@font/app_font"
+                    android:textColor="?attr/chk_textColorSecondary"
                     android:text="0 items"/>
             </LinearLayout>
 
@@ -144,8 +181,11 @@
         android:layout_alignParentEnd="true"
         android:layout_margin="24dp"
         android:text="Create New"
-        android:textColor="#FFF"
+        android:textColor="@android:color/white"
+        android:fontFamily="@font/app_font"
+        android:textStyle="bold"
         app:icon="@drawable/ic_add"
-        app:iconTint="#FFF"/>
+        app:iconTint="@android:color/white"
+        app:backgroundTint="?attr/chk_primary_blue"/>
 
 </RelativeLayout>

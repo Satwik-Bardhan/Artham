@@ -17,7 +17,7 @@
         android:layout_marginTop="16dp"
         android:layout_marginBottom="8dp"
         app:cardBackgroundColor="?attr/chk_surfaceColor"
-        app:cardCornerRadius="8dp"
+        app:cardCornerRadius="12dp"
         app:cardElevation="4dp">
 
         <androidx.constraintlayout.widget.ConstraintLayout
@@ -52,7 +52,7 @@
                     android:id="@+id/headerTitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:fontFamily="sans-serif-medium"
+                    android:fontFamily="@font/app_font"
                     android:text="Entry Details"
                     android:textColor="?attr/chk_textColorPrimary"
                     android:textSize="18sp"
@@ -62,7 +62,7 @@
                     android:id="@+id/headerSubtitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:fontFamily="sans-serif"
+                    android:fontFamily="@font/app_font"
                     android:text="View transaction info"
                     android:textColor="?attr/chk_textColorSecondary"
                     android:textSize="12sp" />
@@ -104,7 +104,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:cardBackgroundColor="?attr/chk_surfaceColor"
-                app:cardCornerRadius="8dp"
+                app:cardCornerRadius="12dp"
                 app:cardElevation="2dp"
                 app:strokeWidth="0dp">
 
@@ -124,11 +124,11 @@
 
                         <ImageView
                             android:id="@+id/typeIcon"
-                            android:layout_width="64dp"
-                            android:layout_height="64dp"
-                            android:background="@drawable/circle_background_soft_red"
+                            android:layout_width="72dp"
+                            android:layout_height="72dp"
+                            android:background="@drawable/bg_circle_soft"
                             android:contentDescription="Type"
-                            android:padding="16dp"
+                            android:padding="20dp"
                             android:src="@drawable/ic_minus"
                             app:tint="?attr/chk_expenseColor" />
 
@@ -137,10 +137,10 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="16dp"
-                            android:fontFamily="sans-serif-black"
+                            android:fontFamily="@font/app_font"
                             android:text="₹ 0.00"
                             android:textColor="?attr/chk_expenseColor"
-                            android:textSize="36sp"
+                            android:textSize="32sp"
                             android:textStyle="bold" />
 
                         <LinearLayout
@@ -154,12 +154,13 @@
                                 android:id="@+id/detailType"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:background="@drawable/rounded_tag_background"
-                                android:paddingHorizontal="8dp"
-                                android:paddingVertical="2dp"
+                                android:background="@drawable/bg_rounded_tag"
+                                android:paddingHorizontal="10dp"
+                                android:paddingVertical="4dp"
                                 android:text="OUT"
+                                android:fontFamily="@font/app_font"
                                 android:textColor="?attr/chk_textColorPrimary"
-                                android:textSize="14sp"
+                                android:textSize="12sp"
                                 android:textStyle="bold" />
 
                             <TextView
@@ -167,9 +168,10 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginStart="8dp"
+                                android:fontFamily="@font/app_font"
                                 android:text="24 Nov 2025, 01:02 PM"
                                 android:textColor="?attr/chk_textColorSecondary"
-                                android:textSize="14sp" />
+                                android:textSize="13sp" />
                         </LinearLayout>
                     </LinearLayout>
 
@@ -177,37 +179,74 @@
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
                         android:layout_marginBottom="24dp"
-                        android:background="?attr/chk_dividerHorizontal"
-                        android:layerType="software" />
+                        android:background="?attr/chk_dividerHorizontal" />
 
                     <TextView
-                        style="@style/DetailLabelStyle"
-                        android:text="Category" />
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Category"
+                        android:fontFamily="@font/app_font"
+                        android:textColor="?attr/chk_textColorSecondary"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="8dp"/>
 
-                    <LinearLayout style="@style/DetailRowContainer">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="20dp">
+
                         <ImageView
-                            style="@style/DetailIconStyle"
-                            android:src="@drawable/ic_category" />
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_category"
+                            app:tint="?attr/chk_primary_blue"
+                            android:layout_marginEnd="16dp"/>
+
                         <TextView
                             android:id="@+id/detailCategory"
-                            style="@style/DetailValueStyle"
-                            android:text="General" />
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="General"
+                            android:fontFamily="@font/app_font"
+                            android:textColor="?attr/chk_textColorPrimary"
+                            android:textSize="16sp"/>
                     </LinearLayout>
 
                     <TextView
-                        style="@style/DetailLabelStyle"
-                        android:text="Payment Mode" />
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Payment Mode"
+                        android:fontFamily="@font/app_font"
+                        android:textColor="?attr/chk_textColorSecondary"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="8dp"/>
 
-                    <LinearLayout style="@style/DetailRowContainer">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="20dp">
+
                         <ImageView
-                            style="@style/DetailIconStyle"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:src="@drawable/ic_payment" />
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_payment"
+                            app:tint="?attr/chk_primary_blue"
+                            android:layout_marginEnd="16dp"/>
+
                         <TextView
                             android:id="@+id/detailPaymentMode"
-                            style="@style/DetailValueStyle"
-                            android:text="Cash" />
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Cash"
+                            android:fontFamily="@font/app_font"
+                            android:textColor="?attr/chk_textColorPrimary"
+                            android:textSize="16sp"/>
                     </LinearLayout>
 
                     <LinearLayout
@@ -216,33 +255,75 @@
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
                         android:visibility="gone">
+
                         <TextView
-                            style="@style/DetailLabelStyle"
-                            android:text="Party" />
-                        <LinearLayout style="@style/DetailRowContainer">
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Party"
+                            android:fontFamily="@font/app_font"
+                            android:textColor="?attr/chk_textColorSecondary"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            android:layout_marginBottom="8dp"/>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal"
+                            android:layout_marginBottom="20dp">
+
                             <ImageView
-                                style="@style/DetailIconStyle"
-                                android:src="@drawable/ic_person" />
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:src="@drawable/ic_person"
+                                app:tint="?attr/chk_primary_blue"
+                                android:layout_marginEnd="16dp"/>
+
                             <TextView
                                 android:id="@+id/detailParty"
-                                style="@style/DetailValueStyle"
-                                android:text="John Doe" />
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="John Doe"
+                                android:fontFamily="@font/app_font"
+                                android:textColor="?attr/chk_textColorPrimary"
+                                android:textSize="16sp"/>
                         </LinearLayout>
                     </LinearLayout>
 
                     <TextView
-                        style="@style/DetailLabelStyle"
-                        android:layout_marginTop="20dp"
-                        android:text="Note" />
-                    <LinearLayout style="@style/DetailRowContainer">
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Note"
+                        android:fontFamily="@font/app_font"
+                        android:textColor="?attr/chk_textColorSecondary"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="8dp"/>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="20dp">
+
                         <ImageView
-                            style="@style/DetailIconStyle"
-                            android:src="@drawable/ic_notes" />
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_notes"
+                            app:tint="?attr/chk_primary_blue"
+                            android:layout_marginEnd="16dp"/>
+
                         <TextView
                             android:id="@+id/detailRemark"
-                            style="@style/DetailValueStyle"
-                            android:lineSpacingExtra="4dp"
-                            android:text="No details provided" />
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="No details provided"
+                            android:fontFamily="@font/app_font"
+                            android:textColor="?attr/chk_textColorPrimary"
+                            android:textSize="16sp"
+                            android:lineSpacingExtra="4dp"/>
                     </LinearLayout>
 
                     <LinearLayout
@@ -251,55 +332,40 @@
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
                         android:visibility="gone">
+
                         <TextView
-                            style="@style/DetailLabelStyle"
-                            android:text="Tags" />
-                        <LinearLayout style="@style/DetailRowContainer">
-                            <ImageView style="@style/DetailIconStyle" android:src="@drawable/ic_label" />
-                            <TextView
-                                android:id="@+id/detailTags"
-                                style="@style/DetailValueStyle"
-                                android:text="Personal" />
-                        </LinearLayout>
-                    </LinearLayout>
-
-                    <TextView
-                        style="@style/DetailLabelStyle"
-                        android:layout_marginTop="20dp"
-                        android:text="Attachments" />
-
-                    <LinearLayout
-                        android:id="@+id/attachmentLayout"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:orientation="vertical">
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Tags"
+                            android:fontFamily="@font/app_font"
+                            android:textColor="?attr/chk_textColorSecondary"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            android:layout_marginBottom="8dp"/>
 
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:gravity="center_vertical"
-                            android:orientation="horizontal">
-                            <ImageView
-                                style="@style/DetailIconStyle"
-                                android:src="@drawable/ic_attach_file" />
-                            <TextView
-                                android:id="@+id/detailAttachmentText"
-                                style="@style/DetailValueStyle"
-                                android:text="No files attached"
-                                android:textColor="?attr/chk_textColorHint" />
-                        </LinearLayout>
+                            android:orientation="horizontal"
+                            android:layout_marginBottom="20dp">
 
-                        <ImageView
-                            android:id="@+id/attachmentPreview"
-                            android:layout_width="match_parent"
-                            android:layout_height="160dp"
-                            android:layout_marginTop="12dp"
-                            android:background="@drawable/rounded_input_background"
-                            android:clipToOutline="true"
-                            android:scaleType="centerCrop"
-                            android:src="@drawable/ic_image_placeholder"
-                            android:visibility="gone" />
+                            <ImageView
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:src="@drawable/ic_label"
+                                app:tint="?attr/chk_primary_blue"
+                                android:layout_marginEnd="16dp"/>
+
+                            <TextView
+                                android:id="@+id/detailTags"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Personal"
+                                android:fontFamily="@font/app_font"
+                                android:textColor="?attr/chk_textColorPrimary"
+                                android:textSize="16sp"/>
+                        </LinearLayout>
                     </LinearLayout>
 
                 </LinearLayout>
@@ -327,6 +393,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="6dp"
+                        android:fontFamily="@font/app_font"
                         android:text="Entry is backed up"
                         android:textColor="?attr/chk_textColorPrimary"
                         android:textSize="12sp" />
@@ -347,6 +414,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="6dp"
+                        android:fontFamily="@font/app_font"
                         android:text="100% Safe &amp; Secure"
                         android:textColor="?attr/chk_incomeColor"
                         android:textSize="11sp"
@@ -369,18 +437,19 @@
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnEditTransaction"
             android:layout_width="match_parent"
-            android:layout_height="60dp"
+            android:layout_height="56dp"
             android:stateListAnimator="@null"
             android:text="Edit Entry"
             android:textSize="16sp"
             android:textStyle="bold"
+            android:fontFamily="@font/app_font"
             app:cornerRadius="8dp"
             app:elevation="0dp"
             app:icon="@drawable/ic_edit"
             app:iconGravity="textStart"
-            app:backgroundTint="?attr/chk_primary_blue"
-            android:textColor="?attr/colorOnPrimary"
-            app:iconTint="?attr/colorOnPrimary"/>
+            android:backgroundTint="?attr/chk_primary_blue"
+            android:textColor="@android:color/white"
+            app:iconTint="@android:color/white"/>
     </LinearLayout>
 
 </RelativeLayout>

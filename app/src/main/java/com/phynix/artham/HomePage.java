@@ -499,7 +499,7 @@ public class HomePage extends AppCompatActivity {
     private void addTransactionRow(TransactionModel transaction) {
         if (transactionTable == null) return;
 
-        View rowView = getLayoutInflater().inflate(R.layout.item_transaction_row_daily, transactionTable, false);
+        View rowView = getLayoutInflater().inflate(R.layout.item_transaction_report_row, transactionTable, false);
 
         TextView rowCategory = rowView.findViewById(R.id.rowCategory);
         TextView rowMode = rowView.findViewById(R.id.rowMode);

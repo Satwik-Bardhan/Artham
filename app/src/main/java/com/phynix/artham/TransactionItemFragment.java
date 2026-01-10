@@ -48,7 +48,7 @@ public class TransactionItemFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_transaction_list, container, false);
+        View view = inflater.inflate(R.layout.fragment_transactions, container, false);
 
         transactionRecyclerView = view.findViewById(R.id.transactionRecyclerView);
         emptyStateLayout = view.findViewById(R.id.emptyStateLayout);

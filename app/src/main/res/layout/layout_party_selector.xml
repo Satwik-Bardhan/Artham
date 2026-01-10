@@ -5,22 +5,26 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
-    android:layout_marginTop="16dp"
+    android:layout_marginTop="8dp"
     android:paddingBottom="10dp"
-    android:gravity="center_vertical">
+    android:gravity="top">
 
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:hint="Party (Optional)"
-        app:hintTextColor="?attr/chk_textColorSecondary"
+        android:textColorHint="?attr/chk_textColorSecondary"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        app:hintTextColor="?attr/chk_primary_blue"
+        app:boxStrokeColor="?attr/chk_primary_blue"
+        app:boxStrokeWidth="1dp"
         app:boxBackgroundColor="?attr/chk_surfaceColor"
         app:boxCornerRadiusBottomEnd="12dp"
         app:boxCornerRadiusBottomStart="12dp"
         app:boxCornerRadiusTopEnd="12dp"
         app:boxCornerRadiusTopStart="12dp"
-        app:boxStrokeWidth="0dp">
+        app:startIconTint="?attr/chk_textColorPrimary">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/partyTextView"
@@ -28,23 +32,30 @@
             android:layout_height="wrap_content"
             android:fontFamily="@font/app_font"
             android:inputType="textPersonName"
-            android:focusable="false"
+            android:focusable="true"
             android:clickable="true"
-            android:cursorVisible="false"
-            android:textColor="?attr/chk_textColorPrimary" />
+            android:textColor="?attr/chk_textColorPrimary"
+            android:textSize="16sp" />
     </com.google.android.material.textfield.TextInputLayout>
 
-    <ImageView
+    <FrameLayout
         android:id="@+id/contactBookButton"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_marginStart="8dp"
-        android:padding="12dp"
-        android:background="@drawable/rounded_input_background"
-        android:src="@drawable/ic_contact_phone"
-        app:tint="?attr/chk_balanceColor"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:layout_marginStart="12dp"
+        android:layout_gravity="center"
+        android:background="@drawable/bg_search_field"
         android:clickable="true"
         android:focusable="true"
-        android:contentDescription="Select Contact"/>
+        android:foreground="?attr/selectableItemBackground">
+
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_contacts"
+            app:tint="?attr/chk_primary_blue"
+            android:contentDescription="Select Contact"/>
+    </FrameLayout>
 
 </LinearLayout>

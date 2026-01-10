@@ -28,6 +28,8 @@
                 android:layout_height="32dp"
                 android:layout_centerVertical="true"
                 android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:focusable="true"
                 android:src="@drawable/ic_arrow_left"
                 app:tint="?attr/chk_textColorPrimary" />
 
@@ -65,6 +67,8 @@
                 android:layout_alignParentEnd="true"
                 android:layout_centerVertical="true"
                 android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:focusable="true"
                 android:src="@drawable/ic_more_vert"
                 app:tint="?attr/chk_textColorPrimary" />
         </RelativeLayout>
@@ -150,16 +154,192 @@
             </LinearLayout>
 
             <include layout="@layout/layout_transaction_type" />
-            <include layout="@layout/layout_payment_method" />
-
-            <include layout="@layout/layout_amount" />
-
-            <include layout="@layout/layout_category" />
-            <include layout="@layout/layout_party_reference" />
-
-            <include layout="@layout/layout_remark" />
-
+            <include layout="@layout/layout_payment_mode" />
+            <include layout="@layout/layout_amount_input" />
+            <include layout="@layout/layout_category_selector" />
+            <include layout="@layout/layout_party_selector" />
+            <include layout="@layout/layout_remarks_input" />
             <include layout="@layout/layout_tags_location" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:layout_marginBottom="12dp"
+                android:text="Attachments"
+                android:textColor="?attr/chk_textColorSecondary"
+                android:textSize="14sp"
+                android:fontFamily="@font/app_font"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:id="@+id/cameraButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="8dp"
+                    android:background="@drawable/rounded_input_background"
+                    android:gravity="center"
+                    android:padding="12dp"
+                    android:clickable="true"
+                    android:focusable="true">
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_camera"
+                        app:tint="?attr/chk_primary_blue"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/scanButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginHorizontal="4dp"
+                    android:background="@drawable/rounded_input_background"
+                    android:gravity="center"
+                    android:padding="12dp"
+                    android:clickable="true"
+                    android:focusable="true">
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_qr_code"
+                        app:tint="?attr/chk_primary_blue"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/attachFileButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="8dp"
+                    android:background="@drawable/rounded_input_background"
+                    android:gravity="center"
+                    android:padding="12dp"
+                    android:clickable="true"
+                    android:focusable="true">
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_attach_file"
+                        app:tint="?attr/chk_primary_blue"/>
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/attachedFilesSection"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginTop="12dp"
+                android:visibility="gone">
+
+                <LinearLayout
+                    android:id="@+id/attachedImageLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:padding="8dp"
+                    android:background="@drawable/rounded_input_background"
+                    android:layout_marginBottom="8dp"
+                    android:visibility="gone">
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_image"
+                        app:tint="?attr/chk_textColorPrimary"/>
+                    <TextView
+                        android:id="@+id/attachedImageText"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="12dp"
+                        android:text="Image Captured"
+                        android:textColor="?attr/chk_textColorPrimary"/>
+                    <ImageView
+                        android:id="@+id/removeAttachedImage"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:padding="4dp"
+                        android:src="@drawable/ic_close"
+                        app:tint="?attr/chk_expenseColor"
+                        android:clickable="true"
+                        android:focusable="true"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/attachedQrLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:padding="8dp"
+                    android:background="@drawable/rounded_input_background"
+                    android:layout_marginBottom="8dp"
+                    android:visibility="gone">
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_qr_code"
+                        app:tint="?attr/chk_textColorPrimary"/>
+                    <TextView
+                        android:id="@+id/attachedQrText"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="12dp"
+                        android:text="QR Code Scanned"
+                        android:textColor="?attr/chk_textColorPrimary"/>
+                    <ImageView
+                        android:id="@+id/removeAttachedQr"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:padding="4dp"
+                        android:src="@drawable/ic_close"
+                        app:tint="?attr/chk_expenseColor"
+                        android:clickable="true"
+                        android:focusable="true"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/attachedPdfLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:padding="8dp"
+                    android:background="@drawable/rounded_input_background"
+                    android:visibility="gone">
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_pdf"
+                        app:tint="?attr/chk_textColorPrimary"/>
+                    <TextView
+                        android:id="@+id/attachedPdfText"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="12dp"
+                        android:text="Document.pdf"
+                        android:textColor="?attr/chk_textColorPrimary"/>
+                    <ImageView
+                        android:id="@+id/removeAttachedPdf"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:padding="4dp"
+                        android:src="@drawable/ic_close"
+                        app:tint="?attr/chk_expenseColor"
+                        android:clickable="true"
+                        android:focusable="true"/>
+                </LinearLayout>
+            </LinearLayout>
 
             <TextView
                 android:layout_width="wrap_content"

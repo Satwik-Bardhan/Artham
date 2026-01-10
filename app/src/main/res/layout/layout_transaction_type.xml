@@ -11,6 +11,7 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="12dp"
         android:text="Transaction Type"
+        android:fontFamily="@font/app_font"
         android:textColor="?attr/chk_textColorPrimary"
         android:textSize="16sp"
         android:textStyle="bold" />
@@ -35,6 +36,7 @@
                 android:background="@drawable/transaction_type_in_selector"
                 android:button="@android:color/transparent"
                 android:checked="true"
+                android:fontFamily="@font/app_font"
                 android:gravity="center"
                 android:text="IN"
                 android:textColor="@color/transaction_in_text_selector"
@@ -59,6 +61,7 @@
                 android:layout_height="40dp"
                 android:background="@drawable/transaction_type_out_selector"
                 android:button="@android:color/transparent"
+                android:fontFamily="@font/app_font"
                 android:gravity="center"
                 android:text="OUT"
                 android:textColor="@color/transaction_out_text_selector"

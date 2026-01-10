@@ -58,7 +58,7 @@ public class DateFilterFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_date_filter, container, false);
+        return inflater.inflate(R.layout.dialog_date_filter, container, false);
     }
 
     @Override

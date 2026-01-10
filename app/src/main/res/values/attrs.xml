@@ -21,4 +21,7 @@
     <attr name="chk_bottomNavIconTextColor" format="color|reference" />
     <attr name="chk_bottomNavSelectedColor" format="color|reference" />
     <attr name="chk_bottomNavBorderColor" format="color|reference" />
+
+    <attr name="chk_card_start" format="color" />
+    <attr name="chk_card_end" format="color" />
 </resources>
