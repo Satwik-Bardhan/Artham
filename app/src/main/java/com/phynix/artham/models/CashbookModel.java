@@ -2,7 +2,9 @@ package com.phynix.artham.models;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 public class CashbookModel implements Serializable {
@@ -19,13 +21,13 @@ public class CashbookModel implements Serializable {
     private String userId;
     private String currency;
 
-    // [FIX] Added to resolve "No setter/field for transactions" warning
-    private List<TransactionModel> transactions;
+    // [FIX] Changed from List to Map to match Firebase structure
+    private Map<String, TransactionModel> transactions;
 
     // Empty constructor for Firebase
     public CashbookModel() {
         this.isCurrent = false;
-        this.transactions = new ArrayList<>(); // Initialize to avoid null pointers
+        this.transactions = new HashMap<>(); // Initialize as HashMap
     }
 
     // Constructor for simple creation
@@ -41,12 +43,11 @@ public class CashbookModel implements Serializable {
         this.isCurrent = false;
         this.isFavorite = false;
         this.currency = "INR";
-        this.transactions = new ArrayList<>();
+        this.transactions = new HashMap<>();
     }
 
     // --- Getters and Setters ---
 
-    // [FIX] Primary ID handling
     public String getCashbookId() {
         return cashbookId;
     }
@@ -55,7 +56,6 @@ public class CashbookModel implements Serializable {
         this.cashbookId = cashbookId;
     }
 
-    // [FIX] Aliases for "id" field to resolve Firebase case-sensitive warning
     public String getId() {
         return cashbookId;
     }
@@ -64,13 +64,21 @@ public class CashbookModel implements Serializable {
         this.cashbookId = id;
     }
 
-    // [FIX] Transaction List handling
-    public List<TransactionModel> getTransactions() {
+    // [FIX] Updated Getters/Setters for Map
+    public Map<String, TransactionModel> getTransactions() {
         return transactions;
     }
 
-    public void setTransactions(List<TransactionModel> transactions) {
+    public void setTransactions(Map<String, TransactionModel> transactions) {
         this.transactions = transactions;
+    }
+
+    /**
+     * Helper method to get transactions as a List if needed for Adapters
+     */
+    public List<TransactionModel> getTransactionList() {
+        if (transactions == null) return new ArrayList<>();
+        return new ArrayList<>(transactions.values());
     }
 
     // Standard Fields
@@ -174,7 +182,6 @@ public class CashbookModel implements Serializable {
         this.currency = currency;
     }
 
-    // Equality Checks for Adapter DiffUtil
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
