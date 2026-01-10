@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/chk_backgroundColor">
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/transactionsCard"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="2dp"
+        app:cardBackgroundColor="?attr/chk_surfaceColor">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/transactionRecyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:clipToPadding="false"
+                android:scrollbars="vertical"
+                android:padding="8dp"
+                android:overScrollMode="never"
+                android:importantForAccessibility="yes"
+                android:contentDescription="List of transactions" />
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+
+    <LinearLayout
+        android:id="@+id/emptyStateLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="32dp"
+        android:visibility="gone">
+
+        <ImageView
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:src="@drawable/ic_receipt_outline"
+            android:layout_marginBottom="24dp"
+            android:contentDescription="No transactions icon"
+            app:tint="?attr/chk_textColorHint" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="No Transactions Found"
+            android:textColor="?attr/chk_textColorPrimary"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp"
+            android:gravity="center" />
+
+        <TextView
+            android:id="@+id/emptyStateText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="No transactions match your current filters"
+            android:textColor="?attr/chk_textColorSecondary"
+            android:textSize="16sp"
+            android:gravity="center"
+            android:layout_marginBottom="24dp"
+            android:lineSpacingMultiplier="1.2" />
+
+        <Button
+            android:id="@+id/addTransactionButton"
+            android:layout_width="wrap_content"
+            android:layout_height="56dp"
+            android:text="ADD TRANSACTION"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:background="@drawable/add_transaction_button"
+            android:drawableStart="@drawable/ic_add"
+            android:drawablePadding="8dp"
+            android:paddingHorizontal="24dp"
+            app:drawableTint="#FFFFFF" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Track your income and expenses by adding transactions"
+            android:textColor="?attr/chk_textColorHint"
+            android:textSize="12sp"
+            android:gravity="center"
+            android:layout_marginTop="16dp"
+            android:lineSpacingMultiplier="1.2" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/loadingLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="32dp"
+        android:background="?attr/chk_backgroundColor"
+        android:visibility="gone">
+
+        <ProgressBar
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginBottom="16dp"
+            android:indeterminateTint="?attr/chk_balanceColor" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Loading transactions..."
+            android:textColor="?attr/chk_balanceColor"
+            android:textSize="16sp" />
+    </LinearLayout>
+
+</RelativeLayout>

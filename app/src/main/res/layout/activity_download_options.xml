@@ -1,0 +1,421 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/chk_backgroundColor"
+    android:fitsSystemWindows="true"
+    tools:context=".DownloadOptionsActivity">
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/headerCard"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="12dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        app:cardBackgroundColor="?attr/chk_surfaceColor"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="4dp">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="16dp"
+            android:paddingBottom="18dp"
+            android:gravity="center_vertical">
+
+            <ImageView
+                android:id="@+id/backButton"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                android:src="@drawable/ic_arrow_left"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:focusable="true"
+                app:tint="?attr/chk_textColorPrimary"
+                android:padding="6dp" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:orientation="vertical"
+                android:gravity="center_horizontal">
+
+                <TextView
+                    android:id="@+id/headerTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="ARTHAM"
+                    android:textColor="?attr/chk_textColorPrimary"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:fontFamily="sans-serif-medium" />
+
+                <TextView
+                    android:id="@+id/headerSubtitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Download Report"
+                    android:textColor="?attr/chk_textColorPrimary"
+                    android:textSize="18sp"
+                    android:layout_marginTop="4dp" />
+            </LinearLayout>
+        </RelativeLayout>
+    </androidx.cardview.widget.CardView>
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/headerCard"
+        android:layout_above="@+id/downloadActionButton"
+        android:padding="16dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Date Range"
+                android:textColor="?attr/chk_textColorPrimary"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="12dp" />
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="20dp"
+                app:cardCornerRadius="8dp"
+                app:cardElevation="4dp"
+                app:cardBackgroundColor="?attr/chk_surfaceColor">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="12dp">
+
+                        <LinearLayout
+                            android:id="@+id/startDateLayout"
+                            android:layout_width="0dp"
+                            android:layout_height="48dp"
+                            android:layout_weight="1"
+                            android:orientation="horizontal"
+                            android:background="@drawable/rounded_input_background"
+                            android:gravity="center_vertical"
+                            android:paddingHorizontal="12dp"
+                            android:layout_marginEnd="8dp"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:foreground="?attr/selectableItemBackground">
+
+                            <TextView
+                                android:id="@+id/startDateText"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="Start Date"
+                                android:textColor="?attr/chk_textColorHint"
+                                android:textSize="14sp"
+                                android:clickable="false"
+                                android:focusable="false"
+                                android:longClickable="false"
+                                android:duplicateParentState="true"/>
+
+                            <ImageView
+                                android:layout_width="16dp"
+                                android:layout_height="16dp"
+                                android:src="@drawable/ic_calendar"
+                                app:tint="?attr/chk_textColorSecondary"
+                                android:clickable="false"
+                                android:focusable="false"
+                                android:longClickable="false"
+                                android:duplicateParentState="true"/>
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:id="@+id/endDateLayout"
+                            android:layout_width="0dp"
+                            android:layout_height="48dp"
+                            android:layout_weight="1"
+                            android:orientation="horizontal"
+                            android:background="@drawable/rounded_input_background"
+                            android:gravity="center_vertical"
+                            android:paddingHorizontal="12dp"
+                            android:layout_marginStart="8dp"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:foreground="?attr/selectableItemBackground">
+
+                            <TextView
+                                android:id="@+id/endDateText"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="End Date"
+                                android:textColor="?attr/chk_textColorHint"
+                                android:textSize="14sp"
+                                android:clickable="false"
+                                android:focusable="false"
+                                android:longClickable="false"
+                                android:duplicateParentState="true"/>
+
+                            <ImageView
+                                android:layout_width="16dp"
+                                android:layout_height="16dp"
+                                android:src="@drawable/ic_calendar"
+                                app:tint="?attr/chk_textColorSecondary"
+                                android:clickable="false"
+                                android:focusable="false"
+                                android:longClickable="false"
+                                android:duplicateParentState="true"/>
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Quick Options"
+                        android:textColor="?attr/chk_textColorSecondary"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="8dp" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <Button
+                            android:id="@+id/todayButton"
+                            android:layout_width="0dp"
+                            android:layout_height="36dp"
+                            android:layout_weight="1"
+                            android:text="Today"
+                            android:textColor="?attr/chk_textColorPrimary"
+                            android:textSize="12sp"
+                            android:background="@drawable/quick_option_button"
+                            app:backgroundTint="@null"
+                            android:layout_marginEnd="4dp" />
+
+                        <Button
+                            android:id="@+id/thisWeekButton"
+                            android:layout_width="0dp"
+                            android:layout_height="36dp"
+                            android:layout_weight="1"
+                            android:text="This Week"
+                            android:textColor="?attr/chk_textColorPrimary"
+                            android:textSize="12sp"
+                            android:background="@drawable/quick_option_button"
+                            app:backgroundTint="@null"
+                            android:layout_marginEnd="4dp" />
+
+                        <Button
+                            android:id="@+id/thisMonthButton"
+                            android:layout_width="0dp"
+                            android:layout_height="36dp"
+                            android:layout_weight="1"
+                            android:text="This Month"
+                            android:textColor="?attr/chk_textColorPrimary"
+                            app:backgroundTint="@null"
+                            android:textSize="12sp"
+                            android:background="@drawable/quick_option_button" />
+                    </LinearLayout>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Entry Type"
+                android:textColor="?attr/chk_textColorPrimary"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="12dp" />
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="20dp"
+                app:cardCornerRadius="8dp"
+                app:cardElevation="4dp"
+                app:cardBackgroundColor="?attr/chk_surfaceColor">
+
+                <RadioGroup
+                    android:id="@+id/entryTypeRadioGroup"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="16dp">
+
+                    <RadioButton
+                        android:id="@+id/radioAll"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="All Transactions"
+                        android:textColor="?attr/chk_textColorPrimary"
+                        android:checked="true"
+                        android:padding="12dp"/>
+
+                    <RadioButton
+                        android:id="@+id/radioCashIn"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Income Only"
+                        android:textColor="?attr/chk_textColorPrimary"
+                        android:padding="12dp"/>
+
+                    <RadioButton
+                        android:id="@+id/radioCashOut"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Expense Only"
+                        android:textColor="?attr/chk_textColorPrimary"
+                        android:padding="12dp"/>
+                </RadioGroup>
+            </androidx.cardview.widget.CardView>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Payment Mode"
+                android:textColor="?attr/chk_textColorPrimary"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="12dp" />
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="20dp"
+                app:cardCornerRadius="8dp"
+                app:cardElevation="4dp"
+                app:cardBackgroundColor="?attr/chk_surfaceColor">
+
+                <RadioGroup
+                    android:id="@+id/paymentModeRadioGroup"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="16dp">
+
+                    <RadioButton
+                        android:id="@+id/radioAllModes"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="All Modes"
+                        android:textColor="?attr/chk_textColorPrimary"
+                        android:checked="true"
+                        android:drawablePadding="12dp"
+                        android:gravity="center_vertical"
+                        app:drawableTint="?attr/chk_balanceColor"
+                        android:padding="12dp"/>
+
+                    <RadioButton
+                        android:id="@+id/radioCashMode"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Cash"
+                        android:textColor="?attr/chk_textColorPrimary"
+                        android:drawablePadding="12dp"
+                        android:gravity="center_vertical"
+                        android:padding="12dp"/>
+
+                    <RadioButton
+                        android:id="@+id/radioCardMode"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Card"
+                        android:textColor="?attr/chk_textColorPrimary"
+                        android:drawablePadding="12dp"
+                        android:gravity="center_vertical"
+                        android:padding="12dp"/>
+
+                    <RadioButton
+                        android:id="@+id/radioOnlineMode"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Online"
+                        android:textColor="?attr/chk_textColorPrimary"
+                        android:drawablePadding="12dp"
+                        android:gravity="center_vertical"
+                        app:drawableTint="#9C27B0"
+                        android:padding="12dp"/>
+                </RadioGroup>
+            </androidx.cardview.widget.CardView>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Export Format"
+                android:textColor="?attr/chk_textColorPrimary"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="12dp" />
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="8dp"
+                app:cardElevation="4dp"
+                app:cardBackgroundColor="?attr/chk_surfaceColor">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="16dp">
+
+                    <Button
+                        android:id="@+id/formatPdfButton"
+                        android:layout_width="0dp"
+                        android:layout_height="48dp"
+                        android:layout_weight="1"
+                        android:text="PDF"
+                        android:textColor="#FFFFFF"
+                        android:background="@drawable/format_button_selected"
+                        app:backgroundTint="@null"
+                        android:layout_marginEnd="8dp" />
+
+                    <Button
+                        android:id="@+id/formatExcelButton"
+                        android:layout_width="0dp"
+                        android:layout_height="48dp"
+                        android:layout_weight="1"
+                        android:text="EXCEL"
+                        android:textColor="?attr/chk_textColorSecondary"
+                        app:backgroundTint="@null"
+                        android:background="@drawable/format_button_unselected"
+                        android:layout_marginStart="8dp" />
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <Button
+        android:id="@+id/downloadActionButton"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_alignParentBottom="true"
+        android:layout_margin="16dp"
+        android:text="DOWNLOAD REPORT"
+        android:textColor="#FFFFFF"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:background="@drawable/button_download"
+        app:backgroundTint="@null" />
+
+</RelativeLayout>

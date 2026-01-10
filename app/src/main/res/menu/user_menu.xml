@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/action_switch_cashbook"
+        android:title="Switch Cashbook"
+        android:icon="@drawable/ic_swap_horiz" />
+    <item
+        android:id="@+id/action_add_new_cashbook"
+        android:title="Add New Cashbook"
+        android:icon="@drawable/ic_add" />
+    <item
+        android:id="@+id/action_settings"
+        android:title="Settings"
+        android:icon="@drawable/ic_settings" />
+    <item
+        android:id="@+id/action_sign_out"
+        android:title="Sign Out"
+        android:icon="@drawable/ic_exit_to_app" />
+</menu>

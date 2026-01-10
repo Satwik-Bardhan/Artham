@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingBottom="10dp"
+    android:orientation="vertical">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
+        android:text="Transaction Type"
+        android:textColor="?attr/chk_textColorPrimary"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="2dp"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <RadioGroup
+            android:id="@+id/inOutToggle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:id="@+id/radioIn"
+                android:layout_width="80dp"
+                android:layout_height="40dp"
+                android:background="@drawable/transaction_type_in_selector"
+                android:button="@android:color/transparent"
+                android:checked="true"
+                android:gravity="center"
+                android:text="IN"
+                android:textColor="@color/transaction_in_text_selector"
+                android:textStyle="bold" />
+
+            <ImageView
+                android:id="@+id/swap_horiz"
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:layout_marginStart="50dp"
+                android:layout_marginEnd="50dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:focusable="true"
+                android:padding="9dp"
+                android:src="@drawable/ic_swap_horiz"
+                app:tint="?attr/chk_textColorPrimary" />
+
+            <RadioButton
+                android:id="@+id/radioOut"
+                android:layout_width="80dp"
+                android:layout_height="40dp"
+                android:background="@drawable/transaction_type_out_selector"
+                android:button="@android:color/transparent"
+                android:gravity="center"
+                android:text="OUT"
+                android:textColor="@color/transaction_out_text_selector"
+                android:textStyle="bold" />
+        </RadioGroup>
+    </LinearLayout>
+</LinearLayout>

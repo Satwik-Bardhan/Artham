@@ -1,0 +1,23 @@
+# Built application files
+*.apk
+*.aar
+*.ap_
+*.aab
+
+# Gradle files
+.gradle/
+build/
+
+# Local configuration file (Sensitive!)
+local.properties
+
+# Android Studio generated files
+.idea/
+*.iml
+*.log
+
+# Firebase & Keystores (Sensitive!)
+google-services.json
+auth-key.json
+*.jks
+*.keystore

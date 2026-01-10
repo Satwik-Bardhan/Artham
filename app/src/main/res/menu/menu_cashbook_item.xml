@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/menu_edit"
+        android:title="@string/edit_cashbook"
+        android:icon="@drawable/ic_edit" />
+
+    <item
+        android:id="@+id/menu_favorite"
+        android:title="@string/add_to_favorites"
+        android:icon="@drawable/ic_star_outline" />
+
+    <item
+        android:id="@+id/menu_toggle_active"
+        android:title="@string/deactivate_cashbook"
+        android:icon="@drawable/ic_toggle" />
+
+    <item
+        android:id="@+id/menu_export"
+        android:title="@string/export_cashbook"
+        android:icon="@drawable/ic_export" />
+
+    <item
+        android:id="@+id/menu_delete"
+        android:title="@string/delete_cashbook"
+        android:icon="@drawable/ic_delete" />
+</menu>

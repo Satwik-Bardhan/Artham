@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingBottom="10dp"
+    android:orientation="vertical">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
+        android:text="Payment Method"
+        android:textColor="?attr/chk_textColorPrimary"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp"
+        android:orientation="horizontal">
+
+        <RadioGroup
+            android:id="@+id/cashOnlineToggle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:id="@+id/radioCash"
+                android:layout_width="80dp"
+                android:layout_height="40dp"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/payment_method_selector"
+                android:button="@android:color/transparent"
+                android:checked="true"
+                android:gravity="center"
+                android:text="Cash"
+                android:textColor="@color/payment_method_text_selector"
+                android:textStyle="bold" />
+
+            <RadioButton
+                android:id="@+id/radioCard"
+                android:layout_width="80dp"
+                android:layout_height="40dp"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/payment_method_selector"
+                android:button="@android:color/transparent"
+                android:gravity="center"
+                android:text="Card"
+                android:textColor="@color/payment_method_text_selector"
+                android:textStyle="bold" />
+
+            <RadioButton
+                android:id="@+id/radioOnline"
+                android:layout_width="80dp"
+                android:layout_height="40dp"
+                android:background="@drawable/payment_method_selector"
+                android:button="@android:color/transparent"
+                android:gravity="center"
+                android:text="Online"
+                android:textColor="@color/button_text_selector"
+                android:textStyle="bold" />
+        </RadioGroup>
+    </LinearLayout>
+</LinearLayout>

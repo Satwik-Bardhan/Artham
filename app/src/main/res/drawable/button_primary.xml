@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ripple xmlns:android="http://schemas.android.com/apk/res/android"
+    android:color="?attr/dividerHorizontal">
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="?attr/chk_balanceColor" />
+            <corners android:radius="12dp" />
+        </shape>
+    </item>
+</ripple>

@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/fixedBottomContainer"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?attr/chk_surfaceColor"
+    android:orientation="horizontal"
+    android:paddingVertical="8dp"
+    android:elevation="8dp">
+
+    <FrameLayout
+        android:id="@+id/btnCashbookSwitch"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:clickable="true"
+        android:focusable="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="8dp">
+
+            <ImageView
+                android:id="@+id/iconCashbookSwitch"
+                android:layout_width="36dp"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_book"
+                app:tint="@color/bottom_nav_item_color_selector"
+                android:duplicateParentState="true"
+                android:contentDescription="Switch Cashbooks" />
+
+            <TextView
+                android:id="@+id/textCashbookSwitch"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Cashbooks"
+                android:textColor="@color/bottom_nav_item_color_selector"
+                android:textSize="10sp"
+                android:duplicateParentState="true" />
+        </LinearLayout>
+    </FrameLayout>
+
+    <FrameLayout
+        android:id="@+id/btnHome"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:clickable="true"
+        android:focusable="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="8dp">
+
+            <ImageView
+                android:id="@+id/iconHome"
+                android:layout_width="36dp"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_home"
+                app:tint="@color/bottom_nav_item_color_selector"
+                android:duplicateParentState="true"
+                android:contentDescription="Home" />
+
+            <TextView
+                android:id="@+id/textHome"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Home"
+                android:textColor="@color/bottom_nav_item_color_selector"
+                android:textSize="10sp"
+                android:duplicateParentState="true" />
+        </LinearLayout>
+    </FrameLayout>
+
+    <FrameLayout
+        android:id="@+id/btnTransactions"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:clickable="true"
+        android:focusable="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="8dp">
+
+            <ImageView
+                android:id="@+id/iconTransactions"
+                android:layout_width="36dp"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_transactions"
+                app:tint="@color/bottom_nav_item_color_selector"
+                android:duplicateParentState="true"
+                android:contentDescription="Transactions" />
+
+            <TextView
+                android:id="@+id/textTransactions"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Transactions"
+                android:textColor="@color/bottom_nav_item_color_selector"
+                android:textSize="10sp"
+                android:duplicateParentState="true" />
+        </LinearLayout>
+    </FrameLayout>
+
+    <FrameLayout
+        android:id="@+id/btnSettings"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:clickable="true"
+        android:focusable="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="8dp">
+
+            <ImageView
+                android:id="@+id/iconSettings"
+                android:layout_width="36dp"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_settings"
+                app:tint="@color/bottom_nav_item_color_selector"
+                android:duplicateParentState="true"
+                android:contentDescription="Settings" />
+
+            <TextView
+                android:id="@+id/textSettings"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Settings"
+                android:textColor="@color/bottom_nav_item_color_selector"
+                android:textSize="10sp"
+                android:duplicateParentState="true" />
+        </LinearLayout>
+    </FrameLayout>
+</LinearLayout>

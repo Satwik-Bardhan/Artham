@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <!-- Document background -->
+    <path
+        android:fillColor="#F44336"
+        android:pathData="M6,2C4.9,2 4,2.9 4,4V20C4,21.1 4.9,22 6,22H18C19.1,22 20,21.1 20,20V8L14,2H6Z" />
+
+    <!-- Folded corner -->
+    <path
+        android:fillColor="#D32F2F"
+        android:pathData="M14,2V8H20L14,2Z" />
+
+    <!-- PDF text using font-based paths -->
+    <group android:translateX="12" android:translateY="15">
+        <!-- P -->
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M-5,-2L-5,3L-4.5,3L-4.5,0.5L-3.5,0.5C-3,0.5 -2.5,0 -2.5,-0.5L-2.5,-1.5C-2.5,-2 -3,-2.5 -3.5,-2.5L-5,-2ZM-4.5,-2L-3.5,-2C-3.2,-2 -3,-1.8 -3,-1.5L-3,-0.5C-3,-0.2 -3.2,0 -3.5,0L-4.5,0L-4.5,-2Z" />
+
+        <!-- D -->
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M-1.5,-2L-1.5,3L-1,3L-1,2.5L0,2.5C0.8,2.5 1.5,1.8 1.5,1L1.5,-1C1.5,-1.8 0.8,-2.5 0,-2.5L-1.5,-2ZM-1,-2L0,-2C0.6,-2 1,-1.6 1,-1L1,1C1,1.6 0.6,2 0,2L-1,2L-1,-2Z" />
+
+        <!-- F -->
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M2.5,-2L2.5,3L3,3L3,0.5L4,0.5L4,0L3,0L3,-1.5L4.5,-1.5L4.5,-2L2.5,-2Z" />
+    </group>
+</vector>

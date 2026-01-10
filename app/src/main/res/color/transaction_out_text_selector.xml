@@ -1,0 +1,4 @@
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_checked="true" android:color="?attr/chk_expenseColor" />
+    <item android:color="?attr/chk_textColorSecondary" />
+</selector>

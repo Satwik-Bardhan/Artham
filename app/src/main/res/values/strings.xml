@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Artham</string>
+    <string name="artham_manager">Artham Manager</string>
+    <string name="app_logo_description">App Logo</string>
+
+    <string name="home">Home</string>
+    <string name="transactions">Transactions</string>
+    <string name="settings">Settings</string>
+    <string name="cashbooks_icon_desc">Cashbooks navigation button</string>
+    <string name="home_icon_desc">Home navigation button</string>
+    <string name="transactions_icon_desc">Transactions navigation button</string>
+    <string name="settings_icon_desc">Settings navigation button</string>
+    <string name="already_on_home">Already on Home</string>
+    <string name="already_on_transactions">Already on Transactions</string>
+    <string name="already_on_settings">Already on Settings</string>
+    <string name="title_welcome_cashflow">Welcome to Cash Flow!</string>
+
+    <string name="add_entry">Add Entry</string>
+    <string name="edit_entry">Edit Entry</string>
+    <string name="back_button_desc">Back</string>
+    <string name="menu_button_desc">Menu</string>
+    <string name="btn_create">Create</string>
+    <string name="btn_cancel">Cancel</string>
+    <string name="btn_sign_up">Sign Up</string>
+    <string name="btn_continue_guest">Continue as Guest</string>
+    <string name="btn_sign_out">Sign Out</string>
+    <string name="btn_add_new">ADD NEW</string>
+    <string name="btn_duplicate">Duplicate</string>
+    <string name="btn_delete">Delete</string>
+    <string name="btn_switch">Switch</string>
+    <string name="btn_continue_as_guest">Continue as Guest</string>
+    <string name="close_button">Close</string>
+    <string name="sort_button">Sort</string>
+
+    <string-array name="transaction_categories">
+        <item>Select Category</item>
+        <item>Food</item>
+        <item>Transport</item>
+        <item>Utilities</item>
+        <item>Rent</item>
+        <item>Salary</item>
+        <item>Freelance Income</item>
+        <item>Shopping</item>
+        <item>Entertainment</item>
+        <item>Health</item>
+        <item>Education</item>
+        <item>Other</item>
+    </string-array>
+
+    <string name="cashbook_manager_title">Cashbook Manager</string>
+    <string name="your_cashbooks_title">Your Cashbooks</string>
+    <string name="switch_create_subtitle">Switch or create cashbooks</string>
+    <string name="create_new_cashbook">Create New Cashbook</string>
+    <string name="create_first_cashbook">Create First Cashbook</string>
+    <string name="title_create_cashbook">Create New Cashbook</string>
+    <string name="title_add_cashbook">Add New Cashbook</string>
+    <string name="title_duplicate_cashbook">Duplicate Cashbook</string>
+    <string name="title_delete_cashbook">Delete Cashbook</string>
+    <string name="title_switch_cashbook">Switch Cashbook</string>
+    <string name="heading_switch_add_cashbook">Switch or Add Cashbook</string>
+    <string name="heading_available_cashbooks">Available Cashbooks</string>
+    <string name="cashbook_create_info">Cashbooks help you organize and manage your transactions by category or purpose.</string>
+
+    <string name="msg_create_first_cashbook">Let\'s create your first cashbook to start tracking your finances.</string>
+    <string name="msg_create_first_cashbook_subtitle">Create your first cashbook to get started</string>
+    <string name="msg_switch_cashbook_subtitle">Select a cashbook to switch to, or create a new one</string>
+    <string name="msg_no_cashbooks">No cashbooks found</string>
+    <string name="msg_no_transactions">No transactions yet. Start by adding your first transaction!</string>
+    <string name="msg_cashbook_created">Cashbook \"%1$s\" created!</string>
+    <string name="msg_cashbook_duplicated">Cashbook duplicated successfully</string>
+    <string name="msg_cashbook_deleted">Cashbook deleted successfully</string>
+    <string name="msg_cashbook_switch_success">Cashbook switched successfully</string>
+    <string name="msg_switched_cashbook">Switched to %1$s</string>
+    <string name="cashbook_switched">Switched to&#58; %s</string>
+    <string name="msg_delete_cashbook_confirmation">Are you sure you want to delete \"%1$s\"?\n\nThis will permanently delete all transactions in this cashbook. This action cannot be undone.</string>
+    <string name="confirm_delete_cashbook_title">Delete Cashbook?</string>
+    <string name="confirm_delete_cashbook_message">This action will permanently delete \"%1$s\" and all its transactions. This cannot be undone.</string>
+    <string name="confirm_switch_unsaved_changes">You have unsaved changes. Switch anyway?</string>
+
+    <string name="current_cashbook_format">%1$s (Current)</string>
+    <string name="format_current_cashbook">%1$s (Current)</string>
+    <string name="format_cashbook_copy">%1$s - Copy</string>
+    <string name="default_cashbook_name">My Cashbook</string>
+    <string name="status_current_cashbook">(Current)</string>
+    <string name="status_available_cashbooks">Available Cashbooks</string>
+    <string name="dropdown_hint_text">Tap to switch or manage cashbooks</string>
+    <string name="current_book_display">Current Book</string>
+    <string name="total_books_label">Total Books</string>
+    <string name="active_label">Active</string>
+    <string name="chip_active">Active</string>
+    <string name="chip_recent">Recent</string>
+    <string name="chip_favorites">Favorites</string>
+    <string name="status_current">CURRENT</string>
+    <string name="status_active">ACTIVE</string>
+    <string name="status_inactive">INACTIVE</string>
+    <string name="format_balance">Balance&#58; ₹%.2f</string>
+    <string name="view_more_transactions">...and %1$d more transactions</string>
+    <string name="uid_format">UID&#58; %1$s</string>
+    <string name="last_modified_format">Last modified&#58; %s</string>
+
+    <string name="sort_cashbooks_title">Sort Cashbooks</string>
+    <string name="sort_name_asc">Name (A-Z)</string>
+    <string name="sort_name_desc">Name (Z-A)</string>
+    <string name="sort_recent_first">Recent First</string>
+    <string name="sort_oldest_first">Oldest First</string>
+    <string name="sort_most_transactions">Most Transactions</string>
+
+    <string name="hint_cashbook_name">e.g., My Main Cashbook</string>
+    <string name="hint_new_cashbook_name">e.g., Family Expenses</string>
+    <string name="hint_cashbook_name_dialog">Enter cashbook name</string>
+    <string name="cashbook_name_hint">Enter cashbook name</string>
+    <string name="cashbook_description_hint">Optional&#58; Add description (e.g., Personal, Business)</string>
+    <string name="search_cashbooks_hint">Search cashbooks</string>
+
+    <string name="menu_switch_cashbook">Switch Cashbook</string>
+    <string name="menu_add_new_cashbook">Add New Cashbook</string>
+    <string name="menu_duplicate_cashbook">Duplicate Cashbook</string>
+    <string name="menu_delete_cashbook">Delete Cashbook</string>
+    <string name="menu_settings">Settings</string>
+    <string name="menu_sign_out">Sign Out</string>
+    <string name="edit_cashbook">Edit</string>
+    <string name="add_to_favorites">Add to Favorites</string>
+    <string name="remove_from_favorites">Remove from Favorites</string>
+    <string name="activate_cashbook">Activate</string>
+    <string name="deactivate_cashbook">Deactivate</string>
+    <string name="export_cashbook">Export</string>
+    <string name="delete_cashbook">Delete</string>
+    <string name="show_pie_chart">Show Pie Chart</string>
+    <string name="hide_pie_chart">Hide Pie Chart</string>
+
+    <string name="status_loading">Loading...</string>
+    <string name="msg_loading_cashbooks">Loading cashbooks...</string>
+    <string name="loading_cashbooks">Loading your cashbooks...</string>
+    <string name="loading_wait_message">Please wait while we fetch your data</string>
+    <string name="loading_creating_cashbook">Creating cashbook...</string>
+    <string name="loading_duplicating_cashbook">Duplicating cashbook...</string>
+    <string name="loading_deleting_cashbook">Deleting cashbook...</string>
+    <string name="loading_switching_cashbook">Switching cashbook...</string>
+    <string name="error_loading_cashbooks">Error loading cashbooks</string>
+    <string name="error_no_cashbooks">No cashbooks available</string>
+    <string name="error_enter_cashbook_name">Please enter a cashbook name</string>
+    <string name="error_cashbook_name_empty">Cashbook name cannot be empty.</string>
+    <string name="error_invalid_cashbook_name">Please enter a valid cashbook name</string>
+    <string name="error_duplicate_cashbook_name">A cashbook with this name already exists</string>
+    <string name="error_delete_last_cashbook">Cannot delete the last remaining cashbook</string>
+    <string name="error_delete_current_cashbook">Cannot delete the currently active cashbook</string>
+    <string name="error_create_cashbook_first">Please create a cashbook first</string>
+    <string name="error_processing_cashbooks">Error processing cashbooks data</string>
+    <string name="error_cashbooks_cancelled">Cashbooks listener cancelled</string>
+    <string name="error_creating_cashbook">Error creating cashbook</string>
+    <string name="error_creating_cashbook_generic">Error creating cashbook</string>
+    <string name="error_updating_ui">Error updating user UI</string>
+    <string name="error_updating_table">Error updating transaction table</string>
+    <string name="error_processing_transactions">Error processing transactions data</string>
+    <string name="error_transactions_cancelled">Transactions listener cancelled</string>
+    <string name="no_cashbook_found">Error&#58; No active cashbook found</string>
+    <string name="error_network_unavailable">Network unavailable. Please check your connection.</string>
+    <string name="error_network_connection">Please check your internet connection</string>
+    <string name="error_permission_denied">Permission denied. Please check your account settings.</string>
+    <string name="error_user_dropdown">Error showing user dropdown</string>
+
+    <string name="validation_name_required">Cashbook name is required</string>
+    <string name="validation_name_too_long">Cashbook name is too long (max 50 characters)</string>
+    <string name="validation_name_invalid_chars">Cashbook name contains invalid characters</string>
+
+    <string name="title_guest_mode">Guest Mode</string>
+    <string name="guest_user">Guest User</string>
+    <string name="uid_guest">UID&#58; GUEST</string>
+    <string name="msg_guest_signup_prompt">Sign up to access more features like multiple cashbooks and cloud sync.</string>
+    <string name="msg_guest_mode_info">Guest Mode&#58; Data will not be saved after app restart</string>
+    <string name="title_guest_limitation">Guest Mode Limitation</string>
+    <string name="msg_guest_limitation">To add transactions, please sign up for a free account. Your data will be securely stored and synced across devices.</string>
+
+    <string name="title_sign_out">Sign Out</string>
+    <string name="msg_sign_out_confirm">Are you sure you want to sign out?</string>
+    <string name="default_user_name">User</string>
+    <string name="not_signed_in">Not signed in</string>
+    <string name="deleting_account">Deleting account...</string>
+    <string name="error_authentication_failed">Authentication check failed. Please try again.</string>
+    <string name="error_signing_out">Error signing out</string>
+    <string name="error_authentication_check">Error during authentication check</string>
+    <string name="unknown_email">unknown</string>
+
+    <string name="desc_add_money_in">Add money in transaction</string>
+    <string name="desc_add_money_out">Add money out transaction</string>
+    <string name="desc_user_menu">Switch cashbook or view user menu</string>
+    <string name="desc_view_all_transactions">View all transactions</string>
+    <string name="bottom_design_description">Bottom Design</string>
+    <string name="desc_cashbook_icon">Cashbook icon</string>
+    <string name="desc_expand_cashbook_menu">Expand cashbook menu</string>
+    <string name="desc_close_dialog">Close dialog</string>
+    <string name="desc_cashbook_options_menu">Cashbook options menu</string>
+    <string name="desc_current_indicator">Current cashbook indicator</string>
+    <string name="desc_dropdown_arrow">Dropdown arrow</string>
+    <string name="desc_no_cashbooks_icon">No cashbooks icon</string>
+    <string name="add_cashbook_desc">Add new cashbook</string>
+    <string name="quick_add_cashbook">Quick add cashbook</string>
+    <string name="sort_button_desc">Sort cashbooks</string>
+    <string name="cashbook_icon">Cashbook icon</string>
+    <string name="search_icon">Search icon</string>
+    <string name="empty_state_icon">Empty folder icon</string>
+    <string name="favorite_button_desc">Toggle favorite</string>
+    <string name="more_options_desc">More options</string>
+
+    <string name="log_main_activity_started">MainActivity started - checking authentication status</string>
+    <string name="log_app_startup_initiated">MainActivity&#58; App startup initiated</string>
+    <string name="log_crashlytics_unavailable">Crashlytics not available</string>
+    <string name="log_no_authenticated_user">No authenticated user found - navigating to Sign-in</string>
+    <string name="log_authenticated_user_found">Authenticated user found: %1$s - navigating to HomePage</string>
+    <string name="log_main_activity_destroyed">MainActivity destroyed</string>
+    <string name="log_homepage_started">HomePage Activity started, guest: %1$b</string>
+    <string name="log_user_dropdown_shown">User dropdown shown</string>
+    <string name="log_authenticated_session_started">Authenticated user session started</string>
+    <string name="log_guest_session_started">Guest mode session started</string>
+    <string name="log_activity_stopped">Activity stopped</string>
+    <string name="log_activity_destroyed">Activity destroyed</string>
+    <string name="log_user_signed_out">User signed out</string>
+    <string name="log_loading_cashbooks">Loading cashbooks for user</string>
+    <string name="log_loaded_cashbooks">Loaded %1$d cashbooks</string>
+    <string name="log_loaded_transactions">Loaded %1$d transactions</string>
+    <string name="log_ui_updated">UI updated with cashbook: %1$s</string>
+    <string name="log_opened_cashinout">Opened CashInOut activity: %1$s</string>
+    <string name="log_navigated_transactions">Navigated to transaction list</string>
+    <string name="log_navigated_settings">Navigated to settings</string>
+    <string name="log_created_cashbook">Created new cashbook: %1$s</string>
+    <string name="log_switched_cashbook">Switched to cashbook: %1$s</string>
+
+    <string name="success_cashbook_created">Cashbook created successfully</string>
+    <string name="success_cashbook_updated">Cashbook updated successfully</string>
+    <string name="success_cashbook_duplicated">Cashbook duplicated successfully</string>
+    <string name="success_cashbook_deleted">Cashbook deleted successfully</string>
+    <string name="success_cashbook_switched">Successfully switched to %1$s</string>
+    <string name="sample_cashbook_name">Personal Finance</string>
+    <string name="sample_last_modified">Last modified&#58; 3 hours ago</string>
+    <string name="sample_balance">₹15,750</string>
+    <string name="sample_transaction_count">247</string>
+    <string name="sample_created_date">Jan 2025</string>
+    <string name="balance_label">Balance</string>
+    <string name="transactions_label">Transactions</string>
+    <string name="created_label">Created</string>
+    <string name="help_support_coming_soon">Help &amp; Support - Coming Soon</string>
+    <string name="com.google.firebase.crashlytics.mapping_file_id">none</string>
+
+    <string name="cancel_button">Cancel</string>
+    <string name="no_cashbooks_title">No Cashbooks Found</string>
+    <string name="no_cashbooks_message">You haven\'t created any cashbooks yet.</string>
+
+</resources>

@@ -1,0 +1,14 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/menu_edit_name"
+        android:title="Edit Book Name"
+        android:icon="@drawable/ic_edit" />
+    <item
+        android:id="@+id/menu_copy_book"
+        android:title="Copy Book"
+        android:icon="@drawable/ic_copy" />
+    <item
+        android:id="@+id/menu_delete_book"
+        android:title="Delete Book"
+        android:icon="@drawable/ic_delete" />
+</menu>
