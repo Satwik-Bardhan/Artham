@@ -23,6 +23,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
 import com.phynix.artham.models.Users;
+import com.phynix.artham.utils.ThemeManager; // [NEW IMPORT]
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -47,7 +48,7 @@ public class EditProfileActivity extends AppCompatActivity {
     private LinearLayout dateOfBirthLayout;
     private Button cancelButton, saveProfileButton;
 
-    // [NEW] Progress Dialog for better UX
+    // Progress Dialog for better UX
     private ProgressDialog loadingBar;
 
     private FirebaseAuth mAuth;
@@ -75,8 +76,12 @@ public class EditProfileActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // [FIX] Apply Theme BEFORE super.onCreate()
+        ThemeManager.applyActivityTheme(this);
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_profile);
+
         if (getSupportActionBar() != null) getSupportActionBar().hide();
 
         mAuth = FirebaseAuth.getInstance();

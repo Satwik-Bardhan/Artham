@@ -60,7 +60,7 @@ public class CashInOutActivity extends AppCompatActivity {
 
     // UI Elements - Header
     private TextView headerTitle, headerSubtitle;
-    private View backButton; // Changed to View to be safe
+    private View backButton;
 
     // UI Elements - Inputs
     private TextView dateTextView, timeTextView, selectedCategoryTextView;
@@ -68,7 +68,6 @@ public class CashInOutActivity extends AppCompatActivity {
     private RadioGroup inOutToggle, cashOnlineToggle;
     private RadioButton radioIn, radioOut, radioCash, radioOnline;
 
-    // Changed to View to prevent ClassCastException if these are CardViews/FrameLayouts in XML
     private View swapButton;
     private View calculatorButton, voiceInputButton, locationButton;
     private View contactBookButton;
@@ -80,20 +79,11 @@ public class CashInOutActivity extends AppCompatActivity {
 
     private Button quickAmount100, quickAmount500, quickAmount1000, quickAmount5000;
 
-    // Attachments (LinearLayouts in XML)
-    private LinearLayout cameraButton, scanButton, attachFileButton;
-
     // Party Elements
     private TextInputEditText partyTextView;
 
     // Footer Buttons
     private Button saveEntryButton, saveAndAddNewButton, clearButton;
-
-    // Attachment Display Section
-    private LinearLayout attachedFilesSection;
-    private LinearLayout attachedImageLayout, attachedQrLayout, attachedPdfLayout;
-    private TextView attachedImageText, attachedQrText, attachedPdfText;
-    private View removeAttachedImage, removeAttachedQr, removeAttachedPdf;
 
     // Logic
     private CashInOutViewModel viewModel;
@@ -102,11 +92,6 @@ public class CashInOutActivity extends AppCompatActivity {
     private String selectedCategory = "Other";
     private String selectedParty = null;
     private String currentLocation = null;
-
-    // Attachments Data
-    private Uri attachedImageUri = null;
-    private String attachedQrData = null;
-    private Uri attachedFileUri = null;
 
     // Timer for live clock
     private final Handler timeHandler = new Handler(Looper.getMainLooper());
@@ -117,14 +102,11 @@ public class CashInOutActivity extends AppCompatActivity {
 
     // Activity Launchers
     private ActivityResultLauncher<Intent> voiceInputLauncher;
-    private ActivityResultLauncher<Intent> cameraLauncher;
     private ActivityResultLauncher<Intent> categoryLauncher;
-    private ActivityResultLauncher<Intent> filePickerLauncher;
     private ActivityResultLauncher<Intent> contactPickerLauncher;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        // Apply Theme
         ThemeManager.applyActivityTheme(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_cash_in_out);
@@ -151,7 +133,6 @@ public class CashInOutActivity extends AppCompatActivity {
         setupInitialState(transactionType);
 
         startRealTimeClock();
-        updateAttachmentVisibility();
     }
 
     @Override
@@ -184,8 +165,6 @@ public class CashInOutActivity extends AppCompatActivity {
         inOutToggle = findViewById(R.id.inOutToggle);
         radioIn = findViewById(R.id.radioIn);
         radioOut = findViewById(R.id.radioOut);
-
-        // Use findViewById without casting to ImageView/ImageButton to allow CardView/FrameLayout wrappers
         swapButton = findViewById(R.id.swap_horiz);
 
         // Payment Mode & Tax
@@ -198,7 +177,7 @@ public class CashInOutActivity extends AppCompatActivity {
 
         // Amount Input
         amountEditText = findViewById(R.id.amountEditText);
-        calculatorButton = findViewById(R.id.calculatorButton); // Defined as View
+        calculatorButton = findViewById(R.id.calculatorButton);
         quickAmount100 = findViewById(R.id.quickAmount100);
         quickAmount500 = findViewById(R.id.quickAmount500);
         quickAmount1000 = findViewById(R.id.quickAmount1000);
@@ -206,41 +185,22 @@ public class CashInOutActivity extends AppCompatActivity {
 
         // Remarks & Category
         remarkEditText = findViewById(R.id.remarkEditText);
-        voiceInputButton = findViewById(R.id.voiceInputButton); // Defined as View
+        voiceInputButton = findViewById(R.id.voiceInputButton);
         selectedCategoryTextView = findViewById(R.id.selectedCategoryTextView);
         categorySelectorLayout = findViewById(R.id.categorySelectorLayout);
 
         // Party
         partyTextView = findViewById(R.id.partyTextView);
-        contactBookButton = findViewById(R.id.contactBookButton); // Defined as View
+        contactBookButton = findViewById(R.id.contactBookButton);
 
         // Tags & Location
         tagsEditText = findViewById(R.id.tagsEditText);
-        locationButton = findViewById(R.id.locationButton); // Defined as View
+        locationButton = findViewById(R.id.locationButton);
 
         // Actions
         saveEntryButton = findViewById(R.id.saveEntryButton);
         saveAndAddNewButton = findViewById(R.id.saveAndAddNewButton);
         clearButton = findViewById(R.id.clearButton);
-
-        // Attachments
-        cameraButton = findViewById(R.id.cameraButton);
-        scanButton = findViewById(R.id.scanButton);
-        attachFileButton = findViewById(R.id.attachFileButton);
-
-        // Attachment Display Section
-        attachedFilesSection = findViewById(R.id.attachedFilesSection);
-        attachedImageLayout = findViewById(R.id.attachedImageLayout);
-        attachedQrLayout = findViewById(R.id.attachedQrLayout);
-        attachedPdfLayout = findViewById(R.id.attachedPdfLayout);
-
-        attachedImageText = findViewById(R.id.attachedImageText);
-        attachedQrText = findViewById(R.id.attachedQrText);
-        attachedPdfText = findViewById(R.id.attachedPdfText);
-
-        removeAttachedImage = findViewById(R.id.removeAttachedImage);
-        removeAttachedQr = findViewById(R.id.removeAttachedQr);
-        removeAttachedPdf = findViewById(R.id.removeAttachedPdf);
     }
 
     private void initializeDateTime() {
@@ -308,33 +268,6 @@ public class CashInOutActivity extends AppCompatActivity {
         if (clearButton != null) clearButton.setOnClickListener(v -> clearForm(false));
 
         setupQuickAmountButtons();
-
-        // Attachment Listeners
-        if (cameraButton != null) cameraButton.setOnClickListener(v -> showComingSoon("Camera"));
-        if (scanButton != null) scanButton.setOnClickListener(v -> showComingSoon("QR Scanner"));
-        if (attachFileButton != null) attachFileButton.setOnClickListener(v -> showComingSoon("File Attachment"));
-
-        if (removeAttachedImage != null) removeAttachedImage.setOnClickListener(v -> { attachedImageUri = null; updateAttachmentVisibility(); });
-        if (removeAttachedQr != null) removeAttachedQr.setOnClickListener(v -> { attachedQrData = null; updateAttachmentVisibility(); });
-        if (removeAttachedPdf != null) removeAttachedPdf.setOnClickListener(v -> { attachedFileUri = null; updateAttachmentVisibility(); });
-    }
-
-    private void showComingSoon(String feature) {
-        Toast.makeText(this, feature + " feature coming soon!", Toast.LENGTH_SHORT).show();
-    }
-
-    private void updateAttachmentVisibility() {
-        boolean hasImage = attachedImageUri != null;
-        boolean hasQr = attachedQrData != null;
-        boolean hasFile = attachedFileUri != null;
-
-        if (attachedImageLayout != null) attachedImageLayout.setVisibility(hasImage ? View.VISIBLE : View.GONE);
-        if (attachedQrLayout != null) attachedQrLayout.setVisibility(hasQr ? View.VISIBLE : View.GONE);
-        if (attachedPdfLayout != null) attachedPdfLayout.setVisibility(hasFile ? View.VISIBLE : View.GONE);
-
-        if (attachedFilesSection != null) {
-            attachedFilesSection.setVisibility((hasImage || hasQr || hasFile) ? View.VISIBLE : View.GONE);
-        }
     }
 
     private void setupQuickAmountButtons() {
@@ -382,11 +315,6 @@ public class CashInOutActivity extends AppCompatActivity {
                 }
         );
 
-        cameraLauncher = registerForActivityResult(
-                new ActivityResultContracts.StartActivityForResult(),
-                result -> { /* Implementation for future */ }
-        );
-
         categoryLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
@@ -399,11 +327,6 @@ public class CashInOutActivity extends AppCompatActivity {
                         }
                     }
                 }
-        );
-
-        filePickerLauncher = registerForActivityResult(
-                new ActivityResultContracts.StartActivityForResult(),
-                result -> { /* Implementation for future */ }
         );
 
         contactPickerLauncher = registerForActivityResult(
@@ -746,12 +669,6 @@ public class CashInOutActivity extends AppCompatActivity {
         selectedCategory = "Other";
         selectedParty = null;
         currentLocation = null;
-
-        // Reset attachments
-        attachedImageUri = null;
-        attachedQrData = null;
-        attachedFileUri = null;
-        updateAttachmentVisibility();
 
         clearQuickAmountSelections();
 

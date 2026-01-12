@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.PopupMenu;
 import android.widget.TextView;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -17,7 +16,8 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.button.MaterialButton;
 import com.phynix.artham.models.TransactionModel;
-import com.phynix.artham.utils.SnackbarHelper; // [NEW IMPORT]
+import com.phynix.artham.utils.SnackbarHelper;
+import com.phynix.artham.utils.ThemeManager; // [NEW IMPORT]
 import com.phynix.artham.viewmodels.TransactionViewModel;
 import com.phynix.artham.viewmodels.TransactionViewModelFactory;
 
@@ -45,6 +45,9 @@ public class TransactionDetailsActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // [FIX] Apply Theme BEFORE super.onCreate()
+        ThemeManager.applyActivityTheme(this);
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_transaction_details);
 
@@ -78,7 +81,7 @@ public class TransactionDetailsActivity extends AppCompatActivity {
         closeButton.setOnClickListener(v -> finish());
 
         View menuButton = findViewById(R.id.menuButton);
-
+        // Menu functionality can be added here if needed (e.g. Delete/Share)
 
         TextView detailAmount = findViewById(R.id.detailAmount);
         TextView detailType = findViewById(R.id.detailType);
@@ -153,8 +156,6 @@ public class TransactionDetailsActivity extends AppCompatActivity {
         editLauncher.launch(intent);
     }
 
-
-
     private void deleteTransaction() {
         viewModel.deleteTransaction(transaction.getTransactionId());
         showSnackbar("Transaction Deleted");
@@ -167,8 +168,7 @@ public class TransactionDetailsActivity extends AppCompatActivity {
     }
 
     private void duplicateTransaction() {
-        TransactionModel copy = transaction;
-
+        // Logic handled in calling activity or viewModel
         Intent resultIntent = new Intent();
         resultIntent.putExtra("action", "duplicate");
         resultIntent.putExtra("transaction", transaction);
@@ -185,23 +185,7 @@ public class TransactionDetailsActivity extends AppCompatActivity {
                 .show();
     }
 
-    private void shareTransactionDetails() {
-        String shareBody = "Transaction Details:\n" +
-                "Type: " + ("IN".equals(transaction.getType()) ? "Income (+)" : "Expense (-)") + "\n" +
-                "Amount: " + transaction.getAmount() + "\n" +
-                "Category: " + transaction.getTransactionCategory() + "\n" +
-                "Date: " + new Date(transaction.getTimestamp()).toString();
-
-        Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
-        sharingIntent.setType("text/plain");
-        sharingIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, "Transaction Receipt");
-        sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, shareBody);
-        startActivity(Intent.createChooser(sharingIntent, "Share via"));
-    }
-
-    // [FIX] Snackbar with Helper logic
     private void showSnackbar(String message) {
-        // Anchor to the footer (e.g., the Edit button container)
         SnackbarHelper.show(this, message, R.id.footerLayout);
     }
 }

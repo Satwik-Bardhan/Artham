@@ -8,13 +8,13 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-import com.phynix.artham.utils.ThemeManager; // Import this
+import com.phynix.artham.utils.ThemeManager; // [NEW IMPORT]
 
 public class AboutActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        // 1. Apply Theme BEFORE super.onCreate()
+        // [FIX] Apply Theme BEFORE super.onCreate()
         ThemeManager.applyActivityTheme(this);
 
         super.onCreate(savedInstanceState);

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -7,187 +7,181 @@
     android:fitsSystemWindows="true"
     android:background="?attr/chk_backgroundColor">
 
-    <androidx.core.widget.NestedScrollView
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swipeRefreshLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:clipToPadding="false"
-        android:fillViewport="true"
-        android:overScrollMode="never"
-        android:scrollbars="vertical"
-        android:layout_marginBottom="80dp">
+        android:layout_marginBottom="0dp">
 
-        <LinearLayout
+        <androidx.core.widget.NestedScrollView
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:orientation="vertical">
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:fillViewport="true"
+            android:overScrollMode="never"
+            android:scrollbars="vertical">
 
-            <androidx.cardview.widget.CardView
-                android:id="@+id/mainCard"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardBackgroundColor="?attr/chk_surfaceColor"
-                app:cardElevation="16dp"
-                app:cardCornerRadius="0dp">
+                android:gravity="center_vertical"
+                android:orientation="vertical"
+                android:paddingBottom="100dp">
 
-                <LinearLayout
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/mainCard"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="16dp">
+                    app:cardBackgroundColor="?attr/chk_surfaceColor"
+                    app:cardElevation="0dp"
+                    app:cardCornerRadius="0dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:gravity="center_vertical"
-                        android:layout_marginBottom="24dp"
-                        android:orientation="horizontal">
-
-                        <androidx.cardview.widget.CardView
-                            android:layout_width="56dp"
-                            android:layout_height="56dp"
-                            android:layout_marginEnd="16dp"
-                            app:cardBackgroundColor="?attr/chk_balanceColor"
-                            app:cardCornerRadius="12dp"
-                            app:cardElevation="4dp">
-
-                            <ImageView
-                                android:layout_width="28dp"
-                                android:layout_height="28dp"
-                                android:layout_gravity="center"
-                                android:src="@drawable/ic_book"
-                                android:contentDescription="@string/cashbook_icon"
-                                app:tint="@android:color/white" />
-                        </androidx.cardview.widget.CardView>
-
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@string/cashbook_manager_title"
-                                android:textColor="?attr/chk_textColorPrimary"
-                                android:textSize="22sp"
-                                android:fontFamily="@font/app_font"
-                                android:textStyle="bold" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="2dp"
-                                android:text="@string/switch_create_subtitle"
-                                android:fontFamily="@font/app_font"
-                                android:textColor="?attr/chk_textColorSecondary"
-                                android:textSize="13sp" />
-                        </LinearLayout>
-
-                        <ImageView
-                            android:id="@+id/closeButton"
-                            android:layout_width="48dp"
-                            android:layout_height="48dp"
-                            android:padding="12dp"
-                            android:src="@drawable/ic_close"
-                            android:background="?attr/selectableItemBackgroundBorderless"
-                            android:contentDescription="@string/close_button"
-                            app:tint="?attr/chk_textColorPrimary" />
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="48dp"
-                        android:layout_marginBottom="24dp"
-                        android:background="@drawable/search_background"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal"
-                        android:paddingStart="16dp"
-                        android:paddingEnd="16dp">
-
-                        <ImageView
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
-                            android:layout_marginEnd="12dp"
-                            android:src="@drawable/ic_search"
-                            android:contentDescription="@string/search_icon"
-                            app:tint="?attr/chk_textColorSecondary" />
-
-                        <EditText
-                            android:id="@+id/searchEditText"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:background="@null"
-                            android:hint="@string/search_cashbooks_hint"
-                            android:inputType="text"
-                            android:fontFamily="@font/app_font"
-                            android:textColor="?attr/chk_textColorPrimary"
-                            android:textColorHint="?attr/chk_textColorHint"
-                            android:textSize="15sp" />
-                    </LinearLayout>
-
-                    <com.google.android.material.chip.ChipGroup
-                        android:id="@+id/chipGroup"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="24dp"
-                        app:singleSelection="true"
-                        app:checkedChip="@id/chipActive"
-                        app:chipSpacingHorizontal="8dp">
-
-                        <com.google.android.material.chip.Chip
-                            android:id="@+id/chipAll"
-                            style="@style/Widget.MaterialComponents.Chip.Choice"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="All"
-                            android:textColor="?attr/chk_textColorPrimary"
-                            app:chipBackgroundColor="?attr/chk_backgroundColor"/>
-
-                        <com.google.android.material.chip.Chip
-                            android:id="@+id/chipActive"
-                            style="@style/Widget.MaterialComponents.Chip.Choice"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/chip_active"
-                            android:textColor="?attr/chk_textColorPrimary"
-                            app:chipBackgroundColor="?attr/chk_backgroundColor"
-                            android:checked="true" />
-
-                        <com.google.android.material.chip.Chip
-                            android:id="@+id/chipRecent"
-                            style="@style/Widget.MaterialComponents.Chip.Choice"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/chip_recent"
-                            android:textColor="?attr/chk_textColorPrimary"
-                            app:chipBackgroundColor="?attr/chk_backgroundColor"/>
-
-                        <com.google.android.material.chip.Chip
-                            android:id="@+id/chipFavorites"
-                            style="@style/Widget.MaterialComponents.Chip.Choice"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/chip_favorites"
-                            android:textColor="?attr/chk_textColorPrimary"
-                            app:chipBackgroundColor="?attr/chk_backgroundColor"/>
-                    </com.google.android.material.chip.ChipGroup>
-
-                    <androidx.cardview.widget.CardView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="24dp"
-                        app:cardBackgroundColor="?attr/chk_backgroundColor"
-                        app:cardCornerRadius="12dp"
-                        app:cardElevation="0dp">
+                        android:orientation="vertical"
+                        android:padding="16dp">
 
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:padding="16dp">
+                            android:gravity="center_vertical"
+                            android:layout_marginBottom="24dp"
+                            android:orientation="horizontal">
+
+                            <androidx.cardview.widget.CardView
+                                android:layout_width="56dp"
+                                android:layout_height="56dp"
+                                android:layout_marginEnd="16dp"
+                                app:cardBackgroundColor="?attr/chk_balanceColor"
+                                app:cardCornerRadius="12dp"
+                                app:cardElevation="4dp">
+
+                                <ImageView
+                                    android:layout_width="28dp"
+                                    android:layout_height="28dp"
+                                    android:layout_gravity="center"
+                                    android:src="@drawable/ic_book"
+                                    android:contentDescription="@string/cashbook_icon"
+                                    app:tint="@android:color/white" />
+                            </androidx.cardview.widget.CardView>
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/cashbook_manager_title"
+                                    android:textColor="?attr/chk_textColorPrimary"
+                                    android:textSize="22sp"
+                                    android:fontFamily="@font/app_font"
+                                    android:textStyle="bold" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="2dp"
+                                    android:text="@string/switch_create_subtitle"
+                                    android:fontFamily="@font/app_font"
+                                    android:textColor="?attr/chk_textColorSecondary"
+                                    android:textSize="13sp" />
+                            </LinearLayout>
+
+                            <ImageView
+                                android:id="@+id/closeButton"
+                                android:layout_width="48dp"
+                                android:layout_height="48dp"
+                                android:padding="12dp"
+                                android:src="@drawable/ic_close"
+                                android:background="?attr/selectableItemBackgroundBorderless"
+                                android:contentDescription="@string/close_button"
+                                app:tint="?attr/chk_textColorPrimary" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="48dp"
+                            android:layout_marginBottom="24dp"
+                            android:background="@drawable/search_background"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal"
+                            android:paddingStart="16dp"
+                            android:paddingEnd="16dp">
+
+                            <ImageView
+                                android:layout_width="20dp"
+                                android:layout_height="20dp"
+                                android:layout_marginEnd="12dp"
+                                android:src="@drawable/ic_search"
+                                android:contentDescription="@string/search_icon"
+                                app:tint="?attr/chk_textColorSecondary" />
+
+                            <EditText
+                                android:id="@+id/searchEditText"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:background="@null"
+                                android:hint="@string/search_cashbooks_hint"
+                                android:inputType="text"
+                                android:fontFamily="@font/app_font"
+                                android:textColor="?attr/chk_textColorPrimary"
+                                android:textColorHint="?attr/chk_textColorHint"
+                                android:textSize="15sp" />
+                        </LinearLayout>
+
+                        <com.google.android.material.chip.ChipGroup
+                            android:id="@+id/chipGroup"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="24dp"
+                            app:singleSelection="true"
+                            app:selectionRequired="true"
+                            app:checkedChip="@id/chipActive"
+                            app:chipSpacingHorizontal="8dp">
+
+                            <com.google.android.material.chip.Chip
+                                android:id="@+id/chipAll"
+                                style="@style/Widget.MaterialComponents.Chip.Choice"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="All"
+                                android:textColor="?attr/chk_textColorPrimary" />
+
+                            <com.google.android.material.chip.Chip
+                                android:id="@+id/chipActive"
+                                style="@style/Widget.MaterialComponents.Chip.Choice"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/chip_active"
+                                android:textColor="?attr/chk_textColorPrimary"
+                                android:checked="true" />
+
+                            <com.google.android.material.chip.Chip
+                                android:id="@+id/chipRecent"
+                                style="@style/Widget.MaterialComponents.Chip.Choice"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/chip_recent"
+                                android:textColor="?attr/chk_textColorPrimary" />
+
+                            <com.google.android.material.chip.Chip
+                                android:id="@+id/chipFavorites"
+                                style="@style/Widget.MaterialComponents.Chip.Choice"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/chip_favorites"
+                                android:textColor="?attr/chk_textColorPrimary" />
+                        </com.google.android.material.chip.ChipGroup>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical">
 
                             <LinearLayout
                                 android:layout_width="match_parent"
@@ -233,119 +227,75 @@
                                 </LinearLayout>
                             </LinearLayout>
 
-                            <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-                                android:id="@+id/swipeRefreshLayout"
+                            <androidx.recyclerview.widget.RecyclerView
+                                android:id="@+id/cashbookRecyclerView"
                                 android:layout_width="match_parent"
-                                android:layout_height="wrap_content">
-
-                                <androidx.recyclerview.widget.RecyclerView
-                                    android:id="@+id/cashbookRecyclerView"
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:maxHeight="400dp"
-                                    android:minHeight="160dp"
-                                    android:clipToPadding="false"
-                                    android:overScrollMode="never"
-                                    android:scrollbars="vertical"
-                                    android:nestedScrollingEnabled="true"
-                                    tools:listitem="@layout/item_cashbook"
-                                    tools:itemCount="3" />
-                            </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+                                android:layout_height="wrap_content"
+                                android:clipToPadding="false"
+                                android:overScrollMode="never"
+                                android:nestedScrollingEnabled="false"
+                                tools:listitem="@layout/item_cashbook"
+                                tools:itemCount="3" />
                         </LinearLayout>
-                    </androidx.cardview.widget.CardView>
 
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical">
-
-                        <Button
-                            android:id="@+id/cancelButton"
-                            android:layout_width="0dp"
-                            android:layout_height="56dp"
-                            android:layout_weight="1"
-                            android:layout_marginEnd="12dp"
-                            android:background="@drawable/button_cancel_outline"
-                            android:text="@string/cancel_button"
-                            android:textColor="?attr/chk_expenseColor"
-                            android:fontFamily="@font/app_font"
-                            android:textSize="14sp"
-                            android:textStyle="bold"
-                            android:textAllCaps="false"
-                            app:backgroundTint="@null"/>
-
-                        <Button
-                            android:id="@+id/addNewButton"
-                            android:layout_width="0dp"
-                            android:layout_height="56dp"
-                            android:layout_weight="1.5"
-                            android:background="@drawable/button_primary"
-                            android:text="@string/create_new_cashbook"
-                            android:textColor="@android:color/white"
-                            android:fontFamily="@font/app_font"
-                            android:textSize="14sp"
-                            android:textStyle="bold"
-                            android:textAllCaps="false"
-                            app:backgroundTint="@null"/>
                     </LinearLayout>
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
+                </androidx.cardview.widget.CardView>
 
-            <LinearLayout
-                android:id="@+id/emptyStateLayout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:padding="48dp"
-                android:visibility="gone">
-
-                <ImageView
-                    android:layout_width="100dp"
-                    android:layout_height="100dp"
-                    android:layout_marginBottom="24dp"
-                    android:src="@drawable/ic_folder_open"
-                    android:contentDescription="@string/empty_state_icon"
-                    app:tint="?attr/chk_textColorHint" />
-
-                <TextView
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:id="@+id/emptyStateLayout"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/no_cashbooks_title"
-                    android:textColor="?attr/chk_textColorPrimary"
-                    android:textSize="18sp"
-                    android:fontFamily="@font/app_font"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:layout_marginBottom="32dp"
                     android:gravity="center"
-                    android:text="@string/no_cashbooks_message"
-                    android:textColor="?attr/chk_textColorSecondary"
-                    android:fontFamily="@font/app_font"
-                    android:textSize="14sp" />
+                    android:orientation="vertical"
+                    android:padding="48dp"
+                    android:visibility="gone">
 
-                <Button
-                    android:id="@+id/emptyStateCreateButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="56dp"
-                    android:background="@drawable/button_primary"
-                    android:paddingStart="24dp"
-                    android:paddingEnd="24dp"
-                    android:text="@string/create_first_cashbook"
-                    android:textColor="@android:color/white"
-                    android:textSize="14sp"
-                    android:fontFamily="@font/app_font"
-                    android:textStyle="bold"
-                    android:textAllCaps="false"
-                    app:backgroundTint="?attr/chk_secondary_green" />
+                    <ImageView
+                        android:layout_width="100dp"
+                        android:layout_height="100dp"
+                        android:layout_marginBottom="24dp"
+                        android:src="@drawable/ic_folder_open"
+                        android:contentDescription="@string/empty_state_icon"
+                        app:tint="?attr/chk_textColorHint" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/no_cashbooks_title"
+                        android:textColor="?attr/chk_textColorPrimary"
+                        android:textSize="18sp"
+                        android:fontFamily="@font/app_font"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:layout_marginBottom="32dp"
+                        android:gravity="center"
+                        android:text="@string/no_cashbooks_message"
+                        android:textColor="?attr/chk_textColorSecondary"
+                        android:fontFamily="@font/app_font"
+                        android:textSize="14sp" />
+
+                    <Button
+                        android:id="@+id/emptyStateCreateButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="56dp"
+                        android:background="@drawable/button_primary"
+                        android:paddingStart="24dp"
+                        android:paddingEnd="24dp"
+                        android:text="@string/create_first_cashbook"
+                        android:textColor="@android:color/white"
+                        android:textSize="14sp"
+                        android:fontFamily="@font/app_font"
+                        android:textStyle="bold"
+                        android:textAllCaps="false"
+                        app:backgroundTint="?attr/chk_secondary_green" />
+                </LinearLayout>
             </LinearLayout>
-        </LinearLayout>
-    </androidx.core.widget.NestedScrollView>
+        </androidx.core.widget.NestedScrollView>
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
     <LinearLayout
         android:id="@+id/loadingLayout"
@@ -386,12 +336,13 @@
         android:id="@+id/quickAddFab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_margin="24dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginBottom="40dp"
+        android:layout_marginEnd="24dp"
         android:contentDescription="@string/quick_add_cashbook"
-        app:layout_dodgeInsetEdges="bottom"
         app:backgroundTint="?attr/chk_incomeColor"
         app:srcCompat="@drawable/ic_add"
         app:tint="@android:color/white" />
 
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+</RelativeLayout>

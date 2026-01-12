@@ -8,8 +8,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -44,17 +42,13 @@ public class CashbookSwitchDialog extends DialogFragment {
     private RecyclerView cashbookRecyclerView;
     private EditText searchCashbook;
 
-    // Changed to LinearLayout to match XML 'loadingLayout' and 'emptyStateLayout'
     private LinearLayout emptyStateLayout;
     private LinearLayout loadingLayout;
 
-    private Button cancelDialogButton;
-    private Button confirmDialogButton; // Mapped to 'addNewButton' in XML
     private ImageView closeDialog;
 
     private CashbookAdapter adapter;
     private final List<CashbookModel> allCashbooks = new ArrayList<>();
-    private CashbookModel selectedCashbook;
     private String currentCashbookId;
 
     private OnCashbookSelectedListener listener;
@@ -115,20 +109,10 @@ public class CashbookSwitchDialog extends DialogFragment {
         cashbookRecyclerView = view.findViewById(R.id.cashbookRecyclerView);
         searchCashbook = view.findViewById(R.id.searchEditText);
 
-        // Correct IDs from activity_cashbook_switch.xml
         emptyStateLayout = view.findViewById(R.id.emptyStateLayout);
         loadingLayout = view.findViewById(R.id.loadingLayout);
 
-        cancelDialogButton = view.findViewById(R.id.cancelButton);
         closeDialog = view.findViewById(R.id.closeButton);
-
-        // Map "Create New" button to "Select" functionality for this dialog
-        confirmDialogButton = view.findViewById(R.id.addNewButton);
-        if (confirmDialogButton != null) {
-            confirmDialogButton.setText("Select");
-            confirmDialogButton.setEnabled(false);
-            confirmDialogButton.setAlpha(0.5f);
-        }
 
         // Hide elements not needed for the dialog version (like FAB)
         View fab = view.findViewById(R.id.quickAddFab);
@@ -151,18 +135,11 @@ public class CashbookSwitchDialog extends DialogFragment {
                     return;
                 }
 
-                // Select the cashbook
-                selectedCashbook = cashbook;
-
-                // Update UI to show selection
-                if (confirmDialogButton != null) {
-                    confirmDialogButton.setEnabled(true);
-                    confirmDialogButton.setAlpha(1.0f);
+                // Immediately select and notify listener
+                if (listener != null) {
+                    listener.onCashbookSelected(cashbook);
                 }
-
-                // Visually mark as "current" in list temporarily (optional)
-                // Note: accurate "current" status relies on the actual ID passed in
-                Toast.makeText(getContext(), "Selected: " + cashbook.getName(), Toast.LENGTH_SHORT).show();
+                dismiss();
             }
 
             @Override
@@ -182,19 +159,6 @@ public class CashbookSwitchDialog extends DialogFragment {
     private void setupListeners() {
         if (closeDialog != null) {
             closeDialog.setOnClickListener(v -> dismiss());
-        }
-
-        if (cancelDialogButton != null) {
-            cancelDialogButton.setOnClickListener(v -> dismiss());
-        }
-
-        if (confirmDialogButton != null) {
-            confirmDialogButton.setOnClickListener(v -> {
-                if (selectedCashbook != null && listener != null) {
-                    listener.onCashbookSelected(selectedCashbook);
-                    dismiss();
-                }
-            });
         }
 
         if (searchCashbook != null) {
@@ -248,7 +212,6 @@ public class CashbookSwitchDialog extends DialogFragment {
                             showEmptyState(true);
                         } else {
                             showEmptyState(false);
-                            // Initial sort or filter could go here
                             adapter.updateCashbooks(allCashbooks);
                         }
                     }
@@ -295,7 +258,6 @@ public class CashbookSwitchDialog extends DialogFragment {
             loadingLayout.setVisibility(show ? View.VISIBLE : View.GONE);
         }
         if (cashbookRecyclerView != null) {
-            // Hide list while loading to avoid flicker
             cashbookRecyclerView.setVisibility(show ? View.GONE : View.VISIBLE);
         }
         if (emptyStateLayout != null) {

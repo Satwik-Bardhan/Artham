@@ -19,6 +19,7 @@ import com.phynix.artham.databinding.ActivitySettingsBinding;
 import com.phynix.artham.models.CashbookModel;
 import com.phynix.artham.models.Users;
 import com.phynix.artham.utils.ErrorHandler;
+import com.phynix.artham.utils.ThemeManager; // [NEW IMPORT]
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -28,9 +29,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.Locale;
 
 public class SettingsActivity extends AppCompatActivity {
@@ -53,12 +52,22 @@ public class SettingsActivity extends AppCompatActivity {
     // Data
     private String currentCashbookId;
 
+    // Theme Tracking
+    private String originalTheme;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // [FIX] Apply Theme BEFORE super.onCreate()
+        ThemeManager.applyActivityTheme(this);
+
         super.onCreate(savedInstanceState);
         binding = ActivitySettingsBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
         if (getSupportActionBar() != null) getSupportActionBar().hide();
+
+        // Track the current theme to detect changes when returning
+        originalTheme = ThemeManager.getTheme(this);
 
         // Init Firebase & State
         mAuth = FirebaseAuth.getInstance();
@@ -77,6 +86,16 @@ public class SettingsActivity extends AppCompatActivity {
 
         setupClickListeners();
         setupBottomNavigation();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Check if theme changed while we were away (e.g., in App Settings)
+        String currentTheme = ThemeManager.getTheme(this);
+        if (originalTheme != null && !originalTheme.equals(currentTheme)) {
+            recreate(); // Reload activity to apply new theme colors
+        }
     }
 
     private void setupClickListeners() {
@@ -164,7 +183,6 @@ public class SettingsActivity extends AppCompatActivity {
             }
 
             // [UPDATED] Simple & Private Location Badge
-            // We removed the messy URL. Now it just confirms the provider and security status.
             binding.primarySettingsLayout.dataLocation.setText("Google Cloud • Private Storage");
         }
     }

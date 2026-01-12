@@ -32,6 +32,7 @@ import com.phynix.artham.databinding.LayoutSearchBarBinding;
 import com.phynix.artham.databinding.LayoutSummaryCardsBinding;
 import com.phynix.artham.models.TransactionModel;
 import com.phynix.artham.utils.SnackbarHelper;
+import com.phynix.artham.utils.ThemeManager; // [NEW IMPORT]
 import com.phynix.artham.viewmodels.TransactionViewModel;
 import com.phynix.artham.viewmodels.TransactionViewModelFactory;
 import com.phynix.artham.utils.PdfReportGenerator;
@@ -67,7 +68,6 @@ public class TransactionActivity extends AppCompatActivity {
     private Calendar currentMonthCalendar;
 
     private ActivityTransactionBinding binding;
-    // These bindings are generated from <include> tags in activity_transaction.xml
     private LayoutSummaryCardsBinding summaryBinding;
     private LayoutPieChartBinding pieChartBinding;
     private LayoutSearchBarBinding searchBinding;
@@ -106,9 +106,13 @@ public class TransactionActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // [FIX] Apply Theme BEFORE super.onCreate()
+        ThemeManager.applyActivityTheme(this);
+
         super.onCreate(savedInstanceState);
         binding = ActivityTransactionBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
         if (getSupportActionBar() != null) getSupportActionBar().hide();
 
         currentCashbookId = getIntent().getStringExtra("cashbook_id");
@@ -134,7 +138,6 @@ public class TransactionActivity extends AppCompatActivity {
     }
 
     private void initializeUI() {
-        // Correctly initializing bindings from the 'binding' object
         summaryBinding = binding.summaryCards;
         pieChartBinding = binding.pieChartComponent;
         searchBinding = binding.searchBarContainer;
@@ -149,9 +152,15 @@ public class TransactionActivity extends AppCompatActivity {
 
         pieChartBinding.pieChart.setDragDecelerationFrictionCoef(0.95f);
         pieChartBinding.pieChart.setDrawHoleEnabled(true);
+
+        // Ensure hole color matches theme background if needed, or keep transparent
         pieChartBinding.pieChart.setHoleColor(Color.TRANSPARENT);
         pieChartBinding.pieChart.setTransparentCircleRadius(61f);
         pieChartBinding.pieChart.setHoleRadius(58f);
+
+        // Set No Data Text Color based on theme
+        int textColor = getThemeColor(android.R.attr.textColorPrimary);
+        pieChartBinding.pieChart.setNoDataTextColor(textColor);
     }
 
     private void initViewModel() {
@@ -219,6 +228,7 @@ public class TransactionActivity extends AppCompatActivity {
         pieChartBinding.categoriesCount.setText(String.valueOf(expenseByCategory.size()));
         pieChartBinding.highestCategory.setText(highestCategory);
 
+        // Dynamic Text Color for Theme
         int textColor = getThemeColor(android.R.attr.textColorPrimary);
 
         if (totalExpense == 0) {
@@ -260,6 +270,8 @@ public class TransactionActivity extends AppCompatActivity {
         dataSet.setValueLinePart1OffsetPercentage(80.f);
         dataSet.setValueLinePart1Length(0.4f);
         dataSet.setValueLinePart2Length(0.5f);
+
+        // Theme Colors applied to chart lines/text
         dataSet.setValueLineColor(textColor);
         dataSet.setValueTextColor(textColor);
         dataSet.setValueTextSize(10f);
@@ -280,7 +292,7 @@ public class TransactionActivity extends AppCompatActivity {
         String centerText = "Total\n₹" + String.format(Locale.US, "%.0f", totalExpense);
         pieChartBinding.pieChart.setCenterText(centerText);
         pieChartBinding.pieChart.setCenterTextSize(16f);
-        pieChartBinding.pieChart.setCenterTextColor(textColor);
+        pieChartBinding.pieChart.setCenterTextColor(textColor); // Matches theme text color
 
         pieChartBinding.pieChart.animateY(1000, Easing.EaseInOutQuad);
         pieChartBinding.pieChart.invalidate();

@@ -10,10 +10,15 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.widget.NestedScrollView;
 
+import com.phynix.artham.utils.ThemeManager; // [NEW IMPORT]
+
 public class HelpSupportActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // [FIX] Apply Theme BEFORE super.onCreate()
+        ThemeManager.applyActivityTheme(this);
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_help_support);
 
@@ -35,17 +40,23 @@ public class HelpSupportActivity extends AppCompatActivity {
         View faqLayout = findViewById(R.id.faqLayout);
 
         // FAQ Button: Smooth scroll to questions
-        btnFAQ.setOnClickListener(v -> {
-            if (scrollView != null && faqLayout != null) {
-                scrollView.smoothScrollTo(0, faqLayout.getTop());
-            }
-        });
+        if (btnFAQ != null) {
+            btnFAQ.setOnClickListener(v -> {
+                if (scrollView != null && faqLayout != null) {
+                    scrollView.smoothScrollTo(0, faqLayout.getTop());
+                }
+            });
+        }
 
-        // Contact Us Button - [FIX] Updated to support@artham.com
-        btnContactUs.setOnClickListener(v -> sendEmail("support@artham.com", "Support Request: Artham App"));
+        // Contact Us Button
+        if (btnContactUs != null) {
+            btnContactUs.setOnClickListener(v -> sendEmail("support@artham.com", "Support Request: Artham App"));
+        }
 
-        // Report Bug Button - [FIX] Updated to bugs@artham.com
-        btnReportBug.setOnClickListener(v -> sendEmail("bugs@artham.com", "Bug Report: Artham App"));
+        // Report Bug Button
+        if (btnReportBug != null) {
+            btnReportBug.setOnClickListener(v -> sendEmail("bugs@artham.com", "Bug Report: Artham App"));
+        }
     }
 
     private void sendEmail(String recipient, String subject) {

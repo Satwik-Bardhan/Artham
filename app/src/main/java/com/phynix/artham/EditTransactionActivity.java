@@ -5,15 +5,19 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.speech.RecognizerIntent;
 import android.text.TextUtils;
+import android.util.TypedValue;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -39,6 +43,7 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.phynix.artham.models.TransactionModel;
 import com.phynix.artham.utils.SnackbarHelper;
+import com.phynix.artham.utils.ThemeManager;
 import com.phynix.artham.viewmodels.TransactionViewModel;
 import com.phynix.artham.viewmodels.TransactionViewModelFactory;
 
@@ -84,7 +89,7 @@ public class EditTransactionActivity extends AppCompatActivity {
                     String category = result.getData().getStringExtra("selected_category");
                     if (category != null) {
                         selectedCategoryTextView.setText(category);
-                        selectedCategoryTextView.setTextColor(ContextCompat.getColor(this, R.color.primary_blue));
+                        selectedCategoryTextView.setTextColor(getThemeColor(R.attr.chk_primary_blue));
                         currentTransaction.setTransactionCategory(category);
                     }
                 }
@@ -115,8 +120,10 @@ public class EditTransactionActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        ThemeManager.applyActivityTheme(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_transaction);
+
         if (getSupportActionBar() != null) getSupportActionBar().hide();
 
         currentTransaction = (TransactionModel) getIntent().getSerializableExtra("transaction_model");
@@ -213,13 +220,16 @@ public class EditTransactionActivity extends AppCompatActivity {
         String party = currentTransaction.getPartyName();
         if (party != null && !party.isEmpty()) {
             partyTextView.setText(party);
-            partyTextView.setTextColor(ContextCompat.getColor(this, R.color.primary_blue));
+            partyTextView.setTextColor(getThemeColor(R.attr.chk_primary_blue));
         } else {
             partyTextView.setText("Select Party");
         }
 
         if (currentTransaction.getRemark() != null) remarkEditText.setText(currentTransaction.getRemark());
-        if (currentTransaction.getTags() != null) tagsEditText.setText(currentTransaction.getTags());
+
+        if (currentTransaction.getTags() != null) {
+            tagsEditText.setText(currentTransaction.getTags().toString().replace("[", "").replace("]", ""));
+        }
 
         updateDateText();
         updateTimeText();
@@ -236,6 +246,10 @@ public class EditTransactionActivity extends AppCompatActivity {
         if (backButton != null) backButton.setOnClickListener(v -> finish());
         if (cancelButton != null) cancelButton.setOnClickListener(v -> finish());
 
+        if (menuButton != null) {
+            menuButton.setOnClickListener(v -> showPopupMenu(v));
+        }
+
         View.OnClickListener dateListener = v -> showDatePicker();
         if (dateSelectorLayout != null) dateSelectorLayout.setOnClickListener(dateListener);
         if (dateTextView != null) dateTextView.setOnClickListener(dateListener);
@@ -248,17 +262,13 @@ public class EditTransactionActivity extends AppCompatActivity {
         if (calculatorButton != null) calculatorButton.setOnClickListener(v -> checkAndOpenCalculator());
         if (voiceInputButton != null) voiceInputButton.setOnClickListener(v -> startVoiceInput());
 
-        // [UPDATED] Pass the transaction type (IN/OUT) to ChooseCategoryActivity
         if (categorySelectorLayout != null) {
             categorySelectorLayout.setOnClickListener(v -> {
                 Intent intent = new Intent(this, ChooseCategoryActivity.class);
                 intent.putExtra("selected_category", selectedCategoryTextView.getText().toString());
                 intent.putExtra("cashbook_id", currentCashbookId);
-
-                // Determine type based on radio button
                 String type = radioIn.isChecked() ? "IN" : "OUT";
                 intent.putExtra("transaction_type", type);
-
                 categoryLauncher.launch(intent);
             });
         }
@@ -289,6 +299,28 @@ public class EditTransactionActivity extends AppCompatActivity {
         if (saveChangesButton != null) saveChangesButton.setOnClickListener(v -> saveChanges());
     }
 
+    private void showPopupMenu(View view) {
+        PopupMenu popup = new PopupMenu(this, view);
+        popup.getMenu().add("Delete");
+        popup.getMenu().add("Share");
+        popup.getMenu().add("Duplicate");
+
+        popup.setOnMenuItemClickListener(item -> {
+            if ("Delete".equals(item.getTitle())) {
+                showDeleteConfirmationDialog();
+                return true;
+            } else if ("Share".equals(item.getTitle())) {
+                shareTransaction();
+                return true;
+            } else if ("Duplicate".equals(item.getTitle())) {
+                duplicateTransaction();
+                return true;
+            }
+            return false;
+        });
+        popup.show();
+    }
+
     private void saveChanges() {
         String amountStr = amountEditText.getText().toString().trim();
         if (TextUtils.isEmpty(amountStr)) {
@@ -313,19 +345,21 @@ public class EditTransactionActivity extends AppCompatActivity {
             currentTransaction.setPartyName(party);
 
             currentTransaction.setRemark(remarkEditText.getText().toString().trim());
-            if (tagsEditText != null) currentTransaction.setTags(tagsEditText.getText().toString().trim());
+
+            String tagsStr = tagsEditText.getText().toString().trim();
+            currentTransaction.setTags(tagsStr);
 
             viewModel.updateTransaction(currentTransaction);
 
             showSnackbar("Transaction Updated");
+            Intent result = new Intent();
+            setResult(RESULT_OK, result);
             finish();
 
         } catch (NumberFormatException e) {
             amountEditText.setError("Invalid amount");
         }
     }
-
-
 
     private void deleteTransaction() {
         viewModel.deleteTransaction(currentTransaction.getTransactionId());
@@ -340,7 +374,7 @@ public class EditTransactionActivity extends AppCompatActivity {
         copy.setType(currentTransaction.getType());
         copy.setPaymentMode(currentTransaction.getPaymentMode());
         copy.setPartyName(currentTransaction.getPartyName());
-        copy.setRemark(currentTransaction.getRemark());
+        copy.setRemark(currentTransaction.getRemark() + " (Copy)");
         copy.setTags(currentTransaction.getTags());
         copy.setTimestamp(System.currentTimeMillis());
 
@@ -403,7 +437,7 @@ public class EditTransactionActivity extends AppCompatActivity {
                 String name = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
                 if (name != null) {
                     partyTextView.setText(name);
-                    partyTextView.setTextColor(ContextCompat.getColor(this, R.color.primary_blue));
+                    partyTextView.setTextColor(getThemeColor(R.attr.chk_primary_blue));
                     currentTransaction.setPartyName(name);
                 }
             }
@@ -523,6 +557,16 @@ public class EditTransactionActivity extends AppCompatActivity {
     }
 
     private void showSnackbar(String message) {
-        SnackbarHelper.show(this, message, R.id.footerLayout);
+        // [FIX] Anchor snackbar to footer
+        SnackbarHelper.show(this, message, findViewById(R.id.footerLayout));
+    }
+
+    // Helper for theme colors
+    private int getThemeColor(int attr) {
+        TypedValue typedValue = new TypedValue();
+        if (getTheme().resolveAttribute(attr, typedValue, true)) {
+            return typedValue.data;
+        }
+        return Color.BLACK;
     }
 }

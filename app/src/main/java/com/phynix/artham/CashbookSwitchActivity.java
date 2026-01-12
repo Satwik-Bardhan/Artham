@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -16,6 +17,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -51,18 +53,16 @@ public class CashbookSwitchActivity extends AppCompatActivity {
     private SwipeRefreshLayout swipeRefreshLayout;
     private LinearLayout emptyStateLayout;
     private LinearLayout loadingLayout;
-    private View mainContent; // This refers to the CardView with ID mainCard
+    private View mainContent;
 
     // UI Components - Buttons
-    private Button cancelButton;
-    private Button addNewButton;
     private Button emptyStateCreateButton;
     private ImageView closeButton;
 
     // UI Components - Search & Filter
     private EditText searchEditText;
     private ChipGroup chipGroup;
-    private LinearLayout sortButton; // FIXED: Changed to LinearLayout to match XML
+    private LinearLayout sortButton;
 
     // UI Components - FAB
     private FloatingActionButton quickAddFab;
@@ -85,11 +85,10 @@ public class CashbookSwitchActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        // Apply Theme
         ThemeManager.applyActivityTheme(this);
 
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_cashbook_switch); // Ensure this matches your XML filename
+        setContentView(R.layout.activity_cashbook_switch);
 
         if (getSupportActionBar() != null) {
             getSupportActionBar().hide();
@@ -113,36 +112,30 @@ public class CashbookSwitchActivity extends AppCompatActivity {
         setupClickListeners();
         setupSearchListener();
         setupFilterListener();
-        loadCashbooks(); // Initial load
+        loadCashbooks();
     }
 
     private void initViews() {
-        // Main Containers
         cashbookRecyclerView = findViewById(R.id.cashbookRecyclerView);
         swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
         emptyStateLayout = findViewById(R.id.emptyStateLayout);
         loadingLayout = findViewById(R.id.loadingLayout);
-        mainContent = findViewById(R.id.mainCard); // The CardView
+        mainContent = findViewById(R.id.mainCard);
 
-        // Buttons
-        cancelButton = findViewById(R.id.cancelButton);
-        addNewButton = findViewById(R.id.addNewButton);
+        // Footer buttons removed here
+
         emptyStateCreateButton = findViewById(R.id.emptyStateCreateButton);
         closeButton = findViewById(R.id.closeButton);
 
-        // Search & Filter
         searchEditText = findViewById(R.id.searchEditText);
         chipGroup = findViewById(R.id.chipGroup);
-        sortButton = findViewById(R.id.sortButton); // Now correctly cast as LinearLayout
+        sortButton = findViewById(R.id.sortButton);
 
-        // FAB
         quickAddFab = findViewById(R.id.quickAddFab);
     }
 
     private void setupRecyclerView() {
         cashbookRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-
-        // CRITICAL FIX: Disable nested scrolling to allow smooth scroll inside NestedScrollView
         cashbookRecyclerView.setNestedScrollingEnabled(false);
 
         cashbookAdapter = new CashbookAdapter(this, new ArrayList<>(), new CashbookAdapter.OnCashbookClickListener() {
@@ -165,7 +158,6 @@ public class CashbookSwitchActivity extends AppCompatActivity {
         cashbookRecyclerView.setAdapter(cashbookAdapter);
         swipeRefreshLayout.setOnRefreshListener(this::loadCashbooks);
 
-        // Set refresh colors to match your theme
         swipeRefreshLayout.setColorSchemeResources(
                 R.color.primary_blue,
                 R.color.income_green,
@@ -174,17 +166,13 @@ public class CashbookSwitchActivity extends AppCompatActivity {
     }
 
     private void setupClickListeners() {
-        // Navigation / Actions
         closeButton.setOnClickListener(v -> finish());
-        cancelButton.setOnClickListener(v -> finish());
 
-        // Creation Actions
+        // Use the same handler for FAB and Empty State button
         View.OnClickListener addAction = v -> handleAddNewCashbook();
-        addNewButton.setOnClickListener(addAction);
         emptyStateCreateButton.setOnClickListener(addAction);
         quickAddFab.setOnClickListener(addAction);
 
-        // Sort Action
         sortButton.setOnClickListener(v -> showSortOptions());
     }
 
@@ -240,7 +228,6 @@ public class CashbookSwitchActivity extends AppCompatActivity {
                             cashbook.setCashbookId(snapshot.getKey());
                             cashbook.setCurrent(cashbook.getCashbookId().equals(currentCashbookId));
 
-                            // Calculate stats for display
                             DataSnapshot transactionsSnapshot = snapshot.child("transactions");
                             calculateStatsForCashbook(cashbook, transactionsSnapshot);
 
@@ -297,38 +284,51 @@ public class CashbookSwitchActivity extends AppCompatActivity {
 
     private void showCreateCashbookDialog(@Nullable CashbookModel cashbookToEdit) {
         try {
-            View dialogView = getLayoutInflater().inflate(R.layout.dialog_create_cashbook, null);
+            View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_create_cashbook, null);
+
+            AlertDialog dialog = new MaterialAlertDialogBuilder(this)
+                    .setView(dialogView)
+                    .setCancelable(false)
+                    .create();
+
+            TextView titleView = dialogView.findViewById(R.id.dialogTitle);
             EditText nameInput = dialogView.findViewById(R.id.cashbookNameInput);
             EditText descInput = dialogView.findViewById(R.id.cashbookDescInput);
+            Button btnSave = dialogView.findViewById(R.id.btnSave);
+            Button btnCancel = dialogView.findViewById(R.id.btnCancel);
 
             String title = (cashbookToEdit == null) ? "Create New Cashbook" : "Edit Cashbook";
-            String positiveButton = (cashbookToEdit == null) ? "Create" : "Update";
+            String btnText = (cashbookToEdit == null) ? "Create" : "Update";
+
+            titleView.setText(title);
+            btnSave.setText(btnText);
 
             if (cashbookToEdit != null) {
                 nameInput.setText(cashbookToEdit.getName());
                 descInput.setText(cashbookToEdit.getDescription());
             }
 
-            new MaterialAlertDialogBuilder(this)
-                    .setTitle(title)
-                    .setView(dialogView)
-                    .setPositiveButton(positiveButton, (dialog, which) -> {
-                        String name = nameInput.getText().toString().trim();
-                        String description = descInput.getText().toString().trim();
+            btnSave.setOnClickListener(v -> {
+                String name = nameInput.getText().toString().trim();
+                String description = descInput.getText().toString().trim();
 
-                        if (name.isEmpty()) {
-                            showSnackbar("Please enter a cashbook name");
-                            return;
-                        }
+                if (name.isEmpty()) {
+                    showSnackbar("Please enter a cashbook name");
+                    return;
+                }
 
-                        if (cashbookToEdit == null) {
-                            createNewCashbook(name, description);
-                        } else {
-                            updateCashbook(cashbookToEdit, name, description);
-                        }
-                    })
-                    .setNegativeButton("Cancel", null)
-                    .show();
+                if (cashbookToEdit == null) {
+                    createNewCashbook(name, description);
+                } else {
+                    updateCashbook(cashbookToEdit, name, description);
+                }
+                dialog.dismiss();
+            });
+
+            btnCancel.setOnClickListener(v -> dialog.dismiss());
+
+            dialog.show();
+
         } catch (Exception e) {
             Log.e(TAG, "Error showing dialog", e);
             showSnackbar("Error opening dialog");
@@ -461,7 +461,6 @@ public class CashbookSwitchActivity extends AppCompatActivity {
         List<CashbookModel> filteredList;
         String query = searchEditText.getText().toString().toLowerCase().trim();
 
-        // 1. Search Filtering
         List<CashbookModel> searchResults;
         if (query.isEmpty()) {
             searchResults = new ArrayList<>(allCashbooks);
@@ -471,7 +470,6 @@ public class CashbookSwitchActivity extends AppCompatActivity {
                     .collect(Collectors.toList());
         }
 
-        // 2. Category Filtering
         switch (currentFilter) {
             case "active":
                 filteredList = searchResults.stream().filter(CashbookModel::isActive).collect(Collectors.toList());
@@ -479,12 +477,11 @@ public class CashbookSwitchActivity extends AppCompatActivity {
             case "favorites":
                 filteredList = searchResults.stream().filter(CashbookModel::isFavorite).collect(Collectors.toList());
                 break;
-            default: // "all" or "recent"
+            default:
                 filteredList = searchResults;
                 break;
         }
 
-        // 3. Sorting
         switch (currentSort) {
             case "name_asc":
                 filteredList.sort((c1, c2) -> c1.getName().compareToIgnoreCase(c2.getName()));
@@ -506,8 +503,6 @@ public class CashbookSwitchActivity extends AppCompatActivity {
 
         cashbookAdapter.updateCashbooks(filteredList);
 
-        // Logic: Only show "Empty State" (big folder icon) if the user HAS NO DATA at all.
-        // If they have data but filtered it down to 0, just show empty list (so they can clear filter).
         if (allCashbooks.isEmpty()) {
             showEmptyState(true);
         } else {
@@ -528,16 +523,20 @@ public class CashbookSwitchActivity extends AppCompatActivity {
     private void showLoading(boolean show) {
         isLoading = show;
         loadingLayout.setVisibility(show ? View.VISIBLE : View.GONE);
-        // We only hide main content if we are loading to avoid flicker,
-        // but generally keeping main content visible behind loading is fine too.
+        // Hide empty state only if we are showing loading
         if (show) {
             emptyStateLayout.setVisibility(View.GONE);
         }
+        // Footer toggle removed
     }
 
     private void showEmptyState(boolean show) {
         emptyStateLayout.setVisibility(show ? View.VISIBLE : View.GONE);
         mainContent.setVisibility(show ? View.GONE : View.VISIBLE);
+        // Hide FAB if empty state is visible (since empty state has its own button)
+        if (quickAddFab != null) {
+            quickAddFab.setVisibility(show ? View.GONE : View.VISIBLE);
+        }
     }
 
     private void showSnackbar(String message) {

@@ -30,7 +30,9 @@ public class AppSettingsActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // [FIX] Apply Theme BEFORE super.onCreate()
         ThemeManager.applyActivityTheme(this);
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_app_settings);
 
@@ -38,7 +40,7 @@ public class AppSettingsActivity extends AppCompatActivity {
             getSupportActionBar().hide();
         }
 
-        // Store original theme to check for changes later
+        // Store original theme to check for changes later in onResume
         originalTheme = ThemeManager.getTheme(this);
 
         initializeUI();
@@ -52,10 +54,10 @@ public class AppSettingsActivity extends AppCompatActivity {
         // Check if theme changed while we were in ThemeSelectionActivity
         String currentTheme = ThemeManager.getTheme(this);
         if (!originalTheme.equals(currentTheme)) {
-            // Theme changed, recreate this activity to apply new colors
+            // Theme changed, recreate this activity to apply new colors immediately
             recreate();
         } else {
-            // Just update the text label
+            // Just update the text label if the theme didn't change but maybe something else did
             updateThemeLabel();
         }
     }
@@ -83,8 +85,11 @@ public class AppSettingsActivity extends AppCompatActivity {
             String currentTheme = ThemeManager.getTheme(this);
             String displayTheme = "Dark"; // Default
 
-            if (currentTheme.equals(ThemeManager.THEME_LIGHT)) displayTheme = "Light";
-            else if (currentTheme.equals(ThemeManager.THEME_PURPLE)) displayTheme = "Purple";
+            if (ThemeManager.THEME_LIGHT.equals(currentTheme)) {
+                displayTheme = "Light";
+            } else if (ThemeManager.THEME_PURPLE.equals(currentTheme)) {
+                displayTheme = "Purple";
+            }
 
             currentThemeTextView.setText(displayTheme);
         }
@@ -94,7 +99,9 @@ public class AppSettingsActivity extends AppCompatActivity {
         View backBtn = findViewById(R.id.back_button);
         if (backBtn != null) backBtn.setOnClickListener(v -> finish());
 
-        if (dataBackupLayout != null) dataBackupLayout.setOnClickListener(v -> showBackupStatusDialog());
+        if (dataBackupLayout != null) {
+            dataBackupLayout.setOnClickListener(v -> showBackupStatusDialog());
+        }
 
         if (calculatorSwitch != null) {
             calculatorSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
@@ -105,10 +112,11 @@ public class AppSettingsActivity extends AppCompatActivity {
         }
 
         if (languageLayout != null) {
-            languageLayout.setOnClickListener(v -> Toast.makeText(this, "Language selection coming soon!", Toast.LENGTH_SHORT).show());
+            languageLayout.setOnClickListener(v ->
+                    Toast.makeText(this, "Language selection coming soon!", Toast.LENGTH_SHORT).show());
         }
 
-        // NEW: Open ThemeSelectionActivity instead of Dialog
+        // Open ThemeSelectionActivity
         if (themeLayout != null) {
             themeLayout.setOnClickListener(v -> {
                 Intent intent = new Intent(AppSettingsActivity.this, ThemeSelectionActivity.class);
