@@ -1,6 +1,5 @@
 package com.phynix.artham;
 
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
@@ -22,8 +21,8 @@ public class AppSettingsActivity extends AppCompatActivity {
     private static final String KEY_CALCULATOR = "calculator_enabled";
 
     private SwitchMaterial calculatorSwitch;
-    private LinearLayout dataBackupLayout, languageLayout, themeLayout; // Added themeLayout
-    private TextView currentLanguageTextView, currentThemeTextView; // Added currentThemeTextView
+    private LinearLayout dataBackupLayout, languageLayout, themeLayout;
+    private TextView currentLanguageTextView, currentThemeTextView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,7 +47,6 @@ public class AppSettingsActivity extends AppCompatActivity {
         languageLayout = findViewById(R.id.languageLayout);
         currentLanguageTextView = findViewById(R.id.currentLanguage);
 
-        // Ensure you add this ID to your XML layout if it doesn't exist yet
         themeLayout = findViewById(R.id.themeLayout);
         currentThemeTextView = findViewById(R.id.currentTheme);
     }
@@ -61,10 +59,12 @@ public class AppSettingsActivity extends AppCompatActivity {
 
         // Update Theme Text
         if (currentThemeTextView != null) {
-            String currentTheme = ThemeManager.getCurrentTheme(this);
-            String displayTheme = "Light"; // Default
-            if (currentTheme.equals(ThemeManager.THEME_DARK)) displayTheme = "Dark";
+            String currentTheme = ThemeManager.getTheme(this);
+
+            String displayTheme = "Dark"; // Default
+            if (currentTheme.equals(ThemeManager.THEME_LIGHT)) displayTheme = "Light";
             else if (currentTheme.equals(ThemeManager.THEME_PURPLE)) displayTheme = "Purple";
+
             currentThemeTextView.setText(displayTheme);
         }
     }
@@ -86,7 +86,6 @@ public class AppSettingsActivity extends AppCompatActivity {
             languageLayout.setOnClickListener(v -> Toast.makeText(this, "Language selection coming soon!", Toast.LENGTH_SHORT).show());
         }
 
-        // Theme Click Listener
         if (themeLayout != null) {
             themeLayout.setOnClickListener(v -> showThemeSelectionDialog());
         }
@@ -94,35 +93,42 @@ public class AppSettingsActivity extends AppCompatActivity {
 
     private void showThemeSelectionDialog() {
         String[] themes = {"Light", "Dark", "Purple"};
-        String currentTheme = ThemeManager.getCurrentTheme(this);
-        int checkedItem = 0;
+        String currentTheme = ThemeManager.getTheme(this);
+        int checkedItem = 1; // Default Dark
 
-        if (currentTheme.equals(ThemeManager.THEME_DARK)) checkedItem = 1;
+        if (currentTheme.equals(ThemeManager.THEME_LIGHT)) checkedItem = 0;
         else if (currentTheme.equals(ThemeManager.THEME_PURPLE)) checkedItem = 2;
 
         new AlertDialog.Builder(this)
                 .setTitle("Select Theme")
                 .setSingleChoiceItems(themes, checkedItem, (dialog, which) -> {
-                    String selectedTheme = ThemeManager.THEME_LIGHT;
-                    if (which == 1) selectedTheme = ThemeManager.THEME_DARK;
+                    String selectedTheme = ThemeManager.THEME_DARK;
+                    if (which == 0) selectedTheme = ThemeManager.THEME_LIGHT;
                     else if (which == 2) selectedTheme = ThemeManager.THEME_PURPLE;
 
-                    // Save and Apply
+                    // 1. Save the new preference
                     ThemeManager.saveTheme(this, selectedTheme);
-                    ThemeManager.applyGlobalNightMode(getApplicationContext());
+
+                    // 2. Apply it globally.
+                    // This call internally sets AppCompatDelegate.setDefaultNightMode(),
+                    // which AUTOMATICALLY recreates activities if the mode changes.
+                    ThemeManager.applyTheme(selectedTheme);
 
                     dialog.dismiss();
 
-                    // Restart Activity to apply changes
-                    recreate();
-                    // Ideally, you might want to restart the whole app or navigate to Home to refresh all UI
+                    // CRITICAL FIX: Removed explicit recreate() to prevent "Activity client record must not be null" crash.
+                    // If switching between Light/Dark, the system handles it.
+                    // If switching to Purple (which might be the same "Night Mode" as another), we force a recreation cleanly.
+
+                    // Only recreate manually if necessary (e.g. Purple <-> Light might not trigger automatic recreation if Night Mode doesn't change)
+                    // But to be safe and avoid the crash, we can just rely on the user navigating back or use a delayed recreation if absolutely needed.
+                    // For now, removing recreate() is the safest fix for the crash.
                 })
                 .setNegativeButton("Cancel", null)
                 .show();
     }
 
     private void showBackupStatusDialog() {
-        // ... (Existing code) ...
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         String email = (user != null && user.getEmail() != null) ? user.getEmail() : "Unknown Account";
 

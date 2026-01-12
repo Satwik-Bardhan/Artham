@@ -24,4 +24,6 @@
 
     <attr name="chk_card_start" format="color" />
     <attr name="chk_card_end" format="color" />
+
+    <attr name="chk_splash_wave" format="color|reference" />
 </resources>

@@ -26,26 +26,37 @@
     <color name="dark_text_primary">#E0E0E0</color>
     <color name="dark_text_secondary">#B0B0B0</color>
     <color name="dark_text_hint">#707070</color>
-
     <color name="dark_balance_blue">#0D47A1</color>
 
     <color name="purple_primary">#B388FF</color>
     <color name="purple_primary_dark">#7C4DFF</color>
     <color name="purple_secondary">#69F0AE</color>
-    <color name="purple_background">#0F0518</color>
+    <color name="purple_background">#1A0033</color>
     <color name="purple_surface">#1D0B2E</color>
     <color name="purple_divider">#2D1B4E</color>
     <color name="purple_selected_item">#351B57</color>
     <color name="purple_text_primary">#EDE7F6</color>
     <color name="purple_text_secondary">#B39DDB</color>
     <color name="purple_text_hint">#7E57C2</color>
-
     <color name="purple_balance_blue">#311B92</color>
+    <color name="purple_accent">#7C4DFF</color>
+
+    <color name="splash_wave_light">#03A9F4</color>
+    <color name="splash_wave_dark">#00BCD4</color>
+    <color name="splash_wave_purple">#7C4DFF</color>
+    <color name="primary_blue">@color/light_primary</color>
+    <color name="primary_blue_dark">@color/light_primary_dark</color>
+    <color name="secondary_green">@color/light_secondary</color>
+    <color name="backgroundColor">@color/light_background</color>
+    <color name="surfaceColor">@color/light_surface</color>
+    <color name="divider_color">@color/light_divider</color>
+    <color name="textColorPrimary">@color/light_text_primary</color>
+    <color name="textColorSecondary">@color/light_text_secondary</color>
+    <color name="textColorHint">@color/light_text_hint</color>
+    <color name="balance_blue">@color/light_balance_blue</color>
 
     <color name="income_green">#43A047</color>
     <color name="expense_red">#E53935</color>
-
-    <color name="balance_blue">@color/light_balance_blue</color>
 
     <color name="bottom_nav_icon_text_color">#757575</color>
     <color name="bottom_nav_selected">#2196F3</color>
@@ -57,18 +68,10 @@
     <color name="category_transport">#29B6F6</color>
     <color name="category_rent">#FFA726</color>
     <color name="category_salary">#66BB6A</color>
+    <color name="category_freelance_income">#8BC34A</color>
     <color name="category_shopping">#EC407A</color>
     <color name="category_health">#EF5350</color>
     <color name="category_education">#5C6BC0</color>
     <color name="category_other">#78909C</color>
-
-    <color name="primary_blue">@color/light_primary</color>
-    <color name="primary_blue_dark">@color/light_primary_dark</color>
-    <color name="secondary_green">@color/light_secondary</color>
-    <color name="backgroundColor">@color/light_background</color>
-    <color name="surfaceColor">@color/light_surface</color>
-    <color name="divider_color">@color/light_divider</color>
-    <color name="textColorPrimary">@color/light_text_primary</color>
-    <color name="textColorSecondary">@color/light_text_secondary</color>
-    <color name="textColorHint">@color/light_text_hint</color>
+    <color name="category_default">#9E9E9E</color>
 </resources>

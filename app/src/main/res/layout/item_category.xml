@@ -8,24 +8,24 @@
     android:orientation="horizontal"
     android:gravity="center_vertical"
     android:paddingHorizontal="16dp"
-    android:paddingVertical="10dp"
+    android:paddingVertical="12dp"
     android:background="?attr/selectableItemBackground"
     android:clickable="true"
     android:focusable="true">
 
     <FrameLayout
         android:id="@+id/iconContainer"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:background="@drawable/bg_circle_soft">
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/circle_shape">
 
         <ImageView
             android:id="@+id/categoryIcon"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
             android:layout_gravity="center"
             android:src="@drawable/ic_category"
-            app:tint="?attr/chk_primary_blue"
+            app:tint="@android:color/white"
             android:contentDescription="Category Icon" />
     </FrameLayout>
 
@@ -35,36 +35,33 @@
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:layout_marginStart="16dp"
-        tools:text="Groceries"
+        android:text="Category Name"
         android:fontFamily="@font/app_font"
         android:textColor="?attr/chk_textColorPrimary"
         android:textSize="16sp"
-        android:textStyle="normal"
-        android:maxLines="1"
-        android:ellipsize="end" />
+        android:textStyle="normal" />
 
     <ImageView
         android:id="@+id/selectionCheck"
         android:layout_width="24dp"
         android:layout_height="24dp"
         android:src="@drawable/ic_check"
-        app:tint="?attr/chk_primary_blue"
-        android:layout_marginEnd="4dp"
+        app:tint="?attr/chk_balanceColor"
+        android:layout_marginEnd="8dp"
         android:visibility="gone"
         tools:visibility="visible"/>
 
     <ImageView
         android:id="@+id/categoryMenu"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:src="@drawable/ic_more_vert"
         android:background="?attr/selectableItemBackgroundBorderless"
         app:tint="?attr/chk_textColorSecondary"
-        android:padding="6dp"
+        android:padding="8dp"
         android:clickable="true"
         android:focusable="true"
         android:visibility="gone"
-        tools:visibility="visible"
-        android:contentDescription="Options" />
+        tools:visibility="visible" />
 
 </LinearLayout>

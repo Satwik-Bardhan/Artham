@@ -3,7 +3,9 @@ package com.phynix.artham.utils;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
+
 import androidx.appcompat.app.AppCompatDelegate;
+
 import com.phynix.artham.R;
 
 public class ThemeManager {
@@ -11,58 +13,58 @@ public class ThemeManager {
     public static final String THEME_DARK = "dark";
     public static final String THEME_PURPLE = "purple";
 
-    private static final String PREFS_NAME = "AppSettingsPrefs";
-    private static final String KEY_THEME = "app_theme";
+    private static final String PREF_NAME = "app_theme";
+    private static final String KEY_THEME = "selected_theme";
 
     /**
-     * Sets the correct theme style on an Activity.
-     * MUST be called before setContentView() in every Activity's onCreate.
+     * Applies the selected theme to the entire application using AppCompatDelegate.
+     * This handles Night/Light mode switching.
      */
-    public static void applyActivityTheme(Activity activity) {
-        SharedPreferences prefs = activity.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        String theme = prefs.getString(KEY_THEME, THEME_LIGHT);
-
+    public static void applyTheme(String theme) {
         switch (theme) {
-            case THEME_DARK:
-                activity.setTheme(R.style.Theme_Artham_Dark);
-                break;
-            case THEME_PURPLE:
-                activity.setTheme(R.style.Theme_Artham_Purple);
-                break;
             case THEME_LIGHT:
-            default:
-                activity.setTheme(R.style.Theme_Artham);
+            case THEME_PURPLE:
+                // Both Light and Purple use the "Light" mode base for resources
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
                 break;
-        }
-    }
-
-    /**
-     * Applies the Night Mode setting globally.
-     * Should be called in Application.onCreate() or when theme changes.
-     */
-    public static void applyGlobalNightMode(Context context) {
-        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        String theme = prefs.getString(KEY_THEME, THEME_LIGHT);
-
-        switch (theme) {
             case THEME_DARK:
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
                 break;
-            case THEME_LIGHT:
-            case THEME_PURPLE:
-                // Both Light and Purple are "Day" modes in terms of system flags
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+            default:
+                // Default is Dark
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
                 break;
         }
     }
 
-    public static String getCurrentTheme(Context context) {
-        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        return prefs.getString(KEY_THEME, THEME_LIGHT);
+    /**
+     * Applies the specific style to the Activity context.
+     * Call this BEFORE super.onCreate() in your Activities.
+     */
+    public static void applyActivityTheme(Activity activity) {
+        SharedPreferences prefs = activity.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+        // Default is Dark
+        String theme = prefs.getString(KEY_THEME, THEME_DARK);
+
+        if (THEME_PURPLE.equals(theme)) {
+            activity.setTheme(R.style.Theme_Artham_Purple);
+        } else if (THEME_DARK.equals(theme)) {
+            activity.setTheme(R.style.Theme_Artham_Dark);
+        } else {
+            activity.setTheme(R.style.Theme_Artham); // Light
+        }
     }
 
     public static void saveTheme(Context context, String theme) {
-        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         prefs.edit().putString(KEY_THEME, theme).apply();
+        // Automatically apply the theme globally
+        applyTheme(theme);
+    }
+
+    public static String getTheme(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+        // Default is Dark
+        return prefs.getString(KEY_THEME, THEME_DARK);
     }
 }

@@ -8,5 +8,5 @@
         android:endColor="?attr/chk_card_end"
         android:type="linear" />
 
-    <corners android:radius="1odp" />
+    <corners android:radius="10dp" />
 </shape>

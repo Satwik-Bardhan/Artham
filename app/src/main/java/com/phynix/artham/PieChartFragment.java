@@ -48,7 +48,7 @@ public class PieChartFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.layout_pie_chart_card, container, false);
+        View view = inflater.inflate(R.layout.layout_pie_chart, container, false);
 
         pieChart = view.findViewById(R.id.pieChart);
         toggleButton = view.findViewById(R.id.togglePieChartButton);

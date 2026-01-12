@@ -12,41 +12,40 @@
 
     <style name="Theme.Artham" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <item name="android:fontFamily">@font/app_font</item>
-
-        <item name="colorPrimary">#0277BD</item>
-        <item name="colorPrimaryDark">#004C8C</item>
-        <item name="colorSecondary">#0288D1</item>
-
-        <item name="android:colorBackground">#F5F9FC</item>
-        <item name="colorSurface">#FFFFFF</item>
-        <item name="android:statusBarColor">#F5F9FC</item>
+        <item name="colorPrimary">@color/light_primary</item>
+        <item name="colorPrimaryDark">@color/light_primary_dark</item>
+        <item name="colorSecondary">@color/light_secondary</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorOnSecondary">@color/white</item>
+        <item name="android:colorBackground">@color/light_background</item>
+        <item name="colorSurface">@color/light_surface</item>
+        <item name="android:statusBarColor">@color/light_background</item>
         <item name="android:windowLightStatusBar">true</item>
 
-        <item name="chk_backgroundColor">#F5F9FC</item>
-        <item name="chk_surfaceColor">#FFFFFF</item>
-        <item name="chk_dividerHorizontal">#E3EAF2</item>
-        <item name="chk_dividerVertical">#E3EAF2</item>
-        <item name="chk_selectedItemColor">#E1F5FE</item>
-
-        <item name="chk_textColorPrimary">#0D47A1</item>
-        <item name="chk_textColorSecondary">#455A64</item>
+        <item name="chk_backgroundColor">@color/light_background</item>
+        <item name="chk_surfaceColor">@color/light_surface</item>
+        <item name="chk_dividerHorizontal">@color/light_divider</item>
+        <item name="chk_dividerVertical">@color/light_divider</item>
+        <item name="chk_selectedItemColor">@color/light_selected_item</item>
+        <item name="chk_textColorPrimary">@color/light_text_primary</item>
+        <item name="chk_textColorSecondary">@color/light_text_secondary</item>
         <item name="chk_textColorHint">@color/light_text_hint</item>
-
-        <item name="chk_primary_blue">#0277BD</item>
-        <item name="chk_secondary_green">#0288D1</item>
+        <item name="android:textColorPrimary">@color/light_text_primary</item>
+        <item name="android:textColorSecondary">@color/light_text_secondary</item>
+        <item name="android:textColorHint">@color/light_text_hint</item>
+        <item name="chk_primary_blue">@color/light_primary</item>
+        <item name="chk_secondary_green">@color/light_secondary</item>
         <item name="chk_incomeColor">@color/income_green</item>
         <item name="chk_expenseColor">@color/expense_red</item>
-        <item name="chk_balanceColor">#01579B</item>
-
-        <item name="chk_bottomNavIconTextColor">#546E7A</item>
-        <item name="chk_bottomNavSelectedColor">#0277BD</item>
-        <item name="chk_bottomNavBorderColor">#E3EAF2</item>
-
-        <item name="buttonStyle">@style/ProfessionalButton</item>
-        <item name="android:textColorPrimary">#0D47A1</item>
-
+        <item name="chk_balanceColor">@color/light_balance_blue</item>
+        <item name="chk_bottomNavIconTextColor">@color/bottom_nav_icon_text_color</item>
+        <item name="chk_bottomNavSelectedColor">@color/light_primary</item>
+        <item name="chk_bottomNavBorderColor">@color/light_divider</item>
         <item name="chk_card_start">#001021</item>
         <item name="chk_card_end">#023E6B</item>
+        <item name="buttonStyle">@style/ProfessionalButton</item>
+
+        <item name="chk_splash_wave">@color/splash_wave_light</item>
     </style>
 
     <style name="Theme.Artham.Dark" parent="Theme.MaterialComponents.DayNight.NoActionBar">
@@ -58,6 +57,7 @@
         <item name="colorSurface">@color/dark_surface</item>
         <item name="android:statusBarColor">@color/dark_background</item>
         <item name="android:windowLightStatusBar">false</item>
+
         <item name="chk_backgroundColor">@color/dark_background</item>
         <item name="chk_surfaceColor">@color/dark_surface</item>
         <item name="chk_dividerHorizontal">@color/dark_divider</item>
@@ -66,18 +66,20 @@
         <item name="chk_textColorPrimary">@color/dark_text_primary</item>
         <item name="chk_textColorSecondary">@color/dark_text_secondary</item>
         <item name="chk_textColorHint">@color/dark_text_hint</item>
+        <item name="android:textColorPrimary">@color/dark_text_primary</item>
         <item name="chk_primary_blue">@color/dark_primary</item>
         <item name="chk_secondary_green">@color/dark_secondary</item>
         <item name="chk_incomeColor">@color/income_green</item>
         <item name="chk_expenseColor">@color/expense_red</item>
-        <item name="chk_balanceColor">@color/dark_primary</item>
+        <item name="chk_balanceColor">@color/dark_balance_blue</item>
         <item name="chk_bottomNavIconTextColor">@color/dark_text_secondary</item>
         <item name="chk_bottomNavSelectedColor">@color/dark_primary</item>
         <item name="chk_bottomNavBorderColor">@color/dark_divider</item>
-        <item name="buttonStyle">@style/ProfessionalButton</item>
-        <item name="android:textColorPrimary">@color/dark_text_primary</item>
         <item name="chk_card_start">#1A2938</item>
         <item name="chk_card_end">#2C3E50</item>
+        <item name="buttonStyle">@style/ProfessionalButton</item>
+
+        <item name="chk_splash_wave">@color/splash_wave_dark</item>
     </style>
 
     <style name="Theme.Artham.Purple" parent="Theme.MaterialComponents.DayNight.NoActionBar">
@@ -89,6 +91,7 @@
         <item name="colorSurface">@color/purple_surface</item>
         <item name="android:statusBarColor">@color/purple_background</item>
         <item name="android:windowLightStatusBar">false</item>
+
         <item name="chk_backgroundColor">@color/purple_background</item>
         <item name="chk_surfaceColor">@color/purple_surface</item>
         <item name="chk_dividerHorizontal">@color/purple_divider</item>
@@ -97,18 +100,28 @@
         <item name="chk_textColorPrimary">@color/purple_text_primary</item>
         <item name="chk_textColorSecondary">@color/purple_text_secondary</item>
         <item name="chk_textColorHint">@color/purple_text_hint</item>
-        <item name="chk_primary_blue">@color/purple_primary</item>
+        <item name="android:textColorPrimary">@color/purple_text_primary</item>
+        <item name="chk_primary_blue">@color/purple_accent</item>
         <item name="chk_secondary_green">@color/purple_secondary</item>
         <item name="chk_incomeColor">@color/income_green</item>
         <item name="chk_expenseColor">@color/expense_red</item>
-        <item name="chk_balanceColor">@color/purple_primary</item>
+        <item name="chk_balanceColor">@color/purple_balance_blue</item>
         <item name="chk_bottomNavIconTextColor">@color/purple_text_secondary</item>
         <item name="chk_bottomNavSelectedColor">@color/purple_primary</item>
         <item name="chk_bottomNavBorderColor">@color/purple_divider</item>
-        <item name="buttonStyle">@style/ProfessionalButton</item>
-        <item name="android:textColorPrimary">@color/purple_text_primary</item>
         <item name="chk_card_start">#311B92</item>
         <item name="chk_card_end">#6A1B9A</item>
+        <item name="buttonStyle">@style/ProfessionalButton</item>
+
+        <item name="chk_splash_wave">@color/splash_wave_purple</item>
+    </style>
+
+    <style name="Theme.Artham.Dialog" parent="Theme.Artham">
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:backgroundDimEnabled">true</item>
+        <item name="android:windowMinWidthMajor">90%</item>
+        <item name="android:windowMinWidthMinor">90%</item>
     </style>
 
 </resources>

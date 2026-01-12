@@ -4,7 +4,6 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Build;
@@ -13,7 +12,6 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.TypedValue;
 import android.view.View;
-import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -33,7 +31,7 @@ import com.phynix.artham.databinding.LayoutPieChartBinding;
 import com.phynix.artham.databinding.LayoutSearchBarBinding;
 import com.phynix.artham.databinding.LayoutSummaryCardsBinding;
 import com.phynix.artham.models.TransactionModel;
-import com.phynix.artham.utils.SnackbarHelper; // [NEW IMPORT]
+import com.phynix.artham.utils.SnackbarHelper;
 import com.phynix.artham.viewmodels.TransactionViewModel;
 import com.phynix.artham.viewmodels.TransactionViewModelFactory;
 import com.phynix.artham.utils.PdfReportGenerator;
@@ -69,6 +67,7 @@ public class TransactionActivity extends AppCompatActivity {
     private Calendar currentMonthCalendar;
 
     private ActivityTransactionBinding binding;
+    // These bindings are generated from <include> tags in activity_transaction.xml
     private LayoutSummaryCardsBinding summaryBinding;
     private LayoutPieChartBinding pieChartBinding;
     private LayoutSearchBarBinding searchBinding;
@@ -135,6 +134,7 @@ public class TransactionActivity extends AppCompatActivity {
     }
 
     private void initializeUI() {
+        // Correctly initializing bindings from the 'binding' object
         summaryBinding = binding.summaryCards;
         pieChartBinding = binding.pieChartComponent;
         searchBinding = binding.searchBarContainer;
@@ -520,7 +520,6 @@ public class TransactionActivity extends AppCompatActivity {
         pieChartBinding.togglePieChartButton.setText(show ? "Hide Pie Chart" : "Show Pie Chart");
     }
 
-    // [FIX] Snackbar with Helper logic
     private void showSnackbar(String msg) {
         View anchor = (bottomNavBinding != null) ? bottomNavBinding.getRoot() : null;
         SnackbarHelper.show(this, msg, anchor);

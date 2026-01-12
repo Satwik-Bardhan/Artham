@@ -12,6 +12,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -20,10 +21,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
-import com.phynix.artham.adapters.CashbookAdapter;
-import com.phynix.artham.models.CashbookModel;
-import com.phynix.artham.models.TransactionModel;
-import com.phynix.artham.utils.ErrorHandler;
 import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -35,6 +32,11 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.phynix.artham.adapters.CashbookAdapter;
+import com.phynix.artham.models.CashbookModel;
+import com.phynix.artham.models.TransactionModel;
+import com.phynix.artham.utils.ErrorHandler;
+import com.phynix.artham.utils.ThemeManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,7 +51,7 @@ public class CashbookSwitchActivity extends AppCompatActivity {
     private SwipeRefreshLayout swipeRefreshLayout;
     private LinearLayout emptyStateLayout;
     private LinearLayout loadingLayout;
-    private View mainContent;
+    private View mainContent; // This refers to the CardView with ID mainCard
 
     // UI Components - Buttons
     private Button cancelButton;
@@ -60,12 +62,10 @@ public class CashbookSwitchActivity extends AppCompatActivity {
     // UI Components - Search & Filter
     private EditText searchEditText;
     private ChipGroup chipGroup;
-    private TextView sortButton;
+    private LinearLayout sortButton; // FIXED: Changed to LinearLayout to match XML
 
     // UI Components - FAB
     private FloatingActionButton quickAddFab;
-
-    // [FIX] Removed stats textviews
 
     // Adapter & Data
     private CashbookAdapter cashbookAdapter;
@@ -85,8 +85,11 @@ public class CashbookSwitchActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // Apply Theme
+        ThemeManager.applyActivityTheme(this);
+
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_cashbook_switch);
+        setContentView(R.layout.activity_cashbook_switch); // Ensure this matches your XML filename
 
         if (getSupportActionBar() != null) {
             getSupportActionBar().hide();
@@ -98,7 +101,6 @@ public class CashbookSwitchActivity extends AppCompatActivity {
 
         if (currentUser == null) {
             showSnackbar("Not authenticated. Please log in again.");
-            Log.w(TAG, "No authenticated user");
             finish();
             return;
         }
@@ -112,43 +114,36 @@ public class CashbookSwitchActivity extends AppCompatActivity {
         setupSearchListener();
         setupFilterListener();
         loadCashbooks(); // Initial load
-
-        Log.d(TAG, "CashbookSwitchActivity created");
     }
 
     private void initViews() {
+        // Main Containers
         cashbookRecyclerView = findViewById(R.id.cashbookRecyclerView);
         swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
         emptyStateLayout = findViewById(R.id.emptyStateLayout);
         loadingLayout = findViewById(R.id.loadingLayout);
-        mainContent = findViewById(R.id.mainCard);
+        mainContent = findViewById(R.id.mainCard); // The CardView
 
+        // Buttons
         cancelButton = findViewById(R.id.cancelButton);
         addNewButton = findViewById(R.id.addNewButton);
         emptyStateCreateButton = findViewById(R.id.emptyStateCreateButton);
         closeButton = findViewById(R.id.closeButton);
 
+        // Search & Filter
         searchEditText = findViewById(R.id.searchEditText);
         chipGroup = findViewById(R.id.chipGroup);
-        sortButton = findViewById(R.id.sortButton);
+        sortButton = findViewById(R.id.sortButton); // Now correctly cast as LinearLayout
 
+        // FAB
         quickAddFab = findViewById(R.id.quickAddFab);
-        // [FIX] Removed findViewById calls for stats
-
-        try {
-            closeButton.setContentDescription(getString(R.string.close_button));
-            addNewButton.setContentDescription(getString(R.string.add_cashbook_desc));
-            quickAddFab.setContentDescription(getString(R.string.quick_add_cashbook));
-            searchEditText.setHint(getString(R.string.search_cashbooks_hint));
-        } catch (Exception e) {
-            Log.w(TAG, "Error setting content descriptions", e);
-        }
-
-        Log.d(TAG, "Views initialized");
     }
 
     private void setupRecyclerView() {
         cashbookRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+        // CRITICAL FIX: Disable nested scrolling to allow smooth scroll inside NestedScrollView
+        cashbookRecyclerView.setNestedScrollingEnabled(false);
 
         cashbookAdapter = new CashbookAdapter(this, new ArrayList<>(), new CashbookAdapter.OnCashbookClickListener() {
             @Override
@@ -170,23 +165,27 @@ public class CashbookSwitchActivity extends AppCompatActivity {
         cashbookRecyclerView.setAdapter(cashbookAdapter);
         swipeRefreshLayout.setOnRefreshListener(this::loadCashbooks);
 
+        // Set refresh colors to match your theme
         swipeRefreshLayout.setColorSchemeResources(
                 R.color.primary_blue,
                 R.color.income_green,
                 R.color.expense_red
         );
-
-        Log.d(TAG, "RecyclerView setup complete");
     }
 
     private void setupClickListeners() {
+        // Navigation / Actions
         closeButton.setOnClickListener(v -> finish());
         cancelButton.setOnClickListener(v -> finish());
-        addNewButton.setOnClickListener(v -> handleAddNewCashbook());
-        emptyStateCreateButton.setOnClickListener(v -> handleAddNewCashbook());
-        quickAddFab.setOnClickListener(v -> handleAddNewCashbook());
+
+        // Creation Actions
+        View.OnClickListener addAction = v -> handleAddNewCashbook();
+        addNewButton.setOnClickListener(addAction);
+        emptyStateCreateButton.setOnClickListener(addAction);
+        quickAddFab.setOnClickListener(addAction);
+
+        // Sort Action
         sortButton.setOnClickListener(v -> showSortOptions());
-        Log.d(TAG, "Click listeners setup complete");
     }
 
     private void setupFilterListener() {
@@ -205,7 +204,6 @@ public class CashbookSwitchActivity extends AppCompatActivity {
                 applyFiltersAndSort();
             }
         });
-        Log.d(TAG, "Filter listener setup complete");
     }
 
     private void setupSearchListener() {
@@ -219,18 +217,12 @@ public class CashbookSwitchActivity extends AppCompatActivity {
             @Override
             public void afterTextChanged(Editable s) {}
         });
-        Log.d(TAG, "Search listener setup complete");
     }
 
     private void loadCashbooks() {
         if (isLoading) return;
-        if (currentUser == null) {
-            showSnackbar("Not authenticated");
-            return;
-        }
 
         showLoading(true);
-        Log.d(TAG, "Loading cashbooks for user: " + currentUser.getUid());
 
         if (cashbooksListener != null) {
             userCashbooksRef.removeEventListener(cashbooksListener);
@@ -248,7 +240,7 @@ public class CashbookSwitchActivity extends AppCompatActivity {
                             cashbook.setCashbookId(snapshot.getKey());
                             cashbook.setCurrent(cashbook.getCashbookId().equals(currentCashbookId));
 
-                            // Calculate stats from transactions
+                            // Calculate stats for display
                             DataSnapshot transactionsSnapshot = snapshot.child("transactions");
                             calculateStatsForCashbook(cashbook, transactionsSnapshot);
 
@@ -259,8 +251,6 @@ public class CashbookSwitchActivity extends AppCompatActivity {
                     }
                 }
 
-                Log.d(TAG, "Loaded " + allCashbooks.size() + " cashbooks");
-                // [FIX] Removed updateStats call
                 applyFiltersAndSort();
                 showLoading(false);
                 swipeRefreshLayout.setRefreshing(false);
@@ -270,7 +260,6 @@ public class CashbookSwitchActivity extends AppCompatActivity {
             public void onCancelled(@NonNull DatabaseError error) {
                 showLoading(false);
                 swipeRefreshLayout.setRefreshing(false);
-                Log.e(TAG, "Error loading cashbooks", error.toException());
                 ErrorHandler.handleFirebaseError(CashbookSwitchActivity.this, error);
             }
         };
@@ -294,7 +283,7 @@ public class CashbookSwitchActivity extends AppCompatActivity {
                     }
                 }
             } catch (Exception e) {
-                Log.w(TAG, "Error parsing transaction for stats", e);
+                Log.w(TAG, "Error parsing transaction", e);
             }
         }
 
@@ -304,7 +293,6 @@ public class CashbookSwitchActivity extends AppCompatActivity {
 
     private void handleAddNewCashbook() {
         showCreateCashbookDialog(null);
-        Log.d(TAG, "Add new cashbook clicked");
     }
 
     private void showCreateCashbookDialog(@Nullable CashbookModel cashbookToEdit) {
@@ -342,64 +330,45 @@ public class CashbookSwitchActivity extends AppCompatActivity {
                     .setNegativeButton("Cancel", null)
                     .show();
         } catch (Exception e) {
-            Log.e(TAG, "Error showing create/edit cashbook dialog", e);
-            showSnackbar("Error creating dialog");
+            Log.e(TAG, "Error showing dialog", e);
+            showSnackbar("Error opening dialog");
         }
     }
 
     private void createNewCashbook(String name, String description) {
-        if (currentUser == null) {
-            showSnackbar("Not authenticated");
-            return;
-        }
-
         String cashbookId = userCashbooksRef.push().getKey();
-        if (cashbookId == null) {
-            showSnackbar("Error generating cashbook ID");
-            return;
-        }
+        if (cashbookId == null) return;
 
         CashbookModel newCashbook = new CashbookModel(cashbookId, name);
         newCashbook.setDescription(description);
         newCashbook.setUserId(currentUser.getUid());
+        newCashbook.setCreatedDate(System.currentTimeMillis());
+        newCashbook.setLastModified(System.currentTimeMillis());
+        newCashbook.setActive(true);
 
         userCashbooksRef.child(cashbookId).setValue(newCashbook)
-                .addOnSuccessListener(aVoid -> {
-                    showSnackbar("Cashbook created successfully!");
-                    Log.d(TAG, "Cashbook created: " + name);
-                })
-                .addOnFailureListener(e -> {
-                    showSnackbar("Failed to create cashbook: " + e.getMessage());
-                    Log.e(TAG, "Error creating cashbook", e);
-                });
+                .addOnSuccessListener(aVoid -> showSnackbar("Cashbook created successfully!"))
+                .addOnFailureListener(e -> showSnackbar("Failed: " + e.getMessage()));
     }
 
     private void updateCashbook(CashbookModel cashbook, String newName, String newDescription) {
         cashbook.setName(newName);
         cashbook.setDescription(newDescription);
-        cashbook.setLastModified(System.currentTimeMillis());
 
         userCashbooksRef.child(cashbook.getCashbookId()).child("name").setValue(newName);
         userCashbooksRef.child(cashbook.getCashbookId()).child("description").setValue(newDescription);
-        userCashbooksRef.child(cashbook.getCashbookId()).child("lastModified").setValue(cashbook.getLastModified())
+        userCashbooksRef.child(cashbook.getCashbookId()).child("lastModified").setValue(System.currentTimeMillis())
                 .addOnSuccessListener(aVoid -> showSnackbar("Cashbook updated"))
-                .addOnFailureListener(e -> showSnackbar("Failed to update cashbook"));
+                .addOnFailureListener(e -> showSnackbar("Failed to update"));
     }
 
     private void handleFavoriteToggle(CashbookModel cashbook) {
         if (cashbook == null) return;
         boolean newFavoriteState = !cashbook.isFavorite();
-        long lastModified = System.currentTimeMillis();
 
         userCashbooksRef.child(cashbook.getCashbookId()).child("favorite").setValue(newFavoriteState);
-        userCashbooksRef.child(cashbook.getCashbookId()).child("lastModified").setValue(lastModified)
-                .addOnSuccessListener(aVoid -> {
-                    showSnackbar(newFavoriteState ? "Added to favorites" : "Removed from favorites");
-                })
-                .addOnFailureListener(e -> {
-                    showSnackbar("Failed to update favorite status");
-                    Log.e(TAG, "Error updating favorite", e);
-                });
+        userCashbooksRef.child(cashbook.getCashbookId()).child("lastModified").setValue(System.currentTimeMillis())
+                .addOnSuccessListener(aVoid -> showSnackbar(newFavoriteState ? "Added to favorites" : "Removed from favorites"));
     }
 
     private void showCashbookOptions(CashbookModel cashbook, View anchorView) {
@@ -424,9 +393,6 @@ public class CashbookSwitchActivity extends AppCompatActivity {
             } else if (itemId == R.id.menu_toggle_active) {
                 toggleCashbookActive(cashbook);
                 return true;
-            } else if (itemId == R.id.menu_export) {
-                showSnackbar("Export feature coming soon!");
-                return true;
             } else if (itemId == R.id.menu_delete) {
                 showDeleteConfirmation(cashbook);
                 return true;
@@ -438,17 +404,13 @@ public class CashbookSwitchActivity extends AppCompatActivity {
 
     private void toggleCashbookActive(CashbookModel cashbook) {
         boolean newActiveState = !cashbook.isActive();
-        long lastModified = System.currentTimeMillis();
 
         userCashbooksRef.child(cashbook.getCashbookId()).child("active").setValue(newActiveState);
-        userCashbooksRef.child(cashbook.getCashbookId()).child("lastModified").setValue(lastModified)
-                .addOnSuccessListener(aVoid -> showSnackbar(newActiveState ? "Cashbook activated" : "Cashbook deactivated"))
-                .addOnFailureListener(e -> showSnackbar("Failed to update status"));
+        userCashbooksRef.child(cashbook.getCashbookId()).child("lastModified").setValue(System.currentTimeMillis())
+                .addOnSuccessListener(aVoid -> showSnackbar(newActiveState ? "Cashbook activated" : "Cashbook deactivated"));
     }
 
     private void showDeleteConfirmation(CashbookModel cashbook) {
-        if (cashbook == null) return;
-
         if (allCashbooks.size() <= 1) {
             showSnackbar(getString(R.string.error_delete_last_cashbook));
             return;
@@ -468,75 +430,61 @@ public class CashbookSwitchActivity extends AppCompatActivity {
 
     private void deleteCashbookFromFirebase(CashbookModel cashbook) {
         userCashbooksRef.child(cashbook.getCashbookId()).removeValue()
-                .addOnSuccessListener(aVoid -> {
-                    showSnackbar("Cashbook deleted successfully");
-                    Log.d(TAG, "Cashbook deleted: " + cashbook.getName());
-                })
-                .addOnFailureListener(e -> {
-                    showSnackbar("Failed to delete cashbook");
-                    Log.e(TAG, "Error deleting cashbook", e);
-                });
+                .addOnSuccessListener(aVoid -> showSnackbar("Cashbook deleted successfully"));
     }
 
     private void showSortOptions() {
-        try {
-            String[] sortOptions = {
-                    getString(R.string.sort_recent_first),
-                    getString(R.string.sort_name_asc),
-                    getString(R.string.sort_name_desc),
-                    getString(R.string.sort_oldest_first),
-                    getString(R.string.sort_most_transactions)
-            };
+        String[] sortOptions = {
+                getString(R.string.sort_recent_first),
+                getString(R.string.sort_name_asc),
+                getString(R.string.sort_name_desc),
+                getString(R.string.sort_oldest_first),
+                getString(R.string.sort_most_transactions)
+        };
 
-            new MaterialAlertDialogBuilder(this)
-                    .setTitle(getString(R.string.sort_cashbooks_title))
-                    .setItems(sortOptions, (dialog, which) -> {
-                        switch (which) {
-                            case 0: currentSort = "recent"; break;
-                            case 1: currentSort = "name_asc"; break;
-                            case 2: currentSort = "name_desc"; break;
-                            case 3: currentSort = "oldest"; break;
-                            case 4: currentSort = "most_transactions"; break;
-                        }
-                        applyFiltersAndSort();
-                        Log.d(TAG, "Sort applied: " + currentSort);
-                    })
-                    .show();
-        } catch (Exception e) {
-            Log.e(TAG, "Error showing sort options", e);
-        }
+        new MaterialAlertDialogBuilder(this)
+                .setTitle(getString(R.string.sort_cashbooks_title))
+                .setItems(sortOptions, (dialog, which) -> {
+                    switch (which) {
+                        case 0: currentSort = "recent"; break;
+                        case 1: currentSort = "name_asc"; break;
+                        case 2: currentSort = "name_desc"; break;
+                        case 3: currentSort = "oldest"; break;
+                        case 4: currentSort = "most_transactions"; break;
+                    }
+                    applyFiltersAndSort();
+                })
+                .show();
     }
 
     private void applyFiltersAndSort() {
         List<CashbookModel> filteredList;
         String query = searchEditText.getText().toString().toLowerCase().trim();
 
+        // 1. Search Filtering
         List<CashbookModel> searchResults;
         if (query.isEmpty()) {
             searchResults = new ArrayList<>(allCashbooks);
         } else {
             searchResults = allCashbooks.stream()
-                    .filter(c -> (c.getName() != null && c.getName().toLowerCase().contains(query)) ||
-                            (c.getDescription() != null && c.getDescription().toLowerCase().contains(query)))
+                    .filter(c -> (c.getName() != null && c.getName().toLowerCase().contains(query)))
                     .collect(Collectors.toList());
         }
 
+        // 2. Category Filtering
         switch (currentFilter) {
-            case "all":
-                filteredList = searchResults;
-                break;
             case "active":
                 filteredList = searchResults.stream().filter(CashbookModel::isActive).collect(Collectors.toList());
                 break;
             case "favorites":
                 filteredList = searchResults.stream().filter(CashbookModel::isFavorite).collect(Collectors.toList());
                 break;
-            case "recent":
-            default:
+            default: // "all" or "recent"
                 filteredList = searchResults;
                 break;
         }
 
+        // 3. Sorting
         switch (currentSort) {
             case "name_asc":
                 filteredList.sort((c1, c2) -> c1.getName().compareToIgnoreCase(c2.getName()));
@@ -558,33 +506,30 @@ public class CashbookSwitchActivity extends AppCompatActivity {
 
         cashbookAdapter.updateCashbooks(filteredList);
 
+        // Logic: Only show "Empty State" (big folder icon) if the user HAS NO DATA at all.
+        // If they have data but filtered it down to 0, just show empty list (so they can clear filter).
         if (allCashbooks.isEmpty()) {
             showEmptyState(true);
         } else {
             showEmptyState(false);
         }
-
-        Log.d(TAG, "Filters/Sort applied. Filter: " + currentFilter + ", Sort: " + currentSort + ", Query: " + query + ". Result: " + filteredList.size() + " items");
     }
 
     private void onCashbookSelected(CashbookModel cashbook) {
-        if (cashbook == null) {
-            Log.e(TAG, "onCashbookSelected: cashbook is null");
-            return;
-        }
+        if (cashbook == null) return;
 
         Intent result = new Intent();
         result.putExtra("selected_cashbook_id", cashbook.getCashbookId());
         result.putExtra("cashbook_name", cashbook.getName());
         setResult(RESULT_OK, result);
-        Log.d(TAG, "Cashbook selected: " + cashbook.getName());
         finish();
     }
 
     private void showLoading(boolean show) {
         isLoading = show;
         loadingLayout.setVisibility(show ? View.VISIBLE : View.GONE);
-        mainContent.setVisibility(show ? View.GONE : View.VISIBLE);
+        // We only hide main content if we are loading to avoid flicker,
+        // but generally keeping main content visible behind loading is fine too.
         if (show) {
             emptyStateLayout.setVisibility(View.GONE);
         }
@@ -593,13 +538,6 @@ public class CashbookSwitchActivity extends AppCompatActivity {
     private void showEmptyState(boolean show) {
         emptyStateLayout.setVisibility(show ? View.VISIBLE : View.GONE);
         mainContent.setVisibility(show ? View.GONE : View.VISIBLE);
-        if (show) {
-            loadingLayout.setVisibility(View.GONE);
-        }
-    }
-
-    private void updateStats(List<CashbookModel> cashbooks) {
-        // Removed updateStats method implementation as views are removed
     }
 
     private void showSnackbar(String message) {
@@ -611,8 +549,6 @@ public class CashbookSwitchActivity extends AppCompatActivity {
         super.onDestroy();
         if (cashbooksListener != null && userCashbooksRef != null) {
             userCashbooksRef.removeEventListener(cashbooksListener);
-            Log.d(TAG, "Firebase listener removed");
         }
-        Log.d(TAG, "CashbookSwitchActivity destroyed");
     }
 }

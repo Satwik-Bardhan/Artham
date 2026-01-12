@@ -53,7 +53,7 @@
 
             <include
                 android:id="@+id/pieChartComponent"
-                layout="@layout/layout_pie_chart_card"
+                layout="@layout/layout_pie_chart"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="12dp"

@@ -93,7 +93,6 @@ public class TransactionDetailsActivity extends AppCompatActivity {
         View tagsSection = findViewById(R.id.tagsSection);
         TextView detailTags = findViewById(R.id.detailTags);
 
-        TextView detailAttachmentText = findViewById(R.id.detailAttachmentText);
         ImageView typeIcon = findViewById(R.id.typeIcon);
 
         NumberFormat currencyFormat = NumberFormat.getCurrencyInstance(new Locale("en", "IN"));
@@ -141,10 +140,6 @@ public class TransactionDetailsActivity extends AppCompatActivity {
         } else {
             if (tagsSection != null) tagsSection.setVisibility(View.VISIBLE);
             detailTags.setText(transaction.getTags().toString().replace("[", "").replace("]", ""));
-        }
-
-        if (detailAttachmentText != null) {
-            detailAttachmentText.setText("No files attached");
         }
 
         MaterialButton btnEdit = findViewById(R.id.btnEditTransaction);

@@ -6,76 +6,61 @@
     android:background="?attr/chk_backgroundColor"
     android:fitsSystemWindows="true">
 
-    <ImageView
-        android:id="@+id/back_button"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:padding="12dp"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:src="@drawable/ic_arrow_left"
-        app:tint="?attr/chk_textColorPrimary"
-        android:contentDescription="Back" />
-
-    <TextView
-        android:id="@+id/headerTitle"
-        android:layout_width="wrap_content"
+    <RelativeLayout
+        android:id="@+id/headerLayout"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_toEndOf="@id/back_button"
-        android:layout_alignCenterVertical="@id/back_button"
-        android:layout_marginStart="8dp"
-        android:text="Manage Categories"
-        android:fontFamily="@font/app_font"
-        android:textColor="?attr/chk_textColorPrimary"
-        android:textSize="20sp"
-        android:textStyle="bold" />
+        android:padding="16dp">
+
+        <ImageView
+            android:id="@+id/back_button"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_centerVertical="true"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_arrow_left"
+            app:tint="?attr/chk_textColorPrimary"
+            android:contentDescription="Back" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toEndOf="@id/back_button"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="16dp"
+            android:text="Manage Categories"
+            android:fontFamily="@font/app_font"
+            android:textColor="?attr/chk_textColorPrimary"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+    </RelativeLayout>
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/back_button"
-        android:padding="16dp"
-        android:clipToPadding="false">
+        android:layout_below="@id/headerLayout"
+        android:paddingHorizontal="16dp"
+        android:paddingBottom="16dp">
 
-        <LinearLayout
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/categoryChipGroup"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            app:chipSpacing="10dp"
+            app:singleSelection="true" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Tap to edit or long press to delete"
-                android:textColor="?attr/chk_textColorSecondary"
-                android:fontFamily="@font/app_font"
-                android:textSize="14sp"
-                android:layout_marginBottom="16dp"/>
-
-            <com.google.android.material.chip.ChipGroup
-                android:id="@+id/categoryChipGroup"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:chipSpacing="10dp"
-                app:singleLine="false"/>
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="80dp" />
-
-        </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_add_category"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
         android:layout_margin="24dp"
         android:src="@drawable/ic_add"
-        app:backgroundTint="?attr/chk_primary_blue"
+        app:backgroundTint="?attr/chk_balanceColor"
         app:tint="@android:color/white"
-        android:contentDescription="Add New Category" />
+        android:contentDescription="Add Category"/>
 
 </RelativeLayout>

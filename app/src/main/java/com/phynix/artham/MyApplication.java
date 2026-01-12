@@ -9,8 +9,10 @@ public class MyApplication extends Application {
     public void onCreate() {
         super.onCreate();
 
-        // Apply the saved theme configuration (Night Mode YES/NO)
-        // as soon as the application starts to prevent flashing.
-        ThemeManager.applyGlobalNightMode(this);
+        // 1. Get the saved theme (Default is now Dark)
+        String savedTheme = ThemeManager.getTheme(this);
+
+        // 2. Apply it globally to the app
+        ThemeManager.applyTheme(savedTheme);
     }
 }

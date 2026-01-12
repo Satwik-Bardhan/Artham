@@ -21,16 +21,20 @@ public class CashbookModel implements Serializable {
     private String userId;
     private String currency;
 
-    // [FIX] Changed from List to Map to match Firebase structure
+    // Use Map to handle Firebase's JSON structure for lists/objects correctly
     private Map<String, TransactionModel> transactions;
 
-    // Empty constructor for Firebase
+    // --- Constructors ---
+
+    // Empty constructor required for Firebase DataSnapshot.getValue()
     public CashbookModel() {
+        this.transactions = new HashMap<>();
         this.isCurrent = false;
-        this.transactions = new HashMap<>(); // Initialize as HashMap
+        this.totalBalance = 0.0;
+        this.transactionCount = 0;
     }
 
-    // Constructor for simple creation
+    // Constructor for creating a new Cashbook manually
     public CashbookModel(String cashbookId, String name) {
         this.cashbookId = cashbookId;
         this.name = name;
@@ -46,7 +50,7 @@ public class CashbookModel implements Serializable {
         this.transactions = new HashMap<>();
     }
 
-    // --- Getters and Setters ---
+    // --- IDs ---
 
     public String getCashbookId() {
         return cashbookId;
@@ -56,6 +60,7 @@ public class CashbookModel implements Serializable {
         this.cashbookId = cashbookId;
     }
 
+    // Helper alias for getCashbookId()
     public String getId() {
         return cashbookId;
     }
@@ -64,8 +69,12 @@ public class CashbookModel implements Serializable {
         this.cashbookId = id;
     }
 
-    // [FIX] Updated Getters/Setters for Map
+    // --- Transactions (Map Handling) ---
+
     public Map<String, TransactionModel> getTransactions() {
+        if (transactions == null) {
+            transactions = new HashMap<>();
+        }
         return transactions;
     }
 
@@ -73,15 +82,16 @@ public class CashbookModel implements Serializable {
         this.transactions = transactions;
     }
 
-    /**
-     * Helper method to get transactions as a List if needed for Adapters
-     */
+    // Helper to get a List for RecyclerView Adapters
     public List<TransactionModel> getTransactionList() {
-        if (transactions == null) return new ArrayList<>();
+        if (transactions == null) {
+            return new ArrayList<>();
+        }
         return new ArrayList<>(transactions.values());
     }
 
-    // Standard Fields
+    // --- Basic Fields ---
+
     public String getName() {
         return name;
     }
@@ -98,7 +108,8 @@ public class CashbookModel implements Serializable {
         this.description = description;
     }
 
-    // Balance handling
+    // --- Balance & Counts ---
+
     public double getBalance() {
         return totalBalance;
     }
@@ -107,6 +118,7 @@ public class CashbookModel implements Serializable {
         this.totalBalance = totalBalance;
     }
 
+    // Alias for Firebase property mapping
     public double getTotalBalance() {
         return totalBalance;
     }
@@ -115,7 +127,6 @@ public class CashbookModel implements Serializable {
         this.totalBalance = totalBalance;
     }
 
-    // Counts & Dates
     public int getTransactionCount() {
         return transactionCount;
     }
@@ -123,6 +134,8 @@ public class CashbookModel implements Serializable {
     public void setTransactionCount(int transactionCount) {
         this.transactionCount = transactionCount;
     }
+
+    // --- Dates ---
 
     public long getCreatedDate() {
         return createdDate;
@@ -140,7 +153,8 @@ public class CashbookModel implements Serializable {
         this.lastModified = lastModified;
     }
 
-    // Booleans
+    // --- Status Flags ---
+
     public boolean isActive() {
         return isActive;
     }
@@ -165,7 +179,8 @@ public class CashbookModel implements Serializable {
         isFavorite = favorite;
     }
 
-    // User & Currency
+    // --- User & Settings ---
+
     public String getUserId() {
         return userId;
     }
@@ -181,6 +196,8 @@ public class CashbookModel implements Serializable {
     public void setCurrency(String currency) {
         this.currency = currency;
     }
+
+    // --- Utilities ---
 
     @Override
     public boolean equals(Object o) {

@@ -69,7 +69,9 @@ public class CategorySelectionAdapter extends RecyclerView.Adapter<CategorySelec
                 int color = Color.parseColor(category.getColorHex());
                 categoryCheckbox.setButtonTintList(ColorStateList.valueOf(color));
             } catch (Exception e) {
-                categoryCheckbox.setButtonTintList(ColorStateList.valueOf(ContextCompat.getColor(itemView.getContext(), R.color.purple_500)));
+                // CHANGED: Use category_default instead of the missing purple_500
+                categoryCheckbox.setButtonTintList(ColorStateList.valueOf(
+                        ContextCompat.getColor(itemView.getContext(), R.color.category_default)));
             }
 
             categoryCheckbox.setOnCheckedChangeListener((buttonView, isChecked) -> {

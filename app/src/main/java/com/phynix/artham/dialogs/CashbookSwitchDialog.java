@@ -1,5 +1,6 @@
 package com.phynix.artham.dialogs;
 
+import android.app.Dialog;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -7,11 +8,11 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -20,10 +21,6 @@ import androidx.fragment.app.DialogFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.phynix.artham.models.CashbookModel;
-import com.phynix.artham.R;
-import com.phynix.artham.adapters.CashbookAdapter;
-import com.phynix.artham.utils.ErrorHandler;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -31,6 +28,10 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.phynix.artham.R;
+import com.phynix.artham.adapters.CashbookAdapter;
+import com.phynix.artham.models.CashbookModel;
+import com.phynix.artham.utils.ErrorHandler;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,10 +43,13 @@ public class CashbookSwitchDialog extends DialogFragment {
 
     private RecyclerView cashbookRecyclerView;
     private EditText searchCashbook;
-    private LinearLayout emptyStateDialog;
-    private ProgressBar loadingStateDialog;
+
+    // Changed to LinearLayout to match XML 'loadingLayout' and 'emptyStateLayout'
+    private LinearLayout emptyStateLayout;
+    private LinearLayout loadingLayout;
+
     private Button cancelDialogButton;
-    private Button confirmDialogButton; // This ID is NOT in the layout, it will crash.
+    private Button confirmDialogButton; // Mapped to 'addNewButton' in XML
     private ImageView closeDialog;
 
     private CashbookAdapter adapter;
@@ -77,14 +81,15 @@ public class CashbookSwitchDialog extends DialogFragment {
         if (getArguments() != null) {
             currentCashbookId = getArguments().getString("current_cashbook_id");
         }
+        // Optional: Make dialog full screen or specific style
+        setStyle(DialogFragment.STYLE_NORMAL, R.style.Theme_Artham_Dialog);
     }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        // [FIX #1] Inflate the layout that actually has the RecyclerView
-        View view = inflater.inflate(R.layout.activity_cashbook_switch, container, false);
-        return view;
+        // Inflate the existing layout used for the activity
+        return inflater.inflate(R.layout.activity_cashbook_switch, container, false);
     }
 
     @Override
@@ -96,56 +101,78 @@ public class CashbookSwitchDialog extends DialogFragment {
         loadCashbooks();
     }
 
-    private void initViews(View view) {
-        // [FIX #2] Use the correct ID from the layout
-        cashbookRecyclerView = view.findViewById(R.id.cashbookRecyclerView);
+    @Override
+    public void onStart() {
+        super.onStart();
+        // Ensure dialog takes up enough space
+        Dialog dialog = getDialog();
+        if (dialog != null && dialog.getWindow() != null) {
+            dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        }
+    }
 
-        // These IDs are all correct from 'activity_cashbook_switch.xml'
+    private void initViews(View view) {
+        cashbookRecyclerView = view.findViewById(R.id.cashbookRecyclerView);
         searchCashbook = view.findViewById(R.id.searchEditText);
-        emptyStateDialog = view.findViewById(R.id.emptyStateLayout);
+
+        // Correct IDs from activity_cashbook_switch.xml
+        emptyStateLayout = view.findViewById(R.id.emptyStateLayout);
+        loadingLayout = view.findViewById(R.id.loadingLayout);
+
         cancelDialogButton = view.findViewById(R.id.cancelButton);
         closeDialog = view.findViewById(R.id.closeButton);
 
-        // [CRITICAL ERROR] This ID does not exist in 'activity_cashbook_switch.xml'
-        // confirmDialogButton = view.findViewById(R.id.confirmDialogButton);
-        // I will use 'addNewButton' as the confirm button
+        // Map "Create New" button to "Select" functionality for this dialog
         confirmDialogButton = view.findViewById(R.id.addNewButton);
-        confirmDialogButton.setText("Select"); // Change text from "Create New" to "Select"
+        if (confirmDialogButton != null) {
+            confirmDialogButton.setText("Select");
+            confirmDialogButton.setEnabled(false);
+            confirmDialogButton.setAlpha(0.5f);
+        }
 
-        confirmDialogButton.setEnabled(false);
-        confirmDialogButton.setAlpha(0.5f);
-        Log.d(TAG, "Views initialized");
+        // Hide elements not needed for the dialog version (like FAB)
+        View fab = view.findViewById(R.id.quickAddFab);
+        if (fab != null) fab.setVisibility(View.GONE);
     }
 
     private void setupRecyclerView() {
         if (getContext() == null) return;
+
         cashbookRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        // Disable nested scrolling to fix potential scrolling issues in dialogs
+        cashbookRecyclerView.setNestedScrollingEnabled(false);
 
         adapter = new CashbookAdapter(getContext(), allCashbooks, new CashbookAdapter.OnCashbookClickListener() {
             @Override
             public void onCashbookClick(CashbookModel cashbook) {
-                if (cashbook.isCurrent()) {
+                // If clicking currently active one, just dismiss
+                if (cashbook.getCashbookId().equals(currentCashbookId)) {
                     dismiss();
                     return;
                 }
-                selectedCashbook = cashbook;
-                confirmDialogButton.setEnabled(true);
-                confirmDialogButton.setAlpha(1.0f);
 
-                for (CashbookModel cb : allCashbooks) {
-                    cb.setCurrent(cb.getCashbookId().equals(cashbook.getCashbookId()));
+                // Select the cashbook
+                selectedCashbook = cashbook;
+
+                // Update UI to show selection
+                if (confirmDialogButton != null) {
+                    confirmDialogButton.setEnabled(true);
+                    confirmDialogButton.setAlpha(1.0f);
                 }
-                adapter.updateCashbooks(allCashbooks);
+
+                // Visually mark as "current" in list temporarily (optional)
+                // Note: accurate "current" status relies on the actual ID passed in
+                Toast.makeText(getContext(), "Selected: " + cashbook.getName(), Toast.LENGTH_SHORT).show();
             }
 
             @Override
             public void onFavoriteClick(CashbookModel cashbook) {
-                // Not used in dialog
+                // Feature disabled in dialog selection mode
             }
 
             @Override
             public void onMenuClick(CashbookModel cashbook, View anchorView) {
-                // Not used in dialog
+                // Feature disabled in dialog selection mode
             }
         });
 
@@ -153,27 +180,36 @@ public class CashbookSwitchDialog extends DialogFragment {
     }
 
     private void setupListeners() {
-        closeDialog.setOnClickListener(v -> dismiss());
-        cancelDialogButton.setOnClickListener(v -> dismiss());
+        if (closeDialog != null) {
+            closeDialog.setOnClickListener(v -> dismiss());
+        }
 
-        confirmDialogButton.setOnClickListener(v -> {
-            if (selectedCashbook != null && listener != null) {
-                listener.onCashbookSelected(selectedCashbook);
-                dismiss();
-            }
-        });
+        if (cancelDialogButton != null) {
+            cancelDialogButton.setOnClickListener(v -> dismiss());
+        }
 
-        searchCashbook.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                filterCashbooks(s.toString());
-            }
+        if (confirmDialogButton != null) {
+            confirmDialogButton.setOnClickListener(v -> {
+                if (selectedCashbook != null && listener != null) {
+                    listener.onCashbookSelected(selectedCashbook);
+                    dismiss();
+                }
+            });
+        }
 
-            @Override
-            public void beforeTextChanged(CharSequence s, int st, int count, int after) {}
-            @Override
-            public void afterTextChanged(Editable s) {}
-        });
+        if (searchCashbook != null) {
+            searchCashbook.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    filterCashbooks(s.toString());
+                }
+
+                @Override
+                public void beforeTextChanged(CharSequence s, int st, int count, int after) {}
+                @Override
+                public void afterTextChanged(Editable s) {}
+            });
+        }
     }
 
     private void loadCashbooks() {
@@ -194,13 +230,16 @@ public class CashbookSwitchDialog extends DialogFragment {
                         allCashbooks.clear();
 
                         for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                            CashbookModel cashbook = snapshot.getValue(CashbookModel.class);
-                            if (cashbook != null) {
-                                if (cashbook.getCashbookId() == null) {
+                            try {
+                                CashbookModel cashbook = snapshot.getValue(CashbookModel.class);
+                                if (cashbook != null) {
                                     cashbook.setCashbookId(snapshot.getKey());
+                                    // Set 'current' status for visual checkmark in adapter
+                                    cashbook.setCurrent(cashbook.getCashbookId().equals(currentCashbookId));
+                                    allCashbooks.add(cashbook);
                                 }
-                                cashbook.setCurrent(cashbook.getCashbookId().equals(currentCashbookId));
-                                allCashbooks.add(cashbook);
+                            } catch (Exception e) {
+                                Log.e(TAG, "Error parsing cashbook", e);
                             }
                         }
 
@@ -209,10 +248,9 @@ public class CashbookSwitchDialog extends DialogFragment {
                             showEmptyState(true);
                         } else {
                             showEmptyState(false);
+                            // Initial sort or filter could go here
                             adapter.updateCashbooks(allCashbooks);
                         }
-
-                        Log.d(TAG, "Loaded " + allCashbooks.size() + " cashbooks");
                     }
 
                     @Override
@@ -233,35 +271,47 @@ public class CashbookSwitchDialog extends DialogFragment {
 
         String lowerQuery = query.toLowerCase().trim();
 
-        List<CashbookModel> filtered = allCashbooks.stream()
-                .filter(cashbook -> (cashbook.getName() != null && cashbook.getName().toLowerCase().contains(lowerQuery)) ||
-                        (cashbook.getDescription() != null && cashbook.getDescription().toLowerCase().contains(lowerQuery)))
-                .collect(Collectors.toList());
-
-        adapter.updateCashbooks(filtered);
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+            List<CashbookModel> filtered = allCashbooks.stream()
+                    .filter(cashbook -> (cashbook.getName() != null && cashbook.getName().toLowerCase().contains(lowerQuery)) ||
+                            (cashbook.getDescription() != null && cashbook.getDescription().toLowerCase().contains(lowerQuery)))
+                    .collect(Collectors.toList());
+            adapter.updateCashbooks(filtered);
+        } else {
+            // Fallback for older Android versions
+            List<CashbookModel> filtered = new ArrayList<>();
+            for (CashbookModel cashbook : allCashbooks) {
+                if ((cashbook.getName() != null && cashbook.getName().toLowerCase().contains(lowerQuery)) ||
+                        (cashbook.getDescription() != null && cashbook.getDescription().toLowerCase().contains(lowerQuery))) {
+                    filtered.add(cashbook);
+                }
+            }
+            adapter.updateCashbooks(filtered);
+        }
     }
 
     private void showLoading(boolean show) {
-        if (loadingStateDialog != null) {
-            loadingStateDialog.setVisibility(show ? View.VISIBLE : View.GONE);
+        if (loadingLayout != null) {
+            loadingLayout.setVisibility(show ? View.VISIBLE : View.GONE);
         }
         if (cashbookRecyclerView != null) {
+            // Hide list while loading to avoid flicker
             cashbookRecyclerView.setVisibility(show ? View.GONE : View.VISIBLE);
         }
-        if (emptyStateDialog != null) {
-            emptyStateDialog.setVisibility(View.GONE); // Always hide empty state when loading
+        if (emptyStateLayout != null) {
+            emptyStateLayout.setVisibility(View.GONE);
         }
     }
 
     private void showEmptyState(boolean show) {
-        if (emptyStateDialog != null) {
-            emptyStateDialog.setVisibility(show ? View.VISIBLE : View.GONE);
+        if (emptyStateLayout != null) {
+            emptyStateLayout.setVisibility(show ? View.VISIBLE : View.GONE);
         }
         if (cashbookRecyclerView != null) {
             cashbookRecyclerView.setVisibility(show ? View.GONE : View.VISIBLE);
         }
-        if (loadingStateDialog != null) {
-            loadingStateDialog.setVisibility(View.GONE); // Always hide loading when showing empty
+        if (loadingLayout != null) {
+            loadingLayout.setVisibility(View.GONE);
         }
     }
 
