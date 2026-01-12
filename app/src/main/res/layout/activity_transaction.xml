@@ -16,30 +16,29 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true" />
 
-    <include
-        android:id="@+id/search_bar_container"
-        layout="@layout/layout_search_bar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_marginTop="10dp"
-        android:layout_marginStart="12dp"
-        android:layout_marginEnd="12dp"
-        android:layout_marginBottom="1dp" />
-
     <androidx.core.widget.NestedScrollView
         android:id="@+id/main_scroll_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@id/bottomNavCard"
-        android:layout_below="@id/search_bar_container"
-        android:fillViewport="true">
+        android:fillViewport="true"
+        android:clipToPadding="false">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:paddingBottom="16dp">
+
+            <include
+                android:id="@+id/search_bar_container"
+                layout="@layout/layout_search_bar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:layout_marginStart="12dp"
+                android:layout_marginEnd="12dp"
+                android:layout_marginBottom="4dp" />
 
             <include
                 android:id="@+id/summaryCards"
