@@ -2,10 +2,14 @@ package com.phynix.artham.utils;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Handler;
+import android.os.Looper;
 
 import androidx.appcompat.app.AppCompatDelegate;
 
+import com.phynix.artham.HomePage;
 import com.phynix.artham.R;
 
 public class ThemeManager {
@@ -39,7 +43,7 @@ public class ThemeManager {
 
     /**
      * Applies the specific style to the Activity context.
-     * Call this BEFORE super.onCreate() in your Activities.
+     * Call this BEFORE super.onCreate() in every Activity.
      */
     public static void applyActivityTheme(Activity activity) {
         SharedPreferences prefs = activity.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
@@ -66,5 +70,20 @@ public class ThemeManager {
         SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         // Default is Dark
         return prefs.getString(KEY_THEME, THEME_DARK);
+    }
+
+    /**
+     * Restarts the application from the HomePage to ensure the theme applies to ALL pages.
+     * Call this after saving a new theme.
+     */
+    public static void restartApp(Activity activity) {
+        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            Intent intent = new Intent(activity, HomePage.class);
+            // Clear the entire back stack so all activities are destroyed and recreated
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            activity.startActivity(intent);
+            activity.finish();
+            activity.overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+        }, 200); // Small delay for UI ripple effect
     }
 }

@@ -8,7 +8,6 @@ import androidx.lifecycle.ViewModelProvider;
 public class HomePageViewModelFactory implements ViewModelProvider.Factory {
     private final Application application;
 
-    // [FIX] Constructor no longer needs cashbookId, as ViewModel loads it
     public HomePageViewModelFactory(Application application) {
         this.application = application;
     }

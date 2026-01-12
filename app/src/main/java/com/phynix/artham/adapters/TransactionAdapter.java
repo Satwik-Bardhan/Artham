@@ -8,7 +8,7 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
+import android.widget.ImageView; // CHANGED: From ImageButton to ImageView to prevent ClassCastException
 import android.widget.PopupMenu;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
@@ -36,9 +36,9 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
 
     public interface OnItemClickListener {
         void onItemClick(TransactionModel transaction);
-        void onEditClick(TransactionModel transaction);   // Can be used if needed
-        void onDeleteClick(TransactionModel transaction); // Triggered by Menu
-        void onCopyClick(TransactionModel transaction);   // Triggered by Menu
+        void onEditClick(TransactionModel transaction);
+        void onDeleteClick(TransactionModel transaction);
+        void onCopyClick(TransactionModel transaction);
     }
 
     public TransactionAdapter(List<TransactionModel> transactionList, OnItemClickListener listener) {
@@ -89,7 +89,6 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
             newTransactions = new ArrayList<>();
         }
 
-        // Using DiffUtil to calculate changes efficiently
         TransactionDiffCallback diffCallback = new TransactionDiffCallback(this.transactionList, newTransactions);
         DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(diffCallback);
 
@@ -103,8 +102,8 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
         TextView categoryTextView, amountTextView, dateTextView, paymentModeTextView, remarkTextView;
         View transactionTypeIndicator;
 
-        // 3-Dot Menu Button
-        ImageButton menuButton;
+        // 3-Dot Menu Button - FIXED: Changed to ImageView
+        ImageView menuButton;
 
         public TransactionViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -122,7 +121,10 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
             // Visual Indicators
             transactionTypeIndicator = itemView.findViewById(R.id.transactionTypeIndicator);
 
-            // Menu Button
+            // Menu Button - Safe Casting
+            // If your XML has <ImageButton>, this cast to ImageView is valid (ImageButton extends ImageView).
+            // If your XML has <ImageView>, this is also valid.
+            // This prevents the ClassCastException.
             menuButton = itemView.findViewById(R.id.menuButton);
         }
 
@@ -175,33 +177,23 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
             // 5. Menu Button Click -> Show Popup Menu
             if (menuButton != null) {
                 menuButton.setOnClickListener(v -> {
-                    // Create Popup Menu anchored to the button
                     PopupMenu popup = new PopupMenu(context, v);
-                    // Ensure you have created res/menu/transaction_options.xml
                     popup.inflate(R.menu.transaction_options);
 
-                    popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-                        @Override
-                        public boolean onMenuItemClick(MenuItem item) {
-                            int id = item.getItemId();
+                    popup.setOnMenuItemClickListener(item -> {
+                        int id = item.getItemId();
 
-                            // [NEW] Handle Edit
-                            if (id == R.id.action_edit) {
-                                if (listener != null) listener.onEditClick(transaction);
-                                return true;
-                            }
-                            // Existing Copy logic
-                            else if (id == R.id.action_copy) {
-                                if (listener != null) listener.onCopyClick(transaction);
-                                return true;
-                            }
-                            // Existing Delete logic
-                            else if (id == R.id.action_delete) {
-                                if (listener != null) listener.onDeleteClick(transaction);
-                                return true;
-                            }
-                            return false;
+                        if (id == R.id.action_edit) {
+                            if (listener != null) listener.onEditClick(transaction);
+                            return true;
+                        } else if (id == R.id.action_copy) {
+                            if (listener != null) listener.onCopyClick(transaction);
+                            return true;
+                        } else if (id == R.id.action_delete) {
+                            if (listener != null) listener.onDeleteClick(transaction);
+                            return true;
                         }
+                        return false;
                     });
                     popup.show();
                 });
@@ -227,18 +219,20 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
 
         @Override
         public boolean areItemsTheSame(int oldItemPosition, int newItemPosition) {
-            return oldList.get(oldItemPosition).getTransactionId().equals(newList.get(newItemPosition).getTransactionId());
+            return Objects.equals(oldList.get(oldItemPosition).getTransactionId(),
+                    newList.get(newItemPosition).getTransactionId());
         }
 
         @Override
         public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {
             TransactionModel oldItem = oldList.get(oldItemPosition);
             TransactionModel newItem = newList.get(newItemPosition);
-            // Check for content equality to trigger redraw if needed
+
             return oldItem.getAmount() == newItem.getAmount() &&
                     oldItem.getTimestamp() == newItem.getTimestamp() &&
                     Objects.equals(oldItem.getType(), newItem.getType()) &&
-                    Objects.equals(oldItem.getRemark(), newItem.getRemark());
+                    Objects.equals(oldItem.getRemark(), newItem.getRemark()) &&
+                    Objects.equals(oldItem.getTransactionCategory(), newItem.getTransactionCategory());
         }
     }
 
@@ -250,7 +244,7 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
             if (context.getTheme().resolveAttribute(attr, typedValue, true)) {
                 return typedValue.data;
             }
-            return Color.BLACK; // Default fallback
+            return Color.BLACK;
         }
     }
 }
