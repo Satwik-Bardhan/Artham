@@ -36,16 +36,17 @@
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardBackgroundColor="?attr/chk_surfaceColor"
-                app:cardCornerRadius="8dp"
-                app:cardElevation="4dp">
+                app:cardBackgroundColor="?attr/chk_backgroundColor"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="0dp"
+                app:contentPadding="4dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
-                    android:padding="20dp">
+                    android:padding="16dp">
 
                     <ImageView
                         android:id="@+id/back_button"
@@ -120,8 +121,10 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
                 app:cardBackgroundColor="?attr/chk_surfaceColor"
-                app:cardCornerRadius="8dp"
-                app:cardElevation="2dp">
+                app:cardCornerRadius="12dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="?attr/chk_dividerHorizontal">
 
                 <LinearLayout
                     android:id="@+id/logout_section"
@@ -199,8 +202,10 @@
                     android:layout_marginEnd="8dp"
                     android:layout_weight="1"
                     app:cardBackgroundColor="?attr/chk_surfaceColor"
-                    app:cardCornerRadius="8dp"
-                    app:cardElevation="4dp">
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="0dp"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="?attr/chk_dividerHorizontal">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -243,8 +248,10 @@
                     android:layout_marginStart="8dp"
                     android:layout_weight="1"
                     app:cardBackgroundColor="?attr/chk_surfaceColor"
-                    app:cardCornerRadius="8dp"
-                    app:cardElevation="4dp">
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="0dp"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="?attr/chk_dividerHorizontal">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -286,8 +293,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="24dp"
-                app:cardCornerRadius="8dp"
-                app:cardElevation="4dp">
+                app:cardCornerRadius="12dp"
+                app:cardElevation="0dp">
 
                 <Button
                     android:id="@+id/delete_account_button"
@@ -308,8 +315,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
-                app:cardBackgroundColor="?attr/chk_surfaceColor"
-                app:cardElevation="2dp"
+                app:cardBackgroundColor="?attr/chk_backgroundColor"
+                app:cardElevation="0dp"
                 app:cardCornerRadius="8dp">
 
                 <LinearLayout
