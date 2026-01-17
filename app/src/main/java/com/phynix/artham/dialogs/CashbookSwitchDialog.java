@@ -83,7 +83,7 @@ public class CashbookSwitchDialog extends DialogFragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         // Inflate the existing layout used for the activity
-        return inflater.inflate(R.layout.activity_cashbook_switch, container, false);
+        return inflater.inflate(R.layout.activity_cashbook_manager, container, false);
     }
 
     @Override

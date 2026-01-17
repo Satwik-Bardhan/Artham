@@ -25,8 +25,8 @@
             android:orientation="horizontal"
             android:gravity="center_vertical"
             android:background="@drawable/bg_stats_bar_balance"
-            android:paddingVertical="12dp"
-            android:paddingHorizontal="16dp"
+            android:paddingVertical="8dp"
+            android:paddingHorizontal="10dp"
             android:layout_marginBottom="8dp"
             android:clickable="true"
             android:focusable="true">
@@ -67,8 +67,8 @@
             android:orientation="horizontal"
             android:gravity="center_vertical"
             android:background="@drawable/bg_stats_bar_income"
-            android:paddingVertical="12dp"
-            android:paddingHorizontal="16dp"
+            android:paddingVertical="8dp"
+            android:paddingHorizontal="10dp"
             android:layout_marginBottom="8dp"
             android:clickable="true"
             android:focusable="true">
@@ -109,8 +109,8 @@
             android:orientation="horizontal"
             android:gravity="center_vertical"
             android:background="@drawable/bg_stats_bar_expense"
-            android:paddingVertical="12dp"
-            android:paddingHorizontal="16dp"
+            android:paddingVertical="8dp"
+            android:paddingHorizontal="10dp"
             android:clickable="true"
             android:focusable="true">
 

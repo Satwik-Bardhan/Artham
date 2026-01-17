@@ -38,7 +38,7 @@
                 <androidx.cardview.widget.CardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:cardBackgroundColor="?attr/chk_surfaceColor"
+                    app:cardBackgroundColor="?attr/chk_headerColor"
                     app:cardCornerRadius="8dp"
                     app:cardElevation="2dp">
 

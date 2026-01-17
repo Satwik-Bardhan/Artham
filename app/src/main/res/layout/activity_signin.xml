@@ -15,9 +15,8 @@
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_marginStart="12dp"
-        android:layout_marginTop="12dp"
         android:layout_marginEnd="12dp"
-        app:cardBackgroundColor="?attr/chk_surfaceColor"
+        app:cardBackgroundColor="?attr/chk_headerColor"
         app:cardCornerRadius="12dp"
         app:cardElevation="4dp">
 
@@ -81,7 +80,7 @@
                 android:focusable="true"
                 android:padding="4dp"
                 android:src="@drawable/ic_help"
-                app:tint="?attr/chk_balanceColor" />
+                app:tint="?attr/selectableItemBackground" />
         </RelativeLayout>
     </androidx.cardview.widget.CardView>
 

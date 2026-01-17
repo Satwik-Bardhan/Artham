@@ -10,15 +10,15 @@
     app:cardCornerRadius="12dp"
     app:cardElevation="0dp"
     app:strokeWidth="1dp"
-    app:strokeColor="?attr/chk_dividerHorizontal">
+    app:strokeColor="?attr/chk_dividerHorizontal"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackground">
 
     <LinearLayout
         android:id="@+id/profileSection"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="?attr/selectableItemBackground"
-        android:clickable="true"
-        android:focusable="true"
         android:orientation="vertical"
         android:padding="20dp">
 
@@ -86,10 +86,7 @@
                 android:id="@+id/editButton"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
-                android:background="@drawable/bg_rounded_square_soft"
-                android:clickable="true"
-                android:focusable="true"
-                android:foreground="?attr/selectableItemBackground">
+                android:background="@drawable/bg_rounded_square_soft">
 
                 <ImageView
                     android:layout_width="20dp"

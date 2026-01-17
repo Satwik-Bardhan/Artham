@@ -3,6 +3,7 @@
     <attr name="chk_backgroundColor" format="color|reference" />
     <attr name="chk_surfaceColor" format="color|reference" />
     <attr name="chk_selectedItemColor" format="color|reference" />
+    <attr name="chk_headerColor" format="color|reference" />
 
     <attr name="chk_textColorPrimary" format="color|reference" />
     <attr name="chk_textColorSecondary" format="color|reference" />

@@ -3,16 +3,17 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/main_root_layout"
     android:layout_width="match_parent"
-    android:fitsSystemWindows="true"
     android:layout_height="match_parent"
-    android:background="?attr/chk_backgroundColor">
+    android:background="?attr/chk_backgroundColor"
+    android:fitsSystemWindows="true">
 
     <androidx.cardview.widget.CardView
         android:id="@+id/headerCard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="12dp"
-        app:cardBackgroundColor="?attr/chk_surfaceColor"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        app:cardBackgroundColor="?attr/chk_headerColor"
         app:cardCornerRadius="8dp"
         app:cardElevation="4dp">
 
@@ -25,22 +26,22 @@
                 android:id="@+id/backButton"
                 android:layout_width="32dp"
                 android:layout_height="32dp"
-                android:src="@drawable/ic_arrow_left"
+                android:layout_centerVertical="true"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:clickable="true"
                 android:focusable="true"
-                android:layout_centerVertical="true"
+                android:src="@drawable/ic_arrow_left"
                 app:tint="?attr/chk_textColorPrimary" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Select Category"
-                android:textSize="20sp"
-                android:textStyle="bold"
+                android:layout_centerInParent="true"
                 android:fontFamily="@font/app_font"
+                android:text="Select Category"
                 android:textColor="?attr/chk_textColorPrimary"
-                android:layout_centerInParent="true"/>
+                android:textSize="20sp"
+                android:textStyle="bold" />
         </RelativeLayout>
     </androidx.cardview.widget.CardView>
 
@@ -61,39 +62,39 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@drawable/rounded_input_background"
-                android:padding="16dp"
+                android:clickable="true"
+                android:focusable="true"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
-                android:clickable="true"
-                android:focusable="true">
+                android:padding="16dp">
 
                 <RadioButton
                     android:id="@+id/radioNoCategory"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:buttonTint="?attr/chk_primary_blue"
                     android:clickable="false"
-                    android:focusable="false"
-                    android:buttonTint="?attr/chk_primary_blue"/>
+                    android:focusable="false" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="No Category"
-                    android:textSize="16sp"
+                    android:layout_marginStart="12dp"
                     android:fontFamily="@font/app_font"
+                    android:text="No Category"
                     android:textColor="?attr/chk_textColorPrimary"
-                    android:layout_marginStart="12dp"/>
+                    android:textSize="16sp" />
             </LinearLayout>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Quick Suggestions"
-                android:textStyle="bold"
-                android:fontFamily="@font/app_font"
-                android:textColor="?attr/chk_textColorSecondary"
                 android:layout_marginTop="24dp"
-                android:layout_marginBottom="12dp"/>
+                android:layout_marginBottom="12dp"
+                android:fontFamily="@font/app_font"
+                android:text="Quick Suggestions"
+                android:textColor="?attr/chk_textColorSecondary"
+                android:textStyle="bold" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -103,72 +104,72 @@
                 <Button
                     android:id="@+id/quickCategoryFood"
                     android:layout_width="0dp"
-                    android:layout_weight="1"
                     android:layout_height="wrap_content"
-                    android:text="Food"
+                    android:layout_marginEnd="8dp"
+                    android:layout_weight="1"
                     android:background="@drawable/rounded_input_background"
-                    android:textColor="?attr/chk_textColorPrimary"
-                    android:textAllCaps="false"
                     android:fontFamily="@font/app_font"
-                    app:backgroundTint="@null"
-                    android:layout_marginEnd="8dp"/>
+                    android:text="Food"
+                    android:textAllCaps="false"
+                    android:textColor="?attr/chk_textColorPrimary"
+                    app:backgroundTint="@null" />
 
                 <Button
                     android:id="@+id/quickCategoryTransport"
                     android:layout_width="0dp"
-                    android:layout_weight="1"
                     android:layout_height="wrap_content"
-                    android:text="Transport"
+                    android:layout_marginEnd="8dp"
+                    android:layout_weight="1"
                     android:background="@drawable/rounded_input_background"
-                    android:textColor="?attr/chk_textColorPrimary"
-                    android:textAllCaps="false"
                     android:fontFamily="@font/app_font"
-                    app:backgroundTint="@null"
-                    android:layout_marginEnd="8dp"/>
+                    android:text="Transport"
+                    android:textAllCaps="false"
+                    android:textColor="?attr/chk_textColorPrimary"
+                    app:backgroundTint="@null" />
 
                 <Button
                     android:id="@+id/quickCategoryShopping"
                     android:layout_width="0dp"
-                    android:layout_weight="1"
                     android:layout_height="wrap_content"
-                    android:text="Shopping"
+                    android:layout_weight="1"
                     android:background="@drawable/rounded_input_background"
-                    android:textColor="?attr/chk_textColorPrimary"
-                    android:textAllCaps="false"
                     android:fontFamily="@font/app_font"
-                    app:backgroundTint="@null"/>
+                    android:text="Shopping"
+                    android:textAllCaps="false"
+                    android:textColor="?attr/chk_textColorPrimary"
+                    app:backgroundTint="@null" />
             </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
                 android:layout_marginTop="24dp"
-                android:layout_marginBottom="12dp">
+                android:layout_marginBottom="12dp"
+                android:orientation="horizontal">
 
                 <TextView
                     android:layout_width="0dp"
-                    android:layout_weight="1"
                     android:layout_height="wrap_content"
-                    android:text="All Categories"
+                    android:layout_weight="1"
                     android:fontFamily="@font/app_font"
+                    android:text="All Categories"
                     android:textColor="?attr/chk_textColorPrimary"
-                    android:textStyle="bold"/>
+                    android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/categoryCount"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/app_font"
-                    android:textColor="?attr/chk_textColorSecondary"
-                    android:text="0 items"/>
+                    android:text="0 items"
+                    android:textColor="?attr/chk_textColorSecondary" />
             </LinearLayout>
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/categoriesRecyclerView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:nestedScrollingEnabled="false"/>
+                android:nestedScrollingEnabled="false" />
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
@@ -177,15 +178,15 @@
         android:id="@+id/addNewCategoryButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
         android:layout_margin="24dp"
+        android:fontFamily="@font/app_font"
         android:text="Create New"
         android:textColor="@android:color/white"
-        android:fontFamily="@font/app_font"
         android:textStyle="bold"
+        app:backgroundTint="?attr/chk_primary_blue"
         app:icon="@drawable/ic_add"
-        app:iconTint="@android:color/white"
-        app:backgroundTint="?attr/chk_primary_blue"/>
+        app:iconTint="@android:color/white" />
 
 </RelativeLayout>

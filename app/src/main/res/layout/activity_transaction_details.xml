@@ -14,9 +14,8 @@
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_marginHorizontal="16dp"
-        android:layout_marginTop="16dp"
         android:layout_marginBottom="8dp"
-        app:cardBackgroundColor="?attr/chk_surfaceColor"
+        app:cardBackgroundColor="?attr/chk_headerColor"
         app:cardCornerRadius="12dp"
         app:cardElevation="4dp">
 

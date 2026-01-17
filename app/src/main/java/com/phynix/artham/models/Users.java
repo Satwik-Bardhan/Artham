@@ -1,44 +1,50 @@
 package com.phynix.artham.models;
 
-import com.google.firebase.database.IgnoreExtraProperties;
-
-@IgnoreExtraProperties
 public class Users {
+    private String uid;
+    private String name;
+    private String email;
+    private String phone;
     private String profile;
-    private String mail;
-    private String userName;
-    private String userId;
-    private String phoneNumber;
     private long dateOfBirthTimestamp;
 
-    // Required Default Constructor for Firebase
-    public Users() {
+    // Empty constructor required for Firebase
+    public Users() { }
+
+    public Users(String uid, String name, String email, String phone, String profile) {
+        this.uid = uid;
+        this.name = name;
+        this.email = email;
+        this.phone = phone;
+        this.profile = profile;
     }
 
-    // Parameterized Constructor
-    public Users(String userId, String userName, String mail) {
-        this.userId = userId;
-        // [FIX] Prevent NullPointerException if userName is null
-        this.userName = (userName != null) ? userName : "User";
-        this.mail = (mail != null) ? mail : "";
-    }
+    // --- Core Getters & Setters ---
 
-    // Getters and Setters
+    public String getUid() { return uid; }
+    public void setUid(String uid) { this.uid = uid; }
+
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+
+    public String getPhone() { return phone; }
+    public void setPhone(String phone) { this.phone = phone; }
+
     public String getProfile() { return profile; }
     public void setProfile(String profile) { this.profile = profile; }
 
-    public String getMail() { return mail; }
-    public void setMail(String mail) { this.mail = mail; }
-
-    public String getUserName() { return userName; }
-    public void setUserName(String userName) { this.userName = userName; }
-
-    public String getUserId() { return userId; }
-    public void setUserId(String userId) { this.userId = userId; }
-
-    public String getPhoneNumber() { return phoneNumber; }
-    public void setPhoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber; }
-
     public long getDateOfBirthTimestamp() { return dateOfBirthTimestamp; }
     public void setDateOfBirthTimestamp(long dateOfBirthTimestamp) { this.dateOfBirthTimestamp = dateOfBirthTimestamp; }
+
+    // --- ALIAS METHODS (Fixes Compatibility Issues) ---
+    // These allow your code to use getUserName() OR getName() without crashing.
+
+    public String getUserName() { return name; }
+    public void setUserName(String name) { this.name = name; }
+
+    public String getPhoneNumber() { return phone; }
+    public void setPhoneNumber(String phone) { this.phone = phone; }
 }

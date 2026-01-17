@@ -19,7 +19,7 @@ import com.phynix.artham.databinding.ActivitySettingsBinding;
 import com.phynix.artham.models.CashbookModel;
 import com.phynix.artham.models.Users;
 import com.phynix.artham.utils.ErrorHandler;
-import com.phynix.artham.utils.ThemeManager; // [NEW IMPORT]
+import com.phynix.artham.utils.ThemeManager;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -57,7 +57,7 @@ public class SettingsActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        // [FIX] Apply Theme BEFORE super.onCreate()
+        // Apply Theme BEFORE super.onCreate()
         ThemeManager.applyActivityTheme(this);
 
         super.onCreate(savedInstanceState);
@@ -120,9 +120,8 @@ public class SettingsActivity extends AppCompatActivity {
         binding.generalSettingsLayout.aboutCashFlow.setOnClickListener(v ->
                 startActivity(new Intent(this, AboutActivity.class)));
 
-        // Account Actions
+        // Account Actions - Logout Only (Delete removed as requested)
         binding.logoutSection.setOnClickListener(v -> showLogoutConfirmationDialog());
-        binding.deleteAccountButton.setOnClickListener(v -> showDeleteAccountConfirmationDialog());
     }
 
     private void setupBottomNavigation() {
@@ -182,7 +181,7 @@ public class SettingsActivity extends AppCompatActivity {
                 binding.primarySettingsLayout.activeCashbookName.setText("No Active Cashbook");
             }
 
-            // [UPDATED] Simple & Private Location Badge
+            // Simple & Private Location Badge
             binding.primarySettingsLayout.dataLocation.setText("Google Cloud • Private Storage");
         }
     }
@@ -289,32 +288,6 @@ public class SettingsActivity extends AppCompatActivity {
                 .setPositiveButton("Logout", (dialog, which) -> logoutUser())
                 .setNegativeButton("Cancel", null)
                 .show();
-    }
-
-    private void showDeleteAccountConfirmationDialog() {
-        new AlertDialog.Builder(this)
-                .setTitle("Delete Account")
-                .setMessage("This will permanently delete your account and all data. This action cannot be undone. Are you sure?")
-                .setPositiveButton("Delete", (dialog, which) -> deleteUserAccount())
-                .setNegativeButton("Cancel", null)
-                .show();
-    }
-
-    private void deleteUserAccount() {
-        if (currentUser == null || userRef == null) return;
-
-        userRef.removeValue()
-                .addOnSuccessListener(aVoid -> {
-                    currentUser.delete().addOnCompleteListener(task -> {
-                        if (task.isSuccessful()) {
-                            Toast.makeText(this, "Account deleted.", Toast.LENGTH_LONG).show();
-                            logoutUser();
-                        } else {
-                            Toast.makeText(this, "Failed to delete account. Please sign in again.", Toast.LENGTH_LONG).show();
-                        }
-                    });
-                })
-                .addOnFailureListener(e -> Toast.makeText(this, "Failed to delete user data.", Toast.LENGTH_LONG).show());
     }
 
     private void showToast(String message) {

@@ -2,7 +2,9 @@ package com.phynix.artham;
 
 import android.app.DatePickerDialog;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -18,12 +20,12 @@ import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
-import com.phynix.artham.models.Users;
-import com.phynix.artham.utils.ThemeManager; // [NEW IMPORT]
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -33,6 +35,8 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.phynix.artham.models.Users;
+import com.phynix.artham.utils.ThemeManager;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -42,225 +46,225 @@ import java.util.Map;
 
 public class EditProfileActivity extends AppCompatActivity {
 
-    private ImageView profileImageView, editProfilePictureButton, backButton;
+    private ImageView profileImageView, backButton, editProfilePictureButton;
     private EditText editFullName, editPhoneNumber;
     private TextView displayEmail, dateOfBirthText;
     private LinearLayout dateOfBirthLayout;
-    private Button cancelButton, saveProfileButton;
-
-    // Progress Dialog for better UX
-    private ProgressDialog loadingBar;
+    private Button saveProfileButton, cancelButton, deleteAccountButton;
 
     private FirebaseAuth mAuth;
     private DatabaseReference userDatabaseRef;
-    private StorageReference storageReference;
+    private StorageReference userProfileStorageRef;
     private FirebaseUser currentUser;
 
-    private Calendar dobCalendar;
     private Uri imageUri;
+    private final Calendar dobCalendar = Calendar.getInstance();
+    private long dobTimestamp = 0;
+    private String currentPhotoUrl;
 
-    // Launcher to pick image from Gallery
-    private final ActivityResultLauncher<Intent> imagePickerLauncher = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            result -> {
-                if (result.getResultCode() == RESULT_OK && result.getData() != null && result.getData().getData() != null) {
-                    imageUri = result.getData().getData();
-                    // Show the selected image immediately (Circular crop)
-                    Glide.with(this)
-                            .load(imageUri)
-                            .circleCrop()
-                            .into(profileImageView);
-                }
-            }
-    );
+    private ActivityResultLauncher<Intent> imagePickerLauncher;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        // [FIX] Apply Theme BEFORE super.onCreate()
         ThemeManager.applyActivityTheme(this);
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_profile);
-
-        if (getSupportActionBar() != null) getSupportActionBar().hide();
 
         mAuth = FirebaseAuth.getInstance();
         currentUser = mAuth.getCurrentUser();
 
         if (currentUser == null) {
-            Toast.makeText(this, "No user logged in.", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
 
         userDatabaseRef = FirebaseDatabase.getInstance().getReference("users").child(currentUser.getUid());
-        // Point to "profile_pictures" folder in Storage
-        storageReference = FirebaseStorage.getInstance("gs://artham-67").getReference("profile_pictures");
-        initializeUI();
-        setupClickListeners();
-        loadUserProfile();
+        userProfileStorageRef = FirebaseStorage.getInstance().getReference().child("Profile Images");
+
+        initViews();
+        setupImagePicker();
+        loadUserInfo();
+
+        // Listeners
+        backButton.setOnClickListener(v -> finish());
+        cancelButton.setOnClickListener(v -> finish());
+        saveProfileButton.setOnClickListener(v -> saveProfileChanges());
+
+        View.OnClickListener imgClick = v -> openImageChooser();
+        editProfilePictureButton.setOnClickListener(imgClick);
+        profileImageView.setOnClickListener(imgClick);
+
+        dateOfBirthLayout.setOnClickListener(v -> showDatePicker());
+        deleteAccountButton.setOnClickListener(v -> showDeleteAccountDialog());
     }
 
-    private void initializeUI() {
+    private void initViews() {
         profileImageView = findViewById(R.id.profileImageView);
-        editProfilePictureButton = findViewById(R.id.editProfilePictureButton);
         backButton = findViewById(R.id.backButton);
+        editProfilePictureButton = findViewById(R.id.editProfilePictureButton);
+
         editFullName = findViewById(R.id.editFullName);
         editPhoneNumber = findViewById(R.id.editPhoneNumber);
+
         displayEmail = findViewById(R.id.displayEmail);
         dateOfBirthText = findViewById(R.id.dateOfBirthText);
         dateOfBirthLayout = findViewById(R.id.dateOfBirthLayout);
-        cancelButton = findViewById(R.id.cancelButton);
+
         saveProfileButton = findViewById(R.id.saveProfileButton);
+        cancelButton = findViewById(R.id.cancelButton);
 
-        dobCalendar = Calendar.getInstance();
-
-        // Initialize Progress Dialog
-        loadingBar = new ProgressDialog(this);
-        loadingBar.setTitle("Saving Profile");
-        loadingBar.setMessage("Please wait while we update your account...");
-        loadingBar.setCanceledOnTouchOutside(false);
+        deleteAccountButton = findViewById(R.id.delete_account_button);
     }
 
-    private void setupClickListeners() {
-        backButton.setOnClickListener(v -> finish());
-        cancelButton.setOnClickListener(v -> finish());
-
-        // Allow clicking BOTH the small edit icon AND the large image to pick a photo
-        View.OnClickListener pickImageListener = v -> openImagePicker();
-        editProfilePictureButton.setOnClickListener(pickImageListener);
-        profileImageView.setOnClickListener(pickImageListener);
-
-        dateOfBirthLayout.setOnClickListener(v -> showDatePicker());
-        saveProfileButton.setOnClickListener(v -> saveProfileChanges());
+    private void setupImagePicker() {
+        imagePickerLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                        imageUri = result.getData().getData();
+                        profileImageView.setImageURI(imageUri);
+                    }
+                }
+        );
     }
 
-    private void openImagePicker() {
+    private void openImageChooser() {
         Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         imagePickerLauncher.launch(intent);
     }
 
-    private void loadUserProfile() {
+    private void loadUserInfo() {
+        // 1. Try setting email from Auth first (Fastest)
         if (currentUser.getEmail() != null) {
             displayEmail.setText(currentUser.getEmail());
         }
 
-        userDatabaseRef.addListenerForSingleValueEvent(new ValueEventListener() {
+        userDatabaseRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 Users user = snapshot.getValue(Users.class);
                 if (user != null) {
-                    if (user.getUserName() != null) editFullName.setText(user.getUserName());
-                    if (user.getPhoneNumber() != null) editPhoneNumber.setText(user.getPhoneNumber());
-
-                    if (user.getDateOfBirthTimestamp() > 0) {
-                        updateDobText(user.getDateOfBirthTimestamp());
+                    // Update Name
+                    if (user.getUserName() != null) {
+                        editFullName.setText(user.getUserName());
+                    } else if (user.getName() != null) {
+                        editFullName.setText(user.getName());
                     }
 
-                    // Load existing profile picture using Glide
-                    if (user.getProfile() != null && !user.getProfile().isEmpty()) {
+                    // Update Phone
+                    if (user.getPhoneNumber() != null) {
+                        editPhoneNumber.setText(user.getPhoneNumber());
+                    } else if (user.getPhone() != null) {
+                        editPhoneNumber.setText(user.getPhone());
+                    }
+
+                    // [FIX] Update Email from DB if available (Overrides Auth if DB has it)
+                    if (user.getEmail() != null && !user.getEmail().isEmpty()) {
+                        displayEmail.setText(user.getEmail());
+                    }
+
+                    // Update Profile Image
+                    if (user.getProfile() != null && !user.getProfile().isEmpty() && !isDestroyed()) {
+                        currentPhotoUrl = user.getProfile();
                         Glide.with(EditProfileActivity.this)
-                                .load(user.getProfile())
+                                .load(currentPhotoUrl)
                                 .placeholder(R.drawable.ic_person_placeholder)
-                                .circleCrop() // Make it round
+                                .circleCrop()
                                 .into(profileImageView);
+                    }
+
+                    // Update DOB
+                    if (snapshot.hasChild("dateOfBirthTimestamp")) {
+                        dobTimestamp = snapshot.child("dateOfBirthTimestamp").getValue(Long.class);
+                        updateDobText(dobTimestamp);
+                    } else {
+                        dateOfBirthText.setText("Select Date");
                     }
                 }
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                Toast.makeText(EditProfileActivity.this, "Failed to load profile.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(EditProfileActivity.this, "Failed to load data.", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
     private void saveProfileChanges() {
-        String fullName = editFullName.getText().toString().trim();
-        String phoneNumber = editPhoneNumber.getText().toString().trim();
+        String name = editFullName.getText().toString().trim();
+        String phone = editPhoneNumber.getText().toString().trim();
 
-        if (TextUtils.isEmpty(fullName)) {
-            editFullName.setError("Full name is required.");
-            editFullName.requestFocus();
+        if (TextUtils.isEmpty(name)) {
+            editFullName.setError("Name is required");
             return;
         }
 
-        if (TextUtils.isEmpty(phoneNumber)) {
-            editPhoneNumber.setError("Phone number is required.");
-            editPhoneNumber.requestFocus();
-            return;
-        }
-
-        if (phoneNumber.length() != 10) {
-            editPhoneNumber.setError("Phone number must be exactly 10 digits.");
-            editPhoneNumber.requestFocus();
-            return;
-        }
-
-        // Show loading dialog
-        loadingBar.show();
-
-        // Check if user picked a new image
-        if (imageUri != null) {
-            uploadImageAndSaveData(fullName, phoneNumber, dobCalendar.getTimeInMillis());
+        // Phone Validation: 10 digits and starts with 9, 8, or 7
+        if (!TextUtils.isEmpty(phone)) {
+            if (phone.length() != 10) {
+                editPhoneNumber.setError("Phone number must be 10 digits");
+                return;
+            }
+            char firstDigit = phone.charAt(0);
+            if (firstDigit != '9' && firstDigit != '8' && firstDigit != '7') {
+                editPhoneNumber.setError("Invalid number. Must start with 9, 8, or 7");
+                return;
+            }
         } else {
-            // Just save text data
-            saveDataToDatabase(fullName, phoneNumber, dobCalendar.getTimeInMillis(), null);
+            editPhoneNumber.setError("Phone number is required");
+            return;
+        }
+
+        ProgressDialog progressDialog = new ProgressDialog(this);
+        progressDialog.setTitle("Updating Profile");
+        progressDialog.setMessage("Please wait...");
+        progressDialog.setCanceledOnTouchOutside(false);
+        progressDialog.show();
+
+        if (imageUri != null) {
+            StorageReference fileRef = userProfileStorageRef.child(currentUser.getUid() + ".jpg");
+            fileRef.putFile(imageUri).addOnSuccessListener(taskSnapshot ->
+                    fileRef.getDownloadUrl().addOnSuccessListener(uri -> {
+                        updateDatabase(name, phone, uri.toString(), progressDialog);
+                    })
+            ).addOnFailureListener(e -> {
+                progressDialog.dismiss();
+                Toast.makeText(EditProfileActivity.this, "Failed to upload image", Toast.LENGTH_SHORT).show();
+            });
+        } else {
+            updateDatabase(name, phone, null, progressDialog);
         }
     }
 
-    // Step 1: Upload Image to Firebase Storage
-    private void uploadImageAndSaveData(String fullName, String phoneNumber, long dobTimestamp) {
-        final StorageReference fileReference = storageReference.child(currentUser.getUid() + ".jpg");
-
-        fileReference.putFile(imageUri)
-                .addOnSuccessListener(taskSnapshot ->
-                        // Step 2: Get Download URL
-                        fileReference.getDownloadUrl().addOnSuccessListener(uri -> {
-                            String imageUrl = uri.toString();
-                            // Step 3: Save Data + Image URL to Database
-                            saveDataToDatabase(fullName, phoneNumber, dobTimestamp, imageUrl);
-                        })
-                )
-                .addOnFailureListener(e -> {
-                    loadingBar.dismiss();
-                    Toast.makeText(EditProfileActivity.this, "Image upload failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                });
-    }
-
-    // Step 3: Save Data to Realtime Database
-    private void saveDataToDatabase(String fullName, String phoneNumber, long dobTimestamp, @Nullable String imageUrl) {
+    private void updateDatabase(String name, String phone, String imageUrl, ProgressDialog loadingBar) {
         Map<String, Object> profileUpdates = new HashMap<>();
-        profileUpdates.put("userName", fullName);
-        profileUpdates.put("phoneNumber", phoneNumber);
+        // Use keys that match your Users model fields
+        profileUpdates.put("name", name);
+        profileUpdates.put("userName", name); // Save both to be safe
+        profileUpdates.put("phone", phone);
+        profileUpdates.put("phoneNumber", phone); // Save both to be safe
 
-        if (!dateOfBirthText.getText().toString().equals("Select Date")) {
-            profileUpdates.put("dateOfBirthTimestamp", dobTimestamp);
-        }
-
-        if (imageUrl != null) {
-            profileUpdates.put("profile", imageUrl);
-        }
+        if (dobTimestamp > 0) profileUpdates.put("dateOfBirthTimestamp", dobTimestamp);
+        if (imageUrl != null) profileUpdates.put("profile", imageUrl);
 
         userDatabaseRef.updateChildren(profileUpdates)
                 .addOnCompleteListener(task -> {
                     loadingBar.dismiss();
                     if (task.isSuccessful()) {
                         Toast.makeText(EditProfileActivity.this, "Profile updated successfully!", Toast.LENGTH_SHORT).show();
-                        finish(); // Close activity and go back to Settings
+                        finish();
                     } else {
                         Toast.makeText(EditProfileActivity.this, "Failed to update database.", Toast.LENGTH_SHORT).show();
                     }
                 });
     }
 
-    // --- Helper Methods ---
-
     private void showDatePicker() {
         new DatePickerDialog(this,
                 (view, year, month, dayOfMonth) -> {
                     dobCalendar.set(year, month, dayOfMonth);
-                    updateDobText(dobCalendar.getTimeInMillis());
+                    dobTimestamp = dobCalendar.getTimeInMillis();
+                    updateDobText(dobTimestamp);
                 },
                 dobCalendar.get(Calendar.YEAR),
                 dobCalendar.get(Calendar.MONTH),
@@ -271,5 +275,43 @@ public class EditProfileActivity extends AppCompatActivity {
         dobCalendar.setTimeInMillis(timestamp);
         SimpleDateFormat sdf = new SimpleDateFormat("MMMM dd, yyyy", Locale.US);
         dateOfBirthText.setText(sdf.format(dobCalendar.getTime()));
+    }
+
+    private void showDeleteAccountDialog() {
+        new MaterialAlertDialogBuilder(this)
+                .setTitle("Delete Account")
+                .setMessage("Are you sure you want to delete your account? This will erase all data.")
+                .setPositiveButton("Delete", (dialog, which) -> deleteUserData())
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private void deleteUserData() {
+        ProgressDialog pd = new ProgressDialog(this);
+        pd.setMessage("Deleting account...");
+        pd.show();
+
+        userDatabaseRef.removeValue().addOnSuccessListener(aVoid -> {
+            if (currentUser != null) {
+                currentUser.delete().addOnCompleteListener(task -> {
+                    pd.dismiss();
+                    if (task.isSuccessful()) {
+                        logoutAndRedirect();
+                    } else {
+                        Toast.makeText(this, "Re-login required to delete account.", Toast.LENGTH_LONG).show();
+                        logoutAndRedirect();
+                    }
+                });
+            }
+        });
+    }
+
+    private void logoutAndRedirect() {
+        mAuth.signOut();
+        getSharedPreferences("AppPrefs", Context.MODE_PRIVATE).edit().clear().apply();
+        Intent intent = new Intent(this, SigninActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
     }
 }

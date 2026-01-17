@@ -13,7 +13,6 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -88,7 +87,7 @@ public class CashbookSwitchActivity extends AppCompatActivity {
         ThemeManager.applyActivityTheme(this);
 
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_cashbook_switch);
+        setContentView(R.layout.activity_cashbook_manager);
 
         if (getSupportActionBar() != null) {
             getSupportActionBar().hide();
@@ -120,17 +119,19 @@ public class CashbookSwitchActivity extends AppCompatActivity {
         swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
         emptyStateLayout = findViewById(R.id.emptyStateLayout);
         loadingLayout = findViewById(R.id.loadingLayout);
-        mainContent = findViewById(R.id.mainCard);
 
-        // Footer buttons removed here
+        // Use RecyclerView as main content view for visibility toggling
+        mainContent = cashbookRecyclerView;
 
         emptyStateCreateButton = findViewById(R.id.emptyStateCreateButton);
         closeButton = findViewById(R.id.closeButton);
 
         searchEditText = findViewById(R.id.searchEditText);
-        chipGroup = findViewById(R.id.chipGroup);
-        sortButton = findViewById(R.id.sortButton);
 
+        // FIXED: Use the ID of the <include> tag, not the ID inside the file
+        chipGroup = findViewById(R.id.includedFilterLayout);
+
+        sortButton = findViewById(R.id.sortButton);
         quickAddFab = findViewById(R.id.quickAddFab);
     }
 
@@ -168,7 +169,6 @@ public class CashbookSwitchActivity extends AppCompatActivity {
     private void setupClickListeners() {
         closeButton.setOnClickListener(v -> finish());
 
-        // Use the same handler for FAB and Empty State button
         View.OnClickListener addAction = v -> handleAddNewCashbook();
         emptyStateCreateButton.setOnClickListener(addAction);
         quickAddFab.setOnClickListener(addAction);
@@ -177,9 +177,18 @@ public class CashbookSwitchActivity extends AppCompatActivity {
     }
 
     private void setupFilterListener() {
+        // This check prevents crash if the view binding failed for any reason
+        if (chipGroup == null) {
+            Log.e(TAG, "ChipGroup not found! Check XML IDs.");
+            return;
+        }
+
         chipGroup.setOnCheckedStateChangeListener((group, checkedIds) -> {
             if (!checkedIds.isEmpty()) {
                 int checkedId = checkedIds.get(0);
+                // IDs must match what is inside layout_cashbook_filters.xml
+                // Since that file wasn't provided in this turn, assuming standard IDs:
+                // If they are dynamic or changed, ensure R.id.chipAll etc exist.
                 if (checkedId == R.id.chipAll) {
                     currentFilter = "all";
                 } else if (checkedId == R.id.chipActive) {
@@ -226,7 +235,9 @@ public class CashbookSwitchActivity extends AppCompatActivity {
                         CashbookModel cashbook = snapshot.getValue(CashbookModel.class);
                         if (cashbook != null) {
                             cashbook.setCashbookId(snapshot.getKey());
-                            cashbook.setCurrent(cashbook.getCashbookId().equals(currentCashbookId));
+                            // Use safe equals check
+                            boolean isCurrent = currentCashbookId != null && currentCashbookId.equals(snapshot.getKey());
+                            cashbook.setCurrent(isCurrent);
 
                             DataSnapshot transactionsSnapshot = snapshot.child("transactions");
                             calculateStatsForCashbook(cashbook, transactionsSnapshot);
@@ -527,7 +538,6 @@ public class CashbookSwitchActivity extends AppCompatActivity {
         if (show) {
             emptyStateLayout.setVisibility(View.GONE);
         }
-        // Footer toggle removed
     }
 
     private void showEmptyState(boolean show) {

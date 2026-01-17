@@ -46,6 +46,8 @@
         <item name="buttonStyle">@style/ProfessionalButton</item>
 
         <item name="chk_splash_wave">@color/splash_wave_light</item>
+
+        <item name="chk_headerColor">@color/light_header</item>
     </style>
 
     <style name="Theme.Artham.Dark" parent="Theme.MaterialComponents.DayNight.NoActionBar">
@@ -80,6 +82,8 @@
         <item name="buttonStyle">@style/ProfessionalButton</item>
 
         <item name="chk_splash_wave">@color/splash_wave_dark</item>
+
+        <item name="chk_headerColor">@color/dark_header</item>
     </style>
 
     <style name="Theme.Artham.Purple" parent="Theme.MaterialComponents.DayNight.NoActionBar">
@@ -114,6 +118,8 @@
         <item name="buttonStyle">@style/ProfessionalButton</item>
 
         <item name="chk_splash_wave">@color/splash_wave_purple</item>
+
+        <item name="chk_headerColor">@color/purple_header</item>
     </style>
 
     <style name="Theme.Artham.Dialog" parent="Theme.Artham">

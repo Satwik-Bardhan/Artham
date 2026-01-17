@@ -66,8 +66,7 @@
                 android:id="@+id/headerCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardBackgroundColor="?attr/chk_surfaceColor"
-                android:layout_marginTop="12dp"
+                app:cardBackgroundColor="?attr/chk_headerColor"
                 android:layout_marginStart="12dp"
                 android:layout_marginEnd="12dp"
                 android:layout_marginBottom="20dp"
@@ -153,7 +152,7 @@
                             android:layout_height="match_parent"
                             android:src="@drawable/ic_person_placeholder"
                             android:scaleType="centerCrop"
-                            android:background="?attr/chk_backgroundColor" />
+                            android:background="?attr/colorPrimary" />
 
                         <ImageView
                             android:id="@+id/editProfilePictureButton"
@@ -241,7 +240,7 @@
                             android:layout_weight="1"
                             android:text="artham.user@example.com"
                             android:fontFamily="@font/app_font"
-                            android:textColor="?attr/chk_textColorSecondary"
+                            android:textColor="?attr/chk_textColorPrimary"
                             android:textSize="15sp" />
 
                         <ImageView
@@ -312,6 +311,30 @@
                             app:tint="?attr/chk_textColorSecondary" />
                     </LinearLayout>
                 </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="24dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="0dp">
+
+                <Button
+                    android:id="@+id/delete_account_button"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/button_delete"
+                    android:drawablePadding="8dp"
+                    android:fontFamily="@font/app_font"
+                    android:paddingVertical="14dp"
+                    android:text="Delete Account"
+                    android:textColor="#FFFFFF"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    app:backgroundTint="@null" />
             </androidx.cardview.widget.CardView>
 
         </LinearLayout>

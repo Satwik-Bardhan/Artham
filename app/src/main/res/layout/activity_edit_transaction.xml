@@ -12,8 +12,9 @@
         android:id="@+id/headerCard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        app:cardBackgroundColor="?attr/chk_surfaceColor"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        app:cardBackgroundColor="?attr/chk_headerColor"
         app:cardCornerRadius="8dp"
         app:cardElevation="4dp">
 
@@ -77,8 +78,8 @@
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/headerCard"
         android:layout_above="@id/footerLayout"
+        android:layout_below="@id/headerCard"
         android:fillViewport="true">
 
         <LinearLayout
@@ -97,13 +98,13 @@
                     android:id="@+id/dateSelectorLayout"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
                     android:layout_marginEnd="8dp"
+                    android:layout_weight="1"
                     android:background="@drawable/rounded_input_background"
-                    android:gravity="center_vertical"
-                    android:padding="12dp"
                     android:clickable="true"
-                    android:focusable="true">
+                    android:focusable="true"
+                    android:gravity="center_vertical"
+                    android:padding="12dp">
 
                     <ImageView
                         android:layout_width="20dp"
@@ -119,20 +120,20 @@
                         android:fontFamily="@font/app_font"
                         android:text="Select Date"
                         android:textColor="?attr/chk_textColorPrimary"
-                        android:textSize="14sp"/>
+                        android:textSize="14sp" />
                 </LinearLayout>
 
                 <LinearLayout
                     android:id="@+id/timeSelectorLayout"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
                     android:layout_marginStart="8dp"
+                    android:layout_weight="1"
                     android:background="@drawable/rounded_input_background"
-                    android:gravity="center_vertical"
-                    android:padding="12dp"
                     android:clickable="true"
-                    android:focusable="true">
+                    android:focusable="true"
+                    android:gravity="center_vertical"
+                    android:padding="12dp">
 
                     <ImageView
                         android:id="@+id/timePickerIcon"
@@ -149,16 +150,22 @@
                         android:fontFamily="@font/app_font"
                         android:text="Select Time"
                         android:textColor="?attr/chk_textColorPrimary"
-                        android:textSize="14sp"/>
+                        android:textSize="14sp" />
                 </LinearLayout>
             </LinearLayout>
 
             <include layout="@layout/layout_transaction_type" />
+
             <include layout="@layout/layout_payment_mode" />
+
             <include layout="@layout/layout_amount_input" />
+
             <include layout="@layout/layout_remarks_input" />
+
             <include layout="@layout/layout_category_selector" />
+
             <include layout="@layout/layout_party_selector" />
+
             <include layout="@layout/layout_tags_location" />
 
             <TextView
@@ -200,8 +207,8 @@
                         <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:layout_weight="1"
                             android:layout_marginStart="12dp"
+                            android:layout_weight="1"
                             android:orientation="vertical">
 
                             <TextView
@@ -228,9 +235,9 @@
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
+                        android:layout_marginStart="32dp"
                         android:layout_marginTop="12dp"
                         android:layout_marginBottom="12dp"
-                        android:layout_marginStart="32dp"
                         android:background="?attr/chk_dividerHorizontal" />
 
                     <LinearLayout
@@ -248,8 +255,8 @@
                         <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:layout_weight="1"
                             android:layout_marginStart="12dp"
+                            android:layout_weight="1"
                             android:orientation="vertical">
 
                             <TextView
@@ -288,34 +295,34 @@
         android:layout_alignParentBottom="true"
         android:background="?attr/chk_surfaceColor"
         android:elevation="16dp"
-        android:padding="16dp"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:padding="16dp">
 
         <Button
             android:id="@+id/CancelTransactionButton"
             android:layout_width="0dp"
             android:layout_height="50dp"
-            android:layout_weight="1"
             android:layout_marginEnd="8dp"
+            android:layout_weight="1"
             android:background="@drawable/button_cancel_outline"
             android:fontFamily="@font/app_font"
             android:text="Cancel"
-            android:textColor="?attr/chk_expenseColor"
             android:textAllCaps="false"
+            android:textColor="?attr/chk_expenseColor"
             app:backgroundTint="@null" />
 
         <Button
             android:id="@+id/saveChangesButton"
             android:layout_width="0dp"
             android:layout_height="50dp"
-            android:layout_weight="1"
             android:layout_marginStart="8dp"
+            android:layout_weight="1"
             android:background="@drawable/button_primary"
             android:fontFamily="@font/app_font"
             android:text="Save Changes"
+            android:textAllCaps="false"
             android:textColor="@android:color/white"
             android:textStyle="bold"
-            android:textAllCaps="false"
             app:backgroundTint="@null" />
     </LinearLayout>
 

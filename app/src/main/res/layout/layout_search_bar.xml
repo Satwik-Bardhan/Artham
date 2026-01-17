@@ -6,9 +6,12 @@
     android:layout_width="match_parent"
     android:layout_height="56dp"
     app:cardBackgroundColor="?attr/chk_surfaceColor"
-    app:cardCornerRadius="28dp"
+    app:cardCornerRadius="8dp"
     app:cardElevation="0dp"
     app:strokeWidth="1dp"
+
+    android:layout_marginStart="12dp"
+    android:layout_marginEnd="12dp"
     app:strokeColor="?attr/chk_primary_blue">
 
     <LinearLayout
