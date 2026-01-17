@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.chip.ChipGroup
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/chipGroup"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:singleSelection="true"
+    app:selectionRequired="true"
+    app:checkedChip="@id/chipActive"
+    app:chipSpacingHorizontal="8dp">
+
+    <com.google.android.material.chip.Chip
+        android:id="@+id/chipAll"
+        style="@style/Widget.MaterialComponents.Chip.Choice"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="All"
+        android:textColor="@color/chip_text_selector"
+        app:chipBackgroundColor="@color/chip_background_selector"
+        app:chipStrokeWidth="1dp"
+        app:chipStrokeColor="?attr/chk_dividerHorizontal"
+        app:rippleColor="?attr/chk_balanceColor" />
+
+    <com.google.android.material.chip.Chip
+        android:id="@+id/chipActive"
+        style="@style/Widget.MaterialComponents.Chip.Choice"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/chip_active"
+        android:checked="true"
+        android:textColor="@color/chip_text_selector"
+        app:chipBackgroundColor="@color/chip_background_selector"
+        app:chipStrokeWidth="1dp"
+        app:chipStrokeColor="?attr/chk_dividerHorizontal"
+        app:rippleColor="?attr/chk_balanceColor" />
+
+    <com.google.android.material.chip.Chip
+        android:id="@+id/chipRecent"
+        style="@style/Widget.MaterialComponents.Chip.Choice"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/chip_recent"
+        android:textColor="@color/chip_text_selector"
+        app:chipBackgroundColor="@color/chip_background_selector"
+        app:chipStrokeWidth="1dp"
+        app:chipStrokeColor="?attr/chk_dividerHorizontal"
+        app:rippleColor="?attr/chk_balanceColor" />
+
+    <com.google.android.material.chip.Chip
+        android:id="@+id/chipFavorites"
+        style="@style/Widget.MaterialComponents.Chip.Choice"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/chip_favorites"
+        android:textColor="@color/chip_text_selector"
+        app:chipBackgroundColor="@color/chip_background_selector"
+        app:chipStrokeWidth="1dp"
+        app:chipStrokeColor="?attr/chk_dividerHorizontal"
+        app:rippleColor="?attr/chk_balanceColor" />
+
+</com.google.android.material.chip.ChipGroup>
