@@ -1,53 +1,82 @@
 package com.phynix.artham.viewmodels;
 
 import android.app.Application;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 
 import com.phynix.artham.db.DataRepository;
 import com.phynix.artham.models.TransactionModel;
+import com.phynix.artham.utils.Constants;
 
-/**
- * CashInOutViewModel - ViewModel for handling transaction creation and editing
- */
 public class CashInOutViewModel extends AndroidViewModel {
 
-    private static final String TAG = "CashInOutViewModel";
-
     private final DataRepository repository;
+
+    // LiveData for UI State
+    private final MutableLiveData<Boolean> isLoading = new MutableLiveData<>(false);
+    private final MutableLiveData<String> errorMessage = new MutableLiveData<>();
+    private final MutableLiveData<Boolean> operationSuccess = new MutableLiveData<>();
 
     public CashInOutViewModel(@NonNull Application application) {
         super(application);
         repository = DataRepository.getInstance(application);
-        Log.d(TAG, "CashInOutViewModel initialized for authenticated user.");
     }
 
+    // --- Getters for LiveData ---
+    public LiveData<Boolean> getIsLoading() { return isLoading; }
+    public LiveData<String> getErrorMessage() { return errorMessage; }
+    public LiveData<Boolean> getOperationSuccess() { return operationSuccess; }
+
+    // --- Actions ---
+
     public void saveTransaction(String cashbookId, TransactionModel transaction) {
-        if (!isTransactionValid(transaction, false)) {
-            Log.e(TAG, "Invalid transaction. Save aborted.");
-            return;
-        }
+        if (!validateTransaction(transaction)) return;
 
-        if (cashbookId == null || cashbookId.isEmpty()) {
-            Log.e(TAG, "Cashbook ID is null or empty, cannot save Firebase transaction");
-            return;
-        }
-
-        repository.addTransaction(cashbookId, transaction, new DataRepository.DataCallback<Boolean>() {
-            @Override
-            public void onCallback(Boolean success) {
-                if (success) {
-                    Log.d(TAG, "Firebase transaction saved successfully");
-                } else {
-                    Log.e(TAG, "Failed to save Firebase transaction");
-                }
+        isLoading.setValue(true);
+        repository.addTransaction(cashbookId, transaction, success -> {
+            isLoading.postValue(false);
+            if (success) {
+                operationSuccess.postValue(true);
+            } else {
+                errorMessage.postValue("Failed to save transaction.");
             }
         });
     }
 
-    // [NEW] Method to duplicate a transaction
+    public void updateTransaction(String cashbookId, TransactionModel transaction) {
+        if (!validateTransaction(transaction)) return;
+
+        isLoading.setValue(true);
+        repository.updateTransaction(cashbookId, transaction, success -> {
+            isLoading.postValue(false);
+            if (success) {
+                operationSuccess.postValue(true);
+            } else {
+                errorMessage.postValue("Failed to update transaction.");
+            }
+        });
+    }
+
+    public void deleteTransaction(String cashbookId, String transactionId) {
+        if (cashbookId == null || transactionId == null) {
+            errorMessage.setValue("Invalid ID provided.");
+            return;
+        }
+
+        isLoading.setValue(true);
+        repository.deleteTransaction(cashbookId, transactionId, success -> {
+            isLoading.postValue(false);
+            if (success) {
+                operationSuccess.postValue(true);
+            } else {
+                errorMessage.postValue("Failed to delete transaction.");
+            }
+        });
+    }
+
     public void duplicateTransaction(String cashbookId, TransactionModel originalTransaction, boolean isTemplate) {
         if (originalTransaction == null || cashbookId == null) return;
 
@@ -57,7 +86,7 @@ public class CashInOutViewModel extends AndroidViewModel {
         newTransaction.setTransactionCategory(originalTransaction.getTransactionCategory());
         newTransaction.setPaymentMode(originalTransaction.getPaymentMode());
         newTransaction.setPartyName(originalTransaction.getPartyName());
-        newTransaction.setTimestamp(System.currentTimeMillis()); // Current time
+        newTransaction.setTimestamp(System.currentTimeMillis());
 
         if (isTemplate) {
             newTransaction.setRemark("[TEMPLATE] " + originalTransaction.getRemark());
@@ -65,91 +94,38 @@ public class CashInOutViewModel extends AndroidViewModel {
             newTransaction.setRemark(originalTransaction.getRemark() + " (Copy)");
         }
 
-        // Save as a new transaction
+        // Reuse save logic
         saveTransaction(cashbookId, newTransaction);
     }
 
-    public void updateTransaction(String cashbookId, TransactionModel transaction) {
-        if (!isTransactionValid(transaction, true)) {
-            Log.e(TAG, "Invalid transaction, update aborted.");
-            return;
-        }
+    // --- Validation ---
 
-        if (cashbookId == null || cashbookId.isEmpty()) {
-            Log.e(TAG, "Cashbook ID is null or empty, cannot update Firebase transaction");
-            return;
-        }
-
-        repository.updateTransaction(cashbookId, transaction, new DataRepository.DataCallback<Boolean>() {
-            @Override
-            public void onCallback(Boolean success) {
-                if (success) {
-                    Log.d(TAG, "Firebase transaction updated successfully");
-                } else {
-                    Log.e(TAG, "Failed to update Firebase transaction");
-                }
-            }
-        });
-    }
-
-    public void deleteTransaction(String cashbookId, String transactionId) {
-        if (transactionId == null || transactionId.isEmpty()) {
-            Log.e(TAG, "Transaction ID is null or empty, cannot delete");
-            return;
-        }
-
-        if (cashbookId == null || cashbookId.isEmpty()) {
-            Log.e(TAG, "Cashbook ID is null or empty, cannot delete Firebase transaction");
-            return;
-        }
-
-        repository.deleteTransaction(cashbookId, transactionId, new DataRepository.DataCallback<Boolean>() {
-            @Override
-            public void onCallback(Boolean success) {
-                if (success) {
-                    Log.d(TAG, "Firebase transaction deleted successfully");
-                } else {
-                    Log.e(TAG, "Failed to delete Firebase transaction");
-                }
-            }
-        });
-    }
-
-    public boolean isTransactionValid(TransactionModel transaction, boolean isUpdate) {
+    private boolean validateTransaction(TransactionModel transaction) {
         if (transaction == null) {
-            Log.w(TAG, "Transaction validation failed: transaction is null");
-            return false;
-        }
-
-        if (isUpdate && (transaction.getTransactionId() == null || transaction.getTransactionId().isEmpty())) {
-            Log.w(TAG, "Transaction validation failed: transaction ID is empty for update");
+            errorMessage.setValue("Invalid transaction data.");
             return false;
         }
 
         if (transaction.getAmount() <= 0) {
-            Log.w(TAG, "Transaction validation failed: invalid amount");
+            errorMessage.setValue("Amount must be greater than 0.");
             return false;
         }
 
         if (transaction.getTransactionCategory() == null ||
                 transaction.getTransactionCategory().trim().isEmpty() ||
-                transaction.getTransactionCategory().equals("Select Category")) {
-            Log.w(TAG, "Transaction validation failed: category is empty");
+                "Select Category".equals(transaction.getTransactionCategory())) {
+            errorMessage.setValue("Please select a category.");
             return false;
         }
 
+        // Using Constants class for safer type checking
         if (transaction.getType() == null ||
-                (!transaction.getType().equals("IN") && !transaction.getType().equals("OUT"))) {
-            Log.w(TAG, "Transaction validation failed: invalid type");
+                (!transaction.getType().equals(Constants.TRANSACTION_TYPE_IN) &&
+                        !transaction.getType().equals(Constants.TRANSACTION_TYPE_OUT))) {
+            errorMessage.setValue("Invalid transaction type.");
             return false;
         }
 
         return true;
-    }
-
-    @Override
-    protected void onCleared() {
-        super.onCleared();
-        Log.d(TAG, "CashInOutViewModel cleared");
     }
 }

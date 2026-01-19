@@ -3,230 +3,220 @@ package com.phynix.artham.viewmodels;
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
-import com.phynix.artham.models.CashbookModel;
-import com.phynix.artham.models.TransactionModel;
-import com.phynix.artham.models.Users;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.phynix.artham.db.DataRepository;
+import com.phynix.artham.models.CashbookModel;
+import com.phynix.artham.models.TransactionModel;
+import com.phynix.artham.models.Users;
+import com.phynix.artham.utils.Constants;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Calendar;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class HomePageViewModel extends AndroidViewModel {
 
     private static final String TAG = "HomePageViewModel";
 
-    // Firebase
-    private final DatabaseReference userDatabaseRef;
-    private String currentCashbookId;
+    private final DataRepository repository;
+    private final ExecutorService executorService;
     private String currentUserId;
+    private String currentCashbookId;
 
-    // LiveData
+    // --- Data Sources ---
     private final MutableLiveData<List<TransactionModel>> transactions = new MutableLiveData<>();
     private final MutableLiveData<List<CashbookModel>> cashbooks = new MutableLiveData<>();
     private final MutableLiveData<CashbookModel> activeCashbook = new MutableLiveData<>();
     private final MutableLiveData<Users> userProfile = new MutableLiveData<>();
+
+    // --- UI Summaries ---
+    private final MutableLiveData<Double> totalIncome = new MutableLiveData<>(0.0);
+    private final MutableLiveData<Double> totalExpense = new MutableLiveData<>(0.0);
+    private final MutableLiveData<Double> currentBalance = new MutableLiveData<>(0.0);
+    private final MutableLiveData<Double> todayIncome = new MutableLiveData<>(0.0);
+    private final MutableLiveData<Double> todayExpense = new MutableLiveData<>(0.0);
+    private final MutableLiveData<Double> todayBalance = new MutableLiveData<>(0.0);
+    private final MutableLiveData<List<TransactionModel>> todaysTransactions = new MutableLiveData<>();
+
+    // --- State ---
     private final MutableLiveData<Boolean> isLoading = new MutableLiveData<>(false);
     private final MutableLiveData<String> errorMessage = new MutableLiveData<>();
 
-    // Listeners
-    private ValueEventListener transactionsListener;
-    private ValueEventListener cashbooksListener;
-    private ValueEventListener userProfileListener;
-    private DatabaseReference previousTransactionsRef;
+    // --- Listeners for Cleanup ---
+    private ValueEventListener activeTransactionListener;
+    private DatabaseReference activeTransactionRef;
 
     public HomePageViewModel(@NonNull Application application) {
         super(application);
-        this.transactions.setValue(new ArrayList<>());
-        this.cashbooks.setValue(new ArrayList<>());
+        repository = DataRepository.getInstance(application);
+        executorService = Executors.newSingleThreadExecutor();
 
-        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
-
-        if (currentUser != null) {
-            currentUserId = currentUser.getUid();
-            userDatabaseRef = FirebaseDatabase.getInstance().getReference("users").child(currentUserId);
-            loadUserProfile();
+        if (repository.isUserAuthenticated()) {
+            currentUserId = repository.getCurrentUserId();
             loadCashbooks();
         } else {
-            userDatabaseRef = null;
             errorMessage.setValue("User not logged in.");
         }
     }
 
-    // --- Getters ---
+    // ============================================
+    // Getters
+    // ============================================
+
     public LiveData<List<TransactionModel>> getTransactions() { return transactions; }
     public LiveData<List<CashbookModel>> getCashbooks() { return cashbooks; }
     public LiveData<CashbookModel> getActiveCashbook() { return activeCashbook; }
     public LiveData<Users> getUserProfile() { return userProfile; }
     public LiveData<Boolean> getIsLoading() { return isLoading; }
     public LiveData<String> getErrorMessage() { return errorMessage; }
+
+    public LiveData<Double> getTotalIncome() { return totalIncome; }
+    public LiveData<Double> getTotalExpense() { return totalExpense; }
+    public LiveData<Double> getCurrentBalance() { return currentBalance; }
+    public LiveData<Double> getTodayBalance() { return todayBalance; }
+    public LiveData<List<TransactionModel>> getTodaysTransactions() { return todaysTransactions; }
+
     public String getCurrentCashbookId() { return currentCashbookId; }
 
-    // --- Logic ---
-
-    private void loadUserProfile() {
-        if (userDatabaseRef == null) return;
-        userProfileListener = new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                Users user = snapshot.getValue(Users.class);
-                userProfile.setValue(user);
-            }
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Log.e(TAG, "User profile error", error.toException());
-            }
-        };
-        userDatabaseRef.addValueEventListener(userProfileListener);
-    }
+    // ============================================
+    // Actions
+    // ============================================
 
     private void loadCashbooks() {
-        if (userDatabaseRef == null) return;
         isLoading.setValue(true);
+        repository.getCashbooks(data -> {
+            cashbooks.setValue(data);
 
-        cashbooksListener = new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                List<CashbookModel> cashbookList = new ArrayList<>();
-                for (DataSnapshot s : snapshot.getChildren()) {
-                    try {
-                        CashbookModel cashbook = s.getValue(CashbookModel.class);
-                        if (cashbook != null) {
-                            cashbook.setCashbookId(s.getKey());
-                            cashbookList.add(cashbook);
-                        }
-                    } catch (Exception e) { Log.e(TAG, "Error parsing cashbook", e); }
-                }
-                cashbooks.setValue(cashbookList);
+            String lastId = getActiveCashbookIdFromPrefs();
+            String targetId = null;
 
-                // Determine active cashbook
-                currentCashbookId = getActiveCashbookIdFromPrefs();
-                boolean activeFound = false;
-                if (currentCashbookId != null) {
-                    for (CashbookModel book : cashbookList) {
-                        if (book.getCashbookId().equals(currentCashbookId)) {
-                            activeFound = true;
-                            break;
-                        }
-                    }
-                }
-
-                if (!activeFound && !cashbookList.isEmpty()) {
-                    currentCashbookId = cashbookList.get(0).getCashbookId();
-                    saveActiveCashbookIdToPrefs(currentCashbookId);
-                }
-
-                if (currentCashbookId != null) {
-                    switchCashbook(currentCashbookId);
-                } else {
-                    isLoading.setValue(false); // No cashbooks, stop loading so UI shows create dialog
-                }
+            if (lastId != null && data.stream().anyMatch(c -> c.getCashbookId().equals(lastId))) {
+                targetId = lastId;
+            } else if (!data.isEmpty()) {
+                targetId = data.get(0).getCashbookId();
             }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
+            if (targetId != null) {
+                switchCashbook(targetId);
+            } else {
                 isLoading.setValue(false);
-                errorMessage.setValue("Failed to load cashbooks: " + error.getMessage());
             }
-        };
-        userDatabaseRef.child("cashbooks").addValueEventListener(cashbooksListener);
+        }, error -> {
+            errorMessage.setValue(error);
+            isLoading.setValue(false);
+        });
     }
 
     public void switchCashbook(String cashbookId) {
-        if (userDatabaseRef == null || cashbookId == null) return;
+        if (cashbookId == null) return;
 
-        isLoading.setValue(true);
+        if (activeTransactionListener != null && activeTransactionRef != null) {
+            activeTransactionRef.removeEventListener(activeTransactionListener);
+        }
+
         currentCashbookId = cashbookId;
         saveActiveCashbookIdToPrefs(cashbookId);
 
-        // Update active model
-        if (cashbooks.getValue() != null) {
-            for (CashbookModel book : cashbooks.getValue()) {
-                if (book.getCashbookId().equals(cashbookId)) {
-                    activeCashbook.setValue(book);
+        List<CashbookModel> currentList = cashbooks.getValue();
+        if (currentList != null) {
+            for (CashbookModel c : currentList) {
+                if (c.getCashbookId().equals(cashbookId)) {
+                    activeCashbook.setValue(c);
                     break;
                 }
             }
         }
 
-        // Transactions Listener Switch
-        if (previousTransactionsRef != null && transactionsListener != null) {
-            previousTransactionsRef.removeEventListener(transactionsListener);
-        }
+        isLoading.setValue(true);
 
-        DatabaseReference newTransactionsRef = userDatabaseRef.child("cashbooks").child(cashbookId).child("transactions");
-        previousTransactionsRef = newTransactionsRef;
+        activeTransactionRef = FirebaseDatabase.getInstance().getReference()
+                .child(Constants.NODE_USERS)
+                .child(currentUserId)
+                .child(Constants.NODE_CASHBOOKS)
+                .child(cashbookId)
+                .child(Constants.NODE_TRANSACTIONS);
 
-        transactionsListener = new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                List<TransactionModel> transactionList = new ArrayList<>();
-                for (DataSnapshot s : snapshot.getChildren()) {
-                    try {
-                        TransactionModel txn = s.getValue(TransactionModel.class);
-                        if (txn != null) {
-                            txn.setTransactionId(s.getKey());
-                            transactionList.add(txn);
-                        }
-                    } catch (Exception e) { Log.e(TAG, "Error parsing txn", e); }
+        activeTransactionListener = repository.subscribeToTransactions(cashbookId,
+                this::processTransactions,
+                error -> {
+                    errorMessage.setValue(error);
+                    isLoading.setValue(false);
                 }
-                Collections.sort(transactionList, (t1, t2) -> Long.compare(t2.getTimestamp(), t1.getTimestamp()));
-                transactions.setValue(transactionList);
-                isLoading.setValue(false);
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                isLoading.setValue(false);
-                errorMessage.setValue("Error loading transactions");
-            }
-        };
-        newTransactionsRef.addValueEventListener(transactionsListener);
+        );
     }
 
-    public void createNewCashbook(String name) {
-        if (userDatabaseRef == null) return;
-        DatabaseReference cashbooksRef = userDatabaseRef.child("cashbooks");
-        String cashbookId = cashbooksRef.push().getKey();
-        if (cashbookId != null) {
-            CashbookModel newCashbook = new CashbookModel(cashbookId, name);
-            newCashbook.setUserId(currentUserId);
-            cashbooksRef.child(cashbookId).setValue(newCashbook)
-                    .addOnSuccessListener(aVoid -> switchCashbook(cashbookId))
-                    .addOnFailureListener(e -> errorMessage.setValue("Failed to create cashbook"));
-        }
+    private void processTransactions(List<TransactionModel> rawData) {
+        executorService.execute(() -> {
+            double in = 0, out = 0;
+            double tIn = 0, tOut = 0;
+            List<TransactionModel> todayList = new ArrayList<>();
+
+            for (TransactionModel t : rawData) {
+                double amount = t.getAmount();
+                boolean isIncome = Constants.TRANSACTION_TYPE_IN.equalsIgnoreCase(t.getType());
+
+                if (isIncome) in += amount;
+                else out += amount;
+
+                if (isToday(t.getTimestamp())) {
+                    todayList.add(t);
+                    if (isIncome) tIn += amount;
+                    else tOut += amount;
+                }
+            }
+
+            double finalIn = in;
+            double finalOut = out;
+            double finalTIn = tIn;
+            double finalTOut = tOut;
+
+            transactions.postValue(rawData);
+            totalIncome.postValue(finalIn);
+            totalExpense.postValue(finalOut);
+            currentBalance.postValue(finalIn - finalOut);
+
+            todayIncome.postValue(finalTIn);
+            todayExpense.postValue(finalTOut);
+            todayBalance.postValue(finalTIn - finalTOut);
+            todaysTransactions.postValue(todayList);
+
+            isLoading.postValue(false);
+        });
+    }
+
+    private boolean isToday(long timestamp) {
+        Calendar tCal = Calendar.getInstance();
+        tCal.setTimeInMillis(timestamp);
+        Calendar now = Calendar.getInstance();
+        return tCal.get(Calendar.YEAR) == now.get(Calendar.YEAR) &&
+                tCal.get(Calendar.DAY_OF_YEAR) == now.get(Calendar.DAY_OF_YEAR);
     }
 
     private void saveActiveCashbookIdToPrefs(String cashbookId) {
-        SharedPreferences prefs = getApplication().getSharedPreferences("AppPrefs", Context.MODE_PRIVATE);
-        prefs.edit().putString("active_cashbook_id_" + currentUserId, cashbookId).apply();
+        SharedPreferences prefs = getApplication().getSharedPreferences(Constants.PREF_NAME, Context.MODE_PRIVATE);
+        prefs.edit().putString(Constants.PREF_ACTIVE_CASHBOOK_PREFIX + currentUserId, cashbookId).apply();
     }
 
     private String getActiveCashbookIdFromPrefs() {
-        SharedPreferences prefs = getApplication().getSharedPreferences("AppPrefs", Context.MODE_PRIVATE);
-        return prefs.getString("active_cashbook_id_" + currentUserId, null);
+        SharedPreferences prefs = getApplication().getSharedPreferences(Constants.PREF_NAME, Context.MODE_PRIVATE);
+        return prefs.getString(Constants.PREF_ACTIVE_CASHBOOK_PREFIX + currentUserId, null);
     }
 
     @Override
     protected void onCleared() {
         super.onCleared();
-        if (userDatabaseRef != null) {
-            if (cashbooksListener != null) userDatabaseRef.child("cashbooks").removeEventListener(cashbooksListener);
-            if (userProfileListener != null) userDatabaseRef.removeEventListener(userProfileListener);
-            if (transactionsListener != null && previousTransactionsRef != null) previousTransactionsRef.removeEventListener(transactionsListener);
+        if (activeTransactionListener != null && activeTransactionRef != null) {
+            activeTransactionRef.removeEventListener(activeTransactionListener);
         }
     }
 }
