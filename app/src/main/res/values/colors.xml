@@ -7,38 +7,34 @@
     <color name="light_primary">#2196F3</color>
     <color name="light_primary_dark">#1976D2</color>
     <color name="light_secondary">#4CAF50</color>
-
     <color name="light_background">#E3E7ED</color>
     <color name="light_surface">#FFFFFF</color>
-
     <color name="light_divider">#CED4DA</color>
     <color name="light_selected_item">#E3F2FD</color>
     <color name="light_text_primary">#212121</color>
     <color name="light_text_secondary">#757575</color>
     <color name="light_text_hint">#9E9E9E</color>
     <color name="light_balance_blue">#1E88E5</color>
+    <color name="light_header">#FFFFFF</color>
 
     <color name="dark_primary">#90CAF9</color>
     <color name="dark_primary_dark">#1565C0</color>
     <color name="dark_secondary">#81C784</color>
-
     <color name="dark_background">#000000</color>
     <color name="dark_surface">#121212</color>
-
     <color name="dark_divider">#2C2C2C</color>
     <color name="dark_selected_item">#3390CAF9</color>
     <color name="dark_text_primary">#E0E0E0</color>
     <color name="dark_text_secondary">#B0B0B0</color>
     <color name="dark_text_hint">#707070</color>
     <color name="dark_balance_blue">#0D47A1</color>
+    <color name="dark_header">#2C2C2C</color>
 
     <color name="purple_primary">#B388FF</color>
     <color name="purple_primary_dark">#7C4DFF</color>
     <color name="purple_secondary">#69F0AE</color>
-
     <color name="purple_background">#0F0518</color>
     <color name="purple_surface">#321945</color>
-
     <color name="purple_divider">#3D2560</color>
     <color name="purple_selected_item">#351B57</color>
     <color name="purple_text_primary">#EDE7F6</color>
@@ -46,6 +42,7 @@
     <color name="purple_text_hint">#7E57C2</color>
     <color name="purple_balance_blue">#6A4FE8</color>
     <color name="purple_accent">#7C4DFF</color>
+    <color name="purple_header">#36013F</color>
 
     <color name="splash_wave_light">#03A9F4</color>
     <color name="splash_wave_dark">#00BCD4</color>
@@ -57,17 +54,24 @@
     <color name="backgroundColor">@color/light_background</color>
     <color name="surfaceColor">@color/light_surface</color>
     <color name="divider_color">@color/light_divider</color>
+    <color name="selected_item_bg">@color/light_selected_item</color>
+
     <color name="textColorPrimary">@color/light_text_primary</color>
     <color name="textColorSecondary">@color/light_text_secondary</color>
     <color name="textColorHint">@color/light_text_hint</color>
-    <color name="balance_blue">@color/light_balance_blue</color>
 
+    <color name="balance_blue">@color/light_balance_blue</color>
     <color name="income_green">#43A047</color>
     <color name="expense_red">#E53935</color>
 
     <color name="bottom_nav_icon_text_color">#757575</color>
     <color name="bottom_nav_selected">#2196F3</color>
     <color name="bottom_nav_item_unselected_border">#E0E0E0</color>
+
+    <color name="card_start_color">#001021</color>
+    <color name="card_end_color">#023E6B</color>
+    <color name="header_color">@color/light_header</color>
+    <color name="splash_wave_color">@color/splash_wave_light</color>
 
     <color name="category_food">#FF7043</color>
     <color name="category_utilities">#26A69A</color>
@@ -81,8 +85,4 @@
     <color name="category_education">#5C6BC0</color>
     <color name="category_other">#78909C</color>
     <color name="category_default">#9E9E9E</color>
-
-    <color name="light_header">#FFFFFF</color>
-    <color name="dark_header">#2C2C2C</color>
-    <color name="purple_header">#36013F</color>
 </resources>

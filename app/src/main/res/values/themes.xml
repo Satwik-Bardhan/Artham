@@ -12,42 +12,46 @@
 
     <style name="Theme.Artham" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <item name="android:fontFamily">@font/app_font</item>
-        <item name="colorPrimary">@color/light_primary</item>
-        <item name="colorPrimaryDark">@color/light_primary_dark</item>
-        <item name="colorSecondary">@color/light_secondary</item>
+        <item name="colorPrimary">@color/primary_blue</item>
+        <item name="colorPrimaryDark">@color/primary_blue_dark</item>
+        <item name="colorSecondary">@color/secondary_green</item>
         <item name="colorOnPrimary">@color/white</item>
         <item name="colorOnSecondary">@color/white</item>
-        <item name="android:colorBackground">@color/light_background</item>
-        <item name="colorSurface">@color/light_surface</item>
-        <item name="android:statusBarColor">@color/light_background</item>
+
+        <item name="android:colorBackground">@color/backgroundColor</item>
+        <item name="colorSurface">@color/surfaceColor</item>
+        <item name="android:statusBarColor">@color/backgroundColor</item>
         <item name="android:windowLightStatusBar">true</item>
 
-        <item name="chk_backgroundColor">@color/light_background</item>
-        <item name="chk_surfaceColor">@color/light_surface</item>
-        <item name="chk_dividerHorizontal">@color/light_divider</item>
-        <item name="chk_dividerVertical">@color/light_divider</item>
-        <item name="chk_selectedItemColor">@color/light_selected_item</item>
-        <item name="chk_textColorPrimary">@color/light_text_primary</item>
-        <item name="chk_textColorSecondary">@color/light_text_secondary</item>
-        <item name="chk_textColorHint">@color/light_text_hint</item>
-        <item name="android:textColorPrimary">@color/light_text_primary</item>
-        <item name="android:textColorSecondary">@color/light_text_secondary</item>
-        <item name="android:textColorHint">@color/light_text_hint</item>
-        <item name="chk_primary_blue">@color/light_primary</item>
-        <item name="chk_secondary_green">@color/light_secondary</item>
+        <item name="chk_backgroundColor">@color/backgroundColor</item>
+        <item name="chk_surfaceColor">@color/surfaceColor</item>
+        <item name="chk_dividerHorizontal">@color/divider_color</item>
+        <item name="chk_dividerVertical">@color/divider_color</item>
+        <item name="chk_selectedItemColor">@color/selected_item_bg</item>
+
+        <item name="chk_textColorPrimary">@color/textColorPrimary</item>
+        <item name="chk_textColorSecondary">@color/textColorSecondary</item>
+        <item name="chk_textColorHint">@color/textColorHint</item>
+        <item name="android:textColorPrimary">@color/textColorPrimary</item>
+        <item name="android:textColorSecondary">@color/textColorSecondary</item>
+        <item name="android:textColorHint">@color/textColorHint</item>
+
+        <item name="chk_primary_blue">@color/primary_blue</item>
+        <item name="chk_secondary_green">@color/secondary_green</item>
         <item name="chk_incomeColor">@color/income_green</item>
         <item name="chk_expenseColor">@color/expense_red</item>
-        <item name="chk_balanceColor">@color/light_balance_blue</item>
+        <item name="chk_balanceColor">@color/balance_blue</item>
+
         <item name="chk_bottomNavIconTextColor">@color/bottom_nav_icon_text_color</item>
-        <item name="chk_bottomNavSelectedColor">@color/light_primary</item>
-        <item name="chk_bottomNavBorderColor">@color/light_divider</item>
-        <item name="chk_card_start">#001021</item>
-        <item name="chk_card_end">#023E6B</item>
+        <item name="chk_bottomNavSelectedColor">@color/bottom_nav_selected</item>
+        <item name="chk_bottomNavBorderColor">@color/bottom_nav_item_unselected_border</item>
+
+        <item name="chk_card_start">@color/card_start_color</item>
+        <item name="chk_card_end">@color/card_end_color</item>
+        <item name="chk_splash_wave">@color/splash_wave_color</item>
+        <item name="chk_headerColor">@color/header_color</item>
+
         <item name="buttonStyle">@style/ProfessionalButton</item>
-
-        <item name="chk_splash_wave">@color/splash_wave_light</item>
-
-        <item name="chk_headerColor">@color/light_header</item>
     </style>
 
     <style name="Theme.Artham.Dark" parent="Theme.MaterialComponents.DayNight.NoActionBar">
@@ -69,21 +73,23 @@
         <item name="chk_textColorSecondary">@color/dark_text_secondary</item>
         <item name="chk_textColorHint">@color/dark_text_hint</item>
         <item name="android:textColorPrimary">@color/dark_text_primary</item>
+
         <item name="chk_primary_blue">@color/dark_primary</item>
         <item name="chk_secondary_green">@color/dark_secondary</item>
         <item name="chk_incomeColor">@color/income_green</item>
         <item name="chk_expenseColor">@color/expense_red</item>
         <item name="chk_balanceColor">@color/dark_balance_blue</item>
+
         <item name="chk_bottomNavIconTextColor">@color/dark_text_secondary</item>
         <item name="chk_bottomNavSelectedColor">@color/dark_primary</item>
         <item name="chk_bottomNavBorderColor">@color/dark_divider</item>
+
         <item name="chk_card_start">#1A2938</item>
         <item name="chk_card_end">#2C3E50</item>
-        <item name="buttonStyle">@style/ProfessionalButton</item>
-
         <item name="chk_splash_wave">@color/splash_wave_dark</item>
-
         <item name="chk_headerColor">@color/dark_header</item>
+
+        <item name="buttonStyle">@style/ProfessionalButton</item>
     </style>
 
     <style name="Theme.Artham.Purple" parent="Theme.MaterialComponents.DayNight.NoActionBar">
@@ -105,21 +111,23 @@
         <item name="chk_textColorSecondary">@color/purple_text_secondary</item>
         <item name="chk_textColorHint">@color/purple_text_hint</item>
         <item name="android:textColorPrimary">@color/purple_text_primary</item>
+
         <item name="chk_primary_blue">@color/purple_accent</item>
         <item name="chk_secondary_green">@color/purple_secondary</item>
         <item name="chk_incomeColor">@color/income_green</item>
         <item name="chk_expenseColor">@color/expense_red</item>
         <item name="chk_balanceColor">@color/purple_balance_blue</item>
+
         <item name="chk_bottomNavIconTextColor">@color/purple_text_secondary</item>
         <item name="chk_bottomNavSelectedColor">@color/purple_primary</item>
         <item name="chk_bottomNavBorderColor">@color/purple_divider</item>
+
         <item name="chk_card_start">#311B92</item>
         <item name="chk_card_end">#6A1B9A</item>
-        <item name="buttonStyle">@style/ProfessionalButton</item>
-
         <item name="chk_splash_wave">@color/splash_wave_purple</item>
-
         <item name="chk_headerColor">@color/purple_header</item>
+
+        <item name="buttonStyle">@style/ProfessionalButton</item>
     </style>
 
     <style name="Theme.Artham.Dialog" parent="Theme.Artham">

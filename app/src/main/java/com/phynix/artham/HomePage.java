@@ -31,8 +31,6 @@ import androidx.cardview.widget.CardView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-import com.google.firebase.appdistribution.FirebaseAppDistribution;
-import com.google.firebase.appdistribution.InterruptionLevel;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -120,7 +118,7 @@ public class HomePage extends AppCompatActivity {
         userRef = mDatabase.child("users").child(currentUserId);
         currencyFormat = NumberFormat.getCurrencyInstance(new Locale("en", "IN"));
 
-        // Load active cashbook ID preference
+        // Load active cashbook ID preference AND Cached Data
         loadActiveCashbookId();
 
         // Setup UI
@@ -256,18 +254,11 @@ public class HomePage extends AppCompatActivity {
     private void startListeningForTransactions() {
         if (currentCashbookId == null) return;
 
-        // Remove old listener if switching
-        if (transactionsListener != null) {
-            // We need the *exact* reference used previously to remove it.
-            // Simplified here: we just rely on replacing it or cleaning up in onDestroy/switch.
-        }
-
         DatabaseReference txnRef = userRef.child("cashbooks").child(currentCashbookId).child("transactions");
 
         transactionsListener = new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                List<TransactionModel> allTransactions = new ArrayList<>();
                 List<TransactionModel> todaysTransactions = new ArrayList<>();
 
                 double totalIncome = 0;
@@ -280,7 +271,6 @@ public class HomePage extends AppCompatActivity {
                         TransactionModel txn = s.getValue(TransactionModel.class);
                         if (txn != null) {
                             txn.setTransactionId(s.getKey());
-                            allTransactions.add(txn);
 
                             // Calculate Globals
                             if ("IN".equalsIgnoreCase(txn.getType())) {
@@ -316,6 +306,10 @@ public class HomePage extends AppCompatActivity {
                     updateBalanceCard(finalTotalIncome, finalTotalExpense);
                     updateDailySummary(finalTodayBalance);
                     updateTransactionTable(todaysTransactions);
+
+                    // SAVE DATA TO LOCAL CACHE FOR NEXT LAUNCH
+                    saveStatsToCache(currentCashbookId, finalTotalIncome, finalTotalExpense, finalTodayBalance);
+
                     setLoadingState(false);
                 });
             }
@@ -413,6 +407,53 @@ public class HomePage extends AppCompatActivity {
     }
 
     // ==========================================
+    // CACHING LOGIC (New Feature)
+    // ==========================================
+
+    private void saveStatsToCache(String cashbookId, double income, double expense, double todayBal) {
+        if (cashbookId == null) return;
+
+        // Save to specific cache file for this cashbook
+        SharedPreferences prefs = getSharedPreferences("CashbookStats_" + cashbookId, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+
+        // Save double as long bits to preserve precision
+        editor.putLong("total_income", Double.doubleToLongBits(income));
+        editor.putLong("total_expense", Double.doubleToLongBits(expense));
+        editor.putLong("today_balance", Double.doubleToLongBits(todayBal));
+
+        // Save date to check if 'today's balance' is still relevant tomorrow
+        editor.putString("last_date", DateTimeUtils.formatDate(System.currentTimeMillis(), "dd MMM yyyy"));
+
+        editor.apply();
+    }
+
+    private void loadCachedStats(String cashbookId) {
+        if (cashbookId == null) return;
+
+        SharedPreferences prefs = getSharedPreferences("CashbookStats_" + cashbookId, Context.MODE_PRIVATE);
+
+        if (!prefs.contains("total_income")) return; // No cache exists
+
+        double income = Double.longBitsToDouble(prefs.getLong("total_income", Double.doubleToLongBits(0.0)));
+        double expense = Double.longBitsToDouble(prefs.getLong("total_expense", Double.doubleToLongBits(0.0)));
+        double todayBal = Double.longBitsToDouble(prefs.getLong("today_balance", Double.doubleToLongBits(0.0)));
+        String lastDate = prefs.getString("last_date", "");
+
+        // 1. Update Total Balance (Always valid)
+        updateBalanceCard(income, expense);
+
+        // 2. Update Daily Summary (Only if cache is from today)
+        String todayDate = DateTimeUtils.formatDate(System.currentTimeMillis(), "dd MMM yyyy");
+        if (todayDate.equals(lastDate)) {
+            updateDailySummary(todayBal);
+        } else {
+            // It's a new day, so previous 'today' balance is irrelevant
+            updateDailySummary(0.0);
+        }
+    }
+
+    // ==========================================
     // ACTIONS & NAVIGATION
     // ==========================================
 
@@ -452,7 +493,9 @@ public class HomePage extends AppCompatActivity {
                 saveActiveCashbookId(newId);
                 // Reload data for new cashbook
                 startListeningForTransactions();
-                // Find and update header manually or let listener do it
+                // Load cache for new cashbook immediately
+                loadCachedStats(newId);
+
                 for(CashbookModel cb : cashbooks) {
                     if(cb.getCashbookId().equals(newId)) {
                         updateCashbookHeaderUI(cb);
@@ -506,7 +549,7 @@ public class HomePage extends AppCompatActivity {
             currentCashbookId = id;
             saveActiveCashbookId(id);
             updateCashbookHeaderUI(newBook);
-            startListeningForTransactions(); // Will be empty initially
+            startListeningForTransactions();
         });
     }
 
@@ -521,7 +564,12 @@ public class HomePage extends AppCompatActivity {
         binding.userBox.setEnabled(!loading);
 
         if (loading) {
-            binding.userNameTop.setText("Loading...");
+            // Only show Loading text if we don't have cache to display
+            // This prevents "Loading..." from flickering if cache exists
+            SharedPreferences prefs = getSharedPreferences("CashbookStats_" + currentCashbookId, Context.MODE_PRIVATE);
+            if (!prefs.contains("total_income")) {
+                binding.userNameTop.setText("Loading...");
+            }
         }
     }
 
@@ -533,6 +581,11 @@ public class HomePage extends AppCompatActivity {
     private void loadActiveCashbookId() {
         SharedPreferences prefs = getSharedPreferences("AppPrefs", Context.MODE_PRIVATE);
         currentCashbookId = prefs.getString("active_cashbook_id_" + currentUserId, null);
+
+        // NEW: Load cache immediately
+        if (currentCashbookId != null) {
+            loadCachedStats(currentCashbookId);
+        }
     }
 
     private void signOutUser() {
@@ -566,13 +619,11 @@ public class HomePage extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        // Permission result handling logic if needed
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        // Clean up listeners
         if (userRef != null) {
             if (userProfileListener != null) userRef.removeEventListener(userProfileListener);
             if (cashbooksListener != null) userRef.child("cashbooks").removeEventListener(cashbooksListener);
