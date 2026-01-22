@@ -19,7 +19,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.phynix.artham.utils.SnackbarHelper; // [NEW IMPORT]
+import com.phynix.artham.utils.SnackbarHelper;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -36,7 +36,7 @@ public class FiltersActivity extends AppCompatActivity {
     private static final String TAG = "FiltersActivity";
 
     // UI Elements
-    private ImageView backButton, resetButton;
+    private ImageView backButton, resetButton, swapButton;
     private Button filterTodayButton, filterWeekButton, filterMonthButton, clearAllButton, applyFiltersButton;
     private LinearLayout startDateLayout, endDateLayout;
     private TextView startDateText, endDateText, activeFiltersCount, selectedCategoryTextView;
@@ -65,8 +65,6 @@ public class FiltersActivity extends AppCompatActivity {
         setupCategoryLauncher();
         setupClickListeners();
         updateUIWithCurrentFilters();
-
-        Log.d(TAG, "FiltersActivity created");
     }
 
     private void initializeUI() {
@@ -89,6 +87,7 @@ public class FiltersActivity extends AppCompatActivity {
         // Type & Method Filters
         inOutToggle = findViewById(R.id.inOutToggle);
         cashOnlineToggle = findViewById(R.id.cashOnlineToggle);
+        swapButton = findViewById(R.id.swap_horiz); // The switch button
 
         // Category & Party
         selectedCategoryTextView = findViewById(R.id.selectedCategoryTextView);
@@ -177,7 +176,7 @@ public class FiltersActivity extends AppCompatActivity {
 
         // Party Listener
         partySelectorLayout.setOnClickListener(v ->
-                showSnackbar("Party selection coming soon!"));
+                SnackbarHelper.show(this, "Party selection coming soon!", applyFiltersButton));
 
         // Radio Group Listeners
         inOutToggle.setOnCheckedChangeListener((group, checkedId) -> {
@@ -191,6 +190,20 @@ public class FiltersActivity extends AppCompatActivity {
             else if (checkedId == R.id.radioOnline) paymentMode = "Online";
             updateActiveFilterCount();
         });
+
+        // Switch Button Logic
+        if (swapButton != null) {
+            swapButton.setOnClickListener(v -> {
+                int checkedId = inOutToggle.getCheckedRadioButtonId();
+                if (checkedId == R.id.radioIn) {
+                    // Currently IN, switch to OUT
+                    inOutToggle.check(R.id.radioOut);
+                } else {
+                    // Currently OUT or None (default to IN)
+                    inOutToggle.check(R.id.radioIn);
+                }
+            });
+        }
     }
 
     private void showDatePicker(boolean isStartDate) {
@@ -228,7 +241,7 @@ public class FiltersActivity extends AppCompatActivity {
         endCalendar.set(Calendar.SECOND, 59);
 
         updateUIWithCurrentFilters();
-        showSnackbar("Filter set to Today");
+        SnackbarHelper.show(this, "Filter set to Today", applyFiltersButton);
     }
 
     private void setDateRangeToThisWeek() {
@@ -245,7 +258,7 @@ public class FiltersActivity extends AppCompatActivity {
         endCalendar.set(Calendar.SECOND, 59);
 
         updateUIWithCurrentFilters();
-        showSnackbar("Filter set to This Week");
+        SnackbarHelper.show(this, "Filter set to This Week", applyFiltersButton);
     }
 
     private void setDateRangeToThisMonth() {
@@ -262,7 +275,7 @@ public class FiltersActivity extends AppCompatActivity {
         endCalendar.set(Calendar.SECOND, 59);
 
         updateUIWithCurrentFilters();
-        showSnackbar("Filter set to This Month");
+        SnackbarHelper.show(this, "Filter set to This Month", applyFiltersButton);
     }
 
     private void clearAllFilters() {
@@ -278,7 +291,7 @@ public class FiltersActivity extends AppCompatActivity {
         cashOnlineToggle.clearCheck();
 
         updateUIWithCurrentFilters();
-        showSnackbar("All filters cleared");
+        SnackbarHelper.show(this, "All filters cleared", applyFiltersButton);
     }
 
     private void updateUIWithCurrentFilters() {
@@ -308,6 +321,15 @@ public class FiltersActivity extends AppCompatActivity {
         } else {
             selectedCategoryTextView.setText(selectedCategories.iterator().next());
             selectedCategoryTextView.setTextColor(primaryColor);
+        }
+
+        // Programmatically check the radio buttons based on entryType
+        if ("IN".equals(entryType)) {
+            inOutToggle.check(R.id.radioIn);
+        } else if ("OUT".equals(entryType)) {
+            inOutToggle.check(R.id.radioOut);
+        } else {
+            inOutToggle.clearCheck();
         }
 
         updateActiveFilterCount();
@@ -345,12 +367,6 @@ public class FiltersActivity extends AppCompatActivity {
 
         setResult(Activity.RESULT_OK, resultIntent);
         finish();
-    }
-
-    // [FIX] Updated to use Helper
-    private void showSnackbar(String message) {
-        // Anchor to the Apply button so the snackbar floats above it
-        SnackbarHelper.show(this, message, applyFiltersButton);
     }
 
     static class ThemeUtil {

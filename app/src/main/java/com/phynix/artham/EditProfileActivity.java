@@ -5,10 +5,13 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -25,6 +28,8 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.google.android.gms.tasks.Continuation;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -34,10 +39,16 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageMetadata;
 import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 import com.phynix.artham.models.Users;
 import com.phynix.artham.utils.ThemeManager;
 
+import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -46,9 +57,11 @@ import java.util.Map;
 
 public class EditProfileActivity extends AppCompatActivity {
 
+    private static final String TAG = "EditProfileActivity";
+
     private ImageView profileImageView, backButton, editProfilePictureButton;
-    private EditText editFullName, editPhoneNumber;
-    private TextView displayEmail, dateOfBirthText;
+    private EditText editFullName;
+    private TextView displayEmail, displayUid, dateOfBirthText;
     private LinearLayout dateOfBirthLayout;
     private Button saveProfileButton, cancelButton, deleteAccountButton;
 
@@ -79,13 +92,14 @@ public class EditProfileActivity extends AppCompatActivity {
         }
 
         userDatabaseRef = FirebaseDatabase.getInstance().getReference("users").child(currentUser.getUid());
-        userProfileStorageRef = FirebaseStorage.getInstance().getReference().child("Profile Images");
+
+        // [FIX] Changed path to match Firebase Storage Rules: "profile_pictures"
+        userProfileStorageRef = FirebaseStorage.getInstance().getReference().child("profile_pictures");
 
         initViews();
         setupImagePicker();
         loadUserInfo();
 
-        // Listeners
         backButton.setOnClickListener(v -> finish());
         cancelButton.setOnClickListener(v -> finish());
         saveProfileButton.setOnClickListener(v -> saveProfileChanges());
@@ -104,15 +118,15 @@ public class EditProfileActivity extends AppCompatActivity {
         editProfilePictureButton = findViewById(R.id.editProfilePictureButton);
 
         editFullName = findViewById(R.id.editFullName);
-        editPhoneNumber = findViewById(R.id.editPhoneNumber);
 
         displayEmail = findViewById(R.id.displayEmail);
+        displayUid = findViewById(R.id.displayUid); // Added binding for UID
+
         dateOfBirthText = findViewById(R.id.dateOfBirthText);
         dateOfBirthLayout = findViewById(R.id.dateOfBirthLayout);
 
         saveProfileButton = findViewById(R.id.saveProfileButton);
         cancelButton = findViewById(R.id.cancelButton);
-
         deleteAccountButton = findViewById(R.id.delete_account_button);
     }
 
@@ -130,13 +144,17 @@ public class EditProfileActivity extends AppCompatActivity {
 
     private void openImageChooser() {
         Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        intent.setType("image/*");
         imagePickerLauncher.launch(intent);
     }
 
     private void loadUserInfo() {
-        // 1. Try setting email from Auth first (Fastest)
         if (currentUser.getEmail() != null) {
             displayEmail.setText(currentUser.getEmail());
+        }
+        // Set UID from Auth
+        if (currentUser.getUid() != null) {
+            displayUid.setText(currentUser.getUid());
         }
 
         userDatabaseRef.addValueEventListener(new ValueEventListener() {
@@ -144,26 +162,16 @@ public class EditProfileActivity extends AppCompatActivity {
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 Users user = snapshot.getValue(Users.class);
                 if (user != null) {
-                    // Update Name
                     if (user.getUserName() != null) {
                         editFullName.setText(user.getUserName());
                     } else if (user.getName() != null) {
                         editFullName.setText(user.getName());
                     }
 
-                    // Update Phone
-                    if (user.getPhoneNumber() != null) {
-                        editPhoneNumber.setText(user.getPhoneNumber());
-                    } else if (user.getPhone() != null) {
-                        editPhoneNumber.setText(user.getPhone());
-                    }
-
-                    // [FIX] Update Email from DB if available (Overrides Auth if DB has it)
                     if (user.getEmail() != null && !user.getEmail().isEmpty()) {
                         displayEmail.setText(user.getEmail());
                     }
 
-                    // Update Profile Image
                     if (user.getProfile() != null && !user.getProfile().isEmpty() && !isDestroyed()) {
                         currentPhotoUrl = user.getProfile();
                         Glide.with(EditProfileActivity.this)
@@ -173,7 +181,6 @@ public class EditProfileActivity extends AppCompatActivity {
                                 .into(profileImageView);
                     }
 
-                    // Update DOB
                     if (snapshot.hasChild("dateOfBirthTimestamp")) {
                         dobTimestamp = snapshot.child("dateOfBirthTimestamp").getValue(Long.class);
                         updateDobText(dobTimestamp);
@@ -192,26 +199,9 @@ public class EditProfileActivity extends AppCompatActivity {
 
     private void saveProfileChanges() {
         String name = editFullName.getText().toString().trim();
-        String phone = editPhoneNumber.getText().toString().trim();
 
         if (TextUtils.isEmpty(name)) {
             editFullName.setError("Name is required");
-            return;
-        }
-
-        // Phone Validation: 10 digits and starts with 9, 8, or 7
-        if (!TextUtils.isEmpty(phone)) {
-            if (phone.length() != 10) {
-                editPhoneNumber.setError("Phone number must be 10 digits");
-                return;
-            }
-            char firstDigit = phone.charAt(0);
-            if (firstDigit != '9' && firstDigit != '8' && firstDigit != '7') {
-                editPhoneNumber.setError("Invalid number. Must start with 9, 8, or 7");
-                return;
-            }
-        } else {
-            editPhoneNumber.setError("Phone number is required");
             return;
         }
 
@@ -222,27 +212,64 @@ public class EditProfileActivity extends AppCompatActivity {
         progressDialog.show();
 
         if (imageUri != null) {
-            StorageReference fileRef = userProfileStorageRef.child(currentUser.getUid() + ".jpg");
-            fileRef.putFile(imageUri).addOnSuccessListener(taskSnapshot ->
-                    fileRef.getDownloadUrl().addOnSuccessListener(uri -> {
-                        updateDatabase(name, phone, uri.toString(), progressDialog);
-                    })
-            ).addOnFailureListener(e -> {
+            // Path: profile_pictures/UID.jpg
+            final StorageReference fileRef = userProfileStorageRef.child(currentUser.getUid() + ".jpg");
+
+            try {
+                InputStream stream = getContentResolver().openInputStream(imageUri);
+                Bitmap bitmap = BitmapFactory.decodeStream(stream);
+
+                if (bitmap == null) {
+                    progressDialog.dismiss();
+                    Toast.makeText(this, "Failed to decode image", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 75, baos);
+                byte[] data = baos.toByteArray();
+
+                StorageMetadata metadata = new StorageMetadata.Builder()
+                        .setContentType("image/jpeg")
+                        .build();
+
+                UploadTask uploadTask = fileRef.putBytes(data, metadata);
+
+                // Use robust Task chaining for URL retrieval
+                uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
+                    @Override
+                    public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
+                        if (!task.isSuccessful()) {
+                            throw task.getException();
+                        }
+                        // Continue with the task to get the download URL
+                        return fileRef.getDownloadUrl();
+                    }
+                }).addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        Uri downloadUri = task.getResult();
+                        updateDatabase(name, downloadUri.toString(), progressDialog);
+                    } else {
+                        progressDialog.dismiss();
+                        String error = task.getException() != null ? task.getException().getMessage() : "Unknown error";
+                        Log.e(TAG, "Upload/Url Error", task.getException());
+                        Toast.makeText(EditProfileActivity.this, "Failed to update image: " + error, Toast.LENGTH_LONG).show();
+                    }
+                });
+
+            } catch (FileNotFoundException e) {
                 progressDialog.dismiss();
-                Toast.makeText(EditProfileActivity.this, "Failed to upload image", Toast.LENGTH_SHORT).show();
-            });
+                Toast.makeText(this, "File not found", Toast.LENGTH_SHORT).show();
+            }
         } else {
-            updateDatabase(name, phone, null, progressDialog);
+            updateDatabase(name, null, progressDialog);
         }
     }
 
-    private void updateDatabase(String name, String phone, String imageUrl, ProgressDialog loadingBar) {
+    private void updateDatabase(String name, String imageUrl, ProgressDialog loadingBar) {
         Map<String, Object> profileUpdates = new HashMap<>();
-        // Use keys that match your Users model fields
         profileUpdates.put("name", name);
-        profileUpdates.put("userName", name); // Save both to be safe
-        profileUpdates.put("phone", phone);
-        profileUpdates.put("phoneNumber", phone); // Save both to be safe
+        profileUpdates.put("userName", name);
 
         if (dobTimestamp > 0) profileUpdates.put("dateOfBirthTimestamp", dobTimestamp);
         if (imageUrl != null) profileUpdates.put("profile", imageUrl);
