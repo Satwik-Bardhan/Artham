@@ -21,6 +21,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.github.mikephil.charting.animation.Easing;
 import com.github.mikephil.charting.formatter.ValueFormatter;
@@ -32,7 +33,7 @@ import com.phynix.artham.databinding.LayoutSearchBarBinding;
 import com.phynix.artham.databinding.LayoutSummaryCardsBinding;
 import com.phynix.artham.models.TransactionModel;
 import com.phynix.artham.utils.SnackbarHelper;
-import com.phynix.artham.utils.ThemeManager; // [NEW IMPORT]
+import com.phynix.artham.utils.ThemeManager;
 import com.phynix.artham.viewmodels.TransactionViewModel;
 import com.phynix.artham.viewmodels.TransactionViewModelFactory;
 import com.phynix.artham.utils.PdfReportGenerator;
@@ -106,7 +107,6 @@ public class TransactionActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        // [FIX] Apply Theme BEFORE super.onCreate()
         ThemeManager.applyActivityTheme(this);
 
         super.onCreate(savedInstanceState);
@@ -138,10 +138,14 @@ public class TransactionActivity extends AppCompatActivity {
     }
 
     private void initializeUI() {
-        summaryBinding = binding.summaryCards;
-        pieChartBinding = binding.pieChartComponent;
-        searchBinding = binding.searchBarContainer;
-        bottomNavBinding = binding.bottomNavCard;
+        // [FIX] Updated binding IDs to match activity_transaction.xml
+        summaryBinding = LayoutSummaryCardsBinding.bind(binding.summaryCardsLayout.getRoot());
+        pieChartBinding = LayoutPieChartBinding.bind(binding.pieChartLayout.getRoot());
+        searchBinding = LayoutSearchBarBinding.bind(binding.searchBarLayout.getRoot());
+        bottomNavBinding = LayoutBottomNavigationBinding.bind(binding.bottomNavCard.getRoot());
+
+        // Setup Swipe Refresh
+        binding.swipeRefreshLayout.setColorSchemeColors(getThemeColor(R.attr.chk_primary_blue));
 
         pieChartBinding.pieChart.setUsePercentValues(true);
         pieChartBinding.pieChart.getDescription().setEnabled(false);
@@ -153,12 +157,10 @@ public class TransactionActivity extends AppCompatActivity {
         pieChartBinding.pieChart.setDragDecelerationFrictionCoef(0.95f);
         pieChartBinding.pieChart.setDrawHoleEnabled(true);
 
-        // Ensure hole color matches theme background if needed, or keep transparent
         pieChartBinding.pieChart.setHoleColor(Color.TRANSPARENT);
         pieChartBinding.pieChart.setTransparentCircleRadius(61f);
         pieChartBinding.pieChart.setHoleRadius(58f);
 
-        // Set No Data Text Color based on theme
         int textColor = getThemeColor(android.R.attr.textColorPrimary);
         pieChartBinding.pieChart.setNoDataTextColor(textColor);
     }
@@ -173,12 +175,17 @@ public class TransactionActivity extends AppCompatActivity {
         viewModel.getFilteredTransactions().observe(this, transactions -> {
             this.allTransactions = transactions;
             displayDataForCurrentMonth();
+            binding.swipeRefreshLayout.setRefreshing(false); // Stop refresh animation
         });
         viewModel.getIsLoading().observe(this, isLoading -> {
             if (transactionFragment != null) transactionFragment.showLoading(isLoading);
         });
         viewModel.getErrorMessage().observe(this, error -> {
-            if (error != null) { showSnackbar(error); viewModel.clearError(); }
+            if (error != null) {
+                showSnackbar(error);
+                viewModel.clearError();
+                binding.swipeRefreshLayout.setRefreshing(false);
+            }
         });
     }
 
@@ -195,6 +202,9 @@ public class TransactionActivity extends AppCompatActivity {
                     return cal.get(Calendar.YEAR) == currentMonthCalendar.get(Calendar.YEAR) &&
                             cal.get(Calendar.MONTH) == currentMonthCalendar.get(Calendar.MONTH);
                 }).collect(Collectors.toList());
+
+        // Update the count TextView
+        binding.transactionCountText.setText("(" + monthlyTransactions.size() + ")");
 
         updateTotals(monthlyTransactions);
         setupStyledPieChart(monthlyTransactions);
@@ -228,7 +238,6 @@ public class TransactionActivity extends AppCompatActivity {
         pieChartBinding.categoriesCount.setText(String.valueOf(expenseByCategory.size()));
         pieChartBinding.highestCategory.setText(highestCategory);
 
-        // Dynamic Text Color for Theme
         int textColor = getThemeColor(android.R.attr.textColorPrimary);
 
         if (totalExpense == 0) {
@@ -271,7 +280,6 @@ public class TransactionActivity extends AppCompatActivity {
         dataSet.setValueLinePart1Length(0.4f);
         dataSet.setValueLinePart2Length(0.5f);
 
-        // Theme Colors applied to chart lines/text
         dataSet.setValueLineColor(textColor);
         dataSet.setValueTextColor(textColor);
         dataSet.setValueTextSize(10f);
@@ -292,7 +300,7 @@ public class TransactionActivity extends AppCompatActivity {
         String centerText = "Total\n₹" + String.format(Locale.US, "%.0f", totalExpense);
         pieChartBinding.pieChart.setCenterText(centerText);
         pieChartBinding.pieChart.setCenterTextSize(16f);
-        pieChartBinding.pieChart.setCenterTextColor(textColor); // Matches theme text color
+        pieChartBinding.pieChart.setCenterTextColor(textColor);
 
         pieChartBinding.pieChart.animateY(1000, Easing.EaseInOutQuad);
         pieChartBinding.pieChart.invalidate();
@@ -419,6 +427,17 @@ public class TransactionActivity extends AppCompatActivity {
     }
 
     private void setupClickListeners() {
+        // [FIX] Replaced direct call to private loadTransactions() with public filter() call
+        // This triggers a refresh of the list using the current search query.
+        binding.swipeRefreshLayout.setOnRefreshListener(() -> {
+            if (viewModel != null) {
+                String currentQuery = searchBinding.searchEditText.getText().toString();
+                viewModel.filter(currentQuery, 0, 0, "All", null, null);
+            } else {
+                binding.swipeRefreshLayout.setRefreshing(false);
+            }
+        });
+
         pieChartBinding.pieChartHeader.setOnClickListener(v -> {
             Intent intent = new Intent(this, ExpenseAnalyticsActivity.class);
             intent.putExtra("cashbook_id", currentCashbookId);

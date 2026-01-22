@@ -16,86 +16,103 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true" />
 
-    <androidx.core.widget.NestedScrollView
-        android:id="@+id/main_scroll_view"
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swipeRefreshLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@id/bottomNavCard"
-        android:fillViewport="true"
-        android:clipToPadding="false">
+        android:layout_above="@id/bottomNavCard">
 
-        <LinearLayout
+        <androidx.core.widget.NestedScrollView
+            android:id="@+id/main_scroll_view"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingBottom="16dp">
+            android:layout_height="match_parent"
+            android:fillViewport="true"
+            android:clipToPadding="false">
 
-            <include
-                android:id="@+id/search_bar_container"
-                layout="@layout/layout_search_bar" />
-
-            <include
-                android:id="@+id/summaryCards"
-                layout="@layout/layout_summary_cards"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:layout_marginStart="12dp"
-                android:layout_marginEnd="12dp"
-                android:layout_marginBottom="12dp" />
+                android:orientation="vertical"
+                android:paddingBottom="16dp">
 
-            <include
-                android:id="@+id/pieChartComponent"
-                layout="@layout/layout_pie_chart"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="12dp"
-                android:layout_marginEnd="12dp"
-                android:layout_marginBottom="16dp" />
+                <include
+                    android:id="@+id/search_bar_layout"
+                    layout="@layout/layout_search_bar"/>
 
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
-                android:layout_marginBottom="12dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
+                <include
+                    android:id="@+id/summary_cards_layout"
+                    layout="@layout/layout_summary_cards"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
-                    android:text="Transactions"
-                    android:fontFamily="@font/app_font"
-                    android:textColor="?attr/chk_textColorPrimary"
-                    android:textSize="20sp"
-                    android:textStyle="bold" />
+                    android:layout_marginHorizontal="16dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginBottom="16dp" />
 
-                <Button
-                    android:id="@+id/downloadReportButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="40dp"
-                    android:layout_alignParentEnd="true"
-                    android:layout_centerVertical="true"
-                    android:drawableStart="@drawable/ic_download"
-                    android:drawablePadding="8dp"
-                    android:background="@drawable/button_download_rounded"
-                    android:gravity="center"
+                <include
+                    android:id="@+id/pie_chart_layout"
+                    layout="@layout/layout_pie_chart"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="16dp"
+                    android:layout_marginBottom="16dp" />
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
                     android:paddingHorizontal="16dp"
-                    app:backgroundTint="@null"
-                    android:text="Download"
-                    android:fontFamily="@font/app_font"
-                    android:textAllCaps="false"
-                    android:textStyle="bold"
-                    android:textSize="14sp"
-                    android:textColor="#FFFFFF" />
-            </RelativeLayout>
+                    android:paddingVertical="8dp">
 
-            <FrameLayout
-                android:id="@+id/transaction_fragment_container"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                    <TextView
+                        android:id="@+id/textTransactions"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentStart="true"
+                        android:layout_centerVertical="true"
+                        android:text="Transactions"
+                        android:fontFamily="@font/app_font"
+                        android:textColor="?attr/chk_textColorPrimary"
+                        android:textSize="20sp"
+                        android:textStyle="bold" />
 
-        </LinearLayout>
-    </androidx.core.widget.NestedScrollView>
+                    <TextView
+                        android:id="@+id/transactionCountText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_toEndOf="@id/textTransactions"
+                        android:layout_centerVertical="true"
+                        android:layout_marginStart="8dp"
+                        android:text="(0)"
+                        android:fontFamily="@font/app_font"
+                        android:textColor="?attr/chk_textColorSecondary"
+                        android:textSize="16sp" />
+
+                    <Button
+                        android:id="@+id/downloadReportButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="40dp"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:drawableStart="@drawable/ic_download"
+                        android:drawablePadding="8dp"
+                        android:background="@drawable/button_download_rounded"
+                        android:gravity="center"
+                        android:paddingHorizontal="16dp"
+                        app:backgroundTint="@null"
+                        android:text="Download"
+                        android:fontFamily="@font/app_font"
+                        android:textAllCaps="false"
+                        android:textStyle="bold"
+                        android:textSize="14sp"
+                        android:textColor="#FFFFFF" />
+                </RelativeLayout>
+
+                <FrameLayout
+                    android:id="@+id/transaction_fragment_container"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+            </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
 </RelativeLayout>

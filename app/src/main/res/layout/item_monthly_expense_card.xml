@@ -58,18 +58,28 @@
             android:fontFamily="@font/app_font"
             android:textColor="?attr/chk_textColorPrimary"/>
 
-        <TextView
-            android:id="@+id/yearTextView"
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            tools:text="2025"
-            android:textSize="11sp"
-            android:fontFamily="@font/app_font"
             android:layout_marginTop="4dp"
-            android:background="@drawable/bg_tag_small"
-            android:paddingHorizontal="8dp"
-            android:paddingVertical="2dp"
-            android:textColor="?attr/chk_textColorSecondary"/>
+            app:cardBackgroundColor="@android:color/transparent"
+            app:strokeColor="?attr/chk_dividerHorizontal"
+            app:strokeWidth="1dp"
+            app:cardCornerRadius="4dp"
+            app:cardElevation="0dp">
+
+            <TextView
+                android:id="@+id/yearTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:text="2025"
+                android:textSize="11sp"
+                android:fontFamily="@font/app_font"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="2dp"
+                android:textColor="?attr/chk_textColorSecondary"/>
+
+        </com.google.android.material.card.MaterialCardView>
 
     </LinearLayout>
 

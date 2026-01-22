@@ -32,21 +32,20 @@
             android:id="@+id/closeButton"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:src="@drawable/ic_close"
             android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_close"
             app:tint="?attr/chk_textColorPrimary"
-            android:contentDescription="Close" />
+            android:contentDescription="Close"/>
     </LinearLayout>
 
     <TextView
         android:id="@+id/noDataTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
         android:text="No expense data available"
-        android:textSize="18sp"
         android:fontFamily="@font/app_font"
         android:textColor="?attr/chk_textColorSecondary"
-        android:layout_centerInParent="true"
         android:visibility="gone"/>
 
     <ProgressBar
@@ -73,20 +72,21 @@
             android:paddingVertical="12dp"
             android:clipToPadding="false"/>
 
+        <!-- Fixed height for the chart -->
         <com.github.mikephil.charting.charts.PieChart
             android:id="@+id/fullScreenPieChart"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
+            android:layout_height="320dp"
             android:layout_margin="16dp"/>
 
+        <!-- Weight=1 allows this list to fill remaining space and scroll -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/detailedLegendRecyclerView"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="0dp"
+            android:layout_weight="1"
             android:padding="16dp"
-            android:background="?attr/chk_surfaceColor"
-            android:elevation="8dp"/>
-
+            android:clipToPadding="false"/>
     </LinearLayout>
+
 </RelativeLayout>

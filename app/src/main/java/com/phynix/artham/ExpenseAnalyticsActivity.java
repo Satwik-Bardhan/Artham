@@ -33,13 +33,16 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.phynix.artham.models.TransactionModel;
+import com.phynix.artham.utils.ThemeManager;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -70,8 +73,11 @@ public class ExpenseAnalyticsActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // [FIX] Apply Theme before super.onCreate to prevent crashes related to theme attributes
+        ThemeManager.applyActivityTheme(this);
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_full_screen_chart);
+        setContentView(R.layout.activity_expense_analytics);
+
         if (getSupportActionBar() != null) getSupportActionBar().hide();
 
         cashbookId = getIntent().getStringExtra("cashbook_id");
@@ -109,7 +115,7 @@ public class ExpenseAnalyticsActivity extends AppCompatActivity {
     private void setupPieChart() {
         fullScreenPieChart.setRotationEnabled(true);
 
-        // [FIX] Larger Doughnut: Reduced hole radius (was 60f)
+        // [FIX] Larger Doughnut: Reduced hole radius
         fullScreenPieChart.setHoleRadius(55f);
         fullScreenPieChart.setTransparentCircleRadius(60f);
 
@@ -123,14 +129,20 @@ public class ExpenseAnalyticsActivity extends AppCompatActivity {
 
         // [FIX] Small Text: Set label size to 9f
         fullScreenPieChart.setEntryLabelTextSize(9f);
+
+        // [FIX] Theme compatible label color
         fullScreenPieChart.setEntryLabelColor(ThemeUtil.getThemeAttrColor(this, R.attr.chk_textColorPrimary));
 
-        // [FIX] Larger Chart: Reduced offsets (was 55f) to give chart more screen space
+        // [FIX] Larger Chart: Reduced offsets to give chart more screen space
         fullScreenPieChart.setExtraOffsets(30.f, 10.f, 30.f, 10.f);
     }
 
     private void setupRecyclerViews() {
-        monthlyCardsRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        // [FIX] Use standard horizontal layout. We will handle "starting at the end" programmatically
+        // by scrolling to the last position. This is much more stable than ReverseLayout/StackFromEnd.
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
+        monthlyCardsRecyclerView.setLayoutManager(layoutManager);
+
         monthlyAdapter = new MonthlyCardAdapter(new ArrayList<>(), this::updatePieChartForMonth);
         monthlyCardsRecyclerView.setAdapter(monthlyAdapter);
 
@@ -168,9 +180,20 @@ public class ExpenseAnalyticsActivity extends AppCompatActivity {
     private void processTransactionData() {
         loadingProgressBar.setVisibility(View.GONE);
 
-        List<TransactionModel> expenses = allTransactions.stream()
-                .filter(t -> "OUT".equalsIgnoreCase(t.getType()))
-                .collect(Collectors.toList());
+        // Filter for expenses ("OUT")
+        List<TransactionModel> expenses = new ArrayList<>();
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+            expenses = allTransactions.stream()
+                    .filter(t -> "OUT".equalsIgnoreCase(t.getType()))
+                    .collect(Collectors.toList());
+        } else {
+            // Fallback for older devices if streams aren't supported
+            for (TransactionModel t : allTransactions) {
+                if ("OUT".equalsIgnoreCase(t.getType())) {
+                    expenses.add(t);
+                }
+            }
+        }
 
         if (expenses.isEmpty()) {
             showEmptyState();
@@ -179,33 +202,77 @@ public class ExpenseAnalyticsActivity extends AppCompatActivity {
 
         showContentState();
 
-        Map<String, List<TransactionModel>> transactionsByMonth = expenses.stream()
-                .collect(Collectors.groupingBy(t -> {
-                    Calendar cal = Calendar.getInstance();
-                    cal.setTimeInMillis(t.getTimestamp());
-                    return new SimpleDateFormat("yyyy-MM", Locale.getDefault()).format(cal.getTime());
-                }));
+        // Group transactions by month (yyyy-MM)
+        Map<String, List<TransactionModel>> transactionsByMonth = new HashMap<>();
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+            transactionsByMonth = expenses.stream()
+                    .collect(Collectors.groupingBy(t -> {
+                        Calendar cal = Calendar.getInstance();
+                        cal.setTimeInMillis(t.getTimestamp());
+                        return new SimpleDateFormat("yyyy-MM", Locale.getDefault()).format(cal.getTime());
+                    }));
+        } else {
+            // Simple fallback
+            for (TransactionModel t : expenses) {
+                Calendar cal = Calendar.getInstance();
+                cal.setTimeInMillis(t.getTimestamp());
+                String monthKey = new SimpleDateFormat("yyyy-MM", Locale.getDefault()).format(cal.getTime());
+                if (!transactionsByMonth.containsKey(monthKey)) {
+                    transactionsByMonth.put(monthKey, new ArrayList<>());
+                }
+                transactionsByMonth.get(monthKey).add(t);
+            }
+        }
 
         monthlyExpenses.clear();
         for (Map.Entry<String, List<TransactionModel>> entry : transactionsByMonth.entrySet()) {
-            double total = entry.getValue().stream().mapToDouble(TransactionModel::getAmount).sum();
+            double total = 0;
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+                total = entry.getValue().stream().mapToDouble(TransactionModel::getAmount).sum();
+            } else {
+                for (TransactionModel t : entry.getValue()) total += t.getAmount();
+            }
             monthlyExpenses.add(new MonthlyExpense(entry.getKey(), total, entry.getValue()));
         }
 
-        monthlyExpenses.sort(Comparator.comparing(MonthlyExpense::getMonth).reversed());
+        // [FIX] Sort Ascending (Oldest -> Newest).
+        // This puts Oct at index 0, and Jan (Current) at the last index.
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+            monthlyExpenses.sort(Comparator.comparing(MonthlyExpense::getMonth));
+        } else {
+            Collections.sort(monthlyExpenses, (o1, o2) -> o1.getMonth().compareTo(o2.getMonth()));
+        }
+
         monthlyAdapter.updateData(monthlyExpenses);
 
         if (!monthlyExpenses.isEmpty()) {
-            updatePieChartForMonth(monthlyExpenses.get(0));
+            // [FIX] Select the Last item (Newest/Current Month) by default
+            int newestMonthIndex = monthlyExpenses.size() - 1;
+
+            // Update chart to show current month
+            updatePieChartForMonth(monthlyExpenses.get(newestMonthIndex));
+
+            // [FIX] Scroll RecyclerView to the END so the current month is visible on the right
+            monthlyCardsRecyclerView.scrollToPosition(newestMonthIndex);
         }
     }
 
     private void updatePieChartForMonth(MonthlyExpense monthlyExpense) {
-        Map<String, Double> expenseByCategory = monthlyExpense.getTransactions().stream()
-                .collect(Collectors.groupingBy(
-                        t -> t.getTransactionCategory() != null ? t.getTransactionCategory() : "Others",
-                        Collectors.summingDouble(TransactionModel::getAmount)
-                ));
+        // Group by Category
+        Map<String, Double> expenseByCategory;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+            expenseByCategory = monthlyExpense.getTransactions().stream()
+                    .collect(Collectors.groupingBy(
+                            t -> t.getTransactionCategory() != null ? t.getTransactionCategory() : "Others",
+                            Collectors.summingDouble(TransactionModel::getAmount)
+                    ));
+        } else {
+            expenseByCategory = new HashMap<>();
+            for (TransactionModel t : monthlyExpense.getTransactions()) {
+                String cat = t.getTransactionCategory() != null ? t.getTransactionCategory() : "Others";
+                expenseByCategory.put(cat, expenseByCategory.getOrDefault(cat, 0.0) + t.getAmount());
+            }
+        }
 
         ArrayList<PieEntry> entries = new ArrayList<>();
         ArrayList<LegendItem> legendItems = new ArrayList<>();
@@ -228,7 +295,10 @@ public class ExpenseAnalyticsActivity extends AppCompatActivity {
             colorIndex++;
         }
 
-        legendItems.sort((a, b) -> Float.compare(b.amount, a.amount));
+        // Sort legend by amount descending
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+            legendItems.sort((a, b) -> Float.compare(b.amount, a.amount));
+        }
 
         PieDataSet dataSet = new PieDataSet(entries, "");
         dataSet.setColors(colors);
@@ -244,6 +314,8 @@ public class ExpenseAnalyticsActivity extends AppCompatActivity {
         dataSet.setValueLinePart1OffsetPercentage(80.f);
         dataSet.setValueLinePart1Length(0.4f);
         dataSet.setValueLinePart2Length(0.5f);
+
+        // [FIX] Theme compatible line color
         dataSet.setValueLineColor(ThemeUtil.getThemeAttrColor(this, R.attr.chk_textColorSecondary));
         dataSet.setValueLineWidth(1f);
 
@@ -253,6 +325,8 @@ public class ExpenseAnalyticsActivity extends AppCompatActivity {
         String centerText = "Total\n₹" + String.format(Locale.US, "%.0f", monthlyExpense.getTotalExpense());
         fullScreenPieChart.setCenterText(centerText);
         fullScreenPieChart.setCenterTextSize(16f);
+
+        // [FIX] Theme compatible text color
         fullScreenPieChart.setCenterTextColor(ThemeUtil.getThemeAttrColor(this, R.attr.chk_textColorPrimary));
 
         fullScreenPieChart.animateY(1000, Easing.EaseInOutQuad);
@@ -320,7 +394,7 @@ public class ExpenseAnalyticsActivity extends AppCompatActivity {
     static class MonthlyCardAdapter extends RecyclerView.Adapter<MonthlyCardAdapter.ViewHolder> {
         private List<MonthlyExpense> list;
         private OnMonthClickListener listener;
-        private int selectedPosition = 0;
+        private int selectedPosition = -1;
 
         MonthlyCardAdapter(List<MonthlyExpense> list, OnMonthClickListener listener) {
             this.list = list; this.listener = listener;
@@ -329,7 +403,8 @@ public class ExpenseAnalyticsActivity extends AppCompatActivity {
         @SuppressLint("NotifyDataSetChanged")
         public void updateData(List<MonthlyExpense> newList) {
             this.list = newList;
-            this.selectedPosition = 0;
+            // [FIX] Auto-select the last item (Newest Month) to match scroll position
+            this.selectedPosition = !list.isEmpty() ? list.size() - 1 : -1;
             notifyDataSetChanged();
         }
 
@@ -374,16 +449,23 @@ public class ExpenseAnalyticsActivity extends AppCompatActivity {
 
                 total.setText("₹" + String.format(Locale.US, "%.0f", data.getTotalExpense()));
 
+                Context ctx = itemView.getContext();
+                // [FIX] Robust theme color retrieval
+                int primaryColor = ThemeUtil.getThemeAttrColor(ctx, R.attr.chk_textColorPrimary);
+                int secondaryColor = ThemeUtil.getThemeAttrColor(ctx, R.attr.chk_textColorSecondary);
+                int cardBgColor = ThemeUtil.getThemeAttrColor(ctx, R.attr.chk_surfaceColor);
+                int selectedColor = Color.parseColor("#2196F3"); // Selected Blue
+
                 if(isSel) {
-                    bg.setBackgroundColor(Color.parseColor("#2196F3"));
+                    bg.setBackgroundColor(selectedColor);
                     month.setTextColor(Color.WHITE);
                     year.setTextColor(Color.parseColor("#E0E0E0"));
                     total.setTextColor(Color.WHITE);
                 } else {
-                    bg.setBackgroundColor(Color.WHITE);
-                    month.setTextColor(Color.BLACK);
-                    year.setTextColor(Color.DKGRAY);
-                    total.setTextColor(Color.BLACK);
+                    bg.setBackgroundColor(cardBgColor);
+                    month.setTextColor(primaryColor);
+                    year.setTextColor(secondaryColor);
+                    total.setTextColor(primaryColor);
                 }
             }
         }
@@ -395,25 +477,36 @@ public class ExpenseAnalyticsActivity extends AppCompatActivity {
         public void updateData(List<LegendItem> newList) { this.list = newList; notifyDataSetChanged(); }
 
         @NonNull @Override public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            return new ViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.item_category_report, parent, false));
+            return new ViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.legend_item, parent, false));
         }
         @Override public void onBindViewHolder(@NonNull ViewHolder holder, int position) { holder.bind(list.get(position)); }
         @Override public int getItemCount() { return list.size(); }
 
         static class ViewHolder extends RecyclerView.ViewHolder {
             View color; TextView cat, amt, pct;
-            ViewHolder(View v) { super(v); color=v.findViewById(R.id.categoryColorIndicator); cat=v.findViewById(R.id.categoryName); amt=v.findViewById(R.id.categoryAmount); pct=v.findViewById(R.id.categoryPercentage); }
+            ViewHolder(View v) {
+                super(v);
+                color=v.findViewById(R.id.colorIndicator);
+                cat=v.findViewById(R.id.categoryName);
+                amt=v.findViewById(R.id.categoryAmount);
+                pct=v.findViewById(R.id.categoryPercentage);
+            }
             void bind(LegendItem i) {
                 color.setBackgroundColor(i.color);
                 cat.setText(i.category);
                 amt.setText("₹" + String.format(Locale.US, "%.2f", i.amount));
                 pct.setText(String.format(Locale.US, "(%.1f%%)", i.percentage));
-                cat.setTextColor(Color.BLACK);
-                amt.setTextColor(Color.BLACK);
+
+                // [FIX] Apply Theme Colors
+                Context ctx = itemView.getContext();
+                cat.setTextColor(ThemeUtil.getThemeAttrColor(ctx, R.attr.chk_textColorPrimary));
+                amt.setTextColor(ThemeUtil.getThemeAttrColor(ctx, R.attr.chk_textColorSecondary));
+                pct.setTextColor(ThemeUtil.getThemeAttrColor(ctx, R.attr.chk_textColorSecondary));
             }
         }
     }
 
+    // [FIX] Static Theme Utility to prevent crashes accessing theme attributes
     static class ThemeUtil {
         static int getThemeAttrColor(Context context, int attr) {
             TypedValue typedValue = new TypedValue();

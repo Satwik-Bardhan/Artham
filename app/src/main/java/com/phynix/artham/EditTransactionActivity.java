@@ -62,7 +62,11 @@ public class EditTransactionActivity extends AppCompatActivity {
 
     // UI Components
     private ImageView backButton, menuButton, timePickerIcon, swapButton;
-    private ImageView calculatorButton, voiceInputButton, locationButton;
+
+    // [FIX] Changed from ImageView to View to prevent ClassCastException.
+    // These might be FrameLayouts or LinearLayouts in your XML.
+    private View calculatorButton, voiceInputButton, locationButton;
+
     private TextView headerSubtitle, dateTextView, timeTextView, selectedCategoryTextView, partyTextView;
     private TextView createdDateText, updatedDateText;
     private EditText amountEditText;
@@ -120,6 +124,7 @@ public class EditTransactionActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // Apply theme before super.onCreate to ensure context is set correctly
         ThemeManager.applyActivityTheme(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_transaction);
@@ -175,6 +180,8 @@ public class EditTransactionActivity extends AppCompatActivity {
         radioCard = findViewById(R.id.radioCard);
 
         amountEditText = findViewById(R.id.amountEditText);
+
+        // [FIX] Initializing as generic View handles any layout type
         calculatorButton = findViewById(R.id.calculatorButton);
 
         selectedCategoryTextView = findViewById(R.id.selectedCategoryTextView);
@@ -557,7 +564,7 @@ public class EditTransactionActivity extends AppCompatActivity {
     }
 
     private void showSnackbar(String message) {
-        // [FIX] Anchor snackbar to footer
+        // Anchor snackbar to footer
         SnackbarHelper.show(this, message, findViewById(R.id.footerLayout));
     }
 
