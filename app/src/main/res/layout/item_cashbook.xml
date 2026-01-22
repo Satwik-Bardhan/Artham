@@ -32,18 +32,18 @@
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:layout_marginEnd="12dp"
-                app:cardBackgroundColor="?attr/chk_balanceColor"
+                app:cardBackgroundColor="?attr/chk_surfaceColor"
                 app:cardCornerRadius="8dp"
                 app:cardElevation="0dp">
 
                 <ImageView
-                    android:id="@+id/bookIcon"
+                    android:id="@+id/cashbookIcon"
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:layout_gravity="center"
                     android:src="@drawable/ic_book"
                     android:contentDescription="@string/cashbook_icon"
-                    app:tint="@android:color/white" />
+                    app:tint="?attr/chk_primary_blue" />
             </androidx.cardview.widget.CardView>
 
             <LinearLayout
@@ -53,7 +53,7 @@
                 android:orientation="vertical">
 
                 <TextView
-                    android:id="@+id/cashbookNameText"
+                    android:id="@+id/cashbookName"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/sample_cashbook_name"
@@ -65,17 +65,18 @@
                     android:maxLines="1"
                     tools:text="Personal Finance" />
 
+                <!-- Active Status with previous styling: Blue, Bold, No Background -->
                 <TextView
-                    android:id="@+id/statusBadge"
+                    android:id="@+id/activeStatus"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:text="@string/status_active"
+                    android:text="Active"
                     android:fontFamily="@font/app_font"
-                    android:textColor="?attr/chk_incomeColor"
-                    android:textSize="10sp"
+                    android:textColor="?attr/chk_primary_blue"
+                    android:textSize="14sp"
                     android:textStyle="bold"
-                    tools:text="ACTIVE" />
+                    android:visibility="visible" />
             </LinearLayout>
 
             <LinearLayout
@@ -148,7 +149,7 @@
                     android:textSize="10sp" />
 
                 <TextView
-                    android:id="@+id/balanceText"
+                    android:id="@+id/balanceAmount"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"

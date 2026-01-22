@@ -1,10 +1,15 @@
 package com.phynix.artham;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
@@ -40,12 +45,15 @@ import com.phynix.artham.utils.ErrorHandler;
 import com.phynix.artham.utils.ThemeManager;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class CashbookSwitchActivity extends AppCompatActivity {
 
     private static final String TAG = "CashbookSwitchActivity";
+    private static final String PREFS_NAME = "AppPrefs";
+    private static final String KEY_SORT_ORDER = "cashbook_sort_order";
 
     // UI Components
     private RecyclerView cashbookRecyclerView;
@@ -70,7 +78,7 @@ public class CashbookSwitchActivity extends AppCompatActivity {
     private CashbookAdapter cashbookAdapter;
     private final List<CashbookModel> allCashbooks = new ArrayList<>();
     private String currentFilter = "active";
-    private String currentSort = "recent";
+    private String currentSort = "recent"; // Default sort
     private String currentCashbookId;
 
     // Firebase
@@ -103,6 +111,9 @@ public class CashbookSwitchActivity extends AppCompatActivity {
             return;
         }
 
+        // Load persisted sort order
+        loadSortPreference();
+
         userCashbooksRef = FirebaseDatabase.getInstance().getReference()
                 .child("users").child(currentUser.getUid()).child("cashbooks");
 
@@ -112,6 +123,18 @@ public class CashbookSwitchActivity extends AppCompatActivity {
         setupSearchListener();
         setupFilterListener();
         loadCashbooks();
+    }
+
+    private void loadSortPreference() {
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        currentSort = prefs.getString(KEY_SORT_ORDER, "recent");
+    }
+
+    private void saveSortPreference(String sortOrder) {
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        prefs.edit().putString(KEY_SORT_ORDER, sortOrder).apply();
+        currentSort = sortOrder;
+        applyFiltersAndSort();
     }
 
     private void initViews() {
@@ -173,11 +196,11 @@ public class CashbookSwitchActivity extends AppCompatActivity {
         emptyStateCreateButton.setOnClickListener(addAction);
         quickAddFab.setOnClickListener(addAction);
 
-        sortButton.setOnClickListener(v -> showSortOptions());
+        // Updated to show the new CENTERED dialog
+        sortButton.setOnClickListener(v -> showSortOptionsDialog());
     }
 
     private void setupFilterListener() {
-        // This check prevents crash if the view binding failed for any reason
         if (chipGroup == null) {
             Log.e(TAG, "ChipGroup not found! Check XML IDs.");
             return;
@@ -186,9 +209,6 @@ public class CashbookSwitchActivity extends AppCompatActivity {
         chipGroup.setOnCheckedStateChangeListener((group, checkedIds) -> {
             if (!checkedIds.isEmpty()) {
                 int checkedId = checkedIds.get(0);
-                // IDs must match what is inside layout_cashbook_filters.xml
-                // Since that file wasn't provided in this turn, assuming standard IDs:
-                // If they are dynamic or changed, ensure R.id.chipAll etc exist.
                 if (checkedId == R.id.chipAll) {
                     currentFilter = "all";
                 } else if (checkedId == R.id.chipActive) {
@@ -235,7 +255,6 @@ public class CashbookSwitchActivity extends AppCompatActivity {
                         CashbookModel cashbook = snapshot.getValue(CashbookModel.class);
                         if (cashbook != null) {
                             cashbook.setCashbookId(snapshot.getKey());
-                            // Use safe equals check
                             boolean isCurrent = currentCashbookId != null && currentCashbookId.equals(snapshot.getKey());
                             cashbook.setCurrent(isCurrent);
 
@@ -444,28 +463,72 @@ public class CashbookSwitchActivity extends AppCompatActivity {
                 .addOnSuccessListener(aVoid -> showSnackbar("Cashbook deleted successfully"));
     }
 
-    private void showSortOptions() {
-        String[] sortOptions = {
-                getString(R.string.sort_recent_first),
-                getString(R.string.sort_name_asc),
-                getString(R.string.sort_name_desc),
-                getString(R.string.sort_oldest_first),
-                getString(R.string.sort_most_transactions)
-        };
+    // New CENTERED Dialog Implementation
+    private void showSortOptionsDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        // Using the new centered layout
+        View view = getLayoutInflater().inflate(R.layout.dialog_sort_cashbooks, null);
+        builder.setView(view);
+        AlertDialog dialog = builder.create();
 
-        new MaterialAlertDialogBuilder(this)
-                .setTitle(getString(R.string.sort_cashbooks_title))
-                .setItems(sortOptions, (dialog, which) -> {
-                    switch (which) {
-                        case 0: currentSort = "recent"; break;
-                        case 1: currentSort = "name_asc"; break;
-                        case 2: currentSort = "name_desc"; break;
-                        case 3: currentSort = "oldest"; break;
-                        case 4: currentSort = "most_transactions"; break;
-                    }
-                    applyFiltersAndSort();
-                })
-                .show();
+        // Make background transparent for rounded corners
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        }
+
+        // UI References
+        View optNameAsc = view.findViewById(R.id.optNameAsc);
+        View optNameDesc = view.findViewById(R.id.optNameDesc); // NEW
+        View optDateNewest = view.findViewById(R.id.optDateNewest);
+        View optDateOldest = view.findViewById(R.id.optDateOldest);
+        View optBalanceHigh = view.findViewById(R.id.optBalanceHigh);
+        View optBalanceLow = view.findViewById(R.id.optBalanceLow); // NEW
+
+        ImageView checkNameAsc = view.findViewById(R.id.checkNameAsc);
+        ImageView checkNameDesc = view.findViewById(R.id.checkNameDesc); // NEW
+        ImageView checkDateNewest = view.findViewById(R.id.checkDateNewest);
+        ImageView checkDateOldest = view.findViewById(R.id.checkDateOldest);
+        ImageView checkBalanceHigh = view.findViewById(R.id.checkBalanceHigh);
+        ImageView checkBalanceLow = view.findViewById(R.id.checkBalanceLow); // NEW
+
+        TextView textNameAsc = view.findViewById(R.id.textNameAsc);
+        TextView textNameDesc = view.findViewById(R.id.textNameDesc); // NEW
+        TextView textDateNewest = view.findViewById(R.id.textDateNewest);
+        TextView textDateOldest = view.findViewById(R.id.textDateOldest);
+        TextView textBalanceHigh = view.findViewById(R.id.textBalanceHigh);
+        TextView textBalanceLow = view.findViewById(R.id.textBalanceLow); // NEW
+
+        // Highlight Current Selection
+        highlightSortOption(currentSort, "name_asc", textNameAsc, checkNameAsc);
+        highlightSortOption(currentSort, "name_desc", textNameDesc, checkNameDesc);
+        highlightSortOption(currentSort, "recent", textDateNewest, checkDateNewest);
+        highlightSortOption(currentSort, "oldest", textDateOldest, checkDateOldest);
+        highlightSortOption(currentSort, "balance_high", textBalanceHigh, checkBalanceHigh);
+        highlightSortOption(currentSort, "balance_low", textBalanceLow, checkBalanceLow);
+
+        // Listeners
+        optNameAsc.setOnClickListener(v -> { saveSortPreference("name_asc"); dialog.dismiss(); });
+        optNameDesc.setOnClickListener(v -> { saveSortPreference("name_desc"); dialog.dismiss(); });
+        optDateNewest.setOnClickListener(v -> { saveSortPreference("recent"); dialog.dismiss(); });
+        optDateOldest.setOnClickListener(v -> { saveSortPreference("oldest"); dialog.dismiss(); });
+        optBalanceHigh.setOnClickListener(v -> { saveSortPreference("balance_high"); dialog.dismiss(); });
+        optBalanceLow.setOnClickListener(v -> { saveSortPreference("balance_low"); dialog.dismiss(); });
+
+        view.findViewById(R.id.btnClose).setOnClickListener(v -> dialog.dismiss());
+
+        dialog.show();
+    }
+
+    private void highlightSortOption(String currentSort, String targetSort, TextView text, ImageView check) {
+        if (currentSort.equals(targetSort)) {
+            check.setVisibility(View.VISIBLE);
+            text.setTextColor(getThemeAttrColor(R.attr.chk_primary_blue));
+            text.setTypeface(null, android.graphics.Typeface.BOLD);
+        } else {
+            check.setVisibility(View.GONE);
+            text.setTextColor(getThemeAttrColor(R.attr.chk_textColorPrimary));
+            text.setTypeface(null, android.graphics.Typeface.NORMAL);
+        }
     }
 
     private void applyFiltersAndSort() {
@@ -506,11 +569,25 @@ public class CashbookSwitchActivity extends AppCompatActivity {
             case "most_transactions":
                 filteredList.sort((c1, c2) -> Integer.compare(c2.getTransactionCount(), c1.getTransactionCount()));
                 break;
+            case "balance_high":
+                filteredList.sort((c1, c2) -> Double.compare(c2.getTotalBalance(), c1.getTotalBalance()));
+                break;
+            case "balance_low":
+                filteredList.sort((c1, c2) -> Double.compare(c1.getTotalBalance(), c2.getTotalBalance()));
+                break;
             case "recent":
             default:
                 filteredList.sort((c1, c2) -> Long.compare(c2.getLastModified(), c1.getLastModified()));
                 break;
         }
+
+        // --- NEW: Always move CURRENT cashbook to TOP ---
+        Collections.sort(filteredList, (c1, c2) -> {
+            if (c1.isCurrent()) return -1; // c1 is current, move up
+            if (c2.isCurrent()) return 1;  // c2 is current, move up
+            return 0; // neither is current, keep relative order from previous sort
+        });
+        // -----------------------------------------------
 
         cashbookAdapter.updateCashbooks(filteredList);
 
@@ -534,7 +611,6 @@ public class CashbookSwitchActivity extends AppCompatActivity {
     private void showLoading(boolean show) {
         isLoading = show;
         loadingLayout.setVisibility(show ? View.VISIBLE : View.GONE);
-        // Hide empty state only if we are showing loading
         if (show) {
             emptyStateLayout.setVisibility(View.GONE);
         }
@@ -543,7 +619,6 @@ public class CashbookSwitchActivity extends AppCompatActivity {
     private void showEmptyState(boolean show) {
         emptyStateLayout.setVisibility(show ? View.VISIBLE : View.GONE);
         mainContent.setVisibility(show ? View.GONE : View.VISIBLE);
-        // Hide FAB if empty state is visible (since empty state has its own button)
         if (quickAddFab != null) {
             quickAddFab.setVisibility(show ? View.GONE : View.VISIBLE);
         }
@@ -551,6 +626,14 @@ public class CashbookSwitchActivity extends AppCompatActivity {
 
     private void showSnackbar(String message) {
         Snackbar.make(findViewById(android.R.id.content), message, Snackbar.LENGTH_SHORT).show();
+    }
+
+    private int getThemeAttrColor(int attr) {
+        TypedValue typedValue = new TypedValue();
+        if (getTheme().resolveAttribute(attr, typedValue, true)) {
+            return typedValue.data;
+        }
+        return Color.BLACK;
     }
 
     @Override
