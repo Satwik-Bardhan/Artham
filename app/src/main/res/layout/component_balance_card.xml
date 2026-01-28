@@ -19,7 +19,7 @@
         android:background="@drawable/cash_card"
         android:padding="16dp">
 
-        <!-- UID Section with Copy Button -->
+        <!-- UID Section -->
         <LinearLayout
             android:id="@+id/uidSection"
             android:layout_width="match_parent"
@@ -92,7 +92,7 @@
                 tools:ignore="HardcodedText" />
         </LinearLayout>
 
-        <!-- Income/Expense Section -->
+        <!-- In/Out Section -->
         <LinearLayout
             android:id="@+id/inOutSection"
             android:layout_width="match_parent"
