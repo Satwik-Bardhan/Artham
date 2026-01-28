@@ -68,8 +68,6 @@
     <color name="bottom_nav_selected">#2196F3</color>
     <color name="bottom_nav_item_unselected_border">#E0E0E0</color>
 
-    <color name="card_start_color">#001021</color>
-    <color name="card_end_color">#023E6B</color>
     <color name="header_color">@color/light_header</color>
     <color name="splash_wave_color">@color/splash_wave_light</color>
 

@@ -46,8 +46,9 @@
         <item name="chk_bottomNavSelectedColor">@color/bottom_nav_selected</item>
         <item name="chk_bottomNavBorderColor">@color/bottom_nav_item_unselected_border</item>
 
-        <item name="chk_card_start">@color/card_start_color</item>
-        <item name="chk_card_end">@color/card_end_color</item>
+
+        <item name="chk_card_start">#1A2938</item>
+        <item name="chk_card_end">#2C3E50</item>
         <item name="chk_splash_wave">@color/splash_wave_color</item>
         <item name="chk_headerColor">@color/header_color</item>
 
@@ -84,8 +85,8 @@
         <item name="chk_bottomNavSelectedColor">@color/dark_primary</item>
         <item name="chk_bottomNavBorderColor">@color/dark_divider</item>
 
-        <item name="chk_card_start">#1A2938</item>
-        <item name="chk_card_end">#2C3E50</item>
+        <item name="chk_card_start">#001021</item>
+        <item name="chk_card_end">#023E6B</item>
         <item name="chk_splash_wave">@color/splash_wave_dark</item>
         <item name="chk_headerColor">@color/dark_header</item>
 
@@ -122,8 +123,8 @@
         <item name="chk_bottomNavSelectedColor">@color/purple_primary</item>
         <item name="chk_bottomNavBorderColor">@color/purple_divider</item>
 
-        <item name="chk_card_start">#311B92</item>
-        <item name="chk_card_end">#6A1B9A</item>
+        <item name="chk_card_start">#571B92</item>
+        <item name="chk_card_end">#311344</item>
         <item name="chk_splash_wave">@color/splash_wave_purple</item>
         <item name="chk_headerColor">@color/purple_header</item>
 

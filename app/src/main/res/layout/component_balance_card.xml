@@ -12,31 +12,59 @@
     app:cardCornerRadius="10dp"
     app:cardElevation="2dp">
 
-    <LinearLayout
+    <RelativeLayout
         android:id="@+id/balanceCard"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="220dp"
         android:background="@drawable/cash_card"
-        android:gravity="center"
-        android:orientation="vertical"
         android:padding="16dp">
 
-        <TextView
-            android:id="@+id/uidText"
+        <!-- UID Section with Copy Button -->
+        <LinearLayout
+            android:id="@+id/uidSection"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@drawable/uid_bg"
-            android:fontFamily="@font/app_font"
-            android:gravity="center"
-            android:padding="8dp"
-            android:text="UID User Unique Id"
-            android:textColor="#CCCCCC"
-            android:textSize="12sp"
-            tools:ignore="HardcodedText" />
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="12dp"
+            android:paddingVertical="6dp"
+            android:layout_alignParentTop="true">
 
+            <TextView
+                android:id="@+id/uidText"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:fontFamily="@font/app_font"
+                android:gravity="center"
+                android:text="UID User Unique Id"
+                android:textColor="#CCCCCC"
+                android:textSize="12sp"
+                android:ellipsize="end"
+                android:maxLines="1"
+                tools:ignore="HardcodedText" />
+
+            <ImageView
+                android:id="@+id/copyUidButton"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_marginStart="8dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:contentDescription="Copy UID"
+                android:focusable="true"
+                android:padding="4dp"
+                android:src="@drawable/ic_copy"
+                app:tint="#CCCCCC" />
+        </LinearLayout>
+
+        <!-- Balance Section -->
         <LinearLayout
+            android:id="@+id/balanceSection"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_below="@id/uidSection"
             android:layout_marginTop="10dp"
             android:gravity="center_horizontal"
             android:orientation="horizontal">
@@ -64,9 +92,12 @@
                 tools:ignore="HardcodedText" />
         </LinearLayout>
 
+        <!-- Income/Expense Section -->
         <LinearLayout
+            android:id="@+id/inOutSection"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_below="@id/balanceSection"
             android:layout_marginTop="10dp"
             android:gravity="center"
             android:orientation="horizontal">
@@ -137,15 +168,32 @@
             </LinearLayout>
         </LinearLayout>
 
+        <!-- User Name (CENTERED) -->
         <TextView
             android:id="@+id/userNameBottom"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_below="@id/inOutSection"
+            android:layout_centerHorizontal="true"
             android:layout_marginTop="15dp"
             android:fontFamily="@font/app_font"
             android:text="User Name"
             android:textColor="#CCCCCC"
             android:textSize="12sp"
             tools:ignore="HardcodedText" />
-    </LinearLayout>
+
+        <!-- Tap to Flip (Bottom Right) -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentEnd="true"
+            android:fontFamily="@font/app_font"
+            android:text="Tap to flip"
+            android:textColor="#999999"
+            android:textSize="10sp"
+            android:textStyle="italic"
+            tools:ignore="HardcodedText" />
+
+    </RelativeLayout>
 </androidx.cardview.widget.CardView>
