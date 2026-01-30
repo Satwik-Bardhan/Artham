@@ -1,6 +1,5 @@
 package com.phynix.artham;
 
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
@@ -11,6 +10,7 @@ import android.text.TextWatcher;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -42,6 +42,7 @@ import com.phynix.artham.adapters.CashbookAdapter;
 import com.phynix.artham.models.CashbookModel;
 import com.phynix.artham.models.TransactionModel;
 import com.phynix.artham.utils.ErrorHandler;
+import com.phynix.artham.utils.SwipeListener;
 import com.phynix.artham.utils.ThemeManager;
 
 import java.util.ArrayList;
@@ -89,13 +90,14 @@ public class CashbookSwitchActivity extends AppCompatActivity {
 
     // State
     private boolean isLoading = false;
+    private SwipeListener swipeListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         ThemeManager.applyActivityTheme(this);
 
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_cashbook_manager);
+        setContentView(R.layout.activity_cashbook_manager); // Layout file name updated
 
         if (getSupportActionBar() != null) {
             getSupportActionBar().hide();
@@ -123,6 +125,35 @@ public class CashbookSwitchActivity extends AppCompatActivity {
         setupSearchListener();
         setupFilterListener();
         loadCashbooks();
+        setupSwipeNavigation();
+    }
+
+    private void setupSwipeNavigation() {
+        swipeListener = new SwipeListener(this) {
+            @Override
+            public void onSwipeLeft() {
+                // Inverted Logic: Go to Home Page (Left Page)
+                Intent intent = new Intent(CashbookSwitchActivity.this, HomePage.class);
+                intent.putExtra("cashbook_id", currentCashbookId);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                startActivity(intent);
+                overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
+                finish();
+            }
+
+            @Override
+            public void onSwipeRight() {
+                // Inverted Logic: No page to the right
+            }
+        };
+    }
+
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent event) {
+        if (swipeListener != null) {
+            swipeListener.onTouchEvent(event);
+        }
+        return super.dispatchTouchEvent(event);
     }
 
     private void loadSortPreference() {
@@ -147,13 +178,10 @@ public class CashbookSwitchActivity extends AppCompatActivity {
         mainContent = cashbookRecyclerView;
 
         emptyStateCreateButton = findViewById(R.id.emptyStateCreateButton);
-        closeButton = findViewById(R.id.closeButton);
+        closeButton = findViewById(R.id.closeButton); // Updated ID as requested
 
         searchEditText = findViewById(R.id.searchEditText);
-
-        // FIXED: Use the ID of the <include> tag, not the ID inside the file
         chipGroup = findViewById(R.id.includedFilterLayout);
-
         sortButton = findViewById(R.id.sortButton);
         quickAddFab = findViewById(R.id.quickAddFab);
     }
@@ -180,24 +208,27 @@ public class CashbookSwitchActivity extends AppCompatActivity {
         });
 
         cashbookRecyclerView.setAdapter(cashbookAdapter);
-        swipeRefreshLayout.setOnRefreshListener(this::loadCashbooks);
 
-        swipeRefreshLayout.setColorSchemeResources(
-                R.color.primary_blue,
-                R.color.income_green,
-                R.color.expense_red
-        );
+        if (swipeRefreshLayout != null) {
+            swipeRefreshLayout.setOnRefreshListener(this::loadCashbooks);
+            swipeRefreshLayout.setColorSchemeResources(
+                    R.color.primary_blue,
+                    R.color.income_green,
+                    R.color.expense_red
+            );
+        }
     }
 
     private void setupClickListeners() {
-        closeButton.setOnClickListener(v -> finish());
+        if (closeButton != null) {
+            closeButton.setOnClickListener(v -> finish());
+        }
 
         View.OnClickListener addAction = v -> handleAddNewCashbook();
-        emptyStateCreateButton.setOnClickListener(addAction);
-        quickAddFab.setOnClickListener(addAction);
+        if (emptyStateCreateButton != null) emptyStateCreateButton.setOnClickListener(addAction);
+        if (quickAddFab != null) quickAddFab.setOnClickListener(addAction);
 
-        // Updated to show the new CENTERED dialog
-        sortButton.setOnClickListener(v -> showSortOptionsDialog());
+        if (sortButton != null) sortButton.setOnClickListener(v -> showSortOptionsDialog());
     }
 
     private void setupFilterListener() {
@@ -224,16 +255,18 @@ public class CashbookSwitchActivity extends AppCompatActivity {
     }
 
     private void setupSearchListener() {
-        searchEditText.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                applyFiltersAndSort();
-            }
-            @Override
-            public void beforeTextChanged(CharSequence s, int st, int count, int after) {}
-            @Override
-            public void afterTextChanged(Editable s) {}
-        });
+        if (searchEditText != null) {
+            searchEditText.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    applyFiltersAndSort();
+                }
+                @Override
+                public void beforeTextChanged(CharSequence s, int st, int count, int after) {}
+                @Override
+                public void afterTextChanged(Editable s) {}
+            });
+        }
     }
 
     private void loadCashbooks() {
@@ -270,13 +303,13 @@ public class CashbookSwitchActivity extends AppCompatActivity {
 
                 applyFiltersAndSort();
                 showLoading(false);
-                swipeRefreshLayout.setRefreshing(false);
+                if (swipeRefreshLayout != null) swipeRefreshLayout.setRefreshing(false);
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
                 showLoading(false);
-                swipeRefreshLayout.setRefreshing(false);
+                if (swipeRefreshLayout != null) swipeRefreshLayout.setRefreshing(false);
                 ErrorHandler.handleFirebaseError(CashbookSwitchActivity.this, error);
             }
         };
@@ -463,42 +496,37 @@ public class CashbookSwitchActivity extends AppCompatActivity {
                 .addOnSuccessListener(aVoid -> showSnackbar("Cashbook deleted successfully"));
     }
 
-    // New CENTERED Dialog Implementation
     private void showSortOptionsDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        // Using the new centered layout
         View view = getLayoutInflater().inflate(R.layout.dialog_sort_cashbooks, null);
         builder.setView(view);
         AlertDialog dialog = builder.create();
 
-        // Make background transparent for rounded corners
         if (dialog.getWindow() != null) {
             dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         }
 
-        // UI References
         View optNameAsc = view.findViewById(R.id.optNameAsc);
-        View optNameDesc = view.findViewById(R.id.optNameDesc); // NEW
+        View optNameDesc = view.findViewById(R.id.optNameDesc);
         View optDateNewest = view.findViewById(R.id.optDateNewest);
         View optDateOldest = view.findViewById(R.id.optDateOldest);
         View optBalanceHigh = view.findViewById(R.id.optBalanceHigh);
-        View optBalanceLow = view.findViewById(R.id.optBalanceLow); // NEW
+        View optBalanceLow = view.findViewById(R.id.optBalanceLow);
 
         ImageView checkNameAsc = view.findViewById(R.id.checkNameAsc);
-        ImageView checkNameDesc = view.findViewById(R.id.checkNameDesc); // NEW
+        ImageView checkNameDesc = view.findViewById(R.id.checkNameDesc);
         ImageView checkDateNewest = view.findViewById(R.id.checkDateNewest);
         ImageView checkDateOldest = view.findViewById(R.id.checkDateOldest);
         ImageView checkBalanceHigh = view.findViewById(R.id.checkBalanceHigh);
-        ImageView checkBalanceLow = view.findViewById(R.id.checkBalanceLow); // NEW
+        ImageView checkBalanceLow = view.findViewById(R.id.checkBalanceLow);
 
         TextView textNameAsc = view.findViewById(R.id.textNameAsc);
-        TextView textNameDesc = view.findViewById(R.id.textNameDesc); // NEW
+        TextView textNameDesc = view.findViewById(R.id.textNameDesc);
         TextView textDateNewest = view.findViewById(R.id.textDateNewest);
         TextView textDateOldest = view.findViewById(R.id.textDateOldest);
         TextView textBalanceHigh = view.findViewById(R.id.textBalanceHigh);
-        TextView textBalanceLow = view.findViewById(R.id.textBalanceLow); // NEW
+        TextView textBalanceLow = view.findViewById(R.id.textBalanceLow);
 
-        // Highlight Current Selection
         highlightSortOption(currentSort, "name_asc", textNameAsc, checkNameAsc);
         highlightSortOption(currentSort, "name_desc", textNameDesc, checkNameDesc);
         highlightSortOption(currentSort, "recent", textDateNewest, checkDateNewest);
@@ -506,7 +534,6 @@ public class CashbookSwitchActivity extends AppCompatActivity {
         highlightSortOption(currentSort, "balance_high", textBalanceHigh, checkBalanceHigh);
         highlightSortOption(currentSort, "balance_low", textBalanceLow, checkBalanceLow);
 
-        // Listeners
         optNameAsc.setOnClickListener(v -> { saveSortPreference("name_asc"); dialog.dismiss(); });
         optNameDesc.setOnClickListener(v -> { saveSortPreference("name_desc"); dialog.dismiss(); });
         optDateNewest.setOnClickListener(v -> { saveSortPreference("recent"); dialog.dismiss(); });
@@ -533,14 +560,18 @@ public class CashbookSwitchActivity extends AppCompatActivity {
 
     private void applyFiltersAndSort() {
         List<CashbookModel> filteredList;
-        String query = searchEditText.getText().toString().toLowerCase().trim();
+        String query = "";
+        if (searchEditText != null && searchEditText.getText() != null) {
+            query = searchEditText.getText().toString().toLowerCase().trim();
+        }
 
         List<CashbookModel> searchResults;
         if (query.isEmpty()) {
             searchResults = new ArrayList<>(allCashbooks);
         } else {
+            String finalQuery = query;
             searchResults = allCashbooks.stream()
-                    .filter(c -> (c.getName() != null && c.getName().toLowerCase().contains(query)))
+                    .filter(c -> (c.getName() != null && c.getName().toLowerCase().contains(finalQuery)))
                     .collect(Collectors.toList());
         }
 
@@ -581,13 +612,11 @@ public class CashbookSwitchActivity extends AppCompatActivity {
                 break;
         }
 
-        // --- NEW: Always move CURRENT cashbook to TOP ---
         Collections.sort(filteredList, (c1, c2) -> {
-            if (c1.isCurrent()) return -1; // c1 is current, move up
-            if (c2.isCurrent()) return 1;  // c2 is current, move up
-            return 0; // neither is current, keep relative order from previous sort
+            if (c1.isCurrent()) return -1;
+            if (c2.isCurrent()) return 1;
+            return 0;
         });
-        // -----------------------------------------------
 
         cashbookAdapter.updateCashbooks(filteredList);
 
@@ -610,15 +639,15 @@ public class CashbookSwitchActivity extends AppCompatActivity {
 
     private void showLoading(boolean show) {
         isLoading = show;
-        loadingLayout.setVisibility(show ? View.VISIBLE : View.GONE);
+        if (loadingLayout != null) loadingLayout.setVisibility(show ? View.VISIBLE : View.GONE);
         if (show) {
-            emptyStateLayout.setVisibility(View.GONE);
+            if (emptyStateLayout != null) emptyStateLayout.setVisibility(View.GONE);
         }
     }
 
     private void showEmptyState(boolean show) {
-        emptyStateLayout.setVisibility(show ? View.VISIBLE : View.GONE);
-        mainContent.setVisibility(show ? View.GONE : View.VISIBLE);
+        if (emptyStateLayout != null) emptyStateLayout.setVisibility(show ? View.VISIBLE : View.GONE);
+        if (mainContent != null) mainContent.setVisibility(show ? View.GONE : View.VISIBLE);
         if (quickAddFab != null) {
             quickAddFab.setVisibility(show ? View.GONE : View.VISIBLE);
         }

@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.TypedValue;
+import android.view.MotionEvent;
 import android.view.View;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -33,6 +34,7 @@ import com.phynix.artham.databinding.LayoutSearchBarBinding;
 import com.phynix.artham.databinding.LayoutSummaryCardsBinding;
 import com.phynix.artham.models.TransactionModel;
 import com.phynix.artham.utils.SnackbarHelper;
+import com.phynix.artham.utils.SwipeListener;
 import com.phynix.artham.utils.ThemeManager;
 import com.phynix.artham.viewmodels.TransactionViewModel;
 import com.phynix.artham.viewmodels.TransactionViewModelFactory;
@@ -81,6 +83,7 @@ public class TransactionActivity extends AppCompatActivity {
     private String currentCashbookId;
     private String currentCashbookName = "Artham Cashbook";
     private FirebaseUser currentUser;
+    private SwipeListener swipeListener;
 
     private ActivityResultLauncher<Intent> filterLauncher;
     private ActivityResultLauncher<Intent> downloadLauncher;
@@ -135,6 +138,41 @@ public class TransactionActivity extends AppCompatActivity {
         setupLaunchers();
         observeViewModel();
         applySavedChartVisibility();
+        setupSwipeNavigation();
+    }
+
+    private void setupSwipeNavigation() {
+        swipeListener = new SwipeListener(this) {
+            @Override
+            public void onSwipeLeft() {
+                // Inverted Logic: Go to Settings (Left Page)
+                Intent intent = new Intent(TransactionActivity.this, SettingsActivity.class);
+                intent.putExtra("cashbook_id", currentCashbookId);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                startActivity(intent);
+                overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
+                finish();
+            }
+
+            @Override
+            public void onSwipeRight() {
+                // Inverted Logic: Go to Home (Right Page)
+                Intent intent = new Intent(TransactionActivity.this, HomePage.class);
+                intent.putExtra("cashbook_id", currentCashbookId);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                startActivity(intent);
+                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+                finish();
+            }
+        };
+    }
+
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent event) {
+        if (swipeListener != null) {
+            swipeListener.onTouchEvent(event);
+        }
+        return super.dispatchTouchEvent(event);
     }
 
     private void initializeUI() {
@@ -467,13 +505,19 @@ public class TransactionActivity extends AppCompatActivity {
         bottomNavBinding.btnHome.setOnClickListener(v -> {
             Intent intent = new Intent(this, HomePage.class);
             intent.putExtra("cashbook_id", currentCashbookId);
-            startActivity(intent); finish();
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            startActivity(intent);
+            overridePendingTransition(0, 0);
+            finish();
         });
         bottomNavBinding.btnCashbookSwitch.setOnClickListener(v -> openCashbookSwitcher());
         bottomNavBinding.btnSettings.setOnClickListener(v -> {
             Intent intent = new Intent(this, SettingsActivity.class);
             intent.putExtra("cashbook_id", currentCashbookId);
-            startActivity(intent); finish();
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            startActivity(intent);
+            overridePendingTransition(0, 0);
+            finish();
         });
     }
 

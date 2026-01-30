@@ -17,6 +17,7 @@ import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AccelerateDecelerateInterpolator;
@@ -49,6 +50,7 @@ import com.phynix.artham.models.Users;
 import com.phynix.artham.utils.Constants;
 import com.phynix.artham.utils.DateTimeUtils;
 import com.phynix.artham.utils.SnackbarHelper;
+import com.phynix.artham.utils.SwipeListener;
 import com.phynix.artham.utils.ThemeManager;
 import com.phynix.artham.viewmodels.HomePageViewModel;
 
@@ -70,6 +72,7 @@ public class HomePage extends AppCompatActivity {
 
     // Utils
     private NumberFormat currencyFormat;
+    private SwipeListener swipeListener;
 
     // Front Card Views
     private View balanceCardFront;
@@ -122,6 +125,36 @@ public class HomePage extends AppCompatActivity {
         observeViewModel();
         fetchUserDataDirectly();
         checkNotificationPermissionAndShowFeedback();
+        setupSwipeNavigation();
+    }
+
+    private void setupSwipeNavigation() {
+        swipeListener = new SwipeListener(this) {
+            @Override
+            public void onSwipeLeft() {
+                // Inverted Logic: Go to Transaction Page (Left Page)
+                Intent intent = new Intent(HomePage.this, TransactionActivity.class);
+                intent.putExtra(Constants.EXTRA_CASHBOOK_ID, viewModel.getCurrentCashbookId());
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                startActivity(intent);
+                overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
+            }
+
+            @Override
+            public void onSwipeRight() {
+                // Inverted Logic: Go to Cashbook Page (Right Page)
+                openCashbookSwitcher();
+                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+            }
+        };
+    }
+
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent event) {
+        if (swipeListener != null) {
+            swipeListener.onTouchEvent(event);
+        }
+        return super.dispatchTouchEvent(event);
     }
 
     private void setupBalanceCardFlip() {
