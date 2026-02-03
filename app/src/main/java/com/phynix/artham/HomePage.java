@@ -32,6 +32,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.widget.NestedScrollView;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.bumptech.glide.Glide;
@@ -122,17 +123,39 @@ public class HomePage extends AppCompatActivity {
         setupBalanceCardFlip();
         setupBottomNavigation();
         setupClickListeners();
+        setupStickyScrollLogic(); // Initialize Sticky Logic
         observeViewModel();
         fetchUserDataDirectly();
         checkNotificationPermissionAndShowFeedback();
         setupSwipeNavigation();
     }
 
+    /**
+     * Logic to swap visibility between original and sticky buttons based on scroll position.
+     */
+    private void setupStickyScrollLogic() {
+        binding.mainScrollView.setOnScrollChangeListener((NestedScrollView.OnScrollChangeListener) (v, scrollX, scrollY, oldScrollX, oldScrollY) -> {
+            // Get the relative 'Top' position of the original buttons container
+            // within the scrollable content.
+            int buttonsTop = binding.originalButtons.getRoot().getTop();
+
+            // When user scrolls past the threshold, show sticky layout
+            if (scrollY >= buttonsTop) {
+                if (binding.stickyActionButtonsContainer.getVisibility() != View.VISIBLE) {
+                    binding.stickyActionButtonsContainer.setVisibility(View.VISIBLE);
+                }
+            } else {
+                if (binding.stickyActionButtonsContainer.getVisibility() == View.VISIBLE) {
+                    binding.stickyActionButtonsContainer.setVisibility(View.GONE);
+                }
+            }
+        });
+    }
+
     private void setupSwipeNavigation() {
         swipeListener = new SwipeListener(this) {
             @Override
             public void onSwipeLeft() {
-                // Inverted Logic: Go to Transaction Page (Left Page)
                 Intent intent = new Intent(HomePage.this, TransactionActivity.class);
                 intent.putExtra(Constants.EXTRA_CASHBOOK_ID, viewModel.getCurrentCashbookId());
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
@@ -142,7 +165,6 @@ public class HomePage extends AppCompatActivity {
 
             @Override
             public void onSwipeRight() {
-                // Inverted Logic: Go to Cashbook Page (Right Page)
                 openCashbookSwitcher();
                 overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
             }
@@ -389,7 +411,6 @@ public class HomePage extends AppCompatActivity {
         rowCategory.setText(transaction.getTransactionCategory());
         rowMode.setText(transaction.getPaymentMode());
 
-        // [FIX] Center align In/Out amounts
         rowIn.setGravity(Gravity.CENTER);
         rowOut.setGravity(Gravity.CENTER);
 
@@ -427,8 +448,14 @@ public class HomePage extends AppCompatActivity {
     }
 
     private void setupClickListeners() {
-        binding.cashInButton.setOnClickListener(v -> openCashInOutActivity(Constants.TRANSACTION_TYPE_IN));
-        binding.cashOutButton.setOnClickListener(v -> openCashInOutActivity(Constants.TRANSACTION_TYPE_OUT));
+        // Bind original buttons (within ScrollView)
+        binding.originalButtons.btnCashIn.setOnClickListener(v -> openCashInOutActivity(Constants.TRANSACTION_TYPE_IN));
+        binding.originalButtons.btnCashOut.setOnClickListener(v -> openCashInOutActivity(Constants.TRANSACTION_TYPE_OUT));
+
+        // Bind sticky buttons (at top)
+        binding.stickyButtons.btnCashIn.setOnClickListener(v -> openCashInOutActivity(Constants.TRANSACTION_TYPE_IN));
+        binding.stickyButtons.btnCashOut.setOnClickListener(v -> openCashInOutActivity(Constants.TRANSACTION_TYPE_OUT));
+
         binding.userBox.setOnClickListener(v -> openCashbookSwitcher());
     }
 

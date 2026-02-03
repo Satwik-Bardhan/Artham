@@ -9,6 +9,21 @@
     android:fitsSystemWindows="true"
     tools:context=".HomePage">
 
+    <!-- Sticky Buttons Container (Pins to the top) -->
+    <FrameLayout
+        android:id="@+id/stickyActionButtonsContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:background="?attr/chk_backgroundColor"
+        android:elevation="10dp"
+        android:translationZ="10dp"
+        android:visibility="gone">
+        <include
+            android:id="@+id/stickyButtons"
+            layout="@layout/layout_home_action_buttons" />
+    </FrameLayout>
+
     <include
         android:id="@+id/bottomNavCard"
         layout="@layout/layout_bottom_navigation"
@@ -16,266 +31,178 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true" />
 
-    <LinearLayout
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/mainScrollView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@id/bottomNavCard"
-        android:orientation="vertical"
-        android:layout_marginHorizontal="12dp"
-        android:layout_marginBottom="10dp">
+        android:fillViewport="true"
+        android:scrollbars="none">
 
-        <ScrollView
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:fillViewport="true"
-            android:scrollbars="none">
+            android:orientation="vertical"
+            android:layout_marginHorizontal="12dp"
+            android:paddingBottom="20dp">
 
-            <LinearLayout
+            <!-- Current Book Header -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/userBoxCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
+                android:layout_marginTop="16dp"
+                app:cardBackgroundColor="?attr/chk_headerColor"
+                app:cardCornerRadius="8dp"
+                app:cardElevation="2dp">
 
-                <androidx.cardview.widget.CardView
+                <LinearLayout
+                    android:id="@+id/userBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:cardBackgroundColor="?attr/chk_headerColor"
-                    app:cardCornerRadius="8dp"
-                    app:cardElevation="2dp">
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="10dp">
+
+                    <ImageView
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:layout_marginEnd="16dp"
+                        android:src="@drawable/ic_book"
+                        app:tint="?attr/chk_balanceColor" />
 
                     <LinearLayout
-                        android:id="@+id/userBox"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/userNameTop"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/app_font"
+                            android:text="Current Book"
+                            android:textColor="?attr/chk_textColorPrimary"
+                            android:textSize="18sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/lastOpenedText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Last opened: Just now"
+                            android:fontFamily="@font/app_font"
+                            android:textColor="?attr/chk_textColorSecondary"
+                            android:textSize="13sp"
+                            android:layout_marginTop="2dp" />
+                    </LinearLayout>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <TextView
+                android:id="@+id/currentCashbookText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone" />
+
+            <!-- Balance Card Section -->
+            <include
+                android:id="@+id/balanceCardView"
+                layout="@layout/component_balance_card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp" />
+
+            <!-- Original Action Buttons -->
+            <include
+                android:id="@+id/originalButtons"
+                layout="@layout/layout_home_action_buttons" />
+
+            <!-- Summary Header -->
+            <include
+                android:id="@+id/dailySummaryInclude"
+                layout="@layout/layout_daily_summary_header"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="8dp" />
+
+            <!-- Transaction List -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/transactionListCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardBackgroundColor="?attr/chk_surfaceColor"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="2dp">
+
+                <LinearLayout
+                    android:id="@+id/transaction_section"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:gravity="center_vertical"
                         android:orientation="horizontal"
-                        android:padding="10dp">
+                        android:background="?attr/chk_surfaceColor"
+                        android:padding="12dp"
+                        android:gravity="center_vertical"
+                        android:elevation="1dp">
 
-                        <ImageView
-                            android:layout_width="36dp"
-                            android:layout_height="36dp"
-                            android:layout_marginEnd="16dp"
-                            android:src="@drawable/ic_book"
-                            android:contentDescription="Cashbook icon"
-                            app:tint="?attr/chk_balanceColor" />
+                        <TextView
+                            android:id="@+id/transactionCount"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="2"
+                            android:fontFamily="@font/app_font"
+                            android:gravity="start"
+                            android:paddingStart="4dp"
+                            android:text="Today's Transactions"
+                            android:textColor="?attr/chk_balanceColor"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
 
-                        <LinearLayout
+                        <TextView
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:orientation="vertical">
+                            android:fontFamily="@font/app_font"
+                            android:gravity="center"
+                            android:text="MODE"
+                            android:textColor="?attr/chk_textColorSecondary"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
 
-                            <TextView
-                                android:id="@+id/userNameTop"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:fontFamily="@font/app_font"
-                                android:text="Current Book"
-                                android:textColor="?attr/chk_textColorPrimary"
-                                android:textSize="18sp"
-                                android:textStyle="bold" />
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/app_font"
+                            android:gravity="center"
+                            android:text="IN"
+                            android:textColor="?attr/chk_incomeColor"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
 
-                            <TextView
-                                android:id="@+id/lastOpenedText"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Last opened: Just now"
-                                android:fontFamily="@font/app_font"
-                                android:textColor="?attr/chk_textColorSecondary"
-                                android:textSize="13sp"
-                                android:layout_marginTop="2dp" />
-                        </LinearLayout>
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/app_font"
+                            android:gravity="center"
+                            android:text="OUT"
+                            android:textColor="?attr/chk_expenseColor"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
                     </LinearLayout>
-                </androidx.cardview.widget.CardView>
 
-                <TextView
-                    android:id="@+id/currentCashbookText"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:visibility="gone" />
-
-                <include
-                    android:id="@+id/balanceCardView"
-                    layout="@layout/component_balance_card"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp" />
-
-                <LinearLayout
-                    android:id="@+id/buttonLayout"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    android:layout_marginBottom="12dp"
-                    android:gravity="center"
-                    android:orientation="horizontal">
-
-                    <androidx.cardview.widget.CardView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginEnd="8dp"
-                        android:layout_weight="1"
-                        app:cardCornerRadius="12dp"
-                        app:cardElevation="4dp">
-
-                        <LinearLayout
-                            android:id="@+id/cashInButton"
-                            android:layout_width="match_parent"
-                            android:layout_height="60dp"
-                            android:background="@drawable/button_cashin"
-                            android:clickable="true"
-                            android:focusable="true"
-                            android:foreground="?android:attr/selectableItemBackground"
-                            android:gravity="center"
-                            android:orientation="horizontal">
-
-                            <ImageView
-                                android:layout_width="24dp"
-                                android:layout_height="24dp"
-                                android:layout_marginEnd="8dp"
-                                android:src="@drawable/ic_plus"
-                                app:tint="#FFFFFF" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:fontFamily="@font/app_font"
-                                android:text="CASH IN"
-                                android:textColor="#FFFFFF"
-                                android:textSize="18sp"
-                                android:textStyle="bold" />
-                        </LinearLayout>
-                    </androidx.cardview.widget.CardView>
-
-                    <androidx.cardview.widget.CardView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
-                        android:layout_weight="1"
-                        app:cardCornerRadius="12dp"
-                        app:cardElevation="4dp">
-
-                        <LinearLayout
-                            android:id="@+id/cashOutButton"
-                            android:layout_width="match_parent"
-                            android:layout_height="60dp"
-                            android:background="@drawable/button_cashout"
-                            android:clickable="true"
-                            android:focusable="true"
-                            android:foreground="?android:attr/selectableItemBackground"
-                            android:gravity="center"
-                            android:orientation="horizontal">
-
-                            <ImageView
-                                android:layout_width="24dp"
-                                android:layout_height="24dp"
-                                android:layout_marginEnd="8dp"
-                                android:src="@drawable/ic_minus"
-                                app:tint="#FFFFFF" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:fontFamily="@font/app_font"
-                                android:text="CASH OUT"
-                                android:textColor="#FFFFFF"
-                                android:textSize="18sp"
-                                android:textStyle="bold" />
-                        </LinearLayout>
-                    </androidx.cardview.widget.CardView>
-                </LinearLayout>
-
-            </LinearLayout>
-        </ScrollView>
-
-        <include
-            android:id="@+id/dailySummaryInclude"
-            layout="@layout/layout_daily_summary_header"
-            android:layout_width="match_parent"
-            android:layout_marginBottom="8dp"
-            android:layout_height="wrap_content" />
-
-
-        <androidx.cardview.widget.CardView
-            android:id="@+id/transactionListCard"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            app:cardBackgroundColor="?attr/chk_surfaceColor"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="2dp">
-
-            <LinearLayout
-                android:id="@+id/transaction_section"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical"
-                android:visibility="visible">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:background="?attr/chk_surfaceColor"
-                    android:padding="12dp"
-                    android:gravity="center_vertical"
-                    android:elevation="1dp">
-
-                    <TextView
-                        android:id="@+id/transactionCount"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="2"
-                        android:fontFamily="@font/app_font"
-                        android:gravity="start"
-                        android:paddingStart="4dp"
-                        android:text="Today's Transactions"
-                        android:textColor="?attr/chk_balanceColor"
-                        android:textSize="14sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:fontFamily="@font/app_font"
-                        android:gravity="center"
-                        android:text="MODE"
-                        android:textColor="?attr/chk_textColorSecondary"
-                        android:textSize="12sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:fontFamily="@font/app_font"
-                        android:gravity="center"
-                        android:text="IN"
-                        android:textColor="?attr/chk_incomeColor"
-                        android:textSize="12sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:fontFamily="@font/app_font"
-                        android:gravity="center"
-                        android:text="OUT"
-                        android:textColor="?attr/chk_expenseColor"
-                        android:textSize="12sp"
-                        android:textStyle="bold" />
-                </LinearLayout>
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:background="?attr/chk_dividerHorizontal" />
-
-                <ScrollView
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:fillViewport="true">
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="?attr/chk_dividerHorizontal" />
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -324,10 +251,9 @@
                                 android:textSize="14sp"
                                 android:layout_marginTop="4dp" />
                         </LinearLayout>
-
                     </LinearLayout>
-                </ScrollView>
-            </LinearLayout>
-        </androidx.cardview.widget.CardView>
-    </LinearLayout>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
 </RelativeLayout>
