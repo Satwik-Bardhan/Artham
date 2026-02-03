@@ -85,6 +85,9 @@ public class TransactionActivity extends AppCompatActivity {
     private FirebaseUser currentUser;
     private SwipeListener swipeListener;
 
+    // Track if we are showing all transactions or month-filtered
+    private boolean isShowingAllTransactions = false;
+
     private ActivityResultLauncher<Intent> filterLauncher;
     private ActivityResultLauncher<Intent> downloadLauncher;
 
@@ -145,7 +148,6 @@ public class TransactionActivity extends AppCompatActivity {
         swipeListener = new SwipeListener(this) {
             @Override
             public void onSwipeLeft() {
-                // Inverted Logic: Go to Settings (Left Page)
                 Intent intent = new Intent(TransactionActivity.this, SettingsActivity.class);
                 intent.putExtra("cashbook_id", currentCashbookId);
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
@@ -156,7 +158,6 @@ public class TransactionActivity extends AppCompatActivity {
 
             @Override
             public void onSwipeRight() {
-                // Inverted Logic: Go to Home (Right Page)
                 Intent intent = new Intent(TransactionActivity.this, HomePage.class);
                 intent.putExtra("cashbook_id", currentCashbookId);
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
@@ -176,25 +177,20 @@ public class TransactionActivity extends AppCompatActivity {
     }
 
     private void initializeUI() {
-        // [FIX] Updated binding IDs to match activity_transaction.xml
         summaryBinding = LayoutSummaryCardsBinding.bind(binding.summaryCardsLayout.getRoot());
         pieChartBinding = LayoutPieChartBinding.bind(binding.pieChartLayout.getRoot());
         searchBinding = LayoutSearchBarBinding.bind(binding.searchBarLayout.getRoot());
         bottomNavBinding = LayoutBottomNavigationBinding.bind(binding.bottomNavCard.getRoot());
 
-        // Setup Swipe Refresh
         binding.swipeRefreshLayout.setColorSchemeColors(getThemeColor(R.attr.chk_primary_blue));
 
         pieChartBinding.pieChart.setUsePercentValues(true);
         pieChartBinding.pieChart.getDescription().setEnabled(false);
         pieChartBinding.pieChart.getLegend().setEnabled(false);
-
         pieChartBinding.pieChart.setDrawEntryLabels(true);
         pieChartBinding.pieChart.setExtraOffsets(30.f, 10.f, 30.f, 10.f);
-
         pieChartBinding.pieChart.setDragDecelerationFrictionCoef(0.95f);
         pieChartBinding.pieChart.setDrawHoleEnabled(true);
-
         pieChartBinding.pieChart.setHoleColor(Color.TRANSPARENT);
         pieChartBinding.pieChart.setTransparentCircleRadius(61f);
         pieChartBinding.pieChart.setHoleRadius(58f);
@@ -213,7 +209,7 @@ public class TransactionActivity extends AppCompatActivity {
         viewModel.getFilteredTransactions().observe(this, transactions -> {
             this.allTransactions = transactions;
             displayDataForCurrentMonth();
-            binding.swipeRefreshLayout.setRefreshing(false); // Stop refresh animation
+            binding.swipeRefreshLayout.setRefreshing(false);
         });
         viewModel.getIsLoading().observe(this, isLoading -> {
             if (transactionFragment != null) transactionFragment.showLoading(isLoading);
@@ -231,25 +227,45 @@ public class TransactionActivity extends AppCompatActivity {
         if (allTransactions == null) return;
 
         SimpleDateFormat sdf = new SimpleDateFormat("MMMM yyyy", Locale.getDefault());
-        pieChartBinding.monthTitle.setText(sdf.format(currentMonthCalendar.getTime()));
+        pieChartBinding.monthTitle.setText(isShowingAllTransactions ? "All Time" : sdf.format(currentMonthCalendar.getTime()));
 
-        List<TransactionModel> monthlyTransactions = allTransactions.stream()
-                .filter(t -> {
-                    Calendar cal = Calendar.getInstance();
-                    cal.setTimeInMillis(t.getTimestamp());
-                    return cal.get(Calendar.YEAR) == currentMonthCalendar.get(Calendar.YEAR) &&
-                            cal.get(Calendar.MONTH) == currentMonthCalendar.get(Calendar.MONTH);
-                }).collect(Collectors.toList());
+        List<TransactionModel> transactionsToDisplay;
 
-        // Update the count TextView
-        binding.transactionCountText.setText("(" + monthlyTransactions.size() + ")");
+        if (isShowingAllTransactions) {
+            transactionsToDisplay = allTransactions;
+            binding.allTransactionsButton.setText("Monthly");
+        } else {
+            transactionsToDisplay = allTransactions.stream()
+                    .filter(t -> {
+                        Calendar cal = Calendar.getInstance();
+                        cal.setTimeInMillis(t.getTimestamp());
+                        return cal.get(Calendar.YEAR) == currentMonthCalendar.get(Calendar.YEAR) &&
+                                cal.get(Calendar.MONTH) == currentMonthCalendar.get(Calendar.MONTH);
+                    }).collect(Collectors.toList());
+            binding.allTransactionsButton.setText("All");
+        }
 
-        updateTotals(monthlyTransactions);
-        setupStyledPieChart(monthlyTransactions);
+        // Update the count TextView with "k" formatting
+        binding.transactionCountText.setText("(" + formatCount(transactionsToDisplay.size()) + ")");
+
+        updateTotals(transactionsToDisplay);
+        setupStyledPieChart(transactionsToDisplay);
 
         if (transactionFragment != null) {
-            transactionFragment.updateTransactions(monthlyTransactions);
+            transactionFragment.updateTransactions(transactionsToDisplay);
         }
+    }
+
+    /**
+     * Formats counts like 1k, 2k, 1.2k if exceeding 1000.
+     */
+    private String formatCount(int count) {
+        if (count < 1000) return String.valueOf(count);
+        if (count < 1000000) {
+            if (count % 1000 == 0) return (count / 1000) + "k";
+            return String.format(Locale.US, "%.1fk", count / 1000.0);
+        }
+        return String.format(Locale.US, "%.1fM", count / 1000000.0);
     }
 
     private void setupStyledPieChart(List<TransactionModel> transactionsForMonth) {
@@ -465,8 +481,6 @@ public class TransactionActivity extends AppCompatActivity {
     }
 
     private void setupClickListeners() {
-        // [FIX] Replaced direct call to private loadTransactions() with public filter() call
-        // This triggers a refresh of the list using the current search query.
         binding.swipeRefreshLayout.setOnRefreshListener(() -> {
             if (viewModel != null) {
                 String currentQuery = searchBinding.searchEditText.getText().toString();
@@ -476,16 +490,24 @@ public class TransactionActivity extends AppCompatActivity {
             }
         });
 
+        // "All" Button click listener
+        binding.allTransactionsButton.setOnClickListener(v -> {
+            isShowingAllTransactions = !isShowingAllTransactions;
+            displayDataForCurrentMonth();
+        });
+
         pieChartBinding.pieChartHeader.setOnClickListener(v -> {
             Intent intent = new Intent(this, ExpenseAnalyticsActivity.class);
             intent.putExtra("cashbook_id", currentCashbookId);
             startActivity(intent);
         });
         pieChartBinding.monthBackwardButton.setOnClickListener(v -> {
+            isShowingAllTransactions = false; // Reset "All" state when navigating months
             currentMonthCalendar.add(Calendar.MONTH, -1);
             displayDataForCurrentMonth();
         });
         pieChartBinding.monthForwardButton.setOnClickListener(v -> {
+            isShowingAllTransactions = false; // Reset "All" state when navigating months
             currentMonthCalendar.add(Calendar.MONTH, 1);
             displayDataForCurrentMonth();
         });

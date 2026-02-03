@@ -51,7 +51,6 @@
                 android:id="@+id/userBoxCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
                 app:cardBackgroundColor="?attr/chk_headerColor"
                 app:cardCornerRadius="8dp"
                 app:cardElevation="2dp">
@@ -125,7 +124,6 @@
                 layout="@layout/layout_daily_summary_header"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
                 android:layout_marginBottom="8dp" />
 
             <!-- Transaction List -->

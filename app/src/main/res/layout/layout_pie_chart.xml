@@ -58,7 +58,7 @@
                     android:layout_height="wrap_content"
                     android:text="Click to view more details"
                     android:fontFamily="@font/app_font"
-                    android:textColor="?attr/chk_textColorSecondary"
+                    android:textColor="?attr/colorPrimary"
                     android:textSize="12sp"
                     android:textStyle="normal" />
 
