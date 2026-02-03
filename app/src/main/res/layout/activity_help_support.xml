@@ -6,20 +6,19 @@
     android:background="?attr/chk_backgroundColor"
     android:fitsSystemWindows="true">
 
+    <!-- Sticky Header -->
     <androidx.cardview.widget.CardView
         android:id="@+id/headerCard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:cardBackgroundColor="?attr/chk_headerColor"
-        app:cardCornerRadius="8dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
+        app:cardCornerRadius="0dp"
         app:cardElevation="4dp">
 
         <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="16dp">
+            android:layout_height="?attr/actionBarSize"
+            android:paddingHorizontal="16dp">
 
             <ImageView
                 android:id="@+id/backButton"
@@ -27,6 +26,7 @@
                 android:layout_height="32dp"
                 android:layout_centerVertical="true"
                 android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Back"
                 android:src="@drawable/ic_arrow_left"
                 android:clickable="true"
                 android:focusable="true"
@@ -57,6 +57,7 @@
             android:orientation="vertical"
             android:padding="16dp">
 
+            <!-- Search Bar -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
@@ -94,18 +95,20 @@
                 android:textSize="16sp"
                 android:textStyle="bold" />
 
+            <!-- Quick Action Row (Updated: Single horizontal row) -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:layout_marginBottom="24dp">
 
+                <!-- Contact Support Action -->
                 <androidx.cardview.widget.CardView
-                    android:id="@+id/btnFAQ"
+                    android:id="@+id/btnContactUs"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:layout_marginEnd="8dp"
+                    android:layout_marginEnd="4dp"
                     android:clickable="true"
                     android:focusable="true"
                     android:foreground="?android:attr/selectableItemBackground"
@@ -117,28 +120,31 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:padding="16dp"
+                        android:padding="12dp"
                         android:gravity="center">
 
                         <ImageView
-                            android:layout_width="32dp"
-                            android:layout_height="32dp"
-                            android:src="@drawable/ic_help"
-                            app:tint="?attr/chk_balanceColor"
-                            android:layout_marginBottom="8dp"/>
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:src="@drawable/ic_email"
+                            app:tint="?attr/chk_incomeColor"
+                            android:layout_marginBottom="6dp"/>
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="FAQ"
+                            android:text="Contact Us"
+                            android:textSize="12sp"
                             android:fontFamily="@font/app_font"
                             android:textColor="?attr/chk_textColorPrimary"
-                            android:textStyle="bold"/>
+                            android:textStyle="bold"
+                            android:gravity="center"/>
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
 
+                <!-- Report Bug Action -->
                 <androidx.cardview.widget.CardView
-                    android:id="@+id/btnContactUs"
+                    android:id="@+id/btnReportBug"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -155,32 +161,35 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:padding="16dp"
+                        android:padding="12dp"
                         android:gravity="center">
 
                         <ImageView
-                            android:layout_width="32dp"
-                            android:layout_height="32dp"
-                            android:src="@drawable/ic_email"
-                            app:tint="?attr/chk_incomeColor"
-                            android:layout_marginBottom="8dp"/>
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:src="@drawable/ic_shield_check"
+                            app:tint="?attr/chk_expenseColor"
+                            android:layout_marginBottom="6dp"/>
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Contact Us"
+                            android:text="Report Bug"
+                            android:textSize="12sp"
                             android:fontFamily="@font/app_font"
                             android:textColor="?attr/chk_textColorPrimary"
-                            android:textStyle="bold"/>
+                            android:textStyle="bold"
+                            android:gravity="center"/>
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
 
+                <!-- Creator / About Action -->
                 <androidx.cardview.widget.CardView
-                    android:id="@+id/btnReportBug"
+                    android:id="@+id/btnAboutDev"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:layout_marginStart="8dp"
+                    android:layout_marginStart="4dp"
                     android:clickable="true"
                     android:focusable="true"
                     android:foreground="?android:attr/selectableItemBackground"
@@ -192,27 +201,30 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:padding="16dp"
+                        android:padding="12dp"
                         android:gravity="center">
 
                         <ImageView
-                            android:layout_width="32dp"
-                            android:layout_height="32dp"
-                            android:src="@drawable/ic_shield_check"
-                            app:tint="?attr/chk_expenseColor"
-                            android:layout_marginBottom="8dp"/>
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:src="@drawable/ic_person"
+                            app:tint="?attr/chk_textColorSecondary"
+                            android:layout_marginBottom="6dp"/>
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Report Bug"
+                            android:text="Creator"
+                            android:textSize="12sp"
                             android:fontFamily="@font/app_font"
                             android:textColor="?attr/chk_textColorPrimary"
-                            android:textStyle="bold"/>
+                            android:textStyle="bold"
+                            android:gravity="center"/>
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
             </LinearLayout>
 
+            <!-- Embedded FAQ Section -->
             <include
                 android:id="@+id/faqLayout"
                 layout="@layout/layout_faq_section" />

@@ -9,6 +9,7 @@
     android:fitsSystemWindows="true"
     tools:context=".TransactionActivity">
 
+    <!-- Bottom Navigation -->
     <include
         android:id="@+id/bottomNavCard"
         layout="@layout/layout_bottom_navigation"
@@ -16,6 +17,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true" />
 
+    <!-- Main Content Area -->
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/swipeRefreshLayout"
         android:layout_width="match_parent"
@@ -32,13 +34,14 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:paddingBottom="16dp">
+                android:orientation="vertical">
 
+                <!-- Search & Filters -->
                 <include
                     android:id="@+id/search_bar_layout"
                     layout="@layout/layout_search_bar"/>
 
+                <!-- Summary Overview -->
                 <include
                     android:id="@+id/summary_cards_layout"
                     layout="@layout/layout_summary_cards"
@@ -48,6 +51,7 @@
                     android:layout_marginTop="8dp"
                     android:layout_marginBottom="16dp" />
 
+                <!-- Analytics Pie Chart -->
                 <include
                     android:id="@+id/pie_chart_layout"
                     layout="@layout/layout_pie_chart"
@@ -56,79 +60,94 @@
                     android:layout_marginHorizontal="16dp"
                     android:layout_marginBottom="16dp" />
 
+                <!-- Transaction Header & Quick Actions -->
                 <RelativeLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:paddingHorizontal="16dp"
-                    android:paddingVertical="8dp">
+                    android:paddingVertical="12dp">
 
-                    <TextView
-                        android:id="@+id/textTransactions"
+                    <LinearLayout
+                        android:id="@+id/titleContainer"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_alignParentStart="true"
                         android:layout_centerVertical="true"
-                        android:text="Transactions"
-                        android:fontFamily="@font/app_font"
-                        android:textColor="?attr/chk_textColorPrimary"
-                        android:textSize="18sp"
-                        android:textStyle="bold" />
+                        android:orientation="horizontal">
 
-                    <TextView
-                        android:id="@+id/transactionCountText"
+                        <TextView
+                            android:id="@+id/textTransactions"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Transactions"
+                            android:fontFamily="@font/app_font"
+                            android:textColor="?attr/chk_textColorPrimary"
+                            android:textSize="15sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/transactionCountText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="6dp"
+                            android:text="(0)"
+                            android:fontFamily="@font/app_font"
+                            android:textColor="?attr/chk_textColorSecondary"
+                            android:textSize="14sp" />
+                    </LinearLayout>
+
+                    <!-- Row Actions: All Toggle and Download -->
+                    <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_toEndOf="@id/textTransactions"
-                        android:layout_centerVertical="true"
-                        android:layout_marginStart="6dp"
-                        android:text="(0)"
-                        android:fontFamily="@font/app_font"
-                        android:textColor="?attr/chk_textColorSecondary"
-                        android:textSize="14sp" />
-
-                    <!-- All Transactions Toggle Button (Updated with theme compatible black text) -->
-                    <androidx.appcompat.widget.AppCompatButton
-                        android:id="@+id/allTransactionsButton"
-                        android:layout_width="wrap_content"
-                        android:layout_height="32dp"
-                        android:layout_centerVertical="true"
-                        android:layout_toStartOf="@id/downloadReportButton"
-                        android:layout_marginEnd="12dp"
-                        android:background="@drawable/button_download_rounded"
-                        android:backgroundTint="?attr/chk_surfaceColor"
-                        android:text="All"
-                        android:textAllCaps="false"
-                        android:fontFamily="@font/app_font"
-                        android:textColor="#000000"
-                        android:textSize="12sp"
-                        android:textStyle="bold"
-                        android:elevation="2dp"
-                        android:paddingHorizontal="16dp"/>
-
-                    <Button
-                        android:id="@+id/downloadReportButton"
-                        android:layout_width="wrap_content"
-                        android:layout_height="40dp"
                         android:layout_alignParentEnd="true"
                         android:layout_centerVertical="true"
-                        android:drawableStart="@drawable/ic_download"
-                        android:drawablePadding="8dp"
-                        android:background="@drawable/button_download_rounded"
-                        android:gravity="center"
-                        android:paddingHorizontal="16dp"
-                        app:backgroundTint="@null"
-                        android:text="Download"
-                        android:fontFamily="@font/app_font"
-                        android:textAllCaps="false"
-                        android:textStyle="bold"
-                        android:textSize="14sp"
-                        android:textColor="#000000" />
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <androidx.appcompat.widget.AppCompatButton
+                            android:id="@+id/allTransactionsButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="32dp"
+                            android:layout_marginEnd="10dp"
+                            android:background="@drawable/button_download_rounded"
+                            android:backgroundTint="?attr/chk_surfaceColor"
+                            android:text="All"
+                            android:textAllCaps="false"
+                            android:fontFamily="@font/app_font"
+                            android:textColor="#000000"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            android:elevation="2dp"
+                            android:paddingHorizontal="12dp"/>
+
+                        <androidx.appcompat.widget.AppCompatButton
+                            android:id="@+id/downloadReportButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="40dp"
+                            android:background="@drawable/button_download_rounded"
+                            android:backgroundTint="?attr/chk_surfaceColor"
+                            android:drawableStart="@drawable/ic_download"
+                            android:drawablePadding="6dp"
+                            android:drawableTint="#000000"
+                            android:text="Download"
+                            android:textAllCaps="false"
+                            android:fontFamily="@font/app_font"
+                            android:textColor="#000000"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            android:elevation="2dp"
+                            android:paddingHorizontal="12dp"/>
+                    </LinearLayout>
                 </RelativeLayout>
 
+                <!-- Transaction List Container -->
+                <!-- The RecyclerView inside this fragment will handle the date-wise headers -->
                 <FrameLayout
                     android:id="@+id/transaction_fragment_container"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content"
+                    android:minHeight="300dp" />
 
             </LinearLayout>
         </androidx.core.widget.NestedScrollView>

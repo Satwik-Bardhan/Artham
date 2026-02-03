@@ -5,10 +5,9 @@ import android.content.Context;
 import android.graphics.Color;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView; // CHANGED: From ImageButton to ImageView to prevent ClassCastException
+import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
@@ -20,17 +19,23 @@ import com.phynix.artham.models.TransactionModel;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
-public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.TransactionViewHolder> {
+/**
+ * Artham Transaction Adapter
+ * Implements date-wise grouping with separate headers for each day.
+ * Manages Cash In and Cash Out items with unique layouts.
+ */
+public class TransactionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
-    private static final String TAG = "TransactionAdapter";
-    private List<TransactionModel> transactionList;
+    private final List<Object> items = new ArrayList<>(); // Mixed list: Strings (Headers) and TransactionModels
     private final OnItemClickListener listener;
 
+    private static final int VIEW_TYPE_HEADER = 0;
     private static final int VIEW_TYPE_IN = 1;
     private static final int VIEW_TYPE_OUT = 2;
 
@@ -41,104 +46,129 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
         void onCopyClick(TransactionModel transaction);
     }
 
-    public TransactionAdapter(List<TransactionModel> transactionList, OnItemClickListener listener) {
-        this.transactionList = new ArrayList<>(transactionList);
+    public TransactionAdapter(List<TransactionModel> transactions, OnItemClickListener listener) {
         this.listener = listener;
+        if (transactions != null) {
+            updateData(transactions);
+        }
     }
 
     @Override
     public int getItemViewType(int position) {
-        TransactionModel transaction = transactionList.get(position);
-        if ("IN".equalsIgnoreCase(transaction.getType())) {
-            return VIEW_TYPE_IN;
-        } else {
-            return VIEW_TYPE_OUT;
+        Object item = items.get(position);
+        if (item instanceof String) {
+            return VIEW_TYPE_HEADER;
         }
+        TransactionModel transaction = (TransactionModel) item;
+        return "IN".equalsIgnoreCase(transaction.getType()) ? VIEW_TYPE_IN : VIEW_TYPE_OUT;
     }
 
     @NonNull
     @Override
-    public TransactionViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view;
-        // Inflate the appropriate layout based on type
-        if (viewType == VIEW_TYPE_IN) {
-            view = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.item_transaction, parent, false);
-        } else {
-            view = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.item_transaction_expense, parent, false);
+    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        LayoutInflater inflater = LayoutInflater.from(parent.getContext());
+        switch (viewType) {
+            case VIEW_TYPE_HEADER:
+                return new HeaderViewHolder(inflater.inflate(R.layout.item_date_header, parent, false));
+            case VIEW_TYPE_IN:
+                return new TransactionViewHolder(inflater.inflate(R.layout.item_transaction, parent, false));
+            default:
+                return new TransactionViewHolder(inflater.inflate(R.layout.item_transaction_expense, parent, false));
         }
-        return new TransactionViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull TransactionViewHolder holder, int position) {
-        if (position < transactionList.size()) {
-            TransactionModel transaction = transactionList.get(position);
-            holder.bind(transaction);
+    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+        Object item = items.get(position);
+        if (holder instanceof HeaderViewHolder) {
+            ((HeaderViewHolder) holder).bind((String) item);
+        } else if (holder instanceof TransactionViewHolder) {
+            ((TransactionViewHolder) holder).bind((TransactionModel) item);
         }
     }
 
     @Override
     public int getItemCount() {
-        return transactionList != null ? transactionList.size() : 0;
+        return items.size();
     }
 
+    /**
+     * Public method to refresh the list with new data.
+     * Handles sorting, grouping, and DiffUtil calculation.
+     */
     public void updateTransactions(List<TransactionModel> newTransactions) {
-        if (newTransactions == null) {
-            newTransactions = new ArrayList<>();
-        }
+        updateData(newTransactions);
+    }
 
-        TransactionDiffCallback diffCallback = new TransactionDiffCallback(this.transactionList, newTransactions);
+    private void updateData(List<TransactionModel> transactions) {
+        List<Object> newList = groupTransactionsByDate(transactions);
+
+        TransactionDiffCallback diffCallback = new TransactionDiffCallback(this.items, newList);
         DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(diffCallback);
 
-        this.transactionList.clear();
-        this.transactionList.addAll(newTransactions);
+        this.items.clear();
+        this.items.addAll(newList);
         diffResult.dispatchUpdatesTo(this);
     }
 
+    private List<Object> groupTransactionsByDate(List<TransactionModel> transactions) {
+        if (transactions == null || transactions.isEmpty()) return new ArrayList<>();
+
+        // Sort descending (Newest first)
+        List<TransactionModel> sortedList = new ArrayList<>(transactions);
+        Collections.sort(sortedList, (t1, t2) -> Long.compare(t2.getTimestamp(), t1.getTimestamp()));
+
+        List<Object> grouped = new ArrayList<>();
+        String lastDate = "";
+        SimpleDateFormat headerFormat = new SimpleDateFormat("dd MMM yyyy", Locale.US);
+
+        for (TransactionModel t : sortedList) {
+            String currentDate = headerFormat.format(new Date(t.getTimestamp()));
+            if (!currentDate.equals(lastDate)) {
+                grouped.add(currentDate); // Inject Date Header
+                lastDate = currentDate;
+            }
+            grouped.add(t); // Inject Transaction Item
+        }
+        return grouped;
+    }
+
+    // --- ViewHolders ---
+
+    static class HeaderViewHolder extends RecyclerView.ViewHolder {
+        TextView headerText;
+        HeaderViewHolder(@NonNull View itemView) {
+            super(itemView);
+            // Fixed: Ensuring the ID matches the XML layout provided.
+            headerText = itemView.findViewById(R.id.dateHeaderTextView);
+        }
+        void bind(String date) {
+            headerText.setText(date);
+        }
+    }
+
     class TransactionViewHolder extends RecyclerView.ViewHolder {
-        // Core Views
         TextView categoryTextView, amountTextView, dateTextView, paymentModeTextView, remarkTextView;
         View transactionTypeIndicator;
-
-        // 3-Dot Menu Button - FIXED: Changed to ImageView
         ImageView menuButton;
 
         public TransactionViewHolder(@NonNull View itemView) {
             super(itemView);
-            initializeViews();
-        }
-
-        private void initializeViews() {
-            // Core Data Views
             categoryTextView = itemView.findViewById(R.id.categoryTextView);
             amountTextView = itemView.findViewById(R.id.amountTextView);
             remarkTextView = itemView.findViewById(R.id.remarkTextView);
             dateTextView = itemView.findViewById(R.id.dateTextView);
             paymentModeTextView = itemView.findViewById(R.id.paymentModeTextView);
-
-            // Visual Indicators
             transactionTypeIndicator = itemView.findViewById(R.id.transactionTypeIndicator);
-
-            // Menu Button - Safe Casting
-            // If your XML has <ImageButton>, this cast to ImageView is valid (ImageButton extends ImageView).
-            // If your XML has <ImageView>, this is also valid.
-            // This prevents the ClassCastException.
             menuButton = itemView.findViewById(R.id.menuButton);
         }
 
         @SuppressLint({"SetTextI18n", "DefaultLocale"})
         void bind(final TransactionModel transaction) {
-            if (transaction == null) return;
-
             Context context = itemView.getContext();
-
-            // 1. Set Text Data
             categoryTextView.setText(transaction.getTransactionCategory());
             paymentModeTextView.setText(transaction.getPaymentMode());
 
-            // Handle Remark Visibility
             if (transaction.getRemark() != null && !transaction.getRemark().isEmpty()) {
                 remarkTextView.setText(transaction.getRemark());
                 remarkTextView.setVisibility(View.VISIBLE);
@@ -146,104 +176,68 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
                 remarkTextView.setVisibility(View.GONE);
             }
 
-            // 2. Set Colors & Amount Formatting
-            if ("IN".equalsIgnoreCase(transaction.getType())) {
-                amountTextView.setText("₹" + String.format("%.2f", transaction.getAmount()));
-                int color = ThemeUtil.getThemeAttrColor(context, R.attr.chk_incomeColor); // Green
-                amountTextView.setTextColor(color);
-                if (transactionTypeIndicator != null) transactionTypeIndicator.setBackgroundColor(color);
-            } else {
-                amountTextView.setText("- ₹" + String.format("%.2f", transaction.getAmount()));
-                int color = ThemeUtil.getThemeAttrColor(context, R.attr.chk_expenseColor); // Red
-                amountTextView.setTextColor(color);
-                if (transactionTypeIndicator != null) transactionTypeIndicator.setBackgroundColor(color);
-            }
+            boolean isIn = "IN".equalsIgnoreCase(transaction.getType());
+            int colorAttr = isIn ? R.attr.chk_incomeColor : R.attr.chk_expenseColor;
+            int color = ThemeUtil.getThemeAttrColor(context, colorAttr);
 
-            // 3. Date Formatting
-            if (transaction.getTimestamp() > 0) {
-                Date date = new Date(transaction.getTimestamp());
-                String dateStr = new SimpleDateFormat("MMM dd", Locale.US).format(date);
-                String timeStr = new SimpleDateFormat("hh:mm a", Locale.US).format(date);
-                dateTextView.setText(dateStr + " • " + timeStr);
-            }
+            amountTextView.setText((isIn ? "" : "- ") + "₹" + String.format("%.2f", transaction.getAmount()));
+            amountTextView.setTextColor(color);
+            if (transactionTypeIndicator != null) transactionTypeIndicator.setBackgroundColor(color);
 
-            // 4. Main Item Click -> Open Details Dialog
-            itemView.setOnClickListener(v -> {
-                if (listener != null) {
-                    listener.onItemClick(transaction);
-                }
-            });
+            dateTextView.setText(new SimpleDateFormat("hh:mm a", Locale.US).format(new Date(transaction.getTimestamp())));
 
-            // 5. Menu Button Click -> Show Popup Menu
+            itemView.setOnClickListener(v -> listener.onItemClick(transaction));
             if (menuButton != null) {
-                menuButton.setOnClickListener(v -> {
-                    PopupMenu popup = new PopupMenu(context, v);
-                    popup.inflate(R.menu.transaction_options);
-
-                    popup.setOnMenuItemClickListener(item -> {
-                        int id = item.getItemId();
-
-                        if (id == R.id.action_edit) {
-                            if (listener != null) listener.onEditClick(transaction);
-                            return true;
-                        } else if (id == R.id.action_copy) {
-                            if (listener != null) listener.onCopyClick(transaction);
-                            return true;
-                        } else if (id == R.id.action_delete) {
-                            if (listener != null) listener.onDeleteClick(transaction);
-                            return true;
-                        }
-                        return false;
-                    });
-                    popup.show();
-                });
+                menuButton.setOnClickListener(v -> showPopupMenu(v, transaction));
             }
+        }
+
+        private void showPopupMenu(View view, TransactionModel transaction) {
+            PopupMenu popup = new PopupMenu(view.getContext(), view);
+            popup.inflate(R.menu.transaction_options);
+            popup.setOnMenuItemClickListener(item -> {
+                int id = item.getItemId();
+                if (id == R.id.action_edit) listener.onEditClick(transaction);
+                else if (id == R.id.action_copy) listener.onCopyClick(transaction);
+                else if (id == R.id.action_delete) listener.onDeleteClick(transaction);
+                return true;
+            });
+            popup.show();
         }
     }
 
-    // --- DiffUtil for efficient updates ---
-    private static class TransactionDiffCallback extends DiffUtil.Callback {
-        private final List<TransactionModel> oldList;
-        private final List<TransactionModel> newList;
+    // --- Utilities ---
 
-        public TransactionDiffCallback(List<TransactionModel> oldList, List<TransactionModel> newList) {
+    private static class TransactionDiffCallback extends DiffUtil.Callback {
+        private final List<Object> oldList, newList;
+        TransactionDiffCallback(List<Object> oldList, List<Object> newList) {
             this.oldList = oldList;
             this.newList = newList;
         }
+        @Override public int getOldListSize() { return oldList.size(); }
+        @Override public int getNewListSize() { return newList.size(); }
 
         @Override
-        public int getOldListSize() { return oldList.size(); }
-
-        @Override
-        public int getNewListSize() { return newList.size(); }
-
-        @Override
-        public boolean areItemsTheSame(int oldItemPosition, int newItemPosition) {
-            return Objects.equals(oldList.get(oldItemPosition).getTransactionId(),
-                    newList.get(newItemPosition).getTransactionId());
+        public boolean areItemsTheSame(int oldPos, int newPos) {
+            Object oldObj = oldList.get(oldPos);
+            Object newObj = newList.get(newPos);
+            if (oldObj instanceof String && newObj instanceof String) return oldObj.equals(newObj);
+            if (oldObj instanceof TransactionModel && newObj instanceof TransactionModel) {
+                return Objects.equals(((TransactionModel) oldObj).getTransactionId(), ((TransactionModel) newObj).getTransactionId());
+            }
+            return false;
         }
 
         @Override
-        public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {
-            TransactionModel oldItem = oldList.get(oldItemPosition);
-            TransactionModel newItem = newList.get(newItemPosition);
-
-            return oldItem.getAmount() == newItem.getAmount() &&
-                    oldItem.getTimestamp() == newItem.getTimestamp() &&
-                    Objects.equals(oldItem.getType(), newItem.getType()) &&
-                    Objects.equals(oldItem.getRemark(), newItem.getRemark()) &&
-                    Objects.equals(oldItem.getTransactionCategory(), newItem.getTransactionCategory());
+        public boolean areContentsTheSame(int oldPos, int newPos) {
+            return Objects.equals(oldList.get(oldPos), newList.get(newPos));
         }
     }
 
-    // --- Helper for Theme Colors ---
     static class ThemeUtil {
         static int getThemeAttrColor(Context context, int attr) {
-            if (context == null) return Color.BLACK;
             TypedValue typedValue = new TypedValue();
-            if (context.getTheme().resolveAttribute(attr, typedValue, true)) {
-                return typedValue.data;
-            }
+            if (context.getTheme().resolveAttribute(attr, typedValue, true)) return typedValue.data;
             return Color.BLACK;
         }
     }

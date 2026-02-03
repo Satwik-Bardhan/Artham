@@ -10,113 +10,25 @@
         android:id="@+id/faqSectionTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="12dp"
+        android:layout_marginBottom="16dp"
         android:layout_marginStart="4dp"
-        android:text="Common Questions"
+        android:layout_gravity="center"
+        android:text="Frequently Asked Questions"
         android:fontFamily="@font/app_font"
         android:textColor="?attr/chk_textColorPrimary"
-        android:textSize="18sp"
+        android:textSize="20sp"
         android:textStyle="bold" />
 
-    <com.google.android.material.card.MaterialCardView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        app:cardBackgroundColor="?attr/chk_surfaceColor"
-        app:cardCornerRadius="12dp"
-        app:cardElevation="0dp"
-        app:strokeWidth="1dp"
-        app:strokeColor="?attr/chk_dividerHorizontal">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="16dp">
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="How do I back up my data?"
-                android:fontFamily="@font/app_font"
-                android:textColor="?attr/chk_textColorPrimary"
-                android:textSize="15sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="6dp"/>
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Your data is automatically synced to the cloud when you are logged in. You can access it from any device."
-                android:fontFamily="@font/app_font"
-                android:textColor="?attr/chk_textColorSecondary"
-                android:textSize="13sp"
-                android:lineSpacingMultiplier="1.2"
-                android:layout_marginBottom="16dp"/>
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="?attr/chk_dividerHorizontal"
-                android:layout_marginBottom="16dp"/>
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Can I export my reports?"
-                android:fontFamily="@font/app_font"
-                android:textColor="?attr/chk_textColorPrimary"
-                android:textSize="15sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="6dp"/>
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Yes! Go to the Transaction page and click the download icon to export as PDF."
-                android:fontFamily="@font/app_font"
-                android:textColor="?attr/chk_textColorSecondary"
-                android:textSize="13sp"
-                android:lineSpacingMultiplier="1.2"
-                android:layout_marginBottom="16dp"/>
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="?attr/chk_dividerHorizontal"
-                android:layout_marginBottom="16dp"/>
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="How to add a new category?"
-                android:fontFamily="@font/app_font"
-                android:textColor="?attr/chk_textColorPrimary"
-                android:textSize="15sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="6dp"/>
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="When adding a transaction, click 'Select Category', then tap the + button to create a custom category."
-                android:fontFamily="@font/app_font"
-                android:textColor="?attr/chk_textColorSecondary"
-                android:textSize="13sp"
-                android:lineSpacingMultiplier="1.2"/>
-        </LinearLayout>
-    </com.google.android.material.card.MaterialCardView>
-
+    <!-- Section 1: Transactions & Analytics -->
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Account &amp; Security"
+        android:text="Transactions &amp; Analytics"
         android:fontFamily="@font/app_font"
         android:textColor="?attr/chk_primary_blue"
-        android:textSize="16sp"
+        android:textSize="14sp"
         android:textStyle="bold"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="12dp"
+        android:layout_marginBottom="8dp"
         android:layout_marginStart="4dp"/>
 
     <com.google.android.material.card.MaterialCardView
@@ -135,89 +47,96 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <TextView
+            <LinearLayout
+                android:id="@+id/faqAllTransactions"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="I forgot my password"
-                android:fontFamily="@font/app_font"
-                android:textColor="?attr/chk_textColorPrimary"
-                android:textSize="15sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="6dp"/>
+                android:orientation="vertical"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackground">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Where is my full transaction history?"
+                    android:fontFamily="@font/app_font"
+                    android:textColor="?attr/chk_textColorPrimary"
+                    android:textSize="15sp"
+                    android:textStyle="bold"/>
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="View all entries in the Transaction list."
+                    android:textColor="?attr/chk_textColorSecondary"
+                    android:textSize="13sp"
+                    android:layout_marginBottom="12dp"/>
+            </LinearLayout>
 
-            <TextView
+            <View android:layout_width="match_parent" android:layout_height="1dp" android:background="?attr/chk_dividerHorizontal" android:layout_marginBottom="12dp"/>
+
+            <LinearLayout
+                android:id="@+id/faqAnalytics"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="On the login screen, click 'Forgot Password?'. Enter your registered email, and we will send you a reset link."
-                android:fontFamily="@font/app_font"
-                android:textColor="?attr/chk_textColorSecondary"
-                android:textSize="13sp"
-                android:lineSpacingMultiplier="1.2"
-                android:layout_marginBottom="16dp"/>
+                android:orientation="vertical"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackground">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="How do I see my spending charts?"
+                    android:fontFamily="@font/app_font"
+                    android:textColor="?attr/chk_textColorPrimary"
+                    android:textSize="15sp"
+                    android:textStyle="bold"/>
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Open the Analytics dashboard for visual reports."
+                    android:textColor="?attr/chk_textColorSecondary"
+                    android:textSize="13sp"
+                    android:layout_marginBottom="12dp"/>
+            </LinearLayout>
 
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="?attr/chk_dividerHorizontal"
-                android:layout_marginBottom="16dp"/>
+            <View android:layout_width="match_parent" android:layout_height="1dp" android:background="?attr/chk_dividerHorizontal" android:layout_marginBottom="12dp"/>
 
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Is my data secure?"
-                android:fontFamily="@font/app_font"
-                android:textColor="?attr/chk_textColorPrimary"
-                android:textSize="15sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="6dp"/>
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Yes, your data is stored securely on Google Firebase servers and linked only to your account."
-                android:fontFamily="@font/app_font"
-                android:textColor="?attr/chk_textColorSecondary"
-                android:textSize="13sp"
-                android:lineSpacingMultiplier="1.2"
-                android:layout_marginBottom="16dp"/>
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="?attr/chk_dividerHorizontal"
-                android:layout_marginBottom="16dp"/>
-
-            <TextView
+            <LinearLayout
+                android:id="@+id/faqFilters"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="How to delete my account?"
-                android:fontFamily="@font/app_font"
-                android:textColor="?attr/chk_textColorPrimary"
-                android:textSize="15sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="6dp"/>
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Go to Settings > Delete Account. Warning: This action is permanent and cannot be undone."
-                android:fontFamily="@font/app_font"
-                android:textColor="?attr/chk_expenseColor"
-                android:textSize="13sp"
-                android:lineSpacingMultiplier="1.2"/>
+                android:orientation="vertical"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackground">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Can I search for specific payments?"
+                    android:fontFamily="@font/app_font"
+                    android:textColor="?attr/chk_textColorPrimary"
+                    android:textSize="15sp"
+                    android:textStyle="bold"/>
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Use advanced filters to find specific records."
+                    android:textColor="?attr/chk_textColorSecondary"
+                    android:textSize="13sp"/>
+            </LinearLayout>
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 
+    <!-- Section 2: Categories & Books -->
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Managing Books"
+        android:text="Categories &amp; Books"
         android:fontFamily="@font/app_font"
         android:textColor="?attr/chk_primary_blue"
-        android:textSize="16sp"
+        android:textSize="14sp"
         android:textStyle="bold"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="12dp"
+        android:layout_marginBottom="8dp"
         android:layout_marginStart="4dp"/>
 
     <com.google.android.material.card.MaterialCardView
@@ -236,50 +155,246 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <TextView
+            <LinearLayout
+                android:id="@+id/faqManageCategory"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="How to add or switch books?"
-                android:fontFamily="@font/app_font"
-                android:textColor="?attr/chk_textColorPrimary"
-                android:textSize="15sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="6dp"/>
+                android:orientation="vertical"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackground">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="How do I add a new category?"
+                    android:fontFamily="@font/app_font"
+                    android:textColor="?attr/chk_textColorPrimary"
+                    android:textSize="15sp"
+                    android:textStyle="bold"/>
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Manage your expense and income categories here."
+                    android:textColor="?attr/chk_textColorSecondary"
+                    android:textSize="13sp"
+                    android:layout_marginBottom="12dp"/>
+            </LinearLayout>
 
-            <TextView
+            <View android:layout_width="match_parent" android:layout_height="1dp" android:background="?attr/chk_dividerHorizontal" android:layout_marginBottom="12dp"/>
+
+            <LinearLayout
+                android:id="@+id/faqSwitchBook"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Go to Home > Switch (icon at bottom). Click 'Create New' to add a book, or tap any book in the list to switch to it."
-                android:fontFamily="@font/app_font"
-                android:textColor="?attr/chk_textColorSecondary"
-                android:textSize="13sp"
-                android:lineSpacingMultiplier="1.2"
-                android:layout_marginBottom="16dp"/>
+                android:orientation="vertical"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackground">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="How to switch between different books?"
+                    android:fontFamily="@font/app_font"
+                    android:textColor="?attr/chk_textColorPrimary"
+                    android:textSize="15sp"
+                    android:textStyle="bold"/>
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Quickly switch or create a new cashbook."
+                    android:textColor="?attr/chk_textColorSecondary"
+                    android:textSize="13sp"/>
+            </LinearLayout>
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
 
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="?attr/chk_dividerHorizontal"
-                android:layout_marginBottom="16dp"/>
+    <!-- Section 3: Profile & Security -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Profile &amp; Security"
+        android:fontFamily="@font/app_font"
+        android:textColor="?attr/chk_primary_blue"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="8dp"
+        android:layout_marginStart="4dp"/>
 
-            <TextView
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        app:cardBackgroundColor="?attr/chk_surfaceColor"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="0dp"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/chk_dividerHorizontal">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <LinearLayout
+                android:id="@+id/faqEditProfile"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="How to rename a book?"
-                android:fontFamily="@font/app_font"
-                android:textColor="?attr/chk_textColorPrimary"
-                android:textSize="15sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="6dp"/>
+                android:orientation="vertical"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackground">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="How to update my name or photo?"
+                    android:fontFamily="@font/app_font"
+                    android:textColor="?attr/chk_textColorPrimary"
+                    android:textSize="15sp"
+                    android:textStyle="bold"/>
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Customize your profile details."
+                    android:textColor="?attr/chk_textColorSecondary"
+                    android:textSize="13sp"
+                    android:layout_marginBottom="12dp"/>
+            </LinearLayout>
 
-            <TextView
+            <View android:layout_width="match_parent" android:layout_height="1dp" android:background="?attr/chk_dividerHorizontal" android:layout_marginBottom="12dp"/>
+
+            <LinearLayout
+                android:id="@+id/faqSecuritySettings"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Go to Settings > Primary Settings. Tap the Edit icon next to 'Active Book', enter the new name, and save."
-                android:fontFamily="@font/app_font"
-                android:textColor="?attr/chk_textColorSecondary"
-                android:textSize="13sp"
-                android:lineSpacingMultiplier="1.2"/>
+                android:orientation="vertical"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackground">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Is my account secure?"
+                    android:fontFamily="@font/app_font"
+                    android:textColor="?attr/chk_textColorPrimary"
+                    android:textSize="15sp"
+                    android:textStyle="bold"/>
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Manage account security and privacy settings."
+                    android:textColor="?attr/chk_textColorSecondary"
+                    android:textSize="13sp"
+                    android:layout_marginBottom="12dp"/>
+            </LinearLayout>
+
+            <View android:layout_width="match_parent" android:layout_height="1dp" android:background="?attr/chk_dividerHorizontal" android:layout_marginBottom="12dp"/>
+
+            <!-- Delete Data FAQ - Redirects to Profile/Settings -->
+            <LinearLayout
+                android:id="@+id/faqDeleteData"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackground">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="How do I delete all my data?"
+                    android:fontFamily="@font/app_font"
+                    android:textColor="?attr/chk_expenseColor"
+                    android:textSize="15sp"
+                    android:textStyle="bold"/>
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Permanent account or data deletion is found in the profile settings."
+                    android:textColor="?attr/chk_textColorSecondary"
+                    android:textSize="13sp"/>
+            </LinearLayout>
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Section 4: Preferences & Support -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Preferences &amp; Support"
+        android:fontFamily="@font/app_font"
+        android:textColor="?attr/chk_primary_blue"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="8dp"
+        android:layout_marginStart="4dp"/>
+
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        app:cardBackgroundColor="?attr/chk_surfaceColor"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="0dp"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/chk_dividerHorizontal">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <LinearLayout
+                android:id="@+id/faqThemeSync"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackground">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Dark mode and cloud sync status?"
+                    android:fontFamily="@font/app_font"
+                    android:textColor="?attr/chk_textColorPrimary"
+                    android:textSize="15sp"
+                    android:textStyle="bold"/>
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Adjust themes and view sync data in App Settings."
+                    android:textColor="?attr/chk_textColorSecondary"
+                    android:textSize="13sp"
+                    android:layout_marginBottom="12dp"/>
+            </LinearLayout>
+
+            <View android:layout_width="match_parent" android:layout_height="1dp" android:background="?attr/chk_dividerHorizontal" android:layout_marginBottom="12dp"/>
+
+            <LinearLayout
+                android:id="@+id/faqAboutDev"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackground">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Who created Artham?"
+                    android:fontFamily="@font/app_font"
+                    android:textColor="?attr/chk_textColorPrimary"
+                    android:textSize="15sp"
+                    android:textStyle="bold"/>
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Learn more about the developers and version info."
+                    android:textColor="?attr/chk_textColorSecondary"
+                    android:textSize="13sp"/>
+            </LinearLayout>
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 

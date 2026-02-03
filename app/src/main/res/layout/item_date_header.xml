@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingHorizontal="16dp"
+    android:paddingTop="8dp"
+    android:paddingBottom="8dp"
+    android:background="?attr/chk_backgroundColor">
+
+    <!-- The ID must match the one used in the Adapter's HeaderViewHolder -->
+    <TextView
+        android:id="@+id/dateHeaderTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/app_font"
+        android:text="Feb 02, 2024"
+        android:textColor="?attr/chk_textColorSecondary"
+        android:textSize="13sp"
+        android:layout_gravity="center"
+        android:textStyle="bold"
+        android:textAllCaps="true"
+        android:letterSpacing="0.05" />
+</LinearLayout>

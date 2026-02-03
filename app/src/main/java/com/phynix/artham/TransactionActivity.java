@@ -22,7 +22,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.github.mikephil.charting.animation.Easing;
 import com.github.mikephil.charting.formatter.ValueFormatter;
@@ -60,6 +59,10 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * Main Transaction Activity for Artham.
+ * Manages transaction list, summary cards, and spending analytics.
+ */
 public class TransactionActivity extends AppCompatActivity {
 
     private static final int STORAGE_PERMISSION_CODE = 101;
@@ -85,7 +88,6 @@ public class TransactionActivity extends AppCompatActivity {
     private FirebaseUser currentUser;
     private SwipeListener swipeListener;
 
-    // Track if we are showing all transactions or month-filtered
     private boolean isShowingAllTransactions = false;
 
     private ActivityResultLauncher<Intent> filterLauncher;
@@ -96,7 +98,6 @@ public class TransactionActivity extends AppCompatActivity {
             result -> {
                 if (result.getResultCode() == RESULT_OK && result.getData() != null) {
                     String action = result.getData().getStringExtra("action");
-
                     if ("delete".equals(action)) {
                         String txId = result.getData().getStringExtra("transaction_id");
                         if (txId != null && viewModel != null) {
@@ -114,7 +115,6 @@ public class TransactionActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         ThemeManager.applyActivityTheme(this);
-
         super.onCreate(savedInstanceState);
         binding = ActivityTransactionBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
@@ -170,9 +170,7 @@ public class TransactionActivity extends AppCompatActivity {
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent event) {
-        if (swipeListener != null) {
-            swipeListener.onTouchEvent(event);
-        }
+        if (swipeListener != null) swipeListener.onTouchEvent(event);
         return super.dispatchTouchEvent(event);
     }
 
@@ -184,6 +182,7 @@ public class TransactionActivity extends AppCompatActivity {
 
         binding.swipeRefreshLayout.setColorSchemeColors(getThemeColor(R.attr.chk_primary_blue));
 
+        // Pie Chart Configuration
         pieChartBinding.pieChart.setUsePercentValues(true);
         pieChartBinding.pieChart.getDescription().setEnabled(false);
         pieChartBinding.pieChart.getLegend().setEnabled(false);
@@ -232,7 +231,7 @@ public class TransactionActivity extends AppCompatActivity {
         List<TransactionModel> transactionsToDisplay;
 
         if (isShowingAllTransactions) {
-            transactionsToDisplay = allTransactions;
+            transactionsToDisplay = new ArrayList<>(allTransactions);
             binding.allTransactionsButton.setText("Monthly");
         } else {
             transactionsToDisplay = allTransactions.stream()
@@ -245,7 +244,6 @@ public class TransactionActivity extends AppCompatActivity {
             binding.allTransactionsButton.setText("All");
         }
 
-        // Update the count TextView with "k" formatting
         binding.transactionCountText.setText("(" + formatCount(transactionsToDisplay.size()) + ")");
 
         updateTotals(transactionsToDisplay);
@@ -256,9 +254,6 @@ public class TransactionActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * Formats counts like 1k, 2k, 1.2k if exceeding 1000.
-     */
     private String formatCount(int count) {
         if (count < 1000) return String.valueOf(count);
         if (count < 1000000) {
@@ -278,10 +273,8 @@ public class TransactionActivity extends AppCompatActivity {
             if ("OUT".equalsIgnoreCase(transaction.getType())) {
                 String category = transaction.getTransactionCategory() != null ? transaction.getTransactionCategory() : "Other";
                 float amount = (float) transaction.getAmount();
-
                 expenseByCategory.put(category, expenseByCategory.getOrDefault(category, 0f) + amount);
                 totalExpense += amount;
-
                 if (expenseByCategory.get(category) > maxExpense) {
                     maxExpense = expenseByCategory.get(category);
                     highestCategory = category;
@@ -306,56 +299,41 @@ public class TransactionActivity extends AppCompatActivity {
         ArrayList<PieEntry> entries = new ArrayList<>();
         for (Map.Entry<String, Float> entry : expenseByCategory.entrySet()) {
             String label = entry.getKey();
-            if (label.length() > 5) {
-                label = label.substring(0, 5) + "..";
-            }
+            if (label.length() > 5) label = label.substring(0, 5) + "..";
             entries.add(new PieEntry(entry.getValue(), label));
         }
 
         ArrayList<Integer> colors = new ArrayList<>();
-        colors.add(Color.parseColor("#EF5350"));
-        colors.add(Color.parseColor("#448AFF"));
-        colors.add(Color.parseColor("#69F0AE"));
-        colors.add(Color.parseColor("#FFCA28"));
-        colors.add(Color.parseColor("#AB47BC"));
-        colors.add(Color.parseColor("#26C6DA"));
-        colors.add(Color.parseColor("#FF7043"));
-        colors.add(Color.parseColor("#8D6E63"));
+        colors.add(Color.parseColor("#EF5350")); colors.add(Color.parseColor("#448AFF"));
+        colors.add(Color.parseColor("#69F0AE")); colors.add(Color.parseColor("#FFCA28"));
+        colors.add(Color.parseColor("#AB47BC")); colors.add(Color.parseColor("#26C6DA"));
+        colors.add(Color.parseColor("#FF7043")); colors.add(Color.parseColor("#8D6E63"));
 
         PieDataSet dataSet = new PieDataSet(entries, "");
         dataSet.setColors(colors);
         dataSet.setSliceSpace(2f);
         dataSet.setSelectionShift(5f);
-
         dataSet.setDrawValues(true);
         dataSet.setXValuePosition(PieDataSet.ValuePosition.OUTSIDE_SLICE);
         dataSet.setYValuePosition(PieDataSet.ValuePosition.OUTSIDE_SLICE);
         dataSet.setValueLinePart1OffsetPercentage(80.f);
         dataSet.setValueLinePart1Length(0.4f);
         dataSet.setValueLinePart2Length(0.5f);
-
         dataSet.setValueLineColor(textColor);
         dataSet.setValueTextColor(textColor);
         dataSet.setValueTextSize(10f);
 
         pieChartBinding.pieChart.setEntryLabelColor(textColor);
         pieChartBinding.pieChart.setEntryLabelTextSize(10f);
-
         dataSet.setValueFormatter(new ValueFormatter() {
-            @Override
-            public String getFormattedValue(float value) {
-                return "";
-            }
+            @Override public String getFormattedValue(float value) { return ""; }
         });
 
         PieData data = new PieData(dataSet);
         pieChartBinding.pieChart.setData(data);
-
-        String centerText = "Total\n₹" + String.format(Locale.US, "%.0f", totalExpense);
-        pieChartBinding.pieChart.setCenterText(centerText);
+        pieChartBinding.pieChart.setCenterText("Total\n₹" + String.format(Locale.US, "%.0f", totalExpense));
         pieChartBinding.pieChart.setCenterTextSize(16f);
         pieChartBinding.pieChart.setCenterTextColor(textColor);
-
         pieChartBinding.pieChart.animateY(1000, Easing.EaseInOutQuad);
         pieChartBinding.pieChart.invalidate();
     }
@@ -376,8 +354,7 @@ public class TransactionActivity extends AppCompatActivity {
         DatabaseReference ref = FirebaseDatabase.getInstance().getReference()
                 .child("users").child(currentUser.getUid()).child("cashbooks").child(currentCashbookId).child("name");
         ref.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
+            @Override public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (snapshot.exists()) currentCashbookName = snapshot.getValue(String.class);
             }
             @Override public void onCancelled(@NonNull DatabaseError error) {}
@@ -396,19 +373,12 @@ public class TransactionActivity extends AppCompatActivity {
     }
 
     private void setupFilterLauncher() {
-        searchBinding.clearSearchButton.setOnClickListener(v -> {
-            searchBinding.searchEditText.setText("");
-        });
-
+        searchBinding.clearSearchButton.setOnClickListener(v -> searchBinding.searchEditText.setText(""));
         searchBinding.searchEditText.addTextChangedListener(new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
             @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (s.length() > 0) {
-                    searchBinding.clearSearchButton.setVisibility(View.VISIBLE);
-                } else {
-                    searchBinding.clearSearchButton.setVisibility(View.GONE);
-                }
-                if(viewModel!=null) viewModel.filter(s.toString(), 0,0,"All",null,null);
+                searchBinding.clearSearchButton.setVisibility(s.length() > 0 ? View.VISIBLE : View.GONE);
+                if(viewModel!=null) viewModel.filter(s.toString(), 0, 0, "All", null, null);
             }
             @Override public void afterTextChanged(Editable s) {}
         });
@@ -438,12 +408,8 @@ public class TransactionActivity extends AppCompatActivity {
             if (result.getResultCode() == RESULT_OK && result.getData() != null) {
                 Intent data = result.getData();
                 if (checkPermissions()) {
-                    exportReport(
-                            data.getLongExtra("startDate", 0),
-                            data.getLongExtra("endDate", 0),
-                            data.getStringExtra("entryType"),
-                            data.getStringExtra("paymentMode")
-                    );
+                    exportReport(data.getLongExtra("startDate", 0), data.getLongExtra("endDate", 0),
+                            data.getStringExtra("entryType"), data.getStringExtra("paymentMode"));
                 } else {
                     requestPermissions();
                 }
@@ -474,23 +440,12 @@ public class TransactionActivity extends AppCompatActivity {
         }
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == STORAGE_PERMISSION_CODE && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) showSnackbar("Permission granted");
-    }
-
     private void setupClickListeners() {
         binding.swipeRefreshLayout.setOnRefreshListener(() -> {
-            if (viewModel != null) {
-                String currentQuery = searchBinding.searchEditText.getText().toString();
-                viewModel.filter(currentQuery, 0, 0, "All", null, null);
-            } else {
-                binding.swipeRefreshLayout.setRefreshing(false);
-            }
+            if (viewModel != null) viewModel.filter(searchBinding.searchEditText.getText().toString(), 0, 0, "All", null, null);
+            else binding.swipeRefreshLayout.setRefreshing(false);
         });
 
-        // "All" Button click listener
         binding.allTransactionsButton.setOnClickListener(v -> {
             isShowingAllTransactions = !isShowingAllTransactions;
             displayDataForCurrentMonth();
@@ -501,21 +456,25 @@ public class TransactionActivity extends AppCompatActivity {
             intent.putExtra("cashbook_id", currentCashbookId);
             startActivity(intent);
         });
+
         pieChartBinding.monthBackwardButton.setOnClickListener(v -> {
-            isShowingAllTransactions = false; // Reset "All" state when navigating months
+            isShowingAllTransactions = false;
             currentMonthCalendar.add(Calendar.MONTH, -1);
             displayDataForCurrentMonth();
         });
+
         pieChartBinding.monthForwardButton.setOnClickListener(v -> {
-            isShowingAllTransactions = false; // Reset "All" state when navigating months
+            isShowingAllTransactions = false;
             currentMonthCalendar.add(Calendar.MONTH, 1);
             displayDataForCurrentMonth();
         });
+
         pieChartBinding.togglePieChartButton.setOnClickListener(v -> {
             boolean visible = pieChartBinding.pieChart.getVisibility() == View.VISIBLE;
             setChartVisibility(!visible);
             getSharedPreferences(PREFS_NAME, MODE_PRIVATE).edit().putBoolean(KEY_SHOW_CHART, !visible).apply();
         });
+
         binding.downloadReportButton.setOnClickListener(v -> {
             if(allTransactions.isEmpty()){ showSnackbar("No data"); return; }
             downloadLauncher.launch(new Intent(this, DownloadOptionsActivity.class));
@@ -556,12 +515,10 @@ public class TransactionActivity extends AppCompatActivity {
             String newId = data.getStringExtra("selected_cashbook_id");
             String newName = data.getStringExtra("cashbook_name");
             if (newId != null && !newId.equals(currentCashbookId)) {
-                currentCashbookId = newId;
-                currentCashbookName = newName;
+                currentCashbookId = newId; currentCashbookName = newName;
                 showSnackbar("Switched to: " + newName);
                 getSharedPreferences("AppPrefs", Context.MODE_PRIVATE).edit().putString("active_cashbook_id_" + currentUser.getUid(), newId).apply();
-                initViewModel();
-                observeViewModel();
+                initViewModel(); observeViewModel();
             }
         }
     }
@@ -569,15 +526,15 @@ public class TransactionActivity extends AppCompatActivity {
     private void setupTransactionFragment() {
         transactionFragment = TransactionItemFragment.newInstance(new ArrayList<>());
         transactionFragment.setOnItemClickListener(new TransactionAdapter.OnItemClickListener() {
-            @Override public void onItemClick(TransactionModel transaction) {
-                Intent intent = new Intent(TransactionActivity.this, TransactionDetailsActivity.class);
-                intent.putExtra(TransactionDetailsActivity.EXTRA_TRANSACTION, transaction);
-                intent.putExtra("cashbook_id", currentCashbookId);
-                detailsLauncher.launch(intent);
+            @Override public void onItemClick(TransactionModel t) {
+                Intent i = new Intent(TransactionActivity.this, TransactionDetailsActivity.class);
+                i.putExtra(TransactionDetailsActivity.EXTRA_TRANSACTION, t);
+                i.putExtra("cashbook_id", currentCashbookId);
+                detailsLauncher.launch(i);
             }
-            @Override public void onEditClick(TransactionModel transaction) { openEditActivity(transaction); }
-            @Override public void onDeleteClick(TransactionModel transaction) { showDeleteConfirmation(transaction); }
-            @Override public void onCopyClick(TransactionModel transaction) { duplicateTransaction(transaction); }
+            @Override public void onEditClick(TransactionModel t) { openEditActivity(t); }
+            @Override public void onDeleteClick(TransactionModel t) { showDeleteConfirmation(t); }
+            @Override public void onCopyClick(TransactionModel t) { duplicateTransaction(t); }
         });
         getSupportFragmentManager().beginTransaction().replace(R.id.transaction_fragment_container, transactionFragment).commit();
     }
