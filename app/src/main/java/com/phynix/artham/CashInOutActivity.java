@@ -72,7 +72,7 @@ public class CashInOutActivity extends AppCompatActivity {
     private EditText amountEditText;
     private Button quickAmount100, quickAmount500, quickAmount1000, quickAmount5000;
     private Button saveEntryButton, saveAndAddNewButton, clearButton;
-    private View loadingOverlay; // Optional: Add a FrameLayout/ProgressBar in XML with this ID if desired
+    private View loadingOverlay;
 
     // Logic & Data
     private CashInOutViewModel viewModel;
@@ -81,7 +81,7 @@ public class CashInOutActivity extends AppCompatActivity {
     private String selectedCategory = "Other";
     private String selectedParty = null;
     private String currentLocation = null;
-    private boolean isSaveAndNew = false; // Flag to handle "Save & New" vs "Save"
+    private boolean isSaveAndNew = false;
 
     // Timer
     private final Handler timeHandler = new Handler(Looper.getMainLooper());
@@ -103,10 +103,8 @@ public class CashInOutActivity extends AppCompatActivity {
 
         if (getSupportActionBar() != null) getSupportActionBar().hide();
 
-        // 1. Init ViewModel
         viewModel = new ViewModelProvider(this).get(CashInOutViewModel.class);
 
-        // 2. Get Extras
         currentCashbookId = getIntent().getStringExtra(Constants.EXTRA_CASHBOOK_ID);
         String transactionType = getIntent().getStringExtra(Constants.EXTRA_TRANSACTION_TYPE);
 
@@ -118,16 +116,13 @@ public class CashInOutActivity extends AppCompatActivity {
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
-        // 3. Setup
         initializeUI();
         initializeDateTime();
         setupClickListeners();
         setupActivityLaunchers();
         setupInitialState(transactionType);
 
-        // 4. Observe ViewModel
         observeViewModel();
-
         startRealTimeClock();
     }
 
@@ -138,7 +133,6 @@ public class CashInOutActivity extends AppCompatActivity {
     }
 
     private void observeViewModel() {
-        // Loading State
         viewModel.getIsLoading().observe(this, isLoading -> {
             saveEntryButton.setEnabled(!isLoading);
             saveAndAddNewButton.setEnabled(!isLoading);
@@ -147,19 +141,18 @@ public class CashInOutActivity extends AppCompatActivity {
             }
         });
 
-        // Error Messages
         viewModel.getErrorMessage().observe(this, error -> {
             if (error != null) {
                 Toast.makeText(this, error, Toast.LENGTH_SHORT).show();
             }
         });
 
-        // Success Event
         viewModel.getOperationSuccess().observe(this, success -> {
             if (success) {
                 Toast.makeText(this, "Entry Saved Successfully", Toast.LENGTH_SHORT).show();
                 if (isSaveAndNew) {
-                    clearForm(true); // Keep transaction type for speed
+                    // Keep transaction type AND payment method for repetitive entries
+                    clearForm(true);
                     isSaveAndNew = false;
                 } else {
                     finish();
@@ -169,7 +162,6 @@ public class CashInOutActivity extends AppCompatActivity {
     }
 
     private void initializeUI() {
-        // Find Views by ID matching your XML
         headerTitle = findViewById(R.id.headerTitle);
         headerSubtitle = findViewById(R.id.headerSubtitle);
         backButton = findViewById(R.id.back_button);
@@ -182,7 +174,7 @@ public class CashInOutActivity extends AppCompatActivity {
         inOutToggle = findViewById(R.id.inOutToggle);
         radioIn = findViewById(R.id.radioIn);
         radioOut = findViewById(R.id.radioOut);
-        swapButton = findViewById(R.id.swap_horiz); // Assuming ID from your layout or includes
+        swapButton = findViewById(R.id.swap_horiz);
 
         cashOnlineToggle = findViewById(R.id.cashOnlineToggle);
         radioCash = findViewById(R.id.radioCash);
@@ -206,7 +198,7 @@ public class CashInOutActivity extends AppCompatActivity {
         selectedCategoryTextView = findViewById(R.id.selectedCategoryTextView);
         categorySelectorLayout = findViewById(R.id.categorySelectorLayout);
 
-        partyTextView = findViewById(R.id.partyTextView); // Note: XML says TextInputEditText
+        partyTextView = findViewById(R.id.partyTextView);
         contactBookButton = findViewById(R.id.contactBookButton);
 
         tagsEditText = findViewById(R.id.tagsEditText);
@@ -215,8 +207,6 @@ public class CashInOutActivity extends AppCompatActivity {
         saveEntryButton = findViewById(R.id.saveEntryButton);
         saveAndAddNewButton = findViewById(R.id.saveAndAddNewButton);
         clearButton = findViewById(R.id.clearButton);
-
-        // Optional: loadingOverlay = findViewById(R.id.loadingOverlay);
     }
 
     private void initializeDateTime() {
@@ -358,6 +348,10 @@ public class CashInOutActivity extends AppCompatActivity {
             radioIn.setChecked(true);
             updateHeaderForTransactionType(Constants.TRANSACTION_TYPE_IN);
         }
+
+        // Requirement: Online mode as default for every fresh page open
+        radioOnline.setChecked(true);
+
         amountEditText.requestFocus();
         selectedCategoryTextView.setText(selectedCategory);
     }
@@ -372,17 +366,13 @@ public class CashInOutActivity extends AppCompatActivity {
         }
     }
 
-    // --- Actions ---
-
     private void saveTransaction(boolean addNew) {
-        // 1. Basic UI Validation
         String amountStr = amountEditText.getText().toString().trim();
         if (TextUtils.isEmpty(amountStr)) {
             amountEditText.setError("Required");
             return;
         }
 
-        // 2. Prepare Data
         TransactionModel transaction = new TransactionModel();
         try {
             transaction.setAmount(Double.parseDouble(amountStr));
@@ -397,15 +387,17 @@ public class CashInOutActivity extends AppCompatActivity {
         transaction.setTimestamp(calendar.getTimeInMillis());
         transaction.setRemark(remarkEditText.getText().toString().trim());
         if (selectedParty != null) transaction.setPartyName(selectedParty);
-        // Add location/tags to model if your TransactionModel supports them
 
         isSaveAndNew = addNew;
-
-        // 3. Delegate to ViewModel
         viewModel.saveTransaction(currentCashbookId, transaction);
     }
 
-    private void clearForm(boolean keepTransactionType) {
+    /**
+     * Clears the input form.
+     * @param preserveContext If true, preserves the current transaction type and payment method (for Save & New).
+     * If false, resets the form to the default state (for Clear button).
+     */
+    private void clearForm(boolean preserveContext) {
         amountEditText.setText("");
         remarkEditText.setText("");
         tagsEditText.setText("");
@@ -418,11 +410,15 @@ public class CashInOutActivity extends AppCompatActivity {
 
         clearQuickAmountSelections();
 
-        if (!keepTransactionType) {
+        if (!preserveContext) {
             radioIn.setChecked(true);
+            // Requirement: Reset to online when user clicks clear manually
+            radioOnline.setChecked(true);
         }
 
-        radioCash.setChecked(true);
+        // If preserveContext is true, we leave radioGroups untouched,
+        // effectively saving the previous selection for the next entry.
+
         taxCheckbox.setChecked(false);
         taxAmountLayout.setVisibility(View.GONE);
 
@@ -430,8 +426,6 @@ public class CashInOutActivity extends AppCompatActivity {
         startRealTimeClock();
         amountEditText.requestFocus();
     }
-
-    // --- Helpers (Pickers, Calculator, etc.) ---
 
     private void showDatePicker() {
         new DatePickerDialog(this,
@@ -490,8 +484,6 @@ public class CashInOutActivity extends AppCompatActivity {
     }
 
     private void showBuiltInCalculator() {
-        // Reuse your existing calculator dialog logic here
-        // For brevity, assuming similar logic to your uploaded file
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         View view = getLayoutInflater().inflate(R.layout.dialog_calculator, null);
         builder.setView(view);
@@ -499,9 +491,6 @@ public class CashInOutActivity extends AppCompatActivity {
 
         TextView display = view.findViewById(R.id.calc_display);
         display.setText(amountEditText.getText().toString());
-
-        // ... (Bind calculator buttons to logic) ...
-        // Ensure to update amountEditText on Done
 
         dialog.show();
     }
