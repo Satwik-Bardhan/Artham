@@ -397,7 +397,7 @@ public class TransactionActivity extends AppCompatActivity {
                         data.getLongExtra("endDate", 0),
                         data.getStringExtra("entryType"),
                         data.getStringArrayListExtra("categories"),
-                        null
+                        data.getStringArrayListExtra("paymentModes") // Fixed: passing List<String> instead of String
                 );
             }
         });
@@ -555,7 +555,8 @@ public class TransactionActivity extends AppCompatActivity {
     private void duplicateTransaction(TransactionModel transaction) {
         TransactionModel newT = new TransactionModel();
         newT.setAmount(transaction.getAmount()); newT.setType(transaction.getType());
-        newT.setTransactionCategory(transaction.getTransactionCategory()); newT.setPaymentMode(transaction.getPaymentMode());
+        newT.setTransactionCategory(transaction.getTransactionCategory());
+        newT.setPaymentMode(transaction.getPaymentMode()); // Correctly preserving Card/Online/Cash
         newT.setPartyName(transaction.getPartyName()); newT.setRemark(transaction.getRemark() + " (Copy)");
         newT.setTimestamp(System.currentTimeMillis()); newT.setTags(transaction.getTags());
         viewModel.addTransaction(newT); showSnackbar("Duplicated");

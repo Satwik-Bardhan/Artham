@@ -71,7 +71,7 @@ public class TransactionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
             case VIEW_TYPE_HEADER:
                 return new HeaderViewHolder(inflater.inflate(R.layout.item_date_header, parent, false));
             case VIEW_TYPE_IN:
-                return new TransactionViewHolder(inflater.inflate(R.layout.item_transaction, parent, false));
+                return new TransactionViewHolder(inflater.inflate(R.layout.item_transaction_income, parent, false));
             default:
                 return new TransactionViewHolder(inflater.inflate(R.layout.item_transaction_expense, parent, false));
         }

@@ -83,6 +83,8 @@ public class HomePage extends AppCompatActivity {
 
     // Tracking for "Last Opened" logic
     private String currentActiveBookId = null;
+    // Added currentCashbookId to resolve symbol error
+    private String currentCashbookId = null;
     private boolean isTimestampUpdatedForCurrentBook = false;
 
     // Front Card Views
@@ -159,11 +161,17 @@ public class HomePage extends AppCompatActivity {
         swipeListener = new SwipeListener(this) {
             @Override
             public void onSwipeLeft() {
-                Intent intent = new Intent(HomePage.this, TransactionActivity.class);
-                intent.putExtra(Constants.EXTRA_CASHBOOK_ID, viewModel.getCurrentCashbookId());
-                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                startActivity(intent);
-                overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
+                // Ensure ID is available before launching
+                String idToUse = (currentCashbookId != null) ? currentCashbookId : viewModel.getCurrentCashbookId();
+                if (idToUse != null) {
+                    Intent intent = new Intent(HomePage.this, TransactionActivity.class);
+                    intent.putExtra(Constants.EXTRA_CASHBOOK_ID, idToUse);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                    startActivity(intent);
+                    overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
+                } else {
+                    showSnackbar("Please wait, loading cashbook...");
+                }
             }
             @Override
             public void onSwipeRight() {
@@ -290,6 +298,9 @@ public class HomePage extends AppCompatActivity {
                 binding.userNameTop.setText(cashbook.getName());
                 binding.currentCashbookText.setText(cashbook.getName());
 
+                // Capture ID for use in intents
+                currentCashbookId = cashbook.getCashbookId();
+
                 // Set Exact Date and Time in IST with Seconds
                 binding.lastOpenedText.setText("Last opened: " + formatExactDateTimeIST(cashbook.getLastModified()));
 
@@ -308,6 +319,7 @@ public class HomePage extends AppCompatActivity {
             } else {
                 binding.userNameTop.setText("No Cashbook");
                 binding.lastOpenedText.setText("No book history available");
+                currentCashbookId = null;
             }
         });
 
@@ -437,10 +449,16 @@ public class HomePage extends AppCompatActivity {
         TextView rowMode = rowView.findViewById(R.id.rowMode);
         TextView rowIn = rowView.findViewById(R.id.rowIn);
         TextView rowOut = rowView.findViewById(R.id.rowOut);
+
         rowCategory.setText(transaction.getTransactionCategory());
-        rowMode.setText(transaction.getPaymentMode());
+
+        // Correctly handle and display Card/Cash/Online mode
+        String mode = transaction.getPaymentMode();
+        rowMode.setText(mode != null && !mode.isEmpty() ? mode : "Online");
+
         rowIn.setGravity(Gravity.CENTER);
         rowOut.setGravity(Gravity.CENTER);
+
         if (Constants.TRANSACTION_TYPE_IN.equalsIgnoreCase(transaction.getType())) {
             rowIn.setText(formatCurrency(transaction.getAmount()));
             rowIn.setTextColor(ThemeUtil.getThemeAttrColor(this, R.attr.chk_incomeColor));
@@ -466,10 +484,11 @@ public class HomePage extends AppCompatActivity {
         binding.bottomNavCard.btnCashbookSwitch.setOnClickListener(v -> openCashbookSwitcher());
         binding.bottomNavCard.btnSettings.setOnClickListener(v -> {
             Intent intent = new Intent(this, SettingsActivity.class);
-            intent.putExtra(Constants.EXTRA_CASHBOOK_ID, viewModel.getCurrentCashbookId());
+            intent.putExtra("cashbook_id", currentCashbookId);
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
             startActivity(intent);
             overridePendingTransition(0, 0);
+            finish();
         });
     }
 

@@ -3,15 +3,15 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingBottom="10dp"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:paddingBottom="10dp">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="12dp"
-        android:text="Payment Method"
         android:fontFamily="@font/app_font"
+        android:text="Payment Method"
         android:textColor="?attr/chk_textColorPrimary"
         android:textSize="16sp"
         android:textStyle="bold" />
@@ -20,26 +20,47 @@
         android:id="@+id/cashOnlineToggle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginBottom="8dp">
+        android:layout_marginBottom="8dp"
+        android:orientation="horizontal">
+
+        <RadioButton
+            android:id="@+id/radioOnline"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:layout_marginEnd="12dp"
+            android:background="@drawable/bg_payment_toggle"
+            android:button="@null"
+            android:checked="true"
+            android:drawableStart="@drawable/ic_account_balance"
+            android:drawablePadding="8dp"
+            android:drawableTint="@color/color_payment_text"
+            android:fontFamily="@font/app_font"
+            android:gravity="center"
+            android:minWidth="100dp"
+            android:paddingHorizontal="16dp"
+            android:text="Online"
+            android:textColor="@color/color_payment_text"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+
 
         <RadioButton
             android:id="@+id/radioCash"
             android:layout_width="wrap_content"
             android:layout_height="48dp"
-            android:minWidth="100dp"
             android:layout_marginEnd="12dp"
             android:background="@drawable/bg_payment_toggle"
             android:button="@null"
-            android:checked="true"
-            android:gravity="center"
-            android:text="Cash"
-            android:fontFamily="@font/app_font"
-            android:textColor="@color/color_payment_text"
+            android:checked="false"
             android:drawableStart="@drawable/ic_money"
             android:drawablePadding="8dp"
             android:drawableTint="@color/color_payment_text"
+            android:fontFamily="@font/app_font"
+            android:gravity="center"
+            android:minWidth="100dp"
             android:paddingHorizontal="16dp"
+            android:text="Cash"
+            android:textColor="@color/color_payment_text"
             android:textSize="14sp"
             android:textStyle="bold" />
 
@@ -47,37 +68,19 @@
             android:id="@+id/radioCard"
             android:layout_width="wrap_content"
             android:layout_height="48dp"
-            android:minWidth="100dp"
-            android:layout_marginEnd="12dp"
             android:background="@drawable/bg_payment_toggle"
             android:button="@null"
-            android:gravity="center"
-            android:text="Card"
-            android:fontFamily="@font/app_font"
-            android:textColor="@color/color_payment_text"
-            android:drawableStart="@drawable/ic_credit_card"
+            android:drawableStart="@drawable/ic_payment"
             android:drawablePadding="8dp"
             android:drawableTint="@color/color_payment_text"
+            android:fontFamily="@font/app_font"
+            android:gravity="center"
+            android:minWidth="100dp"
             android:paddingHorizontal="16dp"
+            android:text="Card"
+            android:textColor="@color/color_payment_text"
             android:textSize="14sp"
             android:textStyle="bold" />
 
-        <RadioButton
-            android:id="@+id/radioOnline"
-            android:layout_width="wrap_content"
-            android:layout_height="48dp"
-            android:minWidth="100dp"
-            android:background="@drawable/bg_payment_toggle"
-            android:button="@null"
-            android:gravity="center"
-            android:text="Online"
-            android:fontFamily="@font/app_font"
-            android:textColor="@color/color_payment_text"
-            android:drawableStart="@drawable/ic_account_balance"
-            android:drawablePadding="8dp"
-            android:drawableTint="@color/color_payment_text"
-            android:paddingHorizontal="16dp"
-            android:textSize="14sp"
-            android:textStyle="bold" />
     </RadioGroup>
 </LinearLayout>
