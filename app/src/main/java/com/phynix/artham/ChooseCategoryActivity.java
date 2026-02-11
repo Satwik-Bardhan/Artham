@@ -3,8 +3,10 @@ package com.phynix.artham;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.TypedValue;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -29,6 +31,7 @@ import com.google.firebase.database.ValueEventListener;
 import com.phynix.artham.adapters.CategoryAdapter;
 import com.phynix.artham.models.CategoryModel;
 import com.phynix.artham.utils.CategoryColorUtil;
+import com.phynix.artham.utils.ThemeManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,12 +53,13 @@ public class ChooseCategoryActivity extends AppCompatActivity
 
     private String previouslySelectedCategoryName = "";
     private String currentCashbookId;
-    private String transactionType = "OUT";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        ThemeManager.applyActivityTheme(this);
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_category_selection);
+        setContentView(R.layout.activity_category_selection); // Make sure you have this layout
+
         if (getSupportActionBar() != null) getSupportActionBar().hide();
 
         FirebaseAuth mAuth = FirebaseAuth.getInstance();
@@ -63,16 +67,17 @@ public class ChooseCategoryActivity extends AppCompatActivity
 
         currentCashbookId = getIntent().getStringExtra("cashbook_id");
         previouslySelectedCategoryName = getIntent().getStringExtra("selected_category");
-        if (getIntent().hasExtra("transaction_type")) {
-            transactionType = getIntent().getStringExtra("transaction_type");
-        }
 
-        // Firebase Setup
-        if (currentUser != null && currentCashbookId != null) {
-            userCategoriesRef = FirebaseDatabase.getInstance().getReference("users")
-                    .child(currentUser.getUid()).child("cashbooks")
-                    .child(currentCashbookId).child("categories")
-                    .child(transactionType);
+        // Firebase Setup - [FIX] Unified Categories (No IN/OUT split)
+        if (currentUser != null) {
+            if (currentCashbookId != null && !currentCashbookId.isEmpty()) {
+                userCategoriesRef = FirebaseDatabase.getInstance().getReference("users")
+                        .child(currentUser.getUid()).child("cashbooks")
+                        .child(currentCashbookId).child("categories");
+            } else {
+                userCategoriesRef = FirebaseDatabase.getInstance().getReference("users")
+                        .child(currentUser.getUid()).child("categories");
+            }
         }
 
         initializeUI();
@@ -90,13 +95,14 @@ public class ChooseCategoryActivity extends AppCompatActivity
         quickTransportButton = findViewById(R.id.quickCategoryTransport);
         quickShoppingButton = findViewById(R.id.quickCategoryShopping);
 
-        if (previouslySelectedCategoryName != null && (previouslySelectedCategoryName.isEmpty() || previouslySelectedCategoryName.equals("No Category"))) {
-            radioNoCategory.setChecked(true);
+        if (previouslySelectedCategoryName != null &&
+                (previouslySelectedCategoryName.isEmpty() || previouslySelectedCategoryName.equals("No Category"))) {
+            if (radioNoCategory != null) radioNoCategory.setChecked(true);
         }
     }
 
     private void setupRecyclerView() {
-        // [UPDATED] Use GridLayoutManager with 2 columns
+        // Use GridLayoutManager with 2 columns
         categoriesRecyclerView.setLayoutManager(new GridLayoutManager(this, 2));
 
         categoryAdapter = new CategoryAdapter(allCategories, this, this, this);
@@ -104,22 +110,27 @@ public class ChooseCategoryActivity extends AppCompatActivity
     }
 
     private void setupListeners() {
-        findViewById(R.id.backButton).setOnClickListener(v -> finish());
+        View backButton = findViewById(R.id.backButton);
+        if (backButton != null) backButton.setOnClickListener(v -> finish());
 
-        addNewCategoryButton.setOnClickListener(v -> {
-            if (userCategoriesRef == null) {
-                Toast.makeText(this, "Cashbook ID missing", Toast.LENGTH_SHORT).show();
-            } else {
-                showAddCategoryDialog(null); // Add Mode
-            }
-        });
+        if (addNewCategoryButton != null) {
+            addNewCategoryButton.setOnClickListener(v -> {
+                // Navigate to the full Create Category Page instead of showing a basic dialog
+                Intent intent = new Intent(this, CreateCategoryActivity.class);
+                intent.putExtra("cashbook_id", currentCashbookId);
+                startActivity(intent);
+            });
+        }
 
-        findViewById(R.id.noCategoryClickable).setOnClickListener(v -> {
-            radioNoCategory.setChecked(true);
-            returnCategory("No Category");
-        });
+        View noCatClickable = findViewById(R.id.noCategoryClickable);
+        if (noCatClickable != null) {
+            noCatClickable.setOnClickListener(v -> {
+                if (radioNoCategory != null) radioNoCategory.setChecked(true);
+                returnCategory("No Category");
+            });
+        }
 
-        if (quickFoodButton != null) quickFoodButton.setOnClickListener(v -> returnCategory("Food"));
+        if (quickFoodButton != null) quickFoodButton.setOnClickListener(v -> returnCategory("Food & Dining"));
         if (quickTransportButton != null) quickTransportButton.setOnClickListener(v -> returnCategory("Transport"));
         if (quickShoppingButton != null) quickShoppingButton.setOnClickListener(v -> returnCategory("Shopping"));
     }
@@ -144,13 +155,16 @@ public class ChooseCategoryActivity extends AppCompatActivity
 
     private void populatePredefinedCategories() {
         allCategories.clear();
-        String[] predefinedNames = getResources().getStringArray(R.array.transaction_categories);
+
+        // Universal Defaults
+        String[] predefinedNames = {
+                "Food & Dining", "Transport", "Bills & Utility",
+                "Salary", "Shopping", "Entertainment", "Health",
+                "Education", "Personal", "Other"
+        };
+
         for (String name : predefinedNames) {
-            if (!"Select Category".equals(name) && !"No Category".equals(name)) {
-                int colorInt = CategoryColorUtil.getCategoryColor(this, name);
-                String colorHex = String.format("#%06X", (0xFFFFFF & colorInt));
-                allCategories.add(new CategoryModel(name, colorHex, false));
-            }
+            allCategories.add(new CategoryModel(name, "UNIVERSAL"));
         }
         updateUI();
     }
@@ -159,33 +173,53 @@ public class ChooseCategoryActivity extends AppCompatActivity
         categoriesListener = userCategoriesRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                populatePredefinedCategories();
+                // If there are no custom categories, show the defaults
+                if (!dataSnapshot.exists()) {
+                    populatePredefinedCategories();
+                    return;
+                }
+
+                allCategories.clear();
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                     CategoryModel custom = snapshot.getValue(CategoryModel.class);
-                    if (custom != null) allCategories.add(custom);
+                    if (custom != null) {
+                        custom.setId(snapshot.getKey());
+                        allCategories.add(custom);
+                    }
                 }
                 updateUI();
             }
 
             @Override
-            public void onCancelled(@NonNull DatabaseError error) { }
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(ChooseCategoryActivity.this, "Failed to load", Toast.LENGTH_SHORT).show();
+            }
         });
     }
 
     @SuppressLint("NotifyDataSetChanged")
     private void updateUI() {
-        categoryAdapter.notifyDataSetChanged();
-        categoryCountTextView.setText(allCategories.size() + " items");
+        if (categoryCountTextView != null) {
+            categoryCountTextView.setText(allCategories.size() + " items");
+        }
 
+        // Set the currently selected item visually
         if (previouslySelectedCategoryName != null && !previouslySelectedCategoryName.isEmpty()) {
+            boolean found = false;
             for (CategoryModel c : allCategories) {
                 if (c.getName().equals(previouslySelectedCategoryName)) {
                     categoryAdapter.setSelectedCategory(c);
-                    radioNoCategory.setChecked(false);
+                    if (radioNoCategory != null) radioNoCategory.setChecked(false);
+                    found = true;
                     break;
                 }
             }
+            if (!found && radioNoCategory != null) {
+                radioNoCategory.setChecked(true); // Fallback
+            }
         }
+
+        categoryAdapter.notifyDataSetChanged();
     }
 
     // --- Actions ---
@@ -197,7 +231,11 @@ public class ChooseCategoryActivity extends AppCompatActivity
 
     @Override
     public void onEditCategory(CategoryModel category) {
-        showAddCategoryDialog(category); // Edit Mode
+        // [UPDATE] Use the new Create/Edit Screen instead of dialog
+        Intent intent = new Intent(this, CreateCategoryActivity.class);
+        intent.putExtra("cashbook_id", currentCashbookId);
+        intent.putExtra("EDIT_NAME", category.getName());
+        startActivity(intent);
     }
 
     @Override
@@ -205,7 +243,11 @@ public class ChooseCategoryActivity extends AppCompatActivity
         new AlertDialog.Builder(this)
                 .setTitle("Delete")
                 .setMessage("Delete " + category.getName() + "?")
-                .setPositiveButton("Delete", (d, w) -> userCategoriesRef.child(category.getName()).removeValue())
+                .setPositiveButton("Delete", (d, w) -> {
+                    if (userCategoriesRef != null && category.getName() != null) {
+                        userCategoriesRef.child(category.getName()).removeValue();
+                    }
+                })
                 .setNegativeButton("Cancel", null)
                 .show();
     }
@@ -215,55 +257,5 @@ public class ChooseCategoryActivity extends AppCompatActivity
         result.putExtra("selected_category", name);
         setResult(Activity.RESULT_OK, result);
         finish();
-    }
-
-    private void showAddCategoryDialog(CategoryModel categoryToEdit) {
-        final boolean isEdit = categoryToEdit != null;
-
-        LinearLayout container = new LinearLayout(this);
-        container.setOrientation(LinearLayout.VERTICAL);
-        int pad = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24, getResources().getDisplayMetrics());
-        container.setPadding(pad, pad, pad, 0);
-
-        final EditText input = new EditText(this);
-        input.setHint("Category Name");
-        if (isEdit) {
-            input.setText(categoryToEdit.getName());
-            input.setSelection(input.getText().length());
-        }
-        container.addView(input);
-
-        // Holder for the selected color
-        final String[] tempColorHex = {isEdit ? categoryToEdit.getColorHex() : "#2196F3"};
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(this)
-                .setTitle(isEdit ? "Edit Category" : "Add New Category")
-                .setView(container)
-                .setPositiveButton("Save", (dialog, which) -> {
-                    String name = input.getText().toString().trim();
-                    if (!name.isEmpty()) {
-                        saveCategoryToFirebase(name, tempColorHex[0], categoryToEdit);
-                    }
-                })
-                .setNeutralButton("Choose Color", null) // Overridden below
-                .setNegativeButton("Cancel", null);
-
-        AlertDialog dialog = builder.create();
-        dialog.show();
-
-        // Handle Color Picker (Neutral Button)
-    }
-
-    private void saveCategoryToFirebase(String newName, String colorHex, CategoryModel oldCategory) {
-        if (userCategoriesRef == null) return;
-
-        if (oldCategory != null && !oldCategory.getName().equals(newName)) {
-            userCategoriesRef.child(oldCategory.getName()).removeValue();
-        }
-
-        CategoryModel newCat = new CategoryModel(newName, colorHex, true);
-        userCategoriesRef.child(newName).setValue(newCat)
-                .addOnSuccessListener(aVoid -> Toast.makeText(this, "Saved!", Toast.LENGTH_SHORT).show())
-                .addOnFailureListener(e -> Toast.makeText(this, "Failed", Toast.LENGTH_SHORT).show());
     }
 }

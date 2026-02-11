@@ -7,7 +7,7 @@ public class TransactionModel implements Serializable {
     private String transactionCategory;
     private String partyName;
     private double amount;
-    private String type; // "IN" or "OUT"
+    private String type; // "IN" or "OUT" (or "Income"/"Expense")
     private String paymentMode; // e.g., "Cash", "Online", "Card"
     private String remark;
     private long timestamp;

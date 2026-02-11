@@ -1,45 +1,90 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
     android:gravity="center_vertical"
-    android:paddingVertical="4dp">
+    android:paddingVertical="12dp"
+    android:paddingHorizontal="8dp">
 
-    <View
-        android:id="@+id/colorIndicator"
-        android:layout_width="12dp"
-        android:layout_height="12dp"
-        android:background="@drawable/legend_circle"
-        android:layout_marginEnd="8dp" />
+    <ImageView
+        android:id="@+id/categoryIcon"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:padding="8dp"
+        android:src="@drawable/ic_category"
+        android:background="@drawable/circle_shape"
+        android:backgroundTint="?attr/colorPrimary"
+        app:tint="@android:color/white"
+        android:layout_marginEnd="12dp" />
 
-    <TextView
-        android:id="@+id/categoryName"
+    <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:text="Food"
-        android:fontFamily="@font/app_font"
-        android:textColor="?attr/chk_textColorPrimary"
-        android:textSize="14sp" />
+        android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/categoryAmount"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="₹5,000"
-        android:fontFamily="@font/app_font"
-        android:textColor="?attr/chk_textColorSecondary"
-        android:textSize="14sp" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="6dp">
 
-    <TextView
-        android:id="@+id/categoryPercentage"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="40%"
-        android:fontFamily="@font/app_font"
-        android:textColor="?attr/chk_balanceColor"
-        android:textSize="14sp"
-        android:textStyle="bold"
-        android:layout_marginStart="8dp" />
+            <TextView
+                android:id="@+id/categoryName"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                tools:text="Food &amp; Dining"
+                android:textColor="?attr/chk_textColorPrimary"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:fontFamily="@font/app_font"
+                android:maxLines="1"
+                android:ellipsize="end" />
+
+            <TextView
+                android:id="@+id/categoryAmount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:text="₹12,400"
+                android:textColor="?attr/chk_textColorPrimary"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:fontFamily="@font/app_font"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <ProgressBar
+                android:id="@+id/categoryProgressBar"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="0dp"
+                android:layout_height="6dp"
+                android:layout_weight="1"
+                android:progress="45"
+                android:max="100"
+                android:layout_marginEnd="12dp"
+                android:progressDrawable="@drawable/custom_progress_drawable" />
+
+            <TextView
+                android:id="@+id/categoryPercentage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:text="45%"
+                android:textColor="?attr/chk_textColorSecondary"
+                android:textSize="12sp"
+                android:fontFamily="@font/app_font"
+                android:minWidth="30dp"
+                android:gravity="end"/>
+        </LinearLayout>
+
+    </LinearLayout>
+
 </LinearLayout>

@@ -9,6 +9,8 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
@@ -30,6 +32,9 @@ public class HomePageViewModel extends AndroidViewModel {
 
     private final DataRepository repository;
     private final ExecutorService executorService;
+    private final FirebaseAuth mAuth;
+    private FirebaseAuth.AuthStateListener authListener;
+
     private String currentUserId;
     private String currentCashbookId;
 
@@ -60,13 +65,25 @@ public class HomePageViewModel extends AndroidViewModel {
         super(application);
         repository = DataRepository.getInstance(application);
         executorService = Executors.newSingleThreadExecutor();
+        mAuth = FirebaseAuth.getInstance();
 
-        if (repository.isUserAuthenticated()) {
-            currentUserId = repository.getCurrentUserId();
-            loadCashbooks();
-        } else {
-            errorMessage.setValue("User not logged in.");
-        }
+        // Initialize Auth State Listener
+        // This ensures we wait for Firebase to confirm the session before loading data
+        authListener = firebaseAuth -> {
+            FirebaseUser user = firebaseAuth.getCurrentUser();
+            if (user != null) {
+                // User is authenticated, proceed to load data
+                currentUserId = user.getUid();
+                loadCashbooks();
+            } else {
+                // User is signed out or session invalid
+                errorMessage.setValue("User session expired or not found.");
+                isLoading.setValue(false);
+            }
+        };
+
+        // Attach the listener immediately
+        mAuth.addAuthStateListener(authListener);
     }
 
     // ============================================
@@ -93,6 +110,9 @@ public class HomePageViewModel extends AndroidViewModel {
     // ============================================
 
     private void loadCashbooks() {
+        // Prevent reloading if we are already loading or don't have an ID
+        if (currentUserId == null) return;
+
         isLoading.setValue(true);
         repository.getCashbooks(data -> {
             cashbooks.setValue(data);
@@ -109,6 +129,8 @@ public class HomePageViewModel extends AndroidViewModel {
             if (targetId != null) {
                 switchCashbook(targetId);
             } else {
+                // CRITICAL FIX: If no cashbooks exist, notify UI by setting null
+                activeCashbook.setValue(null);
                 isLoading.setValue(false);
             }
         }, error -> {
@@ -118,7 +140,7 @@ public class HomePageViewModel extends AndroidViewModel {
     }
 
     public void switchCashbook(String cashbookId) {
-        if (cashbookId == null) return;
+        if (cashbookId == null || currentUserId == null) return;
 
         if (activeTransactionListener != null && activeTransactionRef != null) {
             activeTransactionRef.removeEventListener(activeTransactionListener);
@@ -203,11 +225,13 @@ public class HomePageViewModel extends AndroidViewModel {
     }
 
     private void saveActiveCashbookIdToPrefs(String cashbookId) {
+        if (currentUserId == null) return;
         SharedPreferences prefs = getApplication().getSharedPreferences(Constants.PREF_NAME, Context.MODE_PRIVATE);
         prefs.edit().putString(Constants.PREF_ACTIVE_CASHBOOK_PREFIX + currentUserId, cashbookId).apply();
     }
 
     private String getActiveCashbookIdFromPrefs() {
+        if (currentUserId == null) return null;
         SharedPreferences prefs = getApplication().getSharedPreferences(Constants.PREF_NAME, Context.MODE_PRIVATE);
         return prefs.getString(Constants.PREF_ACTIVE_CASHBOOK_PREFIX + currentUserId, null);
     }
@@ -215,6 +239,12 @@ public class HomePageViewModel extends AndroidViewModel {
     @Override
     protected void onCleared() {
         super.onCleared();
+        // Remove Firebase Auth Listener
+        if (mAuth != null && authListener != null) {
+            mAuth.removeAuthStateListener(authListener);
+        }
+
+        // Remove Database Listeners
         if (activeTransactionListener != null && activeTransactionRef != null) {
             activeTransactionRef.removeEventListener(activeTransactionListener);
         }

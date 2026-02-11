@@ -15,37 +15,34 @@ public class SigninViewModel extends ViewModel {
     private final FirebaseAuth mAuth;
     private final MutableLiveData<FirebaseUser> _user = new MutableLiveData<>();
     private final MutableLiveData<String> _error = new MutableLiveData<>();
-
-    // Initialize with false so the UI knows not to show the loader immediately
     private final MutableLiveData<Boolean> _loading = new MutableLiveData<>(false);
-
-    public LiveData<FirebaseUser> getUser() { return _user; }
-    public LiveData<String> getError() { return _error; }
-    public LiveData<Boolean> getLoading() { return _loading; }
 
     public SigninViewModel() {
         mAuth = FirebaseAuth.getInstance();
     }
 
-    /**
-     * Updates the loading state.
-     * This fixes the "cannot find symbol: method setLoading(boolean)" error.
-     */
+    public LiveData<FirebaseUser> getUser() { return _user; }
+    public LiveData<String> getError() { return _error; }
+    public LiveData<Boolean> getLoading() { return _loading; }
+
     public void setLoading(boolean isLoading) {
         _loading.setValue(isLoading);
     }
 
-    // --- Google Sign In Logic ---
     public void firebaseAuthWithGoogle(GoogleSignInAccount account) {
         setLoading(true);
         AuthCredential credential = GoogleAuthProvider.getCredential(account.getIdToken(), null);
         mAuth.signInWithCredential(credential)
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
+                        // Success: The Activity observer will handle navigation
                         _user.setValue(mAuth.getCurrentUser());
                     } else {
-                        _error.setValue(task.getException() != null ?
-                                task.getException().getMessage() : "Google authentication failed.");
+                        String msg = "Authentication failed.";
+                        if (task.getException() != null) {
+                            msg = task.getException().getMessage();
+                        }
+                        _error.setValue(msg);
                     }
                     setLoading(false);
                 });

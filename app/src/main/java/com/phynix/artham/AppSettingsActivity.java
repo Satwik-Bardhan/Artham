@@ -21,8 +21,9 @@ public class AppSettingsActivity extends AppCompatActivity {
     private static final String PREFS_NAME = "AppSettingsPrefs";
     private static final String KEY_CALCULATOR = "calculator_enabled";
 
+    // UI Elements
     private SwitchMaterial calculatorSwitch;
-    private LinearLayout dataBackupLayout, languageLayout, themeLayout;
+    private LinearLayout dataBackupLayout, languageLayout, themeLayout, manageCategoriesLayout;
     private TextView currentLanguageTextView, currentThemeTextView;
 
     // To track theme changes upon return
@@ -30,7 +31,7 @@ public class AppSettingsActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        // [FIX] Apply Theme BEFORE super.onCreate()
+        // [IMPORTANT] Apply Theme BEFORE super.onCreate()
         ThemeManager.applyActivityTheme(this);
 
         super.onCreate(savedInstanceState);
@@ -57,7 +58,6 @@ public class AppSettingsActivity extends AppCompatActivity {
             // Theme changed, recreate this activity to apply new colors immediately
             recreate();
         } else {
-            // Just update the text label if the theme didn't change but maybe something else did
             updateThemeLabel();
         }
     }
@@ -70,6 +70,10 @@ public class AppSettingsActivity extends AppCompatActivity {
 
         themeLayout = findViewById(R.id.themeLayout);
         currentThemeTextView = findViewById(R.id.currentTheme);
+
+        // [NEW] Bind the Category Management Layout
+        // Note: Ensure android:id="@+id/manageCategoriesLayout" exists in activity_app_settings.xml
+        manageCategoriesLayout = findViewById(R.id.manageCategoriesLayout);
     }
 
     private void loadSettings() {
@@ -120,6 +124,14 @@ public class AppSettingsActivity extends AppCompatActivity {
         if (themeLayout != null) {
             themeLayout.setOnClickListener(v -> {
                 Intent intent = new Intent(AppSettingsActivity.this, ThemeSelectionActivity.class);
+                startActivity(intent);
+            });
+        }
+
+        // [NEW] Open CategoryManagementActivity
+        if (manageCategoriesLayout != null) {
+            manageCategoriesLayout.setOnClickListener(v -> {
+                Intent intent = new Intent(AppSettingsActivity.this, CategoryManagementActivity.class);
                 startActivity(intent);
             });
         }

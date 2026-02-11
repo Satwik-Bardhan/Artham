@@ -14,13 +14,25 @@
     android:clickable="true"
     android:focusable="true">
 
-    <ImageView
-        android:id="@+id/categoryIcon"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
-        android:src="@drawable/ic_category"
-        app:tint="?attr/chk_textColorPrimary"
-        android:contentDescription="Category Icon" />
+    <!--
+      Container for the unique category color and icon.
+      Updated to include the circular colored background.
+    -->
+    <FrameLayout
+        android:id="@+id/iconContainer"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:background="@drawable/circle_shape">
+
+        <ImageView
+            android:id="@+id/categoryIcon"
+            android:layout_width="18dp"
+            android:layout_height="18dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_category"
+            app:tint="@android:color/white"
+            android:contentDescription="Category Icon" />
+    </FrameLayout>
 
     <TextView
         android:id="@+id/categoryName"
@@ -29,6 +41,7 @@
         android:layout_weight="1"
         android:layout_marginStart="12dp"
         android:text="Category"
+        android:fontFamily="@font/app_font"
         android:textColor="?attr/chk_textColorPrimary"
         android:textSize="14sp"
         android:textStyle="bold" />

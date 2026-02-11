@@ -5,7 +5,9 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import com.phynix.artham.R;
 import com.phynix.artham.models.CashbookModel;
+import com.phynix.artham.models.CategoryModel;
 import com.phynix.artham.models.TransactionModel;
 import com.phynix.artham.utils.Constants;
 import com.google.firebase.auth.FirebaseAuth;
@@ -18,7 +20,9 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * DataRepository - Centralized data access layer for CashFlow app
@@ -69,6 +73,118 @@ public class DataRepository {
             return userRef;
         }
         return null;
+    }
+
+    // --- CATEGORY MANAGEMENT ---
+
+    /**
+     * Creates default categories using the centralized list.
+     */
+    public void createDefaultCategories(String cashbookId, DataCallback<Boolean> callback) {
+        DatabaseReference userDatabase = getUserDatabaseRef();
+        if (userDatabase == null || cashbookId == null) {
+            if (callback != null) callback.onCallback(false);
+            return;
+        }
+
+        DatabaseReference categoriesRef = userDatabase.child(Constants.NODE_CASHBOOKS).child(cashbookId).child("categories");
+
+        // Retrieve the centralized list of default categories
+        List<CategoryModel> defaults = getStandardCategories();
+
+        Map<String, Object> updates = new HashMap<>();
+        for (CategoryModel cat : defaults) {
+            String key = categoriesRef.push().getKey();
+            cat.setId(key);
+            if (key != null) {
+                updates.put(key, cat);
+            }
+        }
+
+        categoriesRef.updateChildren(updates)
+                .addOnSuccessListener(aVoid -> {
+                    if (callback != null) callback.onCallback(true);
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Failed to create default categories", e);
+                    if (callback != null) callback.onCallback(false);
+                });
+    }
+
+    /**
+     * CENTRALIZED CONFIGURATION: Define your default categories here.
+     * Stacked in one place for easy modification of Names, Types, Colors, and Icons.
+     */
+    private List<CategoryModel> getStandardCategories() {
+        List<CategoryModel> categories = new ArrayList<>();
+
+        // --- EXPENSES ---
+        categories.add(new CategoryModel("Food & Dining", "Expense", "#FF5722", R.drawable.ic_food_dining, false));
+        categories.add(new CategoryModel("Bills & Utility", "Expense", "#FFC107", R.drawable.ic_utilities, false));
+        categories.add(new CategoryModel("Transportation", "Expense", "#3F51B5", R.drawable.ic_transportation, false));
+        categories.add(new CategoryModel("Rent", "Expense", "#009688", R.drawable.ic_home, false));
+        categories.add(new CategoryModel("Entertainment", "Expense", "#9C27B0", R.drawable.ic_entertainment, false));
+        categories.add(new CategoryModel("Shopping", "Expense", "#E91E63", R.drawable.ic_receipt, false));
+        categories.add(new CategoryModel("Medical", "Expense", "#F44336", R.drawable.ic_shield_check, false));
+        categories.add(new CategoryModel("Education", "Expense", "#795548", R.drawable.ic_book, false));
+        categories.add(new CategoryModel("Personal", "Expense", "#607D8B", R.drawable.ic_person, false));
+        categories.add(new CategoryModel("Other", "Expense", "#9E9E9E", R.drawable.ic_all_inclusive, false));
+
+        // --- INCOME ---
+        categories.add(new CategoryModel("Salary", "Income", "#4CAF50", R.drawable.ic_money, false));
+        categories.add(new CategoryModel("Business", "Income", "#2196F3", R.drawable.ic_bar_graph, false));
+        categories.add(new CategoryModel("Investment", "Income", "#00BCD4", R.drawable.ic_trending_up, false));
+        categories.add(new CategoryModel("Gifts", "Income", "#FFEB3B", R.drawable.ic_star_filled, false));
+
+        return categories;
+    }
+
+    public void getCategories(String cashbookId, DataCallback<List<CategoryModel>> callback) {
+        DatabaseReference userDatabase = getUserDatabaseRef();
+        if (userDatabase == null || cashbookId == null) {
+            if (callback != null) callback.onCallback(new ArrayList<>());
+            return;
+        }
+
+        userDatabase.child(Constants.NODE_CASHBOOKS).child(cashbookId).child("categories")
+                .addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        List<CategoryModel> categories = new ArrayList<>();
+                        for (DataSnapshot postSnapshot : snapshot.getChildren()) {
+                            CategoryModel category = postSnapshot.getValue(CategoryModel.class);
+                            if (category != null) {
+                                category.setId(postSnapshot.getKey());
+                                categories.add(category);
+                            }
+                        }
+                        if (categories.isEmpty()) {
+                            // If no categories exist, initialize defaults
+                            createDefaultCategories(cashbookId, null);
+                        } else {
+                            callback.onCallback(categories);
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        Log.e(TAG, "getCategories cancelled", error.toException());
+                    }
+                });
+    }
+
+    public void addCategory(String cashbookId, CategoryModel category, DataCallback<Boolean> callback) {
+        DatabaseReference userDatabase = getUserDatabaseRef();
+        if (userDatabase == null || cashbookId == null) {
+            if (callback != null) callback.onCallback(false);
+            return;
+        }
+
+        DatabaseReference ref = userDatabase.child(Constants.NODE_CASHBOOKS).child(cashbookId).child("categories").push();
+        category.setId(ref.getKey());
+        ref.setValue(category)
+                .addOnSuccessListener(aVoid -> callback.onCallback(true))
+                .addOnFailureListener(e -> callback.onCallback(false));
     }
 
     // --- TRANSACTION METHODS ---
@@ -280,7 +396,10 @@ public class DataRepository {
 
             userDatabase.child(Constants.NODE_CASHBOOKS).child(cashbookId).setValue(newCashbook)
                     .addOnSuccessListener(aVoid -> {
-                        if (callback != null) callback.onCallback(cashbookId);
+                        // Initialize Categories for the new cashbook
+                        createDefaultCategories(cashbookId, success -> {
+                            if (callback != null) callback.onCallback(cashbookId);
+                        });
                     })
                     .addOnFailureListener(e -> {
                         Log.e(TAG, "Error creating cashbook", e);
@@ -336,7 +455,10 @@ public class DataRepository {
 
                                 userDatabase.child(Constants.NODE_CASHBOOKS).child(newCashbookId).setValue(originalCashbook)
                                         .addOnSuccessListener(aVoid -> {
-                                            if (callback != null) callback.onCallback(newCashbookId);
+                                            // Initialize categories for duplicated cashbook
+                                            createDefaultCategories(newCashbookId, success -> {
+                                                if (callback != null) callback.onCallback(newCashbookId);
+                                            });
                                         })
                                         .addOnFailureListener(e -> {
                                             Log.e(TAG, "Error duplicating cashbook", e);

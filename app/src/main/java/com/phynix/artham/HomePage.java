@@ -68,7 +68,6 @@ import java.util.TimeZone;
 public class HomePage extends AppCompatActivity {
 
     private static final String TAG = "HomePage";
-    private static final int REQUEST_CODE_CASHBOOK_SWITCH = 1001;
     private static final int PERMISSION_REQUEST_CODE_NOTIFICATIONS = 101;
 
     // ViewBinding
@@ -83,7 +82,6 @@ public class HomePage extends AppCompatActivity {
 
     // Tracking for "Last Opened" logic
     private String currentActiveBookId = null;
-    // Added currentCashbookId to resolve symbol error
     private String currentCashbookId = null;
     private boolean isTimestampUpdatedForCurrentBook = false;
 
@@ -104,10 +102,32 @@ public class HomePage extends AppCompatActivity {
 
     private boolean isBackVisible = false;
 
-    // Launchers
+    // --- Launchers ---
+
+    // Launcher for Transaction Details
     private final ActivityResultLauncher<Intent> detailsLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
-            result -> {}
+            result -> {
+                // Handle any result from details if needed (e.g., refresh)
+            }
+    );
+
+    // Launcher for Cashbook Switcher
+    private final ActivityResultLauncher<Intent> cashbookSwitchLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                    String newId = result.getData().getStringExtra("selected_cashbook_id");
+                    String newName = result.getData().getStringExtra("cashbook_name");
+
+                    if (newId != null) {
+                        currentActiveBookId = null;
+                        isTimestampUpdatedForCurrentBook = false;
+                        viewModel.switchCashbook(newId);
+                        showSnackbar("Switched to: " + (newName != null ? newName : "New Cashbook"));
+                    }
+                }
+            }
     );
 
     @Override
@@ -122,7 +142,10 @@ public class HomePage extends AppCompatActivity {
             getSupportActionBar().hide();
         }
 
+        // Initialize ViewModel
+        // Note: AndroidViewModelFactory will handle the Application context automatically
         viewModel = new ViewModelProvider(this).get(HomePageViewModel.class);
+
         currencyFormat = NumberFormat.getCurrencyInstance(new Locale("en", "IN"));
 
         if (FirebaseAuth.getInstance().getCurrentUser() == null) {
@@ -145,6 +168,7 @@ public class HomePage extends AppCompatActivity {
     private void setupStickyScrollLogic() {
         binding.mainScrollView.setOnScrollChangeListener((NestedScrollView.OnScrollChangeListener) (v, scrollX, scrollY, oldScrollX, oldScrollY) -> {
             int buttonsTop = binding.originalButtons.getRoot().getTop();
+            // Show sticky header when original buttons are scrolled out of view
             if (scrollY >= buttonsTop) {
                 if (binding.stickyActionButtonsContainer.getVisibility() != View.VISIBLE) {
                     binding.stickyActionButtonsContainer.setVisibility(View.VISIBLE);
@@ -161,7 +185,7 @@ public class HomePage extends AppCompatActivity {
         swipeListener = new SwipeListener(this) {
             @Override
             public void onSwipeLeft() {
-                // Ensure ID is available before launching
+                // Swipe Left -> Go to Transactions List (if loaded)
                 String idToUse = (currentCashbookId != null) ? currentCashbookId : viewModel.getCurrentCashbookId();
                 if (idToUse != null) {
                     Intent intent = new Intent(HomePage.this, TransactionActivity.class);
@@ -175,6 +199,7 @@ public class HomePage extends AppCompatActivity {
             }
             @Override
             public void onSwipeRight() {
+                // Swipe Right -> Open Cashbook Switcher
                 openCashbookSwitcher();
                 overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
             }
@@ -248,12 +273,15 @@ public class HomePage extends AppCompatActivity {
     private void flipCard() {
         final View visibleView = isBackVisible ? balanceCardBack : balanceCardFront;
         final View invisibleView = isBackVisible ? balanceCardFront : balanceCardBack;
+
         ObjectAnimator flipOut = ObjectAnimator.ofFloat(visibleView, "rotationY", 0f, 90f);
         flipOut.setDuration(250);
         flipOut.setInterpolator(new AccelerateDecelerateInterpolator());
+
         final ObjectAnimator flipIn = ObjectAnimator.ofFloat(invisibleView, "rotationY", -90f, 0f);
         flipIn.setDuration(250);
         flipIn.setInterpolator(new DecelerateInterpolator());
+
         flipOut.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
@@ -295,16 +323,21 @@ public class HomePage extends AppCompatActivity {
 
         viewModel.getActiveCashbook().observe(this, cashbook -> {
             if (cashbook != null) {
+                // NORMAL STATE: Data exists
                 binding.userNameTop.setText(cashbook.getName());
                 binding.currentCashbookText.setText(cashbook.getName());
 
-                // Capture ID for use in intents
                 currentCashbookId = cashbook.getCashbookId();
 
                 // Set Exact Date and Time in IST with Seconds
                 binding.lastOpenedText.setText("Last opened: " + formatExactDateTimeIST(cashbook.getLastModified()));
 
                 if (backCashbookIdText != null) backCashbookIdText.setText(cashbook.getCashbookId());
+
+                // Visibility management
+                binding.transactionSection.setVisibility(View.VISIBLE);
+                binding.transactionTable.setVisibility(View.VISIBLE);
+                binding.emptyStateView.setVisibility(View.GONE);
 
                 if (currentActiveBookId == null || !currentActiveBookId.equals(cashbook.getCashbookId())) {
                     currentActiveBookId = cashbook.getCashbookId();
@@ -317,8 +350,16 @@ public class HomePage extends AppCompatActivity {
                 }
 
             } else {
-                binding.userNameTop.setText("No Cashbook");
-                binding.lastOpenedText.setText("No book history available");
+                // EMPTY STATE: No Cashbook found
+                binding.userNameTop.setText("Welcome!");
+                binding.currentCashbookText.setText("No Cashbook Selected");
+                binding.lastOpenedText.setText("Create a new cashbook to start");
+
+                // Visibility management
+                binding.transactionSection.setVisibility(View.GONE);
+                binding.transactionTable.setVisibility(View.GONE);
+                binding.emptyStateView.setVisibility(View.VISIBLE);
+
                 currentCashbookId = null;
             }
         });
@@ -346,9 +387,6 @@ public class HomePage extends AppCompatActivity {
         viewModel.getTodaysTransactions().observe(this, this::updateTransactionTable);
     }
 
-    /**
-     * Formats timestamp to exact dd MMM yyyy, hh:mm:ss a format in IST.
-     */
     private String formatExactDateTimeIST(long timestamp) {
         if (timestamp <= 0) return "Never";
 
@@ -431,13 +469,13 @@ public class HomePage extends AppCompatActivity {
 
     private void updateTransactionTable(List<TransactionModel> transactions) {
         binding.transactionTable.removeAllViews();
+        // NOTE: We only show this list if the currentCashbookId is not null.
+        // The observeViewModel handles the visibility of the parent container.
+
         if (transactions == null || transactions.isEmpty()) {
-            binding.emptyStateView.setVisibility(View.VISIBLE);
-            binding.transactionTable.setVisibility(View.GONE);
             binding.transactionCount.setText("TODAY (0)");
+            // Optional: You could show a small "No transactions today" text inside the table area
         } else {
-            binding.emptyStateView.setVisibility(View.GONE);
-            binding.transactionTable.setVisibility(View.VISIBLE);
             binding.transactionCount.setText("TODAY (" + transactions.size() + ")");
             for (TransactionModel t : transactions) addTransactionRow(t);
         }
@@ -452,7 +490,6 @@ public class HomePage extends AppCompatActivity {
 
         rowCategory.setText(transaction.getTransactionCategory());
 
-        // Correctly handle and display Card/Cash/Online mode
         String mode = transaction.getPaymentMode();
         rowMode.setText(mode != null && !mode.isEmpty() ? mode : "Online");
 
@@ -475,11 +512,16 @@ public class HomePage extends AppCompatActivity {
     private void setupBottomNavigation() {
         binding.bottomNavCard.btnHome.setSelected(true);
         binding.bottomNavCard.btnTransactions.setOnClickListener(v -> {
-            Intent intent = new Intent(this, TransactionActivity.class);
-            intent.putExtra(Constants.EXTRA_CASHBOOK_ID, viewModel.getCurrentCashbookId());
-            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-            startActivity(intent);
-            overridePendingTransition(0, 0);
+            String idToUse = (currentCashbookId != null) ? currentCashbookId : viewModel.getCurrentCashbookId();
+            if (idToUse != null) {
+                Intent intent = new Intent(this, TransactionActivity.class);
+                intent.putExtra(Constants.EXTRA_CASHBOOK_ID, idToUse);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                startActivity(intent);
+                overridePendingTransition(0, 0);
+            } else {
+                showSnackbar("Please select a cashbook first");
+            }
         });
         binding.bottomNavCard.btnCashbookSwitch.setOnClickListener(v -> openCashbookSwitcher());
         binding.bottomNavCard.btnSettings.setOnClickListener(v -> {
@@ -497,45 +539,36 @@ public class HomePage extends AppCompatActivity {
         binding.originalButtons.btnCashOut.setOnClickListener(v -> openCashInOutActivity(Constants.TRANSACTION_TYPE_OUT));
         binding.stickyButtons.btnCashIn.setOnClickListener(v -> openCashInOutActivity(Constants.TRANSACTION_TYPE_IN));
         binding.stickyButtons.btnCashOut.setOnClickListener(v -> openCashInOutActivity(Constants.TRANSACTION_TYPE_OUT));
+        // Use the safe wrapper that checks for null IDs
         binding.userBox.setOnClickListener(v -> openCashbookSwitcher());
     }
 
     private void openTransactionDetail(TransactionModel transaction) {
         Intent intent = new Intent(this, TransactionDetailsActivity.class);
         intent.putExtra(TransactionDetailsActivity.EXTRA_TRANSACTION, transaction);
-        intent.putExtra(Constants.EXTRA_CASHBOOK_ID, viewModel.getCurrentCashbookId());
+        intent.putExtra(Constants.EXTRA_CASHBOOK_ID, currentCashbookId);
         detailsLauncher.launch(intent);
     }
 
     private void openCashInOutActivity(String type) {
-        if (viewModel.getCurrentCashbookId() == null) {
+        String idToUse = (currentCashbookId != null) ? currentCashbookId : viewModel.getCurrentCashbookId();
+
+        if (idToUse == null) {
             showSnackbar("Please create a cashbook first");
+            // Optional: Open the switcher/creation dialog automatically
+            openCashbookSwitcher();
             return;
         }
         Intent intent = new Intent(this, CashInOutActivity.class);
         intent.putExtra(Constants.EXTRA_TRANSACTION_TYPE, type);
-        intent.putExtra(Constants.EXTRA_CASHBOOK_ID, viewModel.getCurrentCashbookId());
+        intent.putExtra(Constants.EXTRA_CASHBOOK_ID, idToUse);
         startActivity(intent);
     }
 
     private void openCashbookSwitcher() {
         Intent intent = new Intent(this, CashbookSwitchActivity.class);
-        intent.putExtra("current_cashbook_id", viewModel.getCurrentCashbookId());
-        startActivityForResult(intent, REQUEST_CODE_CASHBOOK_SWITCH);
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == REQUEST_CODE_CASHBOOK_SWITCH && resultCode == RESULT_OK && data != null) {
-            String newId = data.getStringExtra("selected_cashbook_id");
-            if (newId != null) {
-                currentActiveBookId = null;
-                isTimestampUpdatedForCurrentBook = false;
-                viewModel.switchCashbook(newId);
-                showSnackbar("Switched to: " + data.getStringExtra("cashbook_name"));
-            }
-        }
+        intent.putExtra("current_cashbook_id", currentCashbookId);
+        cashbookSwitchLauncher.launch(intent);
     }
 
     private void checkNotificationPermissionAndShowFeedback() {

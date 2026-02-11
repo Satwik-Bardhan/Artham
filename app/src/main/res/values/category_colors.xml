@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="category_food">#FF7043</color>
+    <color name="category_utilities">#26A69A</color>
+    <color name="category_entertainment">#AB47BC</color>
+    <color name="category_transport">#29B6F6</color>
+    <color name="category_rent">#FFA726</color>
+    <color name="category_shopping">#EC407A</color>
+    <color name="category_health">#EF5350</color>
+    <color name="category_education">#5C6BC0</color>
+    <color name="category_personal">#7E57C2</color>
+    <color name="category_salary">#66BB6A</color>
+    <color name="category_freelance_income">#8BC34A</color>
+    <color name="category_investment">#009688</color>
+    <color name="category_other">#78909C</color>
+    <color name="category_default">#9E9E9E</color>
+</resources>

@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.phynix.artham.R;
 import com.phynix.artham.models.CategoryModel;
+import com.phynix.artham.utils.CategoryColorUtil;
 
 import java.util.List;
 import java.util.Set;
@@ -64,15 +65,19 @@ public class CategorySelectionAdapter extends RecyclerView.Adapter<CategorySelec
             categoryCheckbox.setOnCheckedChangeListener(null);
             categoryCheckbox.setChecked(selectedCategories.contains(category.getName()));
 
-            // Set Color Logic
-            try {
-                int color = Color.parseColor(category.getColorHex());
-                categoryCheckbox.setButtonTintList(ColorStateList.valueOf(color));
-            } catch (Exception e) {
-                // CHANGED: Use category_default instead of the missing purple_500
-                categoryCheckbox.setButtonTintList(ColorStateList.valueOf(
-                        ContextCompat.getColor(itemView.getContext(), R.color.category_default)));
+            // Determine CheckBox tint color (Custom vs Default)
+            int color;
+            if (category.isCustom()) {
+                try {
+                    color = Color.parseColor(category.getColorHex());
+                } catch (Exception e) {
+                    color = ContextCompat.getColor(itemView.getContext(), R.color.category_default);
+                }
+            } else {
+                color = CategoryColorUtil.getCategoryColor(itemView.getContext(), category.getName());
             }
+
+            categoryCheckbox.setButtonTintList(ColorStateList.valueOf(color));
 
             categoryCheckbox.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 if (isChecked) {
