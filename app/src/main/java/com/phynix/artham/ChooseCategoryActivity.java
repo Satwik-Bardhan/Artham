@@ -96,7 +96,7 @@ public class ChooseCategoryActivity extends AppCompatActivity
     }
 
     private void setupRecyclerView() {
-        // [UPDATED] Use GridLayoutManager with 2 columns
+        // Use GridLayoutManager with 2 columns
         categoriesRecyclerView.setLayoutManager(new GridLayoutManager(this, 2));
 
         categoryAdapter = new CategoryAdapter(allCategories, this, this, this);
@@ -234,7 +234,13 @@ public class ChooseCategoryActivity extends AppCompatActivity
         container.addView(input);
 
         // Holder for the selected color
-        final String[] tempColorHex = {isEdit ? categoryToEdit.getColorHex() : "#2196F3"};
+        String initialColor = "#2196F3"; // Default blue
+        if (isEdit) {
+            // Fix: Convert int color to hex string manually
+            int colorInt = categoryToEdit.getColor();
+            initialColor = String.format("#%06X", (0xFFFFFF & colorInt));
+        }
+        final String[] tempColorHex = {initialColor};
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this)
                 .setTitle(isEdit ? "Edit Category" : "Add New Category")
@@ -251,7 +257,7 @@ public class ChooseCategoryActivity extends AppCompatActivity
         AlertDialog dialog = builder.create();
         dialog.show();
 
-        // Handle Color Picker (Neutral Button)
+        // Handle Color Picker (Neutral Button) if you implement one later
     }
 
     private void saveCategoryToFirebase(String newName, String colorHex, CategoryModel oldCategory) {

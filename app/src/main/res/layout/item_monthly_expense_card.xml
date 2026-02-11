@@ -21,47 +21,30 @@
         android:id="@+id/cardContainer"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:minWidth="120dp"
+        android:minWidth="100dp"
         android:orientation="vertical"
-        android:paddingVertical="16dp"
+        android:paddingVertical="12dp"
         android:paddingHorizontal="16dp"
         android:gravity="center">
 
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:layout_marginBottom="8dp">
-
-
-            <TextView
-                android:id="@+id/monthNameTextView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                tools:text="JANUARY"
-                android:textSize="12sp"
-                android:fontFamily="@font/app_font"
-                android:textStyle="bold"
-                android:letterSpacing="0.05"
-                android:textAllCaps="true"
-                android:textColor="?attr/chk_textColorSecondary"/>
-        </LinearLayout>
-
         <TextView
-            android:id="@+id/totalExpenseTextView"
+            android:id="@+id/monthNameTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            tools:text="₹24,500"
-            android:textSize="18sp"
-            android:textStyle="bold"
+            tools:text="JANUARY"
+            android:textSize="14sp"
             android:fontFamily="@font/app_font"
+            android:textStyle="bold"
+            android:letterSpacing="0.05"
+            android:textAllCaps="true"
+            android:layout_marginBottom="6dp"
             android:textColor="?attr/chk_textColorPrimary"/>
 
+        <!-- Added ID 'yearContainer' here to reference it in Java -->
         <com.google.android.material.card.MaterialCardView
+            android:id="@+id/yearContainer"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
             app:cardBackgroundColor="@android:color/transparent"
             app:strokeColor="?attr/chk_dividerHorizontal"
             app:strokeWidth="1dp"

@@ -4,6 +4,7 @@
     <color name="primary_blue_dark">#1976D2</color>
     <color name="secondary_green">#66BB6A</color>
     <color name="secondary_green_dark">#00C853</color>
+
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="transparent">@android:color/transparent</color>
@@ -21,8 +22,10 @@
     <color name="expense_red">#EF5350</color>
     <color name="balance_blue">#64B5F6</color>
 
-    <color name="bottom_nav_icon_text_color">#FFFFFFFF</color>
+    <color name="bottom_nav_icon_text_color">#B3FFFFFF</color>
     <color name="bottom_nav_selected">#42A5F5</color>
     <color name="bottom_nav_item_unselected_border">#424242</color>
 
+    <color name="header_color">#1E1E1E</color>
+    <color name="splash_wave_color">#00BCD4</color>
 </resources>

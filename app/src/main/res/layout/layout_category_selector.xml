@@ -31,21 +31,32 @@
         android:focusable="true">
 
         <LinearLayout
-            android:id="@+id/categorySelectorLayout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:gravity="center_vertical"
             android:orientation="horizontal"
             android:paddingHorizontal="16dp">
 
-            <ImageView
-                android:id="@+id/selectedCategoryIcon"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@drawable/ic_category"
-                app:tint="?attr/chk_textColorPrimary"
+            <!--
+              Container for the selected category color and icon.
+              Matches item_category.xml style.
+            -->
+            <FrameLayout
+                android:id="@+id/selectedIconContainer"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
                 android:layout_marginEnd="16dp"
-                android:contentDescription="Category Icon"/>
+                android:background="@drawable/circle_shape">
+
+                <ImageView
+                    android:id="@+id/selectedCategoryIcon"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_category"
+                    app:tint="@android:color/white"
+                    android:contentDescription="Category Icon"/>
+            </FrameLayout>
 
             <TextView
                 android:id="@+id/selectedCategoryTextView"
@@ -62,7 +73,7 @@
             <ImageView
                 android:layout_width="24dp"
                 android:layout_height="24dp"
-                android:src="@drawable/ic_expand_more"
+                android:src="@drawable/ic_arrow_down"
                 app:tint="?attr/chk_textColorSecondary"
                 android:contentDescription="Expand" />
         </LinearLayout>

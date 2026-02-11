@@ -35,8 +35,8 @@ public class ThemeManager {
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
                 break;
             default:
-                // Default is Dark
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+                // [FIX] Default to LIGHT now
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
                 break;
         }
     }
@@ -47,8 +47,8 @@ public class ThemeManager {
      */
     public static void applyActivityTheme(Activity activity) {
         SharedPreferences prefs = activity.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
-        // Default is Dark
-        String theme = prefs.getString(KEY_THEME, THEME_DARK);
+        // [FIX] Default is LIGHT
+        String theme = prefs.getString(KEY_THEME, THEME_LIGHT);
 
         if (THEME_PURPLE.equals(theme)) {
             activity.setTheme(R.style.Theme_Artham_Purple);
@@ -62,28 +62,22 @@ public class ThemeManager {
     public static void saveTheme(Context context, String theme) {
         SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         prefs.edit().putString(KEY_THEME, theme).apply();
-        // Automatically apply the theme globally
         applyTheme(theme);
     }
 
     public static String getTheme(Context context) {
         SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
-        // Default is Dark
-        return prefs.getString(KEY_THEME, THEME_DARK);
+        // [FIX] Default is LIGHT
+        return prefs.getString(KEY_THEME, THEME_LIGHT);
     }
 
-    /**
-     * Restarts the application from the HomePage to ensure the theme applies to ALL pages.
-     * Call this after saving a new theme.
-     */
     public static void restartApp(Activity activity) {
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
             Intent intent = new Intent(activity, HomePage.class);
-            // Clear the entire back stack so all activities are destroyed and recreated
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             activity.startActivity(intent);
             activity.finish();
             activity.overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
-        }, 200); // Small delay for UI ripple effect
+        }, 200);
     }
 }

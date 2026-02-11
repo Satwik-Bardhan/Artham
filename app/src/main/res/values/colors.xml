@@ -71,16 +71,4 @@
     <color name="header_color">@color/light_header</color>
     <color name="splash_wave_color">@color/splash_wave_light</color>
 
-    <color name="category_food">#FF7043</color>
-    <color name="category_utilities">#26A69A</color>
-    <color name="category_entertainment">#AB47BC</color>
-    <color name="category_transport">#29B6F6</color>
-    <color name="category_rent">#FFA726</color>
-    <color name="category_salary">#66BB6A</color>
-    <color name="category_freelance_income">#8BC34A</color>
-    <color name="category_shopping">#EC407A</color>
-    <color name="category_health">#EF5350</color>
-    <color name="category_education">#5C6BC0</color>
-    <color name="category_other">#78909C</color>
-    <color name="category_default">#9E9E9E</color>
 </resources>

@@ -1,92 +1,189 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/rootView"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     android:background="?attr/chk_backgroundColor"
     android:fitsSystemWindows="true">
 
+    <!-- 1. Header (Always Fixed at Top) -->
     <LinearLayout
         android:id="@+id/headerLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:padding="16dp"
         android:background="?attr/chk_headerColor"
-        android:elevation="4dp">
+        android:elevation="4dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="16dp">
 
         <TextView
             android:id="@+id/title"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Expense Analytics"
-            android:textSize="20sp"
-            android:textStyle="bold"
             android:fontFamily="@font/app_font"
-            android:textColor="?attr/chk_textColorPrimary"/>
+            android:text="Expense Analytics"
+            android:textColor="?attr/chk_textColorPrimary"
+            android:textSize="20sp"
+            android:textStyle="bold" />
 
         <ImageButton
             android:id="@+id/closeButton"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
             android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Close"
             android:src="@drawable/ic_close"
-            app:tint="?attr/chk_textColorPrimary"
-            android:contentDescription="Close"/>
+            app:tint="?attr/chk_textColorPrimary" />
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/noDataTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:text="No expense data available"
-        android:fontFamily="@font/app_font"
-        android:textColor="?attr/chk_textColorSecondary"
-        android:visibility="gone"/>
-
-    <ProgressBar
-        android:id="@+id/loadingProgressBar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:indeterminateTint="?attr/chk_primary_blue"
-        android:visibility="visible"/>
-
-    <LinearLayout
-        android:id="@+id/contentLayout"
+    <!-- 2. Main Content Frame (Handles Loading/Empty/Data States) -->
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@id/headerLayout"
-        android:orientation="vertical"
-        android:visibility="gone">
+        android:layout_height="match_parent">
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/monthlyCardsRecyclerView"
-            android:layout_width="match_parent"
+        <!-- STATE A: Loading Spinner -->
+        <ProgressBar
+            android:id="@+id/loadingProgressBar"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:paddingHorizontal="12dp"
-            android:paddingVertical="12dp"
-            android:clipToPadding="false"/>
+            android:layout_gravity="center"
+            android:indeterminateTint="?attr/colorPrimary"
+            android:visibility="visible" />
 
-        <!-- Fixed height for the chart -->
-        <com.github.mikephil.charting.charts.PieChart
-            android:id="@+id/fullScreenPieChart"
+        <!-- STATE B: Empty View -->
+        <TextView
+            android:id="@+id/noDataTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:fontFamily="@font/app_font"
+            android:text="No expense data found"
+            android:textColor="?attr/chk_textColorSecondary"
+            android:visibility="gone" />
+
+        <!-- STATE C: Data Content -->
+        <LinearLayout
+            android:id="@+id/contentLayout"
             android:layout_width="match_parent"
-            android:layout_height="320dp"
-            android:layout_margin="16dp"/>
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:visibility="gone"
+            tools:visibility="visible">
 
-        <!-- Weight=1 allows this list to fill remaining space and scroll -->
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/detailedLegendRecyclerView"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:padding="16dp"
-            android:clipToPadding="false"/>
-    </LinearLayout>
+            <!-- Sticky Section: Month Selector & Total Expenses -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="?attr/chk_backgroundColor"
+                android:elevation="4dp"
+                android:paddingBottom="8dp">
 
-</RelativeLayout>
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/monthlyCardsRecyclerView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:clipToPadding="false"
+                    android:paddingHorizontal="12dp"
+                    android:paddingVertical="12dp"
+                    android:scrollbars="none"
+                    tools:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                    tools:orientation="horizontal"
+                    tools:listitem="@layout/item_monthly_expense_card" />
+
+                <!-- Total Expense Card -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/totalExpenseCard"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="16dp"
+                    android:layout_marginTop="4dp"
+                    app:cardBackgroundColor="?attr/chk_surfaceColor"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="2dp"
+                    app:strokeWidth="0dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:paddingVertical="12dp"
+                        android:paddingHorizontal="16dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/app_font"
+                            android:text="Total Monthly Expense"
+                            android:textColor="?attr/chk_textColorSecondary"
+                            android:textSize="12sp" />
+
+                        <TextView
+                            android:id="@+id/totalExpenseValue"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/app_font"
+                            android:text="₹0.00"
+                            android:textColor="?attr/chk_textColorPrimary"
+                            android:textSize="24sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+            </LinearLayout>
+
+            <!-- Scrollable Body: Chart & Legend -->
+            <androidx.core.widget.NestedScrollView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:fillViewport="true">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingBottom="24dp">
+
+                    <!-- Pie Chart -->
+                    <com.github.mikephil.charting.charts.PieChart
+                        android:id="@+id/fullScreenPieChart"
+                        android:layout_width="match_parent"
+                        android:layout_height="320dp"
+                        android:layout_marginTop="16dp"
+                        android:layout_marginBottom="24dp"
+                        android:layout_marginHorizontal="16dp" />
+
+                    <!-- Breakdown Header -->
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="8dp"
+                        android:fontFamily="@font/app_font"
+                        android:paddingHorizontal="16dp"
+                        android:text="Category Breakdown"
+                        android:textColor="?attr/chk_textColorPrimary"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <!-- Legend List -->
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/detailedLegendRecyclerView"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:nestedScrollingEnabled="false"
+                        android:paddingHorizontal="4dp"
+                        tools:listitem="@layout/legend_item" />
+
+                </LinearLayout>
+            </androidx.core.widget.NestedScrollView>
+
+        </LinearLayout>
+
+    </FrameLayout>
+
+</LinearLayout>

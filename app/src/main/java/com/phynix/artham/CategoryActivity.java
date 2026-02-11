@@ -11,13 +11,15 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
+import androidx.appcompat.widget.Toolbar;
 
 import com.google.android.material.chip.ChipGroup;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -43,16 +45,36 @@ public class CategoryActivity extends AppCompatActivity {
         currentCashbookId = getIntent().getStringExtra("cashbook_id");
 
         String uid = FirebaseAuth.getInstance().getUid();
-        if (uid != null && currentCashbookId != null) {
-            // Defaulting to "OUT" (Expense) categories for management.
-            // Ideally, pass "IN" or "OUT" via intent if you manage both separately.
-            userCategoriesRef = FirebaseDatabase.getInstance().getReference("users")
-                    .child(uid).child("cashbooks")
-                    .child(currentCashbookId).child("categories").child("OUT");
+
+        // Initialize Firebase Reference
+        if (uid != null) {
+            if (currentCashbookId != null) {
+                // Specific cashbook categories
+                userCategoriesRef = FirebaseDatabase.getInstance().getReference("users")
+                        .child(uid).child("cashbooks")
+                        .child(currentCashbookId).child("categories").child("OUT");
+            } else {
+                // Fallback to user global categories if no cashbook ID provided
+                userCategoriesRef = FirebaseDatabase.getInstance().getReference("users")
+                        .child(uid).child("categories");
+            }
         }
 
-        findViewById(R.id.back_button).setOnClickListener(v -> finish());
-        findViewById(R.id.fab_add_category).setOnClickListener(v -> showAddDialog(null));
+        // Setup Toolbar Back Button
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        if (toolbar != null) {
+            toolbar.setNavigationOnClickListener(v -> finish());
+        } else {
+            // Fallback if looking for a specific back button view
+            View backBtn = findViewById(R.id.back_button); // Ensure this ID exists in your layout if Toolbar isn't used
+            if (backBtn != null) backBtn.setOnClickListener(v -> finish());
+        }
+
+        // Setup FAB
+        FloatingActionButton fab = findViewById(R.id.fabAddCategory);
+        if (fab != null) {
+            fab.setOnClickListener(v -> showAddDialog(null));
+        }
 
         loadCategories();
     }
@@ -68,8 +90,11 @@ public class CategoryActivity extends AppCompatActivity {
                     if (c != null) addChip(c);
                 }
             }
+
             @Override
-            public void onCancelled(@NonNull DatabaseError error) {}
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(CategoryActivity.this, "Failed to load categories", Toast.LENGTH_SHORT).show();
+            }
         });
     }
 
@@ -79,37 +104,48 @@ public class CategoryActivity extends AppCompatActivity {
 
         TextView nameView = view.findViewById(R.id.categoryName);
         ImageView iconView = view.findViewById(R.id.categoryIcon);
-        ImageView menuView = view.findViewById(R.id.categoryMenu);
+        ImageView menuView = view.findViewById(R.id.categoryMenu); // Ensure this ID exists in item_category_chip.xml
+        View iconContainer = view.findViewById(R.id.iconContainer);
 
         nameView.setText(category.getName());
 
-        // Apply Category Color to Icon
-        try {
-            int color = Color.parseColor(category.getColorHex());
+        // Apply Category Color
+        int color = category.getColor();
+        // Fixed: Explicitly refer to Material R.attr for colorPrimary
+        if (color == 0) color = getThemeColor(com.google.android.material.R.attr.colorPrimary);
+
+        if (iconView != null) {
+            iconView.setColorFilter(Color.WHITE); // Icon usually white on colored background
+        }
+
+        if (iconContainer != null) {
+            iconContainer.setBackgroundTintList(ColorStateList.valueOf(color));
+        } else if (iconView != null) {
+            // Fallback: Tint the icon itself if no container found
             iconView.setColorFilter(color);
-        } catch (Exception e) {
-            iconView.setColorFilter(getThemeColor(R.attr.chk_textColorSecondary));
         }
 
         // Handle Clicks
         view.setOnClickListener(v -> showAddDialog(category));
 
         // Setup Menu
-        menuView.setVisibility(View.VISIBLE);
-        menuView.setOnClickListener(v -> {
-            PopupMenu popup = new PopupMenu(CategoryActivity.this, menuView);
-            popup.getMenu().add("Edit");
-            popup.getMenu().add("Delete");
-            popup.setOnMenuItemClickListener(item -> {
-                if (item.getTitle().equals("Edit")) {
-                    showAddDialog(category);
-                } else if (item.getTitle().equals("Delete")) {
-                    deleteCategory(category);
-                }
-                return true;
+        if (menuView != null) {
+            menuView.setVisibility(View.VISIBLE);
+            menuView.setOnClickListener(v -> {
+                PopupMenu popup = new PopupMenu(CategoryActivity.this, menuView);
+                popup.getMenu().add("Edit");
+                popup.getMenu().add("Delete");
+                popup.setOnMenuItemClickListener(item -> {
+                    if (item.getTitle().equals("Edit")) {
+                        showAddDialog(category);
+                    } else if (item.getTitle().equals("Delete")) {
+                        deleteCategory(category);
+                    }
+                    return true;
+                });
+                popup.show();
             });
-            popup.show();
-        });
+        }
 
         categoryChipGroup.addView(view);
     }
@@ -123,8 +159,9 @@ public class CategoryActivity extends AppCompatActivity {
         input.setBackgroundResource(R.drawable.rounded_input_background);
 
         // Explicitly set text colors from attributes so it works in Dark Mode
-        input.setTextColor(getThemeColor(R.attr.chk_textColorPrimary));
-        input.setHintTextColor(getThemeColor(R.attr.chk_textColorHint));
+        // Fixed: Explicitly refer to Material R.attr for colorOnSurface
+        input.setTextColor(getThemeColor(com.google.android.material.R.attr.colorOnSurface));
+        input.setHintTextColor(Color.GRAY);
 
         int padding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 12, getResources().getDisplayMetrics());
         input.setPadding(padding, padding, padding, padding);
@@ -143,16 +180,20 @@ public class CategoryActivity extends AppCompatActivity {
                 .setPositiveButton("Save", (d, w) -> {
                     String name = input.getText().toString().trim();
                     if (!name.isEmpty()) {
-                        // Preserve color if editing, otherwise random
-                        String color = isEdit ? category.getColorHex() : getRandomColor();
+                        // Preserve color if editing, otherwise random int color
+                        int color = isEdit ? category.getColor() : getRandomColorInt();
 
                         // If name changed during edit, remove old key
                         if (isEdit && !category.getName().equals(name)) {
-                            userCategoriesRef.child(category.getName()).removeValue();
+                            userCategoriesRef.child(category.getId()).removeValue();
                         }
 
                         // Save new/updated category
-                        userCategoriesRef.child(name).setValue(new CategoryModel(name, color, true));
+                        // Using name as ID for simplicity as per previous pattern, or generate push ID
+                        String id = isEdit ? category.getId() : name;
+                        CategoryModel newCategory = new CategoryModel(id, name, "OUT", color, true);
+
+                        userCategoriesRef.child(id).setValue(newCategory);
                     }
                 })
                 .setNegativeButton("Cancel", null)
@@ -163,15 +204,15 @@ public class CategoryActivity extends AppCompatActivity {
         new AlertDialog.Builder(this)
                 .setTitle("Delete Category")
                 .setMessage("Are you sure you want to delete " + c.getName() + "?")
-                .setPositiveButton("Delete", (d, w) -> userCategoriesRef.child(c.getName()).removeValue())
+                .setPositiveButton("Delete", (d, w) -> userCategoriesRef.child(c.getId()).removeValue())
                 .setNegativeButton("Cancel", null)
                 .show();
     }
 
-    private String getRandomColor() {
+    private int getRandomColorInt() {
         Random r = new Random();
         // Generates bright/pastel colors suitable for dark & light themes
-        return String.format("#%02X%02X%02X", r.nextInt(200) + 55, r.nextInt(200) + 55, r.nextInt(200) + 55);
+        return Color.rgb(r.nextInt(200) + 55, r.nextInt(200) + 55, r.nextInt(200) + 55);
     }
 
     /**
@@ -179,7 +220,9 @@ public class CategoryActivity extends AppCompatActivity {
      */
     private int getThemeColor(int attrId) {
         TypedValue typedValue = new TypedValue();
-        getTheme().resolveAttribute(attrId, typedValue, true);
-        return typedValue.data;
+        if (getTheme().resolveAttribute(attrId, typedValue, true)) {
+            return typedValue.data;
+        }
+        return Color.GRAY; // Default fallback
     }
 }

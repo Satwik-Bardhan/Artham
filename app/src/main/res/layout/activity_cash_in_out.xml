@@ -149,7 +149,9 @@
 
             <include layout="@layout/layout_remarks_input" />
 
-            <include layout="@layout/layout_category_selector" />
+            <include
+                android:id="@+id/categorySelectorLayout"
+                layout="@layout/layout_category_selector"/>
 
             <include layout="@layout/layout_party_selector" />
 
