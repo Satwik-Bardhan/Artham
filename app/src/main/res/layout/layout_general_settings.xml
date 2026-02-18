@@ -130,7 +130,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Language, Theme, Security"
+                        android:text="Features, Theme, Language, Security"
                         android:fontFamily="@font/app_font"
                         android:textColor="?attr/chk_textColorSecondary"
                         android:textSize="13sp"

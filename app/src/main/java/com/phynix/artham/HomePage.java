@@ -108,7 +108,7 @@ public class HomePage extends AppCompatActivity {
     private final ActivityResultLauncher<Intent> detailsLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
-                // Handle any result from details if needed (e.g., refresh)
+                // Handle any result from details if needed (e.g., refresh data)
             }
     );
 
@@ -143,7 +143,6 @@ public class HomePage extends AppCompatActivity {
         }
 
         // Initialize ViewModel
-        // Note: AndroidViewModelFactory will handle the Application context automatically
         viewModel = new ViewModelProvider(this).get(HomePageViewModel.class);
 
         currencyFormat = NumberFormat.getCurrencyInstance(new Locale("en", "IN"));
@@ -409,8 +408,13 @@ public class HomePage extends AppCompatActivity {
         Map<String, Object> updates = new HashMap<>();
         updates.put("lastModified", ServerValue.TIMESTAMP);
 
-        bookRef.updateChildren(updates).addOnFailureListener(e ->
-                Log.e(TAG, "Failed to update last opened time", e));
+        bookRef.updateChildren(updates).addOnFailureListener(e -> {
+            Log.e(TAG, "Failed to update last opened time", e);
+            // Helps identify permission errors in Logcat
+            if (e.getMessage() != null && e.getMessage().contains("Permission denied")) {
+                Log.e(TAG, "CHECK FIREBASE RULES: Write denied at " + bookRef.toString());
+            }
+        });
     }
 
     private void fetchUserDataDirectly() {
@@ -469,12 +473,9 @@ public class HomePage extends AppCompatActivity {
 
     private void updateTransactionTable(List<TransactionModel> transactions) {
         binding.transactionTable.removeAllViews();
-        // NOTE: We only show this list if the currentCashbookId is not null.
-        // The observeViewModel handles the visibility of the parent container.
 
         if (transactions == null || transactions.isEmpty()) {
             binding.transactionCount.setText("TODAY (0)");
-            // Optional: You could show a small "No transactions today" text inside the table area
         } else {
             binding.transactionCount.setText("TODAY (" + transactions.size() + ")");
             for (TransactionModel t : transactions) addTransactionRow(t);
@@ -539,7 +540,7 @@ public class HomePage extends AppCompatActivity {
         binding.originalButtons.btnCashOut.setOnClickListener(v -> openCashInOutActivity(Constants.TRANSACTION_TYPE_OUT));
         binding.stickyButtons.btnCashIn.setOnClickListener(v -> openCashInOutActivity(Constants.TRANSACTION_TYPE_IN));
         binding.stickyButtons.btnCashOut.setOnClickListener(v -> openCashInOutActivity(Constants.TRANSACTION_TYPE_OUT));
-        // Use the safe wrapper that checks for null IDs
+
         binding.userBox.setOnClickListener(v -> openCashbookSwitcher());
     }
 
@@ -555,7 +556,6 @@ public class HomePage extends AppCompatActivity {
 
         if (idToUse == null) {
             showSnackbar("Please create a cashbook first");
-            // Optional: Open the switcher/creation dialog automatically
             openCashbookSwitcher();
             return;
         }

@@ -15,20 +15,22 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import com.phynix.artham.models.TransactionModel;
-import com.phynix.artham.utils.CustomPieChartValueFormatter;
+import com.github.mikephil.charting.animation.Easing;
 import com.github.mikephil.charting.charts.PieChart;
-import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
-import com.github.mikephil.charting.formatter.PercentFormatter;
+import com.phynix.artham.models.TransactionModel;
+import com.phynix.artham.utils.CustomPieChartValueFormatter;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class PieChartFragment extends Fragment {
-    // ... (Same variables) ...
+
     private static final String TAG = "PieChartFragment";
     private PieChart pieChart;
     private TextView toggleButton;
@@ -70,7 +72,6 @@ public class PieChartFragment extends Fragment {
         return view;
     }
 
-    // ... (setupToggleLogic, updateChartVisibility remain same) ...
     private void setupToggleLogic() {
         if (getContext() == null) return;
         SharedPreferences prefs = getContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
@@ -97,97 +98,131 @@ public class PieChartFragment extends Fragment {
 
     private void setupPieChart() {
         if (getContext() == null) return;
-        int textColor = ThemeUtil.getThemeAttrColor(getContext(), R.attr.chk_textColorPrimary);
+        int textColor = ThemeUtil.getThemeAttrColor(getContext(), android.R.attr.textColorPrimary);
 
         pieChart.setDrawHoleEnabled(true);
         pieChart.setUsePercentValues(true);
+
+        // Configuration for the Entry Label (e.g. "Food")
         pieChart.setEntryLabelTextSize(11f);
         pieChart.setEntryLabelColor(textColor);
 
-        pieChart.setHoleRadius(55f);
-        pieChart.setTransparentCircleRadius(60f);
+        pieChart.setHoleRadius(45f);
+        pieChart.setTransparentCircleRadius(50f);
         pieChart.setHoleColor(Color.TRANSPARENT);
 
         pieChart.setCenterText("Expenses");
-        pieChart.setCenterTextSize(22f);
+        pieChart.setCenterTextSize(18f);
         pieChart.setCenterTextColor(textColor);
         pieChart.getDescription().setEnabled(false);
 
-        // [FIX] Explicitly Disable Labels
-        pieChart.setDrawEntryLabels(false);
+        // [IMPORTANT] Enable Entry Labels so "Food", "Travel" etc. are drawn
+        pieChart.setDrawEntryLabels(true);
 
-        pieChart.setExtraOffsets(40.f, 10.f, 40.f, 10.f);
+        // Increase offsets to prevent clipping of outside labels
+        pieChart.setExtraOffsets(30.f, 10.f, 30.f, 10.f);
 
-        Legend legend = pieChart.getLegend();
-        legend.setEnabled(false);
+        pieChart.setDragDecelerationFrictionCoef(0.95f);
+        pieChart.getLegend().setEnabled(false);
     }
 
     private void loadPieChartData() {
         if (getContext() == null) return;
-        int textColor = ThemeUtil.getThemeAttrColor(getContext(), R.attr.chk_textColorPrimary);
-        int secondaryTextColor = ThemeUtil.getThemeAttrColor(getContext(), R.attr.chk_textColorSecondary);
+        int textColor = ThemeUtil.getThemeAttrColor(getContext(), android.R.attr.textColorPrimary);
+        int secondaryTextColor = ThemeUtil.getThemeAttrColor(getContext(), android.R.attr.textColorSecondary);
 
-        ArrayList<PieEntry> entries = new ArrayList<>();
+        // 1. Calculate raw totals
+        Map<String, Double> categoryTotals = new HashMap<>();
+        double totalExpense = 0;
+
         if (transactions != null && !transactions.isEmpty()) {
-            java.util.Map<String, Double> categoryTotals = new java.util.HashMap<>();
             for (TransactionModel transaction : transactions) {
                 if ("OUT".equalsIgnoreCase(transaction.getType())) {
                     String category = transaction.getTransactionCategory();
                     if (category == null || category.isEmpty()) category = "Other";
                     double amount = transaction.getAmount();
                     categoryTotals.put(category, categoryTotals.getOrDefault(category, 0.0) + amount);
+                    totalExpense += amount;
                 }
             }
-            for (java.util.Map.Entry<String, Double> entry : categoryTotals.entrySet()) {
+        }
+
+        // 2. Group small slices into "Others" (Threshold: < 3%)
+        ArrayList<PieEntry> entries = new ArrayList<>();
+        double otherTotal = 0;
+        double threshold = totalExpense * 0.03;
+
+        for (Map.Entry<String, Double> entry : categoryTotals.entrySet()) {
+            if (entry.getValue() < threshold) {
+                otherTotal += entry.getValue();
+            } else {
                 entries.add(new PieEntry(entry.getValue().floatValue(), entry.getKey()));
             }
         }
+
+        if (otherTotal > 0) {
+            entries.add(new PieEntry((float) otherTotal, "Others"));
+        }
+
+        // Sort descending
+        Collections.sort(entries, (e1, e2) -> Float.compare(e2.getValue(), e1.getValue()));
 
         PieDataSet dataSet;
         if (entries.isEmpty()) {
             entries.add(new PieEntry(100f, "No Data"));
             dataSet = new PieDataSet(entries, "");
-            ArrayList<Integer> colors = new ArrayList<>();
-            colors.add(ThemeUtil.getThemeAttrColor(getContext(), android.R.attr.dividerHorizontal));
-            dataSet.setColors(colors);
+            dataSet.setColors(Color.LTGRAY);
+            dataSet.setDrawValues(false);
         } else {
-            dataSet = new PieDataSet(entries, "Expense Categories");
+            dataSet = new PieDataSet(entries, "");
+
             ArrayList<Integer> colors = new ArrayList<>();
-            colors.add(Color.parseColor("#FF5252"));
-            colors.add(Color.parseColor("#448AFF"));
-            colors.add(Color.parseColor("#69F0AE"));
-            colors.add(Color.parseColor("#FFD740"));
-            colors.add(Color.parseColor("#E040FB"));
-            colors.add(Color.parseColor("#18FFFF"));
+            colors.add(Color.parseColor("#FF5252")); // Red
+            colors.add(Color.parseColor("#448AFF")); // Blue
+            colors.add(Color.parseColor("#69F0AE")); // Green
+            colors.add(Color.parseColor("#FFD740")); // Yellow
+            colors.add(Color.parseColor("#E040FB")); // Purple
+            colors.add(Color.parseColor("#18FFFF")); // Cyan
+            colors.add(Color.parseColor("#FFAB40")); // Orange
+            colors.add(Color.parseColor("#FF4081")); // Pink
+            colors.add(Color.parseColor("#9E9E9E")); // Grey
             dataSet.setColors(colors);
 
+            dataSet.setSliceSpace(3f);
+            dataSet.setSelectionShift(5f);
+
+            // --- Configure OUTSIDE Labels ---
+            // Move Category Name ("Food") Outside
             dataSet.setXValuePosition(PieDataSet.ValuePosition.OUTSIDE_SLICE);
+
+            // Move Value Position Outside (Necessary for the line to be drawn to it)
             dataSet.setYValuePosition(PieDataSet.ValuePosition.OUTSIDE_SLICE);
 
-            // [FIX] Increase spacing
-            dataSet.setValueLinePart1OffsetPercentage(85.f);
-            dataSet.setValueLinePart1Length(0.6f);
-            dataSet.setValueLinePart2Length(0.5f);
-
+            // Line configuration
+            dataSet.setValueLinePart1OffsetPercentage(80.f);
+            dataSet.setValueLinePart1Length(0.5f);
+            dataSet.setValueLinePart2Length(0.4f);
             dataSet.setValueLineColor(secondaryTextColor);
-            dataSet.setValueLineWidth(1f);
+            dataSet.setValueLineWidth(1.5f);
+
+            // [IMPORTANT] Draw Values MUST be true for the lines to appear.
+            // The text itself is hidden by the CustomPieChartValueFormatter below.
+            dataSet.setDrawValues(true);
         }
 
         PieData data = new PieData(dataSet);
-        data.setDrawValues(true);
-        data.setValueTextSize(11f);
-        data.setValueTextColor(textColor);
 
-        // [FIX] Use Custom Formatter
-        try {
-            data.setValueFormatter(new CustomPieChartValueFormatter());
-        } catch (Exception e) {
-            data.setValueFormatter(new PercentFormatter(pieChart));
-        }
+        // Use the updated custom formatter which returns ""
+        data.setValueFormatter(new CustomPieChartValueFormatter());
+
+        // Also set text size to 0 and color to transparent as a backup
+        data.setValueTextSize(0f);
+        data.setValueTextColor(Color.TRANSPARENT);
 
         pieChart.setData(data);
+        pieChart.highlightValues(null);
         pieChart.invalidate();
-        pieChart.animateY(1000);
+        pieChart.animateY(1400, Easing.EaseInOutQuad);
     }
 
     public void updateData(ArrayList<TransactionModel> newTransactions) {
