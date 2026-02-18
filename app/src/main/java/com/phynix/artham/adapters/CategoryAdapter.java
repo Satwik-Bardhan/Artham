@@ -17,7 +17,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.phynix.artham.R;
 import com.phynix.artham.models.CategoryModel;
-import com.phynix.artham.utils.CategoryColorUtil;
 
 import java.util.List;
 
@@ -88,38 +87,43 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
         void bind(CategoryModel category) {
             nameTextView.setText(category.getName());
 
+            // 1. Get Color
             int color;
-            int icon;
-
-            // 1. Check if Custom or Default to assign Color & Icon correctly
-            if (category.isCustom()) {
-                try {
+            try {
+                if (category.getColorHex() != null && !category.getColorHex().isEmpty()) {
                     color = Color.parseColor(category.getColorHex());
-                } catch (Exception e) {
-                    color = Color.GRAY; // Fallback
+                } else {
+                    color = ContextCompat.getColor(context, R.color.category_default);
                 }
-                icon = category.getIconResId();
-                if (icon == 0) icon = R.drawable.ic_category;
-            } else {
-                color = CategoryColorUtil.getCategoryColor(context, category.getName());
-                icon = CategoryColorUtil.getCategoryIcon(category.getName());
+            } catch (Exception e) {
+                color = ContextCompat.getColor(context, R.color.category_default);
             }
 
-            // 2. Apply resolved color & icon
-            iconView.setImageResource(icon);
-            iconContainer.setBackgroundTintList(ColorStateList.valueOf(color));
+            // 2. Apply Color to the Icon's Circle Background
+            if (iconContainer != null) {
+                iconContainer.setBackgroundTintList(ColorStateList.valueOf(color));
+            }
 
-            // 3. Show/Hide Selection Checkmark
-            if (category.getName() != null && category.getName().equals(selectedCategoryName)) {
+            // 3. Set Icon Image
+            if (category.getIconResId() != 0) {
+                iconView.setImageResource(category.getIconResId());
+                iconView.setColorFilter(Color.WHITE);
+            } else {
+                iconView.setImageResource(R.drawable.ic_category);
+                iconView.setColorFilter(Color.WHITE);
+            }
+
+            // 4. Show/Hide Selection Checkmark
+            if (category.getName().equals(selectedCategoryName)) {
                 selectionCheck.setVisibility(View.VISIBLE);
             } else {
                 selectionCheck.setVisibility(View.GONE);
             }
 
-            // 4. Click Listener
+            // 5. Click Listener
             itemView.setOnClickListener(v -> listener.onCategoryClick(category));
 
-            // 5. Show/Hide 3-Dot Menu ONLY for Custom Categories
+            // 6. Show/Hide 3-Dot Menu for custom categories
             if (category.isCustom()) {
                 menuView.setVisibility(View.VISIBLE);
                 menuView.setOnClickListener(v -> showPopupMenu(menuView, category));

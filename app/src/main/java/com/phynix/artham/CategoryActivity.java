@@ -1,15 +1,16 @@
 package com.phynix.artham;
 
-import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.Button;
+import android.util.TypedValue;
+import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
@@ -19,151 +20,195 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.phynix.artham.adapters.CategoryManagementAdapter;
+import com.phynix.artham.adapters.CategoryAdapter;
 import com.phynix.artham.models.CategoryModel;
 import com.phynix.artham.utils.ThemeManager;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
-public class CategoryActivity extends AppCompatActivity {
+public class CategoryActivity extends AppCompatActivity implements CategoryAdapter.OnCategoryClickListener, CategoryAdapter.OnCategoryActionListener {
 
     private RecyclerView categoriesRecyclerView;
-    private CategoryManagementAdapter adapter;
+    private CategoryAdapter adapter;
     private List<CategoryModel> categoryList;
-
     private DatabaseReference userCategoriesRef;
     private String currentCashbookId;
+    private String transactionType = "OUT"; // Default to Expense
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        // Apply theme before super.onCreate
         ThemeManager.applyActivityTheme(this);
         super.onCreate(savedInstanceState);
-
-        // Uses the new layout containing the RecyclerView
         setContentView(R.layout.activity_category_management);
 
-        currentCashbookId = getIntent().getStringExtra("cashbook_id");
-        String uid = FirebaseAuth.getInstance().getUid();
-
-        // Initialize Firebase Reference (Universal path for both IN and OUT)
-        if (uid != null) {
-            if (currentCashbookId != null && !currentCashbookId.isEmpty()) {
-                // Specific cashbook categories
-                userCategoriesRef = FirebaseDatabase.getInstance().getReference("users")
-                        .child(uid).child("cashbooks")
-                        .child(currentCashbookId).child("categories");
-            } else {
-                // Fallback to user global categories
-                userCategoriesRef = FirebaseDatabase.getInstance().getReference("users")
-                        .child(uid).child("categories");
-            }
-        }
-
         initViews();
-        loadCategories();
+        setupFirebase();
+        loadData();
     }
 
     private void initViews() {
         categoriesRecyclerView = findViewById(R.id.categoriesRecyclerView);
-        ExtendedFloatingActionButton fabAddCategory = findViewById(R.id.addNewCategoryButton);
+        ExtendedFloatingActionButton fab = findViewById(R.id.addNewCategoryButton);
         ImageView backButton = findViewById(R.id.backButton);
-        Button restoreButton = findViewById(R.id.restoreDefaultsButton);
 
-        categoriesRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        // Grid Layout for better visualization (2 columns)
+        categoriesRecyclerView.setLayoutManager(new GridLayoutManager(this, 2));
+
         categoryList = new ArrayList<>();
-
-        adapter = new CategoryManagementAdapter(this, categoryList, new CategoryManagementAdapter.OnCategoryActionListener() {
-            @Override
-            public void onDelete(CategoryModel category) {
-                if (userCategoriesRef != null && category.getName() != null) {
-                    userCategoriesRef.child(category.getName()).removeValue()
-                            .addOnSuccessListener(aVoid -> Toast.makeText(CategoryActivity.this, "Category Deleted", Toast.LENGTH_SHORT).show())
-                            .addOnFailureListener(e -> Toast.makeText(CategoryActivity.this, "Failed to delete", Toast.LENGTH_SHORT).show());
-                }
-            }
-
-            @Override
-            public void onEdit(CategoryModel category) {
-                // Navigate to CreateCategoryActivity to handle the edit process
-                Intent intent = new Intent(CategoryActivity.this, CreateCategoryActivity.class);
-                intent.putExtra("EDIT_NAME", category.getName());
-                intent.putExtra("cashbook_id", currentCashbookId);
-                startActivity(intent);
-            }
-        });
-
+        adapter = new CategoryAdapter(categoryList, this, this, this);
         categoriesRecyclerView.setAdapter(adapter);
 
-        // Open Creation Page
-        if (fabAddCategory != null) {
-            fabAddCategory.setOnClickListener(v -> {
-                Intent intent = new Intent(CategoryActivity.this, CreateCategoryActivity.class);
-                intent.putExtra("cashbook_id", currentCashbookId);
-                startActivity(intent);
-            });
+        if (fab != null) {
+            fab.setOnClickListener(v -> showAddDialog(null));
         }
 
         if (backButton != null) {
             backButton.setOnClickListener(v -> finish());
         }
+    }
 
-        // Restore Defaults
-        if (restoreButton != null) {
-            restoreButton.setOnClickListener(v -> restoreDefaultCategories());
+    private void setupFirebase() {
+        currentCashbookId = getIntent().getStringExtra("cashbook_id");
+        if (getIntent().hasExtra("type")) {
+            transactionType = getIntent().getStringExtra("type");
+        }
+
+        String uid = FirebaseAuth.getInstance().getUid();
+        if (uid != null && currentCashbookId != null) {
+            userCategoriesRef = FirebaseDatabase.getInstance().getReference("users")
+                    .child(uid).child("cashbooks")
+                    .child(currentCashbookId).child("categories").child(transactionType);
         }
     }
 
-    private void loadCategories() {
+    private void loadData() {
         if (userCategoriesRef == null) return;
 
         userCategoriesRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 categoryList.clear();
-
-                // If there are no categories yet, load defaults automatically
-                if (!snapshot.exists()) {
-                    restoreDefaultCategories();
-                    return;
-                }
-
                 for (DataSnapshot s : snapshot.getChildren()) {
                     CategoryModel c = s.getValue(CategoryModel.class);
                     if (c != null) {
-                        // Ensure we use the Firebase key as the ID just in case
                         c.setId(s.getKey());
                         categoryList.add(c);
                     }
                 }
-                adapter.notifyDataSetChanged();
+
+                // If list is empty, offer to add defaults
+                if (categoryList.isEmpty()) {
+                    addDefaultCategories();
+                } else {
+                    adapter.notifyDataSetChanged();
+                }
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                Toast.makeText(CategoryActivity.this, "Failed to load categories.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(CategoryActivity.this, "Failed to load categories", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
-    private void restoreDefaultCategories() {
+    private void addDefaultCategories() {
+        saveCategoryToFirebase("Food & Dining", "#FF5733", R.drawable.ic_food_dining, false);
+        saveCategoryToFirebase("Transport", "#33C1FF", R.drawable.ic_transportation, false);
+        saveCategoryToFirebase("Bills & Utility", "#FFC300", R.drawable.ic_utilities, false);
+        saveCategoryToFirebase("Shopping", "#DAF7A6", R.drawable.ic_receipt_long, false);
+        saveCategoryToFirebase("Health", "#C70039", R.drawable.ic_medicine, false);
+    }
+
+    private void showAddDialog(CategoryModel category) {
+        boolean isEdit = (category != null);
+
+        EditText input = new EditText(this);
+        input.setHint("Category Name");
+        input.setBackgroundResource(R.drawable.rounded_input_background);
+        input.setTextColor(getThemeColor(R.attr.chk_textColorPrimary));
+        input.setHintTextColor(getThemeColor(R.attr.chk_textColorHint));
+
+        int padding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 12, getResources().getDisplayMetrics());
+        input.setPadding(padding, padding, padding, padding);
+
+        if (isEdit) input.setText(category.getName());
+
+        LinearLayout container = new LinearLayout(this);
+        container.setOrientation(LinearLayout.VERTICAL);
+        int margin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 20, getResources().getDisplayMetrics());
+        container.setPadding(margin, margin, margin, 0);
+        container.addView(input);
+
+        new AlertDialog.Builder(this)
+                .setTitle(isEdit ? "Edit Category" : "New Category")
+                .setView(container)
+                .setPositiveButton("Save", (d, w) -> {
+                    String name = input.getText().toString().trim();
+                    if (!name.isEmpty()) {
+                        // If editing and name changed, delete old one first
+                        if (isEdit && !category.getName().equals(name)) {
+                            if (userCategoriesRef != null) userCategoriesRef.child(category.getName()).removeValue();
+                        }
+
+                        String color = isEdit ? category.getColorHex() : getRandomColor();
+                        int icon = isEdit ? category.getIconResId() : R.drawable.ic_category;
+
+                        // Pass 'true' for custom if it's user-added
+                        saveCategoryToFirebase(name, color, icon, true);
+                    }
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private void saveCategoryToFirebase(String name, String colorHex, int iconResId, boolean isCustom) {
         if (userCategoriesRef == null) return;
 
-        // Universal list of Default Categories
-        String[] defaults = {
-                "Food & Dining", "Transport", "Bills & Utility",
-                "Salary", "Shopping", "Entertainment", "Health",
-                "Education", "Personal", "Other"
-        };
+        CategoryModel newCategory = new CategoryModel(
+                name,
+                transactionType,
+                colorHex,
+                iconResId,
+                isCustom
+        );
+        userCategoriesRef.child(name).setValue(newCategory);
+    }
 
-        for (String catName : defaults) {
-            // Use the convenience constructor for default categories (name, type)
-            CategoryModel defaultCat = new CategoryModel(catName, "UNIVERSAL");
-            defaultCat.setId(catName); // Set ID as the name for easy lookup
-            userCategoriesRef.child(catName).setValue(defaultCat);
-        }
+    @Override
+    public void onCategoryClick(CategoryModel category) {
+        // Handle click
+    }
 
-        Toast.makeText(this, "Default Categories Configured", Toast.LENGTH_SHORT).show();
+    @Override
+    public void onEditCategory(CategoryModel category) {
+        showAddDialog(category);
+    }
+
+    @Override
+    public void onDeleteCategory(CategoryModel category) {
+        new AlertDialog.Builder(this)
+                .setTitle("Delete Category")
+                .setMessage("Are you sure you want to delete " + category.getName() + "?")
+                .setPositiveButton("Delete", (d, w) -> {
+                    if (userCategoriesRef != null) {
+                        userCategoriesRef.child(category.getName()).removeValue();
+                        Toast.makeText(this, "Deleted: " + category.getName(), Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private String getRandomColor() {
+        Random r = new Random();
+        return String.format("#%02X%02X%02X", r.nextInt(200) + 55, r.nextInt(200) + 55, r.nextInt(200) + 55);
+    }
+
+    private int getThemeColor(int attrId) {
+        TypedValue typedValue = new TypedValue();
+        getTheme().resolveAttribute(attrId, typedValue, true);
+        return typedValue.data;
     }
 }

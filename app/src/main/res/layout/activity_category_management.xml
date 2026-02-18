@@ -13,7 +13,7 @@
         android:padding="16dp">
 
         <ImageView
-            android:id="@+id/back_button"
+            android:id="@+id/backButton"
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:layout_centerVertical="true"
@@ -25,7 +25,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_toEndOf="@id/back_button"
+            android:layout_toEndOf="@id/backButton"
             android:layout_centerVertical="true"
             android:layout_marginStart="16dp"
             android:text="Manage Categories"
@@ -35,32 +35,24 @@
             android:textStyle="bold" />
     </RelativeLayout>
 
-    <androidx.core.widget.NestedScrollView
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/categoriesRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@id/headerLayout"
-        android:paddingHorizontal="16dp"
-        android:paddingBottom="16dp">
+        android:padding="16dp"
+        android:clipToPadding="false"/>
 
-        <com.google.android.material.chip.ChipGroup
-            android:id="@+id/categoryChipGroup"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:chipSpacing="10dp"
-            app:singleSelection="true" />
-
-    </androidx.core.widget.NestedScrollView>
-
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fab_add_category"
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+        android:id="@+id/addNewCategoryButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
         android:layout_margin="24dp"
-        android:src="@drawable/ic_add"
+        android:text="Add Category"
+        app:icon="@drawable/ic_add"
         app:backgroundTint="?attr/chk_balanceColor"
-        app:tint="@android:color/white"
-        android:contentDescription="Add Category"/>
+        app:tint="@android:color/white" />
 
 </RelativeLayout>

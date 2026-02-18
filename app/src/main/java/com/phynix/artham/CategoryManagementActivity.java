@@ -3,7 +3,6 @@ package com.phynix.artham;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
@@ -38,7 +37,6 @@ public class CategoryManagementActivity extends AppCompatActivity {
         categoriesRecyclerView = findViewById(R.id.categoriesRecyclerView);
         ExtendedFloatingActionButton fab = findViewById(R.id.addNewCategoryButton);
         ImageView backButton = findViewById(R.id.backButton);
-        Button restoreButton = findViewById(R.id.restoreDefaultsButton);
 
         repository = DataRepository.getInstance(getApplication());
 
@@ -66,13 +64,6 @@ public class CategoryManagementActivity extends AppCompatActivity {
 
         fab.setOnClickListener(v -> startActivity(new Intent(this, CreateCategoryActivity.class)));
         backButton.setOnClickListener(v -> finish());
-
-        if(restoreButton != null) {
-            restoreButton.setOnClickListener(v -> {
-                loadData();
-                Toast.makeText(this, "Defaults Restored", Toast.LENGTH_SHORT).show();
-            });
-        }
     }
 
     private void loadData() {
