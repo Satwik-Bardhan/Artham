@@ -1,147 +1,66 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main_root_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?attr/chk_backgroundColor"
     android:fitsSystemWindows="true">
 
-    <androidx.cardview.widget.CardView
-        android:id="@+id/headerCard"
+    <RelativeLayout
+        android:id="@+id/headerLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginTop="16dp"
-        app:cardBackgroundColor="?attr/chk_headerColor"
-        app:cardCornerRadius="16dp"
-        app:cardElevation="0dp"
-        app:strokeWidth="1dp"
-        app:strokeColor="?attr/chk_dividerHorizontal">
+        android:padding="16dp">
 
-        <RelativeLayout
-            android:layout_width="match_parent"
+        <ImageView
+            android:id="@+id/back_button"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_centerVertical="true"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_arrow_left"
+            app:tint="?attr/chk_textColorPrimary"
+            android:contentDescription="Back" />
+
+        <TextView
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:padding="16dp">
-
-            <ImageView
-                android:id="@+id/backButton"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:layout_centerVertical="true"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:clickable="true"
-                android:focusable="true"
-                android:src="@drawable/ic_arrow_left"
-                app:tint="?attr/chk_textColorPrimary"
-                android:contentDescription="Back" />
-
-            <TextView
-                android:id="@+id/titleText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_toEndOf="@id/backButton"
-                android:layout_centerVertical="true"
-                android:layout_marginStart="16dp"
-                android:text="Manage Categories"
-                android:fontFamily="@font/app_font"
-                android:textColor="?attr/chk_textColorPrimary"
-                android:textSize="20sp"
-                android:textStyle="bold" />
-
-        </RelativeLayout>
-    </androidx.cardview.widget.CardView>
+            android:layout_toEndOf="@id/back_button"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="16dp"
+            android:text="Manage Categories"
+            android:fontFamily="@font/app_font"
+            android:textColor="?attr/chk_textColorPrimary"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+    </RelativeLayout>
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/headerCard"
-        android:fillViewport="true"
-        android:clipToPadding="false"
-        android:paddingBottom="80dp">
+        android:layout_below="@id/headerLayout"
+        android:paddingHorizontal="16dp"
+        android:paddingBottom="16dp">
 
-        <LinearLayout
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/categoryChipGroup"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="16dp">
+            app:chipSpacing="10dp"
+            app:singleSelection="true" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:layout_marginBottom="12dp"
-                android:fontFamily="@font/app_font"
-                android:text="Quick Actions"
-                android:textColor="?attr/chk_textColorSecondary"
-                android:textStyle="bold" />
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginBottom="8dp">
-
-                <Button
-                    android:id="@+id/restoreDefaultsButton"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/rounded_input_background"
-                    android:fontFamily="@font/app_font"
-                    android:text="Restore Default Categories"
-                    android:textAllCaps="false"
-                    android:textColor="?attr/chk_textColorPrimary"
-                    app:backgroundTint="@null"
-                    android:drawableStart="@drawable/ic_refresh"
-                    app:drawableTint="?attr/chk_textColorPrimary"/>
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:layout_marginBottom="12dp"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:id="@+id/categoryLabel"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="Your Categories"
-                    android:fontFamily="@font/app_font"
-                    android:textColor="?attr/chk_textColorPrimary"
-                    android:textSize="16sp"
-                    android:textStyle="bold" />
-            </LinearLayout>
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/categoriesRecyclerView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:nestedScrollingEnabled="false"
-                android:overScrollMode="never"
-                tools:listitem="@layout/item_category_management"/>
-
-        </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
-    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-        android:id="@+id/addNewCategoryButton"
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_add_category"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
         android:layout_margin="24dp"
-        android:fontFamily="@font/app_font"
-        android:text="Create New"
-        android:textColor="@android:color/white"
-        android:textStyle="bold"
+        android:src="@drawable/ic_add"
         app:backgroundTint="?attr/chk_balanceColor"
-        app:icon="@drawable/ic_add"
-        app:iconTint="@android:color/white"
-        android:elevation="6dp"/>
+        app:tint="@android:color/white"
+        android:contentDescription="Add Category"/>
 
 </RelativeLayout>
