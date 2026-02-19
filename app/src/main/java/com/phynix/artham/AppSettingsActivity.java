@@ -8,6 +8,8 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.phynix.artham.activities.CategoryActivity;
+
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -71,8 +73,7 @@ public class AppSettingsActivity extends AppCompatActivity {
         themeLayout = findViewById(R.id.themeLayout);
         currentThemeTextView = findViewById(R.id.currentTheme);
 
-        // [NEW] Bind the Category Management Layout
-        // Note: Ensure android:id="@+id/manageCategoriesLayout" exists in activity_app_settings.xml
+        // Bind the Category Management Layout
         manageCategoriesLayout = findViewById(R.id.manageCategoriesLayout);
     }
 
@@ -128,10 +129,18 @@ public class AppSettingsActivity extends AppCompatActivity {
             });
         }
 
-        // [NEW] Open CategoryManagementActivity
+        // [FIXED] Open CategoryActivity (Changed from CategoryManagementActivity)
         if (manageCategoriesLayout != null) {
             manageCategoriesLayout.setOnClickListener(v -> {
-                Intent intent = new Intent(AppSettingsActivity.this, CategoryManagementActivity.class);
+                Intent intent = new Intent(AppSettingsActivity.this, CategoryActivity.class);
+
+                // NOTE: CategoryActivity requires a 'cashbook_id' to load data.
+                // You should retrieve the current cashbook ID from SharedPreferences and pass it here.
+                // Example:
+                // SharedPreferences prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+                // String currentCashbookId = prefs.getString("current_cashbook_id", "");
+                // intent.putExtra("cashbook_id", currentCashbookId);
+
                 startActivity(intent);
             });
         }

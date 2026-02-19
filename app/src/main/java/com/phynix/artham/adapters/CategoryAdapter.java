@@ -1,12 +1,11 @@
 package com.phynix.artham.adapters;
 
 import android.content.Context;
-import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.TextView;
@@ -17,6 +16,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.phynix.artham.R;
 import com.phynix.artham.models.CategoryModel;
+import com.phynix.artham.utils.CategoryColorUtil;
 
 import java.util.List;
 
@@ -24,10 +24,13 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
 
     private final List<CategoryModel> categoryList;
     private final Context context;
-    private final OnCategoryClickListener listener;
+    private final OnCategoryClickListener clickListener;
     private final OnCategoryActionListener actionListener;
-    private String selectedCategoryName = "";
 
+    private String selectedCategoryName = "";
+    private boolean isManagementMode = false;
+
+    // Interfaces for interaction
     public interface OnCategoryClickListener {
         void onCategoryClick(CategoryModel category);
     }
@@ -38,15 +41,19 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
     }
 
     public CategoryAdapter(List<CategoryModel> categoryList, Context context,
-                           OnCategoryClickListener listener, OnCategoryActionListener actionListener) {
+                           OnCategoryClickListener clickListener, OnCategoryActionListener actionListener) {
         this.categoryList = categoryList;
         this.context = context;
-        this.listener = listener;
+        this.clickListener = clickListener;
         this.actionListener = actionListener;
     }
 
+    public void setManagementMode(boolean managementMode) {
+        this.isManagementMode = managementMode;
+    }
+
     public void setSelectedCategory(CategoryModel category) {
-        this.selectedCategoryName = category != null ? category.getName() : "";
+        this.selectedCategoryName = (category != null) ? category.getName() : "";
         notifyDataSetChanged();
     }
 
@@ -60,7 +67,58 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
     @Override
     public void onBindViewHolder(@NonNull CategoryViewHolder holder, int position) {
         CategoryModel category = categoryList.get(position);
-        holder.bind(category);
+        holder.nameText.setText(category.getName());
+
+        // 1. Handle Colors & Icons
+        int color;
+        try {
+            color = Color.parseColor(category.getColorHex());
+        } catch (Exception e) {
+            color = ContextCompat.getColor(context, R.color.category_default);
+        }
+
+        GradientDrawable bgShape = (GradientDrawable) holder.iconContainer.getBackground();
+        bgShape.setColor(color);
+
+        int iconRes = category.getIconResId() != 0 ? category.getIconResId() : R.drawable.ic_category;
+        holder.iconImage.setImageResource(iconRes);
+
+        // 2. Mode Logic: Management vs Selection
+        if (isManagementMode) {
+            holder.selectionCheck.setVisibility(View.GONE);
+            // Only show menu for custom categories (predefined ones usually can't be deleted)
+            holder.menuBtn.setVisibility(category.isCustom() ? View.VISIBLE : View.GONE);
+
+            holder.menuBtn.setOnClickListener(v -> showPopupMenu(v, category));
+        } else {
+            holder.menuBtn.setVisibility(View.GONE);
+            boolean isSelected = category.getName().equals(selectedCategoryName);
+            holder.selectionCheck.setVisibility(isSelected ? View.VISIBLE : View.GONE);
+        }
+
+        holder.itemView.setOnClickListener(v -> {
+            if (!isManagementMode) {
+                selectedCategoryName = category.getName();
+                notifyDataSetChanged();
+            }
+            clickListener.onCategoryClick(category);
+        });
+    }
+
+    private void showPopupMenu(View view, CategoryModel category) {
+        PopupMenu popup = new PopupMenu(context, view);
+        popup.getMenu().add("Edit");
+        popup.getMenu().add("Delete");
+
+        popup.setOnMenuItemClickListener(item -> {
+            if (item.getTitle().equals("Edit")) {
+                actionListener.onEditCategory(category);
+            } else {
+                actionListener.onDeleteCategory(category);
+            }
+            return true;
+        });
+        popup.show();
     }
 
     @Override
@@ -68,83 +126,18 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
         return categoryList.size();
     }
 
-    class CategoryViewHolder extends RecyclerView.ViewHolder {
-        TextView nameTextView;
-        ImageView iconView, menuView, selectionCheck;
-        FrameLayout iconContainer;
-        View rootLayout;
+    static class CategoryViewHolder extends RecyclerView.ViewHolder {
+        TextView nameText;
+        ImageView iconImage, selectionCheck, menuBtn;
+        View iconContainer;
 
         public CategoryViewHolder(@NonNull View itemView) {
             super(itemView);
-            nameTextView = itemView.findViewById(R.id.categoryName);
-            iconView = itemView.findViewById(R.id.categoryIcon);
-            menuView = itemView.findViewById(R.id.categoryMenu);
+            nameText = itemView.findViewById(R.id.categoryName);
+            iconImage = itemView.findViewById(R.id.categoryIcon);
             selectionCheck = itemView.findViewById(R.id.selectionCheck);
+            menuBtn = itemView.findViewById(R.id.categoryMenu);
             iconContainer = itemView.findViewById(R.id.iconContainer);
-            rootLayout = itemView.findViewById(R.id.rootLayout);
-        }
-
-        void bind(CategoryModel category) {
-            nameTextView.setText(category.getName());
-
-            // 1. Get Color
-            int color;
-            try {
-                if (category.getColorHex() != null && !category.getColorHex().isEmpty()) {
-                    color = Color.parseColor(category.getColorHex());
-                } else {
-                    color = ContextCompat.getColor(context, R.color.category_default);
-                }
-            } catch (Exception e) {
-                color = ContextCompat.getColor(context, R.color.category_default);
-            }
-
-            // 2. Apply Color to the Icon's Circle Background
-            if (iconContainer != null) {
-                iconContainer.setBackgroundTintList(ColorStateList.valueOf(color));
-            }
-
-            // 3. Set Icon Image
-            if (category.getIconResId() != 0) {
-                iconView.setImageResource(category.getIconResId());
-                iconView.setColorFilter(Color.WHITE);
-            } else {
-                iconView.setImageResource(R.drawable.ic_category);
-                iconView.setColorFilter(Color.WHITE);
-            }
-
-            // 4. Show/Hide Selection Checkmark
-            if (category.getName().equals(selectedCategoryName)) {
-                selectionCheck.setVisibility(View.VISIBLE);
-            } else {
-                selectionCheck.setVisibility(View.GONE);
-            }
-
-            // 5. Click Listener
-            itemView.setOnClickListener(v -> listener.onCategoryClick(category));
-
-            // 6. Show/Hide 3-Dot Menu for custom categories
-            if (category.isCustom()) {
-                menuView.setVisibility(View.VISIBLE);
-                menuView.setOnClickListener(v -> showPopupMenu(menuView, category));
-            } else {
-                menuView.setVisibility(View.GONE);
-            }
-        }
-
-        private void showPopupMenu(View view, CategoryModel category) {
-            PopupMenu popup = new PopupMenu(context, view);
-            popup.getMenu().add("Edit");
-            popup.getMenu().add("Delete");
-            popup.setOnMenuItemClickListener(item -> {
-                if (item.getTitle().equals("Edit")) {
-                    actionListener.onEditCategory(category);
-                } else if (item.getTitle().equals("Delete")) {
-                    actionListener.onDeleteCategory(category);
-                }
-                return true;
-            });
-            popup.show();
         }
     }
 }

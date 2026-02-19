@@ -11,7 +11,7 @@
 
     <attr name="chk_dividerHorizontal" format="color|reference" />
     <attr name="chk_dividerVertical" format="color|reference" />
-
+    <attr name="chk_dividerColor" format="color|reference" />
     <attr name="chk_primary_blue" format="color|reference" />
     <attr name="chk_secondary_green" format="color|reference" />
 
@@ -25,6 +25,5 @@
 
     <attr name="chk_card_start" format="color" />
     <attr name="chk_card_end" format="color" />
-
     <attr name="chk_splash_wave" format="color|reference" />
 </resources>

@@ -14,6 +14,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
+        android:layout_marginTop="8dp"
         app:cardBackgroundColor="?attr/chk_headerColor"
         app:cardCornerRadius="8dp"
         app:cardElevation="4dp">
@@ -149,9 +150,7 @@
 
             <include layout="@layout/layout_remarks_input" />
 
-            <include
-                android:id="@+id/categorySelectorLayout"
-                layout="@layout/layout_category_selector"/>
+            <include layout="@layout/layout_category_selector"/>
 
             <include layout="@layout/layout_party_selector" />
 
@@ -215,7 +214,22 @@
             android:textColor="@android:color/white"
             android:textStyle="bold"
             app:backgroundTint="@null" />
-
     </LinearLayout>
+
+    <FrameLayout
+        android:id="@+id/loadingOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#99000000"
+        android:clickable="true"
+        android:focusable="true"
+        android:visibility="gone">
+
+        <ProgressBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:indeterminateTint="?attr/chk_primary_blue" />
+    </FrameLayout>
 
 </RelativeLayout>

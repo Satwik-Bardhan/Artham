@@ -1,106 +1,201 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?attr/chk_backgroundColor"
-    android:orientation="vertical"
-    android:padding="24dp">
+    android:fitsSystemWindows="true">
 
-    <LinearLayout
+    <RelativeLayout
+        android:id="@+id/headerLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:layout_marginBottom="32dp">
+        android:background="?attr/chk_headerColor"
+        android:padding="16dp">
 
         <ImageView
             android:id="@+id/backButton"
             android:layout_width="32dp"
             android:layout_height="32dp"
+            android:layout_centerVertical="true"
+            android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@drawable/ic_arrow_left"
             app:tint="?attr/chk_textColorPrimary"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:clickable="true"
-            android:focusable="true"
-            android:contentDescription="Go Back"/>
+            android:contentDescription="Back" />
 
         <TextView
             android:id="@+id/titleText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="New Category"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="16dp"
+            android:layout_toEndOf="@id/backButton"
             android:fontFamily="@font/app_font"
-            android:textSize="22sp"
-            android:textStyle="bold"
+            android:text="New Category"
             android:textColor="?attr/chk_textColorPrimary"
-            android:layout_marginStart="16dp"/>
-    </LinearLayout>
+            android:textSize="20sp"
+            android:textStyle="bold" />
+    </RelativeLayout>
 
-    <com.google.android.material.textfield.TextInputLayout
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Category Name"
-        app:boxStrokeColor="?attr/chk_primary_blue"
-        app:hintTextColor="?attr/chk_primary_blue"
-        android:textColorHint="?attr/chk_textColorHint"
-        app:boxBackgroundColor="?attr/chk_surfaceColor"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+        android:layout_height="match_parent"
+        android:layout_below="@id/headerLayout"
+        android:clipToPadding="false"
+        android:padding="20dp">
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/categoryNameInput"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="textCapWords"
-            android:textColor="?attr/chk_textColorPrimary"
-            android:fontFamily="@font/app_font"/>
+            android:orientation="vertical">
 
-    </com.google.android.material.textfield.TextInputLayout>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/app_font"
+                android:text="Category Name"
+                android:textColor="?attr/chk_textColorSecondary"
+                android:textSize="14sp" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Choose Icon"
-        android:fontFamily="@font/app_font"
-        android:textColor="?attr/chk_textColorSecondary"
-        android:layout_marginTop="24dp"
-        android:layout_marginBottom="12dp"/>
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                app:boxCornerRadiusBottomEnd="12dp"
+                app:boxCornerRadiusBottomStart="12dp"
+                app:boxCornerRadiusTopEnd="12dp"
+                app:boxCornerRadiusTopStart="12dp"
+                app:boxStrokeColor="?attr/chk_primary_blue"
+                app:hintEnabled="false">
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/iconsRecyclerView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        tools:layout_height="60dp"/> <TextView
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:text="Choose Color"
-    android:fontFamily="@font/app_font"
-    android:textColor="?attr/chk_textColorSecondary"
-    android:layout_marginTop="24dp"
-    android:layout_marginBottom="12dp"/>
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/categoryNameInput"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/app_font"
+                    android:hint="e.g. Coffee, Gym, Side Project"
+                    android:inputType="textCapSentences"
+                    android:textColor="?attr/chk_textColorPrimary"
+                    android:textColorHint="?attr/chk_textColorSecondary" />
+            </com.google.android.material.textfield.TextInputLayout>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/colorsRecyclerView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        tools:layout_height="60dp"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:fontFamily="@font/app_font"
+                android:text="Customize Color"
+                android:textColor="?attr/chk_textColorSecondary"
+                android:textSize="14sp" />
 
-    <Space
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"/>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/bg_rounded_border"
+                android:backgroundTint="?attr/chk_surfaceColor"
+                android:orientation="vertical"
+                android:padding="16dp">
 
-    <Button
-        android:id="@+id/saveButton"
-        android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:text="Create Category"
-        android:fontFamily="@font/app_font"
-        android:textStyle="bold"
-        android:textColor="@android:color/white"
-        android:background="@drawable/button_primary"
-        app:backgroundTint="?attr/chk_primary_blue"/>
+                <com.skydoves.colorpickerview.ColorPickerView
+                    android:id="@+id/colorPickerView"
+                    android:layout_width="180dp"
+                    android:layout_height="180dp"
+                    android:layout_gravity="center"
+                    app:palette="@drawable/color_wheel_spectrum"
+                    app:selector="@drawable/color_selector_ring" />
 
-</LinearLayout>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:fontFamily="@font/app_font"
+                    android:text="Adjust Opacity"
+                    android:textColor="?attr/chk_textColorSecondary"
+                    android:textSize="12sp" />
+
+                <com.skydoves.colorpickerview.sliders.AlphaSlideBar
+                    android:id="@+id/alphaSlideBar"
+                    android:layout_width="match_parent"
+                    android:layout_height="18dp"
+                    android:layout_marginTop="8dp"
+                    app:selector_AlphaSlideBar="@drawable/color_selector_ring" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="24dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <View
+                        android:id="@+id/colorPreview"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:background="@drawable/circle_shape" />
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/colorHexText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/app_font"
+                            android:text="#FFFFFFFF"
+                            android:textColor="?attr/chk_textColorPrimary"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Selected Color Hex"
+                            android:fontFamily="@font/app_font"
+                            android:textColor="?attr/chk_textColorSecondary"
+                            android:textSize="10sp"/>
+                    </LinearLayout>
+                </LinearLayout>
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:fontFamily="@font/app_font"
+                android:text="Select Icon"
+                android:textColor="?attr/chk_textColorSecondary"
+                android:textSize="14sp" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/iconsRecyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:orientation="horizontal"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                tools:listitem="@layout/item_icon_select" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/saveButton"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="40dp"
+                android:layout_marginBottom="20dp"
+                android:fontFamily="@font/app_font"
+                android:text="Save Category"
+                android:textAllCaps="false"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:backgroundTint="?attr/chk_primary_blue"
+                app:cornerRadius="12dp" />
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+</RelativeLayout>

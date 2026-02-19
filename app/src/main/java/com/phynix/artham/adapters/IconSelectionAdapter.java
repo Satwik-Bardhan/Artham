@@ -1,7 +1,6 @@
 package com.phynix.artham.adapters;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,58 +10,63 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.phynix.artham.R;
 import java.util.List;
 
-public class IconSelectionAdapter extends RecyclerView.Adapter<IconSelectionAdapter.ViewHolder> {
+public class IconSelectionAdapter extends RecyclerView.Adapter<IconSelectionAdapter.IconViewHolder> {
 
-    private final List<Integer> icons;
-    private int selectedPosition = 0;
     private final Context context;
+    private final List<Integer> iconList;
+    private int selectedPosition = 0;
 
-    public IconSelectionAdapter(Context context, List<Integer> icons) {
+    public IconSelectionAdapter(Context context, List<Integer> iconList) {
         this.context = context;
-        this.icons = icons;
+        this.iconList = iconList;
     }
 
     public int getSelectedIcon() {
-        return icons.get(selectedPosition);
+        return iconList.get(selectedPosition);
     }
 
-    @NonNull @Override
-    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(context).inflate(R.layout.item_category_chip, parent, false);
-        // Reusing existing small layout or create a simple ImageView layout
-        // For simplicity, let's assume a simple square layout is used or create one dynamically
-        // Actually, let's use a standard view for clarity:
-        ImageView imageView = new ImageView(context);
-        imageView.setLayoutParams(new ViewGroup.LayoutParams(120, 120));
-        imageView.setPadding(24, 24, 24, 24);
-        return new ViewHolder(imageView);
+    @NonNull
+    @Override
+    public IconViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        // FIXED: Pointing to item_icon_select
+        View view = LayoutInflater.from(context).inflate(R.layout.item_icon_select, parent, false);
+        return new IconViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        holder.iconView.setImageResource(icons.get(position));
+    public void onBindViewHolder(@NonNull IconViewHolder holder, int position) {
+        int iconRes = iconList.get(position);
+        holder.iconImage.setImageResource(iconRes);
 
+        // Show selection ring if this icon is selected
         if (selectedPosition == position) {
-            holder.iconView.setBackgroundResource(R.drawable.circle_shape);
-            holder.iconView.setBackgroundTintList(android.content.res.ColorStateList.valueOf(Color.LTGRAY));
-            holder.iconView.setColorFilter(Color.BLACK);
+            holder.selectionIndicator.setVisibility(View.VISIBLE);
         } else {
-            holder.iconView.setBackground(null);
-            holder.iconView.setColorFilter(Color.GRAY);
+            holder.selectionIndicator.setVisibility(View.GONE);
         }
 
         holder.itemView.setOnClickListener(v -> {
-            int prev = selectedPosition;
+            int previousPosition = selectedPosition;
             selectedPosition = holder.getAdapterPosition();
-            notifyItemChanged(prev);
+            notifyItemChanged(previousPosition);
             notifyItemChanged(selectedPosition);
         });
     }
 
-    @Override public int getItemCount() { return icons.size(); }
+    @Override
+    public int getItemCount() {
+        return iconList.size();
+    }
 
-    static class ViewHolder extends RecyclerView.ViewHolder {
-        ImageView iconView;
-        ViewHolder(View itemView) { super(itemView); iconView = (ImageView) itemView; }
+    static class IconViewHolder extends RecyclerView.ViewHolder {
+        ImageView iconImage;
+        View selectionIndicator;
+
+        public IconViewHolder(@NonNull View itemView) {
+            super(itemView);
+            // These IDs must match item_icon_select.xml
+            iconImage = itemView.findViewById(R.id.iconImage);
+            selectionIndicator = itemView.findViewById(R.id.selectionIndicator);
+        }
     }
 }

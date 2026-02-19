@@ -13,7 +13,7 @@ public class CategoryColorUtil {
     private static final Map<String, Integer> categoryIconMap = new HashMap<>();
 
     static {
-        // --- Colors ---
+        // --- Static Mapping for Default Categories ---
         categoryColorMap.put("Food & Dining", R.color.category_food);
         categoryColorMap.put("Bills & Utility", R.color.category_utilities);
         categoryColorMap.put("Transport", R.color.category_transport);
@@ -22,10 +22,10 @@ public class CategoryColorUtil {
         categoryColorMap.put("Entertainment", R.color.category_entertainment);
         categoryColorMap.put("Health", R.color.category_health);
         categoryColorMap.put("Education", R.color.category_education);
-        categoryColorMap.put("Personal", R.color.purple_primary);
+        categoryColorMap.put("Salary", R.color.category_salary);
+        categoryColorMap.put("Investment", R.color.category_investment);
         categoryColorMap.put("Other", R.color.category_other);
 
-        // --- Icons ---
         categoryIconMap.put("Food & Dining", R.drawable.ic_food_dining);
         categoryIconMap.put("Bills & Utility", R.drawable.ic_utilities);
         categoryIconMap.put("Transport", R.drawable.ic_transportation);
@@ -34,8 +34,21 @@ public class CategoryColorUtil {
         categoryIconMap.put("Entertainment", R.drawable.ic_entertainment);
         categoryIconMap.put("Health", R.drawable.ic_medicine);
         categoryIconMap.put("Education", R.drawable.ic_book);
-        categoryIconMap.put("Personal", R.drawable.ic_person);
-        categoryIconMap.put("Other", R.drawable.ic_all_inclusive);
+        categoryIconMap.put("Salary", R.drawable.ic_money);
+        categoryIconMap.put("Investment", R.drawable.ic_all_inclusive);
+    }
+
+    /**
+     * Converts a Hex string to an Int color.
+     * Handles standard #RRGGBB and #AARRGGBB.
+     */
+    public static int parseHexColor(String hex, int defaultColor) {
+        try {
+            if (hex == null || hex.isEmpty()) return defaultColor;
+            return Color.parseColor(hex);
+        } catch (Exception e) {
+            return defaultColor;
+        }
     }
 
     public static int getCategoryColor(Context context, String categoryName) {
@@ -44,8 +57,8 @@ public class CategoryColorUtil {
         if (categoryColorMap.containsKey(categoryName)) {
             return ContextCompat.getColor(context, categoryColorMap.get(categoryName));
         } else {
-            // Generate a consistent "Random" color for custom categories based on name hash
-            return generateRandomColor(categoryName);
+            // Consistent generated color based on name hash if no hex is provided
+            return generateConsistentColor(categoryName);
         }
     }
 
@@ -53,18 +66,17 @@ public class CategoryColorUtil {
         if (categoryName != null && categoryIconMap.containsKey(categoryName)) {
             return categoryIconMap.get(categoryName);
         }
-        // Default Icon for custom categories
-        return R.drawable.ic_category;
+        return R.drawable.ic_category; // Default
     }
 
-    private static int generateRandomColor(String key) {
+    private static int generateConsistentColor(String key) {
         int hash = key.hashCode();
-        // Generate RGB values from hash to ensure same name always gets same color
+        // Extract RGB, ensuring they stay in a "vibrant but readable" range
         int r = (hash & 0xFF0000) >> 16;
         int g = (hash & 0x00FF00) >> 8;
         int b = (hash & 0x0000FF);
 
-        // Ensure color isn't too light (so it shows on white bg)
-        return Color.rgb((r + 50) % 200, (g + 50) % 200, (b + 50) % 200);
+        // Adjust brightness so colors aren't too dark or too light
+        return Color.rgb((r + 40) % 200, (g + 40) % 200, (b + 40) % 200);
     }
 }

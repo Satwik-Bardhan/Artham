@@ -7,13 +7,16 @@ import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.res.ColorStateList;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.provider.ContactsContract;
 import android.speech.RecognizerIntent;
+import android.text.Editable;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
@@ -26,18 +29,22 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.phynix.artham.activities.ChooseCategoryActivity;
+import com.phynix.artham.utils.CategoryColorUtil;
+
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.cardview.widget.CardView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.phynix.artham.models.TransactionModel;
@@ -60,9 +67,11 @@ public class CashInOutActivity extends AppCompatActivity {
 
     // UI Elements
     private TextView headerTitle, headerSubtitle;
-    private ImageView backButton;
+    private ImageView backButton, selectedCategoryIcon;
     private TextView dateTextView, timeTextView, selectedCategoryTextView;
-    private LinearLayout dateSelectorLayout, timeSelectorLayout, categorySelectorLayout;
+    private LinearLayout dateSelectorLayout, timeSelectorLayout;
+    private MaterialCardView categorySelectorCard; // Using CardView for the selector
+    private View selectedIconContainer;
     private RadioGroup inOutToggle, cashOnlineToggle;
     private RadioButton radioIn, radioOut, radioCash, radioOnline;
     private View swapButton, calculatorButton, voiceInputButton, locationButton, contactBookButton;
@@ -79,6 +88,7 @@ public class CashInOutActivity extends AppCompatActivity {
     private String currentCashbookId;
     private Calendar calendar;
     private String selectedCategory = "Other";
+    private String selectedColorHex = "#9E9E9E"; // Default Grey
     private String selectedParty = null;
     private String currentLocation = null;
     private boolean isSaveAndNew = false;
@@ -126,12 +136,6 @@ public class CashInOutActivity extends AppCompatActivity {
         startRealTimeClock();
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        checkCalculatorSetting();
-    }
-
     private void observeViewModel() {
         viewModel.getIsLoading().observe(this, isLoading -> {
             saveEntryButton.setEnabled(!isLoading);
@@ -151,7 +155,6 @@ public class CashInOutActivity extends AppCompatActivity {
             if (success) {
                 Toast.makeText(this, "Entry Saved Successfully", Toast.LENGTH_SHORT).show();
                 if (isSaveAndNew) {
-                    // Keep transaction type AND payment method for repetitive entries
                     clearForm(true);
                     isSaveAndNew = false;
                 } else {
@@ -195,8 +198,11 @@ public class CashInOutActivity extends AppCompatActivity {
         remarkEditText = findViewById(R.id.remarkEditText);
         voiceInputButton = findViewById(R.id.voiceInputButton);
 
+        // CATEGORY SELECTOR VIEWS
         selectedCategoryTextView = findViewById(R.id.selectedCategoryTextView);
-        categorySelectorLayout = findViewById(R.id.categorySelectorLayout);
+        categorySelectorCard = findViewById(R.id.categorySelectorCard); // Matching the Card ID
+        selectedIconContainer = findViewById(R.id.selectedIconContainer);
+        selectedCategoryIcon = findViewById(R.id.selectedCategoryIcon);
 
         partyTextView = findViewById(R.id.partyTextView);
         contactBookButton = findViewById(R.id.contactBookButton);
@@ -207,6 +213,7 @@ public class CashInOutActivity extends AppCompatActivity {
         saveEntryButton = findViewById(R.id.saveEntryButton);
         saveAndAddNewButton = findViewById(R.id.saveAndAddNewButton);
         clearButton = findViewById(R.id.clearButton);
+        loadingOverlay = findViewById(R.id.loadingOverlay);
     }
 
     private void initializeDateTime() {
@@ -256,7 +263,11 @@ public class CashInOutActivity extends AppCompatActivity {
                 taxAmountLayout.setVisibility(isChecked ? View.VISIBLE : View.GONE));
 
         voiceInputButton.setOnClickListener(v -> startVoiceInput());
-        categorySelectorLayout.setOnClickListener(v -> openCategorySelector());
+
+        // FIXED: Click listener for category selection
+        if (categorySelectorCard != null) {
+            categorySelectorCard.setOnClickListener(v -> openCategorySelector());
+        }
 
         partyTextView.setOnClickListener(v -> openPartySelector());
         contactBookButton.setOnClickListener(v -> openContactPicker());
@@ -314,14 +325,26 @@ public class CashInOutActivity extends AppCompatActivity {
                 }
         );
 
+        // UPDATED: Handle Category Result with Color and Name
         categoryLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
                     if (result.getResultCode() == RESULT_OK && result.getData() != null) {
-                        selectedCategory = result.getData().getStringExtra("selected_category");
+                        selectedCategory = result.getData().getStringExtra("category_name");
+                        selectedColorHex = result.getData().getStringExtra("category_color");
+
                         if (selectedCategory != null) {
                             selectedCategoryTextView.setText(selectedCategory);
                             selectedCategoryTextView.setTextColor(ContextCompat.getColor(this, R.color.primary_blue));
+
+                            // Apply Color to Icon Container
+                            if (selectedColorHex != null) {
+                                try {
+                                    selectedIconContainer.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor(selectedColorHex)));
+                                } catch (Exception e) {
+                                    selectedIconContainer.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(this, R.color.primary_blue)));
+                                }
+                            }
                         }
                     }
                 }
@@ -349,10 +372,10 @@ public class CashInOutActivity extends AppCompatActivity {
             updateHeaderForTransactionType(Constants.TRANSACTION_TYPE_IN);
         }
 
-        // Requirement: Online mode as default for every fresh page open
         radioOnline.setChecked(true);
-
         amountEditText.requestFocus();
+
+        // Initial Category state
         selectedCategoryTextView.setText(selectedCategory);
     }
 
@@ -392,11 +415,6 @@ public class CashInOutActivity extends AppCompatActivity {
         viewModel.saveTransaction(currentCashbookId, transaction);
     }
 
-    /**
-     * Clears the input form.
-     * @param preserveContext If true, preserves the current transaction type and payment method (for Save & New).
-     * If false, resets the form to the default state (for Clear button).
-     */
     private void clearForm(boolean preserveContext) {
         amountEditText.setText("");
         remarkEditText.setText("");
@@ -405,6 +423,8 @@ public class CashInOutActivity extends AppCompatActivity {
         partyTextView.setText("");
 
         selectedCategory = "Other";
+        selectedColorHex = "#9E9E9E";
+        selectedIconContainer.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor(selectedColorHex)));
         selectedParty = null;
         currentLocation = null;
 
@@ -412,12 +432,8 @@ public class CashInOutActivity extends AppCompatActivity {
 
         if (!preserveContext) {
             radioIn.setChecked(true);
-            // Requirement: Reset to online when user clicks clear manually
             radioOnline.setChecked(true);
         }
-
-        // If preserveContext is true, we leave radioGroups untouched,
-        // effectively saving the previous selection for the next entry.
 
         taxCheckbox.setChecked(false);
         taxAmountLayout.setVisibility(View.GONE);
@@ -488,10 +504,6 @@ public class CashInOutActivity extends AppCompatActivity {
         View view = getLayoutInflater().inflate(R.layout.dialog_calculator, null);
         builder.setView(view);
         AlertDialog dialog = builder.create();
-
-        TextView display = view.findViewById(R.id.calc_display);
-        display.setText(amountEditText.getText().toString());
-
         dialog.show();
     }
 
@@ -518,9 +530,9 @@ public class CashInOutActivity extends AppCompatActivity {
 
     private void openCategorySelector() {
         Intent intent = new Intent(this, ChooseCategoryActivity.class);
-        intent.putExtra("selected_category", selectedCategory);
         intent.putExtra(Constants.EXTRA_CASHBOOK_ID, currentCashbookId);
-        intent.putExtra(Constants.EXTRA_TRANSACTION_TYPE, radioIn.isChecked() ? Constants.TRANSACTION_TYPE_IN : Constants.TRANSACTION_TYPE_OUT);
+        // Correctly pass the type (IN or OUT) to filter the selection list
+        intent.putExtra("type", radioIn.isChecked() ? Constants.TRANSACTION_TYPE_IN : Constants.TRANSACTION_TYPE_OUT);
         categoryLauncher.launch(intent);
     }
 

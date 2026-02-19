@@ -44,7 +44,7 @@
     <style name="DividerStyle">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">1dp</item>
-        <item name="android:background">?attr/chk_dividerHorizontal</item>
+        <item name="android:background">?attr/chk_dividerColor</item>
         <item name="android:layout_marginHorizontal">16dp</item>
     </style>
 
@@ -75,7 +75,7 @@
         <item name="android:fontFamily">@font/app_font</item>
         <item name="android:textStyle">bold</item>
         <item name="cornerRadius">12dp</item>
-        <item name="rippleColor">?attr/chk_dividerHorizontal</item>
+        <item name="rippleColor">?attr/chk_dividerColor</item>
     </style>
 
     <style name="DetailLabelStyle">
@@ -101,7 +101,7 @@
         <item name="android:layout_width">24dp</item>
         <item name="android:layout_height">24dp</item>
         <item name="android:layout_marginEnd">16dp</item>
-        <item name="tint">?attr/chk_primary_blue</item>
+        <item name="android:tint">?attr/chk_primary_blue</item>
     </style>
 
     <style name="DetailValueStyle">

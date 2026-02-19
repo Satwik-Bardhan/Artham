@@ -91,8 +91,12 @@ dependencies {
     implementation("com.github.bumptech.glide:glide:4.16.0")
     implementation("com.itextpdf:itextpdf:5.5.13.3")
 
+    implementation("com.github.skydoves:colorpickerview:2.2.4")
+
+
     // --- Testing ---
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
+
 }

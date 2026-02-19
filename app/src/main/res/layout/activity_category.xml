@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?attr/chk_backgroundColor"
@@ -10,6 +11,7 @@
         android:id="@+id/headerLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="?attr/chk_headerColor"
         android:padding="16dp">
 
         <ImageView
@@ -19,17 +21,16 @@
             android:layout_centerVertical="true"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@drawable/ic_arrow_left"
-            app:tint="?attr/chk_textColorPrimary"
-            android:contentDescription="Back" />
+            app:tint="?attr/chk_textColorPrimary" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_toEndOf="@id/backButton"
             android:layout_centerVertical="true"
             android:layout_marginStart="16dp"
-            android:text="Manage Categories"
+            android:layout_toEndOf="@id/backButton"
             android:fontFamily="@font/app_font"
+            android:text="Manage Categories"
             android:textColor="?attr/chk_textColorPrimary"
             android:textSize="20sp"
             android:textStyle="bold" />
@@ -40,19 +41,21 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@id/headerLayout"
-        android:padding="16dp"
-        android:clipToPadding="false"/>
+        android:padding="8dp"
+        android:clipToPadding="false"
+        tools:listitem="@layout/item_category" />
 
-    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-        android:id="@+id/addNewCategoryButton"
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabAdd"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
         android:layout_margin="24dp"
-        android:text="Add Category"
-        app:icon="@drawable/ic_add"
-        app:backgroundTint="?attr/chk_balanceColor"
-        app:tint="@android:color/white" />
+        android:src="@drawable/ic_add"
+        app:tint="@android:color/white"
+        app:backgroundTint="?attr/chk_primary_blue"
+        app:elevation="6dp"
+        android:contentDescription="Add Category" />
 
 </RelativeLayout>

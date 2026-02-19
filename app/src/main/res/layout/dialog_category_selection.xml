@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="?android:attr/colorBackground"
+    android:background="?attr/chk_backgroundColor"
     android:orientation="vertical"
     android:padding="16dp">
 
@@ -12,10 +12,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
-        android:fontFamily="@font/inter_bold"
+        android:fontFamily="@font/app_font"
         android:text="Filter Categories"
-        android:textColor="?android:attr/textColorPrimary"
-        android:textSize="18sp" />
+        android:textColor="?attr/chk_textColorPrimary"
+        android:textSize="18sp"
+        android:textStyle="bold" />
 
     <EditText
         android:id="@+id/searchEditText"
@@ -24,15 +25,15 @@
         android:layout_marginBottom="12dp"
         android:background="@drawable/rounded_input_background"
         android:drawableStart="@drawable/ic_search"
-        android:drawablePadding="8dp"
-        android:drawableTint="?android:attr/textColorPrimary"
-        android:fontFamily="@font/inter_regular"
+        android:drawablePadding="10dp"
+        android:drawableTint="?attr/chk_textColorSecondary"
+        android:fontFamily="@font/app_font"
         android:hint="Search Categories"
         android:inputType="text"
         android:maxLines="1"
         android:padding="12dp"
-        android:textColor="?android:attr/textColorPrimary"
-        android:textColorHint="?android:attr/textColorPrimary"
+        android:textColor="?attr/chk_textColorPrimary"
+        android:textColorHint="?attr/chk_textColorSecondary"
         android:textSize="14sp" />
 
     <androidx.recyclerview.widget.RecyclerView
@@ -40,8 +41,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
+        app:layoutManager="androidx.recyclerview.widget.StaggeredGridLayoutManager"
+        app:spanCount="3"
         tools:itemCount="5"
-        tools:listitem="@layout/item_category_chip" />
+        tools:listitem="@layout/list_item_category_filter" />
 
     <LinearLayout
         android:id="@+id/noCategoriesLayout"
@@ -58,14 +61,14 @@
             android:layout_height="48dp"
             android:layout_marginBottom="8dp"
             android:src="@drawable/ic_category"
-            app:tint="?android:attr/textColorPrimary" />
+            app:tint="?attr/chk_textColorSecondary" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:fontFamily="@font/inter_regular"
+            android:fontFamily="@font/app_font"
             android:text="No categories found"
-            android:textColor="?android:attr/textColorPrimary" />
+            android:textColor="?attr/chk_textColorSecondary" />
     </LinearLayout>
 
 </LinearLayout>

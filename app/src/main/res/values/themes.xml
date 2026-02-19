@@ -27,7 +27,7 @@
         <item name="chk_surfaceColor">@color/surfaceColor</item>
         <item name="chk_dividerHorizontal">@color/divider_color</item>
         <item name="chk_dividerVertical">@color/divider_color</item>
-        <item name="chk_selectedItemColor">@color/selected_item_bg</item>
+        <item name="chk_dividerColor">@color/divider_color</item> <item name="chk_selectedItemColor">@color/selected_item_bg</item>
 
         <item name="chk_textColorPrimary">@color/textColorPrimary</item>
         <item name="chk_textColorSecondary">@color/textColorSecondary</item>
@@ -45,7 +45,6 @@
         <item name="chk_bottomNavIconTextColor">@color/bottom_nav_icon_text_color</item>
         <item name="chk_bottomNavSelectedColor">@color/bottom_nav_selected</item>
         <item name="chk_bottomNavBorderColor">@color/bottom_nav_item_unselected_border</item>
-
 
         <item name="chk_card_start">#1A2938</item>
         <item name="chk_card_end">#2C3E50</item>
@@ -69,7 +68,7 @@
         <item name="chk_surfaceColor">@color/dark_surface</item>
         <item name="chk_dividerHorizontal">@color/dark_divider</item>
         <item name="chk_dividerVertical">@color/dark_divider</item>
-        <item name="chk_selectedItemColor">@color/dark_selected_item</item>
+        <item name="chk_dividerColor">@color/dark_divider</item> <item name="chk_selectedItemColor">@color/dark_selected_item</item>
         <item name="chk_textColorPrimary">@color/dark_text_primary</item>
         <item name="chk_textColorSecondary">@color/dark_text_secondary</item>
         <item name="chk_textColorHint">@color/dark_text_hint</item>
@@ -107,7 +106,7 @@
         <item name="chk_surfaceColor">@color/purple_surface</item>
         <item name="chk_dividerHorizontal">@color/purple_divider</item>
         <item name="chk_dividerVertical">@color/purple_divider</item>
-        <item name="chk_selectedItemColor">@color/purple_selected_item</item>
+        <item name="chk_dividerColor">@color/purple_divider</item> <item name="chk_selectedItemColor">@color/purple_selected_item</item>
         <item name="chk_textColorPrimary">@color/purple_text_primary</item>
         <item name="chk_textColorSecondary">@color/purple_text_secondary</item>
         <item name="chk_textColorHint">@color/purple_text_hint</item>
