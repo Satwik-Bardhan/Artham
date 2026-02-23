@@ -3,6 +3,8 @@ package com.phynix.artham.activities;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ImageView;
+import android.widget.PopupMenu;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -11,6 +13,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -18,108 +21,141 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.phynix.artham.R;
-import com.phynix.artham.adapters.CategoryAdapter;
+import com.phynix.artham.adapters.ManageCategoryAdapter;
 import com.phynix.artham.models.CategoryModel;
-import com.phynix.artham.utils.ThemeManager;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
-public class CategoryActivity extends AppCompatActivity {
+public class CategoryActivity extends AppCompatActivity implements ManageCategoryAdapter.OnCategoryActionClickListener {
 
-    private RecyclerView recyclerView;
-    private CategoryAdapter adapter;
-    private List<CategoryModel> categoryList = new ArrayList<>();
-    private DatabaseReference dbRef;
-    private String currentCashbookId;
+    private RecyclerView categoriesRecyclerView;
+    private FloatingActionButton fabAdd;
+    private ImageView backButton;
+
+    private ManageCategoryAdapter adapter;
+    private List<CategoryModel> categoryList;
+    private DatabaseReference categoryRef;
+    private String userId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        ThemeManager.applyActivityTheme(this);
+        // Theme initialization should happen before super.onCreate if you have a ThemeManager
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_category);
 
-        currentCashbookId = getIntent().getStringExtra("cashbook_id");
+        userId = FirebaseAuth.getInstance().getUid();
+        if (userId != null) {
+            categoryRef = FirebaseDatabase.getInstance().getReference("users")
+                    .child(userId).child("categories");
+        }
 
         initViews();
-        setupFirebase();
+        setupRecyclerView();
+        loadCategories();
     }
 
     private void initViews() {
-        recyclerView = findViewById(R.id.categoriesRecyclerView);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        categoriesRecyclerView = findViewById(R.id.categoriesRecyclerView);
+        fabAdd = findViewById(R.id.fabAdd);
+        backButton = findViewById(R.id.backButton);
 
-        // Initialize adapter with Management Mode enabled
-        adapter = new CategoryAdapter(categoryList, this,
-                category -> {
-                    // On Click: Open editor
-                    openEditor(category);
-                },
-                new CategoryAdapter.OnCategoryActionListener() {
-                    @Override
-                    public void onEditCategory(CategoryModel category) {
-                        openEditor(category);
-                    }
+        backButton.setOnClickListener(v -> onBackPressed());
 
-                    @Override
-                    public void onDeleteCategory(CategoryModel category) {
-                        showDeleteConfirmation(category);
-                    }
-                });
-
-        adapter.setManagementMode(true);
-        recyclerView.setAdapter(adapter);
-
-        findViewById(R.id.backButton).setOnClickListener(v -> finish());
-        findViewById(R.id.fabAdd).setOnClickListener(v -> openEditor(null));
-    }
-
-    private void setupFirebase() {
-        String uid = FirebaseAuth.getInstance().getUid();
-        if (uid == null || currentCashbookId == null) return;
-
-        // Note: This fetches BOTH Income and Expense categories if you want a master list,
-        // or you can specificy a type. Here we fetch the custom categories node.
-        dbRef = FirebaseDatabase.getInstance().getReference("users")
-                .child(uid).child("cashbooks")
-                .child(currentCashbookId).child("categories");
-
-        dbRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                categoryList.clear();
-                // Iterate through "IN", "OUT", and "UNIVERSAL"
-                for (DataSnapshot typeSnapshot : snapshot.getChildren()) {
-                    for (DataSnapshot categorySnap : typeSnapshot.getChildren()) {
-                        CategoryModel model = categorySnap.getValue(CategoryModel.class);
-                        if (model != null) categoryList.add(model);
-                    }
-                }
-                adapter.notifyDataSetChanged();
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {}
+        fabAdd.setOnClickListener(v -> {
+            // Navigate to Create Category Screen
+            Intent intent = new Intent(CategoryActivity.this, CreateCategoryActivity.class);
+            startActivity(intent);
         });
     }
 
-    private void openEditor(CategoryModel category) {
-        Intent intent = new Intent(this, CreateCategoryActivity.class);
-        intent.putExtra("cashbook_id", currentCashbookId);
-        if (category != null) {
-            intent.putExtra("EDIT_NAME", category.getName());
-            intent.putExtra("type", category.getType());
-        }
-        startActivity(intent);
+    private void setupRecyclerView() {
+        categoryList = new ArrayList<>();
+        adapter = new ManageCategoryAdapter(categoryList, this);
+        categoriesRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        categoriesRecyclerView.setAdapter(adapter);
     }
 
-    private void showDeleteConfirmation(CategoryModel category) {
+    private void loadCategories() {
+        if (categoryRef == null) return;
+
+        categoryRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                categoryList.clear();
+                List<CategoryModel> defaultCats = new ArrayList<>();
+                List<CategoryModel> customCats = new ArrayList<>();
+
+                for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
+                    CategoryModel category = dataSnapshot.getValue(CategoryModel.class);
+                    if (category != null) {
+                        category.setId(dataSnapshot.getKey());
+                        // Requirement #4: Separate Default and Custom
+                        if (category.isCustom()) {
+                            customCats.add(category);
+                        } else {
+                            defaultCats.add(category);
+                        }
+                    }
+                }
+
+                // Sort alphabetically within their groups
+                Collections.sort(defaultCats, (c1, c2) -> c1.getName().compareToIgnoreCase(c2.getName()));
+                Collections.sort(customCats, (c1, c2) -> c1.getName().compareToIgnoreCase(c2.getName()));
+
+                // Combine: Defaults first, then User-Created
+                categoryList.addAll(defaultCats);
+                categoryList.addAll(customCats);
+
+                adapter.updateData(categoryList);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(CategoryActivity.this, "Failed to load categories.", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    @Override
+    public void onMenuClick(CategoryModel category, View anchorView) {
+        // Only Custom categories will trigger this due to adapter logic (Req #4)
+        PopupMenu popupMenu = new PopupMenu(this, anchorView);
+        popupMenu.getMenuInflater().inflate(R.menu.menu_category_actions, popupMenu.getMenu());
+
+        popupMenu.setOnMenuItemClickListener(item -> {
+            int itemId = item.getItemId();
+            if (itemId == R.id.action_edit) {
+                // Navigate to edit screen (pass category ID)
+                Intent intent = new Intent(CategoryActivity.this, CreateCategoryActivity.class);
+                intent.putExtra("CATEGORY_ID", category.getId());
+                startActivity(intent);
+                return true;
+            } else if (itemId == R.id.action_delete) {
+                showDeleteConfirmationDialog(category);
+                return true;
+            }
+            return false;
+        });
+        popupMenu.show();
+    }
+
+    @Override
+    public void onCategoryClick(CategoryModel category) {
+        // Optional: Do something when the whole category row is clicked
+    }
+
+    private void showDeleteConfirmationDialog(CategoryModel category) {
         new AlertDialog.Builder(this)
                 .setTitle("Delete Category")
-                .setMessage("Are you sure you want to delete '" + category.getName() + "'?")
+                .setMessage("Are you sure you want to delete '" + category.getName() + "'? Transactions using this category will not be deleted, but may show as 'Other'.")
                 .setPositiveButton("Delete", (dialog, which) -> {
-                    dbRef.child(category.getType()).child(category.getName()).removeValue()
-                            .addOnSuccessListener(aVoid -> Toast.makeText(this, "Deleted", Toast.LENGTH_SHORT).show());
+                    if (categoryRef != null && category.getId() != null) {
+                        categoryRef.child(category.getId()).removeValue()
+                                .addOnSuccessListener(aVoid -> Toast.makeText(CategoryActivity.this, "Category deleted", Toast.LENGTH_SHORT).show())
+                                .addOnFailureListener(e -> Toast.makeText(CategoryActivity.this, "Failed to delete", Toast.LENGTH_SHORT).show());
+                    }
                 })
                 .setNegativeButton("Cancel", null)
                 .show();

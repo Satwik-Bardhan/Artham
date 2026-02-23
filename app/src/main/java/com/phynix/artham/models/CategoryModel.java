@@ -12,30 +12,34 @@ public class CategoryModel {
     private String type; // "IN", "OUT", or "UNIVERSAL"
     private String colorHex; // Store full ARGB Hex (e.g., #80FF5722)
     private int iconResId;
-    private boolean custom; // True if user-created, False if predefined
+    private boolean custom; // True if user-created, False if predefined default
 
-    // Required empty constructor for Firebase
+    // Required empty constructor for Firebase DataSnapshot deserialization
     public CategoryModel() {}
 
     /**
-     * NEW: Constructor used for auto-seeding default categories
-     * This fixes the "no suitable constructor found" error.
+     * Constructor specifically for auto-seeding Default Categories.
+     * Enforces custom = false.
+     * * @param name Name of the category
+     * @param colorHex Color in Hex format mapping to the pie chart/legend
+     * @param type Transaction type (IN/OUT/UNIVERSAL)
+     * @param iconResId Specific icon resource ID for this default category
      */
-    public CategoryModel(String name, String colorHex, String type) {
+    public CategoryModel(String name, String colorHex, String type, int iconResId) {
         this.name = name;
         this.colorHex = colorHex;
         this.type = type;
-        this.iconResId = R.drawable.ic_category; // Default category icon
-        this.custom = false; // Defaults are not user-custom
+        this.iconResId = iconResId;
+        this.custom = false; // Strictly a system default
     }
 
     /**
-     * Standard constructor for creating categories
-     * @param name Name of the category
+     * Constructor for User-Created Custom Categories.
+     * * @param name Name of the category
      * @param type Transaction type (IN/OUT/UNIVERSAL)
-     * @param colorHex Color in Hex format
-     * @param iconResId Resource ID of the icon
-     * @param custom Whether it is a user-created category
+     * @param colorHex Color chosen by the user in Hex format
+     * @param iconResId Resource ID of the icon chosen by the user
+     * @param custom Whether it is a user-created category (should be true here)
      */
     public CategoryModel(String name, String type, String colorHex, int iconResId, boolean custom) {
         this.name = name;
@@ -45,16 +49,17 @@ public class CategoryModel {
         this.custom = custom;
     }
 
-    // Secondary constructor for simple initialization
+    // Secondary simplified constructor
     public CategoryModel(String name, String type) {
         this.name = name;
         this.type = type;
-        this.colorHex = "#9E9E9E"; // Default Grey
+        this.colorHex = "#9E9E9E"; // Theme-safe fallback Grey
         this.iconResId = R.drawable.ic_category;
-        this.custom = false;
+        this.custom = true; // Assumed user-created if using basic constructor
     }
 
-    // Getters and Setters
+    // --- Getters and Setters ---
+
     @Exclude
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }

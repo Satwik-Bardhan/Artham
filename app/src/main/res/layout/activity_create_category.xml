@@ -20,9 +20,9 @@
             android:layout_height="32dp"
             android:layout_centerVertical="true"
             android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Back"
             android:src="@drawable/ic_arrow_left"
-            app:tint="?attr/chk_textColorPrimary"
-            android:contentDescription="Back" />
+            app:tint="?attr/chk_textColorPrimary" />
 
         <TextView
             android:id="@+id/titleText"
@@ -38,9 +38,25 @@
             android:textStyle="bold" />
     </RelativeLayout>
 
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/saveButton"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_alignParentBottom="true"
+        android:layout_marginHorizontal="20dp"
+        android:layout_marginBottom="16dp"
+        android:fontFamily="@font/app_font"
+        android:text="Save Category"
+        android:textAllCaps="false"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:backgroundTint="?attr/chk_primary_blue"
+        app:cornerRadius="12dp" />
+
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_above="@id/saveButton"
         android:layout_below="@id/headerLayout"
         android:clipToPadding="false"
         android:padding="20dp">
@@ -155,10 +171,10 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Selected Color Hex"
                             android:fontFamily="@font/app_font"
+                            android:text="Selected Color Hex"
                             android:textColor="?attr/chk_textColorSecondary"
-                            android:textSize="10sp"/>
+                            android:textSize="10sp" />
                     </LinearLayout>
                 </LinearLayout>
             </LinearLayout>
@@ -177,23 +193,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:orientation="horizontal"
-                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                android:layout_marginBottom="80dp"
+                android:nestedScrollingEnabled="false"
+                app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+                app:spanCount="5"
                 tools:listitem="@layout/item_icon_select" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/saveButton"
-                android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:layout_marginTop="40dp"
-                android:layout_marginBottom="20dp"
-                android:fontFamily="@font/app_font"
-                android:text="Save Category"
-                android:textAllCaps="false"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                app:backgroundTint="?attr/chk_primary_blue"
-                app:cornerRadius="12dp" />
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>

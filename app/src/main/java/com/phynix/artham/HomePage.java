@@ -98,7 +98,7 @@ public class HomePage extends AppCompatActivity {
     private TextView backCashbookIdText;
     private TextView backUserName;
     private ImageView backProfileImage;
-    private ImageView btnYoutube, btnInstagram, btnWebsite, btnGmail, btnFacebook;
+    private ImageView btnYoutube, btnInstagram, btnWebsite, btnGmail, btnFacebook, btnWhatsapp;
 
     private boolean isBackVisible = false;
 
@@ -237,11 +237,13 @@ public class HomePage extends AppCompatActivity {
             btnWebsite = balanceCardBack.findViewById(R.id.btnWebsite);
             btnGmail = balanceCardBack.findViewById(R.id.btnGmail);
             btnFacebook = balanceCardBack.findViewById(R.id.btnFacebook);
+            btnWhatsapp = balanceCardBack.findViewById(R.id.btnWhatsapp);
 
             if (btnYoutube != null) btnYoutube.setOnClickListener(v -> openUrl("https://www.youtube.com/@ArthamApp"));
             if (btnInstagram != null) btnInstagram.setOnClickListener(v -> openUrl("https://www.instagram.com/artham.in"));
             if (btnWebsite != null) btnWebsite.setOnClickListener(v -> openUrl("https://www.artham.com"));
             if (btnFacebook != null) btnFacebook.setOnClickListener(v -> openUrl("https://www.facebook.com/arthamapp"));
+            if (btnWhatsapp != null) btnWhatsapp.setOnClickListener(v -> openUrl("https://whatsapp.com/channel/0029Vb6sFJv7dmeibXDqc014"));
             if (btnGmail != null) btnGmail.setOnClickListener(v -> sendEmail());
 
             balanceCardFront.setOnClickListener(v -> flipCard());

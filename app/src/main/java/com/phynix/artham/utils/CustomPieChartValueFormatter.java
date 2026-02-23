@@ -4,13 +4,10 @@ import com.github.mikephil.charting.formatter.ValueFormatter;
 
 public class CustomPieChartValueFormatter extends ValueFormatter {
 
-    public CustomPieChartValueFormatter() {
-        // No formatting logic needed since we are hiding the values
-    }
-
     @Override
     public String getFormattedValue(float value) {
-        // Return empty string to hide the percentage value completely
+        // Requirement #7: We return an empty string here to keep the pie chart slices clean.
+        // The exact percentages and colors are displayed in the LegendAdapter instead.
         return "";
     }
 }

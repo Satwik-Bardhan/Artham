@@ -11,7 +11,6 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.phynix.artham.R;
 import com.phynix.artham.models.LegendData;
-import com.phynix.artham.utils.CategoryColorUtil;
 
 import java.text.NumberFormat;
 import java.util.List;
@@ -28,6 +27,8 @@ public class LegendAdapter extends RecyclerView.Adapter<LegendAdapter.ViewHolder
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        // Using legend_item.xml as the single source of truth for category reporting
+        // This XML already contains the ?attr/ tags for Day/Night/Purple theme compatibility
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.legend_item, parent, false);
         return new ViewHolder(view);
@@ -45,11 +46,14 @@ public class LegendAdapter extends RecyclerView.Adapter<LegendAdapter.ViewHolder
         int percentInt = (int) (data.getPercentage() * 100);
         holder.percentage.setText(percentInt + "%");
 
-        // 1. Set Icon
-        holder.icon.setImageResource(CategoryColorUtil.getCategoryIcon(data.getCategoryName()));
+        // --- EXACT ICON AND COLOR MAPPING (Req #5 & #6) ---
+        // We set the exact icon chosen by the user or the default system icon
+        holder.icon.setImageResource(data.getIconResId());
+
+        // We apply the exact category color to the background circle of the icon
         holder.icon.setBackgroundTintList(ColorStateList.valueOf(data.getColor()));
 
-        // 2. Set Progress Bar Color & Value
+        // We apply the exact category color to the progress bar to match the Pie Chart slice
         holder.progressBar.setProgress(percentInt);
         holder.progressBar.setProgressTintList(ColorStateList.valueOf(data.getColor()));
     }

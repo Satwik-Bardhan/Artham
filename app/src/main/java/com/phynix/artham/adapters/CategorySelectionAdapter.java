@@ -1,7 +1,5 @@
 package com.phynix.artham.adapters;
 
-import android.content.res.ColorStateList;
-import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,38 +7,76 @@ import android.widget.CheckBox;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.phynix.artham.R;
 import com.phynix.artham.models.CategoryModel;
-import com.phynix.artham.utils.CategoryColorUtil;
 
 import java.util.List;
 import java.util.Set;
 
-public class CategorySelectionAdapter extends RecyclerView.Adapter<CategorySelectionAdapter.CategoryViewHolder> {
+public class CategorySelectionAdapter extends RecyclerView.Adapter<CategorySelectionAdapter.ViewHolder> {
 
-    private final List<CategoryModel> categoryList;
-    private final Set<String> selectedCategories;
+    private List<CategoryModel> categoryList;
+    private Set<String> selectedCategories;
+    private OnCategorySelectedListener listener;
 
-    public CategorySelectionAdapter(List<CategoryModel> categoryList, Set<String> selectedCategories) {
+    public interface OnCategorySelectedListener {
+        void onSelectionChanged(Set<String> selectedCategories);
+    }
+
+    public CategorySelectionAdapter(List<CategoryModel> categoryList, Set<String> selectedCategories, OnCategorySelectedListener listener) {
         this.categoryList = categoryList;
         this.selectedCategories = selectedCategories;
+        this.listener = listener;
+    }
+
+    public void updateList(List<CategoryModel> newList) {
+        this.categoryList = newList;
+        notifyDataSetChanged();
     }
 
     @NonNull
     @Override
-    public CategoryViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        // Ensure you have a layout named 'list_item_category_filter'
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item_category_filter, parent, false);
-        return new CategoryViewHolder(view);
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        // Uses the theme-compatible list_item_category_filter.xml
+        View view = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.list_item_category_filter, parent, false);
+        return new ViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull CategoryViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         CategoryModel category = categoryList.get(position);
-        holder.bind(category);
+
+        // Req #4: Distinguish custom user-created categories visually in the filter list
+        if (category.isCustom()) {
+            holder.categoryName.setText(category.getName() + " (Custom)");
+        } else {
+            holder.categoryName.setText(category.getName());
+        }
+
+        // Prevent unwanted listener triggers during recycling
+        holder.categoryCheckbox.setOnCheckedChangeListener(null);
+
+        // Set checkbox state based on our tracking Set
+        holder.categoryCheckbox.setChecked(selectedCategories.contains(category.getName()));
+
+        // Handle both row clicks and checkbox clicks consistently
+        View.OnClickListener clickListener = v -> {
+            boolean isChecked = !holder.categoryCheckbox.isChecked();
+            holder.categoryCheckbox.setChecked(isChecked);
+
+            if (isChecked) {
+                selectedCategories.add(category.getName());
+            } else {
+                selectedCategories.remove(category.getName());
+            }
+            listener.onSelectionChanged(selectedCategories);
+        };
+
+        holder.itemView.setOnClickListener(clickListener);
+        holder.categoryCheckbox.setOnClickListener(clickListener);
     }
 
     @Override
@@ -48,46 +84,14 @@ public class CategorySelectionAdapter extends RecyclerView.Adapter<CategorySelec
         return categoryList.size();
     }
 
-    class CategoryViewHolder extends RecyclerView.ViewHolder {
-        TextView categoryName;
+    public static class ViewHolder extends RecyclerView.ViewHolder {
         CheckBox categoryCheckbox;
+        TextView categoryName;
 
-        public CategoryViewHolder(@NonNull View itemView) {
+        public ViewHolder(@NonNull View itemView) {
             super(itemView);
-            categoryName = itemView.findViewById(R.id.category_name);
             categoryCheckbox = itemView.findViewById(R.id.category_checkbox);
-        }
-
-        void bind(CategoryModel category) {
-            categoryName.setText(category.getName());
-
-            // Prevent listener loops
-            categoryCheckbox.setOnCheckedChangeListener(null);
-            categoryCheckbox.setChecked(selectedCategories.contains(category.getName()));
-
-            // Determine CheckBox tint color (Custom vs Default)
-            int color;
-            if (category.isCustom()) {
-                try {
-                    color = Color.parseColor(category.getColorHex());
-                } catch (Exception e) {
-                    color = ContextCompat.getColor(itemView.getContext(), R.color.category_default);
-                }
-            } else {
-                color = CategoryColorUtil.getCategoryColor(itemView.getContext(), category.getName());
-            }
-
-            categoryCheckbox.setButtonTintList(ColorStateList.valueOf(color));
-
-            categoryCheckbox.setOnCheckedChangeListener((buttonView, isChecked) -> {
-                if (isChecked) {
-                    selectedCategories.add(category.getName());
-                } else {
-                    selectedCategories.remove(category.getName());
-                }
-            });
-
-            itemView.setOnClickListener(v -> categoryCheckbox.toggle());
+            categoryName = itemView.findViewById(R.id.category_name);
         }
     }
 }

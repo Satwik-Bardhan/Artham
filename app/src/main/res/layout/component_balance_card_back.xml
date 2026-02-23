@@ -11,14 +11,12 @@
     app:cardCornerRadius="10dp"
     app:cardElevation="2dp">
 
-    <!-- Root container for the card back -->
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="220dp"
         android:background="@drawable/cash_card"
         android:padding="16dp">
 
-        <!-- User Profile Section -->
         <LinearLayout
             android:id="@+id/profileSection"
             android:layout_width="match_parent"
@@ -81,7 +79,6 @@
             android:layout_below="@id/profileSection"
             android:layout_marginBottom="16dp"/>
 
-        <!-- Social Links Section (Centered) -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -127,6 +124,18 @@
                 android:layout_marginEnd="20dp"/>
 
             <ImageView
+                android:id="@+id/btnWhatsapp"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:src="@drawable/whatsapp"
+                android:contentDescription="WhatsApp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:focusable="true"
+                android:padding="4dp"
+                android:layout_marginEnd="20dp"/>
+
+            <ImageView
                 android:id="@+id/btnWebsite"
                 android:layout_width="32dp"
                 android:layout_height="32dp"
@@ -142,15 +151,14 @@
                 android:id="@+id/btnGmail"
                 android:layout_width="32dp"
                 android:layout_height="32dp"
-                android:src="@drawable/ic_email"
+                android:src="@drawable/gmail"
                 android:contentDescription="Gmail"
+                android:background="?attr/selectableItemBackgroundBorderless"
                 android:clickable="true"
                 android:focusable="true"
-                app:tint="#FFFFFF"
                 android:padding="4dp"/>
         </LinearLayout>
 
-        <!-- Made in India Section (Bottom Left) -->
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -162,7 +170,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Made in india 🇮🇳"
+                android:text="Made in india 🇮🇳 with ❤️"
                 android:textColor="#999999"
                 android:textSize="10sp"
                 android:fontFamily="@font/app_font"
@@ -170,7 +178,6 @@
 
         </LinearLayout>
 
-        <!-- Tap Hint at Bottom Right -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

@@ -36,11 +36,11 @@ public class CategoryColorUtil {
         categoryIconMap.put("Education", R.drawable.ic_book);
         categoryIconMap.put("Salary", R.drawable.ic_money);
         categoryIconMap.put("Investment", R.drawable.ic_all_inclusive);
+        categoryIconMap.put("Other", R.drawable.ic_category);
     }
 
     /**
-     * Converts a Hex string to an Int color.
-     * Handles standard #RRGGBB and #AARRGGBB.
+     * Converts a Hex string to an Int color. Handles user-created custom colors.
      */
     public static int parseHexColor(String hex, int defaultColor) {
         try {
@@ -51,32 +51,37 @@ public class CategoryColorUtil {
         }
     }
 
+    /**
+     * Retrieves the resolved Int color for pie slices and backgrounds.
+     * Guaranteed to return a valid color for both Default and Custom categories.
+     */
     public static int getCategoryColor(Context context, String categoryName) {
         if (categoryName == null) return ContextCompat.getColor(context, R.color.category_default);
 
         if (categoryColorMap.containsKey(categoryName)) {
             return ContextCompat.getColor(context, categoryColorMap.get(categoryName));
         } else {
-            // Consistent generated color based on name hash if no hex is provided
+            // Consistent generated color based on name hash for custom categories
             return generateConsistentColor(categoryName);
         }
     }
 
+    /**
+     * Retrieves the specific drawable resource for the category.
+     */
     public static int getCategoryIcon(String categoryName) {
         if (categoryName != null && categoryIconMap.containsKey(categoryName)) {
             return categoryIconMap.get(categoryName);
         }
-        return R.drawable.ic_category; // Default
+        return R.drawable.ic_category; // Default fallback for custom categories
     }
 
     private static int generateConsistentColor(String key) {
         int hash = key.hashCode();
-        // Extract RGB, ensuring they stay in a "vibrant but readable" range
         int r = (hash & 0xFF0000) >> 16;
         int g = (hash & 0x00FF00) >> 8;
         int b = (hash & 0x0000FF);
-
-        // Adjust brightness so colors aren't too dark or too light
+        // Adjust brightness so colors stay in a "vibrant but readable" range
         return Color.rgb((r + 40) % 200, (g + 40) % 200, (b + 40) % 200);
     }
 }

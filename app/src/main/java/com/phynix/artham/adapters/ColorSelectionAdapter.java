@@ -1,65 +1,86 @@
 package com.phynix.artham.adapters;
 
-import android.content.Context;
 import android.content.res.ColorStateList;
+import android.graphics.Color;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.phynix.artham.R;
+
 import java.util.List;
 
 public class ColorSelectionAdapter extends RecyclerView.Adapter<ColorSelectionAdapter.ViewHolder> {
 
-    private final List<Integer> colors;
-    private int selectedPosition = 0;
-    private final Context context;
+    private final List<String> hexColors;
+    private int selectedPosition = 0; // Default to first color
+    private final OnColorSelectedListener listener;
 
-    public ColorSelectionAdapter(Context context, List<Integer> colors) {
-        this.context = context;
-        this.colors = colors;
+    public interface OnColorSelectedListener {
+        void onColorSelected(String hexColor);
     }
 
-    public int getSelectedColor() {
-        return colors.get(selectedPosition);
+    public ColorSelectionAdapter(List<String> hexColors, OnColorSelectedListener listener) {
+        this.hexColors = hexColors;
+        this.listener = listener;
     }
 
-    @NonNull @Override
+    @NonNull
+    @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = new View(context);
-        ViewGroup.MarginLayoutParams params = new ViewGroup.MarginLayoutParams(100, 100);
-        params.setMargins(16, 16, 16, 16);
-        view.setLayoutParams(params);
-        view.setBackgroundResource(R.drawable.circle_shape); // Ensure this drawable exists
+        View view = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.item_color_select, parent, false);
         return new ViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        int color = colors.get(position);
-        holder.itemView.setBackgroundTintList(ColorStateList.valueOf(color));
+        String hexColor = hexColors.get(position);
 
+        try {
+            int colorInt = Color.parseColor(hexColor);
+            holder.colorCircle.setBackgroundTintList(ColorStateList.valueOf(colorInt));
+        } catch (Exception e) {
+            holder.colorCircle.setBackgroundTintList(ColorStateList.valueOf(Color.GRAY));
+        }
+
+        // Show checkmark only on the selected color
         if (selectedPosition == position) {
-            holder.itemView.setAlpha(1.0f);
-            holder.itemView.setScaleX(1.2f);
-            holder.itemView.setScaleY(1.2f);
+            holder.checkMark.setVisibility(View.VISIBLE);
         } else {
-            holder.itemView.setAlpha(0.6f);
-            holder.itemView.setScaleX(1.0f);
-            holder.itemView.setScaleY(1.0f);
+            holder.checkMark.setVisibility(View.GONE);
         }
 
         holder.itemView.setOnClickListener(v -> {
-            int prev = selectedPosition;
-            selectedPosition = holder.getAdapterPosition();
-            notifyItemChanged(prev);
+            int previousPosition = selectedPosition;
+            selectedPosition = position;
+
+            notifyItemChanged(previousPosition);
             notifyItemChanged(selectedPosition);
+
+            if (listener != null) {
+                listener.onColorSelected(hexColor);
+            }
         });
     }
 
-    @Override public int getItemCount() { return colors.size(); }
+    @Override
+    public int getItemCount() {
+        return hexColors.size();
+    }
 
-    static class ViewHolder extends RecyclerView.ViewHolder {
-        ViewHolder(View itemView) { super(itemView); }
+    public static class ViewHolder extends RecyclerView.ViewHolder {
+        View colorCircle;
+        ImageView checkMark;
+
+        public ViewHolder(@NonNull View itemView) {
+            super(itemView);
+            colorCircle = itemView.findViewById(R.id.colorCircle);
+            checkMark = itemView.findViewById(R.id.checkMark);
+        }
     }
 }

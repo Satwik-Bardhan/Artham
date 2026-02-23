@@ -20,7 +20,9 @@ import com.github.mikephil.charting.charts.PieChart;
 import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
+import com.phynix.artham.models.LegendData;
 import com.phynix.artham.models.TransactionModel;
+import com.phynix.artham.utils.CategoryColorUtil;
 import com.phynix.artham.utils.CustomPieChartValueFormatter;
 
 import java.util.ArrayList;
@@ -35,6 +37,8 @@ public class PieChartFragment extends Fragment {
     private PieChart pieChart;
     private TextView toggleButton;
     private LinearLayout statsLayout;
+    private TextView categoriesCountText;
+    private TextView highestCategoryText;
     private List<TransactionModel> transactions;
     private static final String PREFS_NAME = "AppPrefs";
     private static final String KEY_SHOW_CHART = "show_pie_chart";
@@ -55,6 +59,8 @@ public class PieChartFragment extends Fragment {
         pieChart = view.findViewById(R.id.pieChart);
         toggleButton = view.findViewById(R.id.togglePieChartButton);
         statsLayout = view.findViewById(R.id.statsLayout);
+        categoriesCountText = view.findViewById(R.id.categoriesCount);
+        highestCategoryText = view.findViewById(R.id.highestCategory);
 
         if (getArguments() != null) {
             try {
@@ -102,36 +108,25 @@ public class PieChartFragment extends Fragment {
 
         pieChart.setDrawHoleEnabled(true);
         pieChart.setUsePercentValues(true);
-
-        // Configuration for the Entry Label (e.g. "Food")
         pieChart.setEntryLabelTextSize(11f);
         pieChart.setEntryLabelColor(textColor);
-
         pieChart.setHoleRadius(45f);
         pieChart.setTransparentCircleRadius(50f);
         pieChart.setHoleColor(Color.TRANSPARENT);
-
         pieChart.setCenterText("Expenses");
         pieChart.setCenterTextSize(18f);
         pieChart.setCenterTextColor(textColor);
         pieChart.getDescription().setEnabled(false);
-
-        // [IMPORTANT] Enable Entry Labels so "Food", "Travel" etc. are drawn
         pieChart.setDrawEntryLabels(true);
-
-        // Increase offsets to prevent clipping of outside labels
         pieChart.setExtraOffsets(30.f, 10.f, 30.f, 10.f);
-
         pieChart.setDragDecelerationFrictionCoef(0.95f);
         pieChart.getLegend().setEnabled(false);
     }
 
     private void loadPieChartData() {
         if (getContext() == null) return;
-        int textColor = ThemeUtil.getThemeAttrColor(getContext(), android.R.attr.textColorPrimary);
         int secondaryTextColor = ThemeUtil.getThemeAttrColor(getContext(), android.R.attr.textColorSecondary);
 
-        // 1. Calculate raw totals
         Map<String, Double> categoryTotals = new HashMap<>();
         double totalExpense = 0;
 
@@ -147,25 +142,57 @@ public class PieChartFragment extends Fragment {
             }
         }
 
-        // 2. Group small slices into "Others" (Threshold: < 3%)
+        // Update stats summary UI
+        if (categoriesCountText != null) {
+            categoriesCountText.setText(String.valueOf(categoryTotals.size()));
+        }
+
         ArrayList<PieEntry> entries = new ArrayList<>();
+        ArrayList<Integer> exactSliceColors = new ArrayList<>();
         double otherTotal = 0;
         double threshold = totalExpense * 0.03;
 
+        String highestCat = "-";
+        double highestAmount = 0;
+
         for (Map.Entry<String, Double> entry : categoryTotals.entrySet()) {
-            if (entry.getValue() < threshold) {
-                otherTotal += entry.getValue();
+            String catName = entry.getKey();
+            double catAmount = entry.getValue();
+
+            // Find highest expense
+            if (catAmount > highestAmount) {
+                highestAmount = catAmount;
+                highestCat = catName;
+            }
+
+            if (catAmount < threshold) {
+                otherTotal += catAmount;
             } else {
-                entries.add(new PieEntry(entry.getValue().floatValue(), entry.getKey()));
+                entries.add(new PieEntry((float) catAmount, catName));
+                // EXACT COLOR MAPPING: Pie Chart slice matches the Category color perfectly
+                exactSliceColors.add(CategoryColorUtil.getCategoryColor(getContext(), catName));
             }
         }
 
-        if (otherTotal > 0) {
-            entries.add(new PieEntry((float) otherTotal, "Others"));
+        if (highestCategoryText != null) {
+            highestCategoryText.setText(highestCat);
         }
 
-        // Sort descending
-        Collections.sort(entries, (e1, e2) -> Float.compare(e2.getValue(), e1.getValue()));
+        if (otherTotal > 0) {
+            entries.add(new PieEntry((float) otherTotal, "Other"));
+            exactSliceColors.add(CategoryColorUtil.getCategoryColor(getContext(), "Other"));
+        }
+
+        // Sort entries by value descending to make the pie chart look clean
+        // Note: We need to sort colors along with entries to keep them mapped properly!
+        for (int i = 0; i < entries.size() - 1; i++) {
+            for (int j = i + 1; j < entries.size(); j++) {
+                if (entries.get(i).getValue() < entries.get(j).getValue()) {
+                    Collections.swap(entries, i, j);
+                    Collections.swap(exactSliceColors, i, j); // Swap colors to match
+                }
+            }
+        }
 
         PieDataSet dataSet;
         if (entries.isEmpty()) {
@@ -175,47 +202,22 @@ public class PieChartFragment extends Fragment {
             dataSet.setDrawValues(false);
         } else {
             dataSet = new PieDataSet(entries, "");
-
-            ArrayList<Integer> colors = new ArrayList<>();
-            colors.add(Color.parseColor("#FF5252")); // Red
-            colors.add(Color.parseColor("#448AFF")); // Blue
-            colors.add(Color.parseColor("#69F0AE")); // Green
-            colors.add(Color.parseColor("#FFD740")); // Yellow
-            colors.add(Color.parseColor("#E040FB")); // Purple
-            colors.add(Color.parseColor("#18FFFF")); // Cyan
-            colors.add(Color.parseColor("#FFAB40")); // Orange
-            colors.add(Color.parseColor("#FF4081")); // Pink
-            colors.add(Color.parseColor("#9E9E9E")); // Grey
-            dataSet.setColors(colors);
-
+            dataSet.setColors(exactSliceColors); // Apply EXACT calculated colors
             dataSet.setSliceSpace(3f);
             dataSet.setSelectionShift(5f);
 
-            // --- Configure OUTSIDE Labels ---
-            // Move Category Name ("Food") Outside
             dataSet.setXValuePosition(PieDataSet.ValuePosition.OUTSIDE_SLICE);
-
-            // Move Value Position Outside (Necessary for the line to be drawn to it)
             dataSet.setYValuePosition(PieDataSet.ValuePosition.OUTSIDE_SLICE);
-
-            // Line configuration
             dataSet.setValueLinePart1OffsetPercentage(80.f);
             dataSet.setValueLinePart1Length(0.5f);
             dataSet.setValueLinePart2Length(0.4f);
             dataSet.setValueLineColor(secondaryTextColor);
             dataSet.setValueLineWidth(1.5f);
-
-            // [IMPORTANT] Draw Values MUST be true for the lines to appear.
-            // The text itself is hidden by the CustomPieChartValueFormatter below.
             dataSet.setDrawValues(true);
         }
 
         PieData data = new PieData(dataSet);
-
-        // Use the updated custom formatter which returns ""
         data.setValueFormatter(new CustomPieChartValueFormatter());
-
-        // Also set text size to 0 and color to transparent as a backup
         data.setValueTextSize(0f);
         data.setValueTextColor(Color.TRANSPARENT);
 
@@ -223,6 +225,43 @@ public class PieChartFragment extends Fragment {
         pieChart.highlightValues(null);
         pieChart.invalidate();
         pieChart.animateY(1400, Easing.EaseInOutQuad);
+    }
+
+    /**
+     * Helper method to generate exactly matching LegendData for the Parent Activity's LegendAdapter
+     */
+    public List<LegendData> generateLegendData() {
+        List<LegendData> legendList = new ArrayList<>();
+        Map<String, Double> categoryTotals = new HashMap<>();
+        double totalExpense = 0;
+
+        if (transactions == null) return legendList;
+
+        for (TransactionModel transaction : transactions) {
+            if ("OUT".equalsIgnoreCase(transaction.getType())) {
+                String category = transaction.getTransactionCategory();
+                if (category == null || category.isEmpty()) category = "Other";
+                double amount = transaction.getAmount();
+                categoryTotals.put(category, categoryTotals.getOrDefault(category, 0.0) + amount);
+                totalExpense += amount;
+            }
+        }
+
+        for (Map.Entry<String, Double> entry : categoryTotals.entrySet()) {
+            String catName = entry.getKey();
+            double amount = entry.getValue();
+            float percentage = (float) (amount / totalExpense);
+
+            // Generate matching colors and icons
+            int color = CategoryColorUtil.getCategoryColor(getContext(), catName);
+            int iconResId = CategoryColorUtil.getCategoryIcon(catName);
+
+            legendList.add(new LegendData(catName, amount, percentage, color, iconResId));
+        }
+
+        // Sort highest expense first
+        Collections.sort(legendList, (l1, l2) -> Double.compare(l2.getAmount(), l1.getAmount()));
+        return legendList;
     }
 
     public void updateData(ArrayList<TransactionModel> newTransactions) {

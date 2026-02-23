@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -36,13 +35,14 @@ public class ChooseCategoryActivity extends AppCompatActivity {
     private List<CategoryModel> filteredList = new ArrayList<>();
 
     private DatabaseReference dbRef;
-    private String currentCashbookId, transactionType;
+    private String currentCashbookId;
+    private String transactionType;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         ThemeManager.applyActivityTheme(this);
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_choose_category);
+        setContentView(R.layout.activity_category_picker);
 
         // Get data from Intent
         currentCashbookId = getIntent().getStringExtra(Constants.EXTRA_CASHBOOK_ID);
@@ -75,7 +75,6 @@ public class ChooseCategoryActivity extends AppCompatActivity {
         findViewById(R.id.addNewCategoryButton).setOnClickListener(v -> {
             Intent intent = new Intent(this, CreateCategoryActivity.class);
             intent.putExtra(Constants.EXTRA_CASHBOOK_ID, currentCashbookId);
-            intent.putExtra("type", transactionType);
             startActivity(intent);
         });
 
@@ -92,16 +91,16 @@ public class ChooseCategoryActivity extends AppCompatActivity {
         String uid = FirebaseAuth.getInstance().getUid();
         if (uid == null) return;
 
+        // FIXED: Point to a single shared "all_categories" folder for BOTH In and Out
         dbRef = FirebaseDatabase.getInstance().getReference("users")
                 .child(uid).child("cashbooks")
-                .child(currentCashbookId).child("categories")
-                .child(transactionType);
+                .child(currentCashbookId).child("all_categories");
 
         dbRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (!snapshot.exists()) {
-                    // Scenario: Database is empty. Add defaults.
+                    // Scenario: Database is empty. Add universal defaults.
                     addDefaultCategories();
                 } else {
                     fullList.clear();
@@ -128,29 +127,37 @@ public class ChooseCategoryActivity extends AppCompatActivity {
                 {"Travel", "#2196F3"},   // Blue
                 {"Bills", "#9C27B0"},    // Purple
                 {"Health", "#4CAF50"},   // Green
-                {"Salary", "#009688"}    // Teal
+                {"Salary", "#009688"},   // Teal
+                {"Business", "#3F51B5"}, // Indigo
+                {"Other", "#9E9E9E"}     // Grey
         };
 
         for (String[] cat : defaults) {
-            CategoryModel model = new CategoryModel(cat[0], cat[1], transactionType);
+            // Save them all as UNIVERSAL so they show up everywhere
+// We add R.drawable.ic_category at the end!
+            CategoryModel model = new CategoryModel(cat[0], cat[1], "UNIVERSAL", R.drawable.ic_category);
             dbRef.child(cat[0]).setValue(model);
         }
     }
 
     private void setupSearch() {
         EditText searchBox = findViewById(R.id.searchEditText);
-        searchBox.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+        if (searchBox != null) {
+            searchBox.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                }
 
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                updateList(s.toString());
-            }
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    updateList(s.toString());
+                }
 
-            @Override
-            public void afterTextChanged(Editable s) {}
-        });
+                @Override
+                public void afterTextChanged(Editable s) {
+                }
+            });
+        }
     }
 
     private void updateList(String query) {

@@ -1,13 +1,12 @@
 package com.phynix.artham.adapters;
 
 import android.annotation.SuppressLint;
-import android.content.Context;
 import android.content.res.ColorStateList;
-import android.graphics.Color;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -28,7 +27,7 @@ public class DistributionAdapter extends RecyclerView.Adapter<DistributionAdapte
     @NonNull
     @Override
     public DistributionViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        // FIXED: Inflate legend_item.xml instead of item_category_report
+        // Inflate the theme-compatible legend_item.xml
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.legend_item, parent, false);
         return new DistributionViewHolder(view);
     }
@@ -51,37 +50,47 @@ public class DistributionAdapter extends RecyclerView.Adapter<DistributionAdapte
     }
 
     static class DistributionViewHolder extends RecyclerView.ViewHolder {
-        // Views declared to match legend_item.xml
+        // Views matched EXACTLY to legend_item.xml
         private TextView categoryName;
         private TextView categoryAmount;
         private TextView categoryPercentage;
-        private View colorIndicator; // This is a View in XML, not ImageView
+        private ImageView categoryIcon;
+        private ProgressBar categoryProgressBar;
 
         public DistributionViewHolder(@NonNull View itemView) {
             super(itemView);
-            // FIXED: IDs matched to legend_item.xml
             categoryName = itemView.findViewById(R.id.categoryName);
             categoryAmount = itemView.findViewById(R.id.categoryAmount);
             categoryPercentage = itemView.findViewById(R.id.categoryPercentage);
-            colorIndicator = itemView.findViewById(R.id.colorIndicator);
+            categoryIcon = itemView.findViewById(R.id.categoryIcon);
+            categoryProgressBar = itemView.findViewById(R.id.categoryProgressBar);
         }
 
         public void bind(DistributionItem item) {
             // Set Text Data
             categoryName.setText(item.getCategoryName());
             categoryAmount.setText(String.format(Locale.US, "₹%.2f", item.getAmount()));
-            categoryPercentage.setText(String.format(Locale.US, "%.0f%%", item.getPercentage()));
 
-            // Set Color Indicator
-            if (colorIndicator != null) {
-                colorIndicator.setBackgroundTintList(ColorStateList.valueOf(item.getColor()));
+            int percentInt = (int) item.getPercentage();
+            categoryPercentage.setText(percentInt + "%");
+
+            // Apply specific Category Icon
+            if (categoryIcon != null) {
+                categoryIcon.setImageResource(item.getIconResId());
+                // Tint the circle behind the icon with the specific category color
+                categoryIcon.setBackgroundTintList(ColorStateList.valueOf(item.getColor()));
             }
 
-            // Apply theme-aware text colors
-            Context context = itemView.getContext();
-            categoryName.setTextColor(ThemeUtil.getThemeAttrColor(context, R.attr.chk_textColorPrimary));
-            categoryAmount.setTextColor(ThemeUtil.getThemeAttrColor(context, R.attr.chk_textColorSecondary));
-            categoryPercentage.setTextColor(ThemeUtil.getThemeAttrColor(context, R.attr.chk_balanceColor));
+            // Apply Progress Bar distribution
+            if (categoryProgressBar != null) {
+                categoryProgressBar.setProgress(percentInt);
+                // Tint the progress bar to match the exact category color
+                categoryProgressBar.setProgressTintList(ColorStateList.valueOf(item.getColor()));
+            }
+
+            // Note: We no longer need ThemeUtil here because legend_item.xml
+            // natively sets the text colors using ?attr/chk_textColorPrimary
+            // and ?attr/chk_textColorSecondary.
         }
     }
 
@@ -112,16 +121,5 @@ public class DistributionAdapter extends RecyclerView.Adapter<DistributionAdapte
         public float getPercentage() { return percentage; }
         public int getColor() { return color; }
         public int getIconResId() { return iconResId; }
-    }
-
-    static class ThemeUtil {
-        static int getThemeAttrColor(Context context, int attr) {
-            if (context == null) return Color.BLACK;
-            TypedValue typedValue = new TypedValue();
-            if (context.getTheme().resolveAttribute(attr, typedValue, true)) {
-                return typedValue.data;
-            }
-            return Color.BLACK; // Fallback
-        }
     }
 }

@@ -228,7 +228,11 @@ public class ExpenseAnalyticsActivity extends AppCompatActivity implements Month
             int color = CategoryColorUtil.getCategoryColor(this, entry.getKey());
             colors.add(color);
 
-            legendList.add(new LegendData(entry.getKey(), entry.getValue(), percentage, color));
+            // Fetch the exact synced icon for this category
+            int iconResId = CategoryColorUtil.getCategoryIcon(entry.getKey());
+
+// Pass the iconResId as the 5th parameter!
+            legendList.add(new LegendData(entry.getKey(), entry.getValue(), percentage, color, iconResId));
         }
 
         PieDataSet dataSet = new PieDataSet(entries, "");
