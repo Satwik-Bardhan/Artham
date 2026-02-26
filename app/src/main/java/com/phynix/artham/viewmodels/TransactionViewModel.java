@@ -125,8 +125,6 @@ public class TransactionViewModel extends AndroidViewModel {
             errorMessage.postValue("Error: No cashbook selected.");
             return;
         }
-        // Assuming your DataRepository has an updateTransaction method.
-        // If not, 'addTransaction' usually works for updates too if the ID is set.
         repository.updateTransaction(cashbookId, transaction, success -> {
             if (!success) {
                 errorMessage.postValue("Failed to update transaction.");
@@ -217,6 +215,29 @@ public class TransactionViewModel extends AndroidViewModel {
         if (originalList != null) {
             filteredTransactions.postValue(originalList);
         }
+    }
+
+    /**
+     * [NEW] Calculates the running balance up to and including a specific timestamp.
+     */
+    public double getRunningBalanceUpTo(long targetTimestamp) {
+        List<TransactionModel> allList = allTransactions.getValue();
+        if (allList == null || allList.isEmpty()) {
+            return 0.0;
+        }
+
+        double balance = 0.0;
+        for (TransactionModel tm : allList) {
+            // Include transactions that are strictly older or the same exact timestamp
+            if (tm.getTimestamp() <= targetTimestamp) {
+                if ("IN".equalsIgnoreCase(tm.getType())) {
+                    balance += tm.getAmount();
+                } else if ("OUT".equalsIgnoreCase(tm.getType())) {
+                    balance -= tm.getAmount();
+                }
+            }
+        }
+        return balance;
     }
 
     public String getCashbookId() {

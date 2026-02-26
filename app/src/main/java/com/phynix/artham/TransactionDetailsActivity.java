@@ -7,6 +7,7 @@ import android.text.TextUtils;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 import android.widget.TextView;
 
@@ -146,6 +147,42 @@ public class TransactionDetailsActivity extends AppCompatActivity {
             if (tagsSection != null) tagsSection.setVisibility(View.VISIBLE);
             detailTags.setText(transaction.getTags().toString().replace("[", "").replace("]", ""));
         }
+
+        // --- Running Balance Section Logic ---
+        LinearLayout btnViewRunningBalance = findViewById(R.id.btnViewRunningBalance);
+        TextView runningBalanceLabel = findViewById(R.id.runningBalanceLabel);
+        TextView runningBalanceAmount = findViewById(R.id.runningBalanceAmount);
+        ImageView runningBalanceActionIcon = findViewById(R.id.runningBalanceActionIcon);
+
+        btnViewRunningBalance.setOnClickListener(v -> {
+            boolean isVisible = runningBalanceAmount.getVisibility() == View.VISIBLE;
+
+            if (isVisible) {
+                // Collapse
+                runningBalanceAmount.setVisibility(View.GONE);
+                runningBalanceLabel.setText("Tap to view balance impact");
+
+                // Animate the drop-down arrow rotating back to normal (points down)
+                runningBalanceActionIcon.animate().rotation(0f).setDuration(200).start();
+            } else {
+                // Expand and Calculate
+                double calculatedRunningBalance = viewModel.getRunningBalanceUpTo(transaction.getTimestamp());
+
+                runningBalanceAmount.setText(currencyFormat.format(calculatedRunningBalance));
+                runningBalanceAmount.setVisibility(View.VISIBLE);
+                runningBalanceLabel.setText("Balance after this entry");
+
+                // Animate the drop-down arrow rotating 180 degrees (points up)
+                runningBalanceActionIcon.animate().rotation(180f).setDuration(200).start();
+
+                // Color text conditionally based on positive/negative balance
+                if (calculatedRunningBalance >= 0) {
+                    runningBalanceAmount.setTextColor(Color.parseColor("#388E3C")); // Green
+                } else {
+                    runningBalanceAmount.setTextColor(Color.parseColor("#D32F2F")); // Red
+                }
+            }
+        });
 
         MaterialButton btnEdit = findViewById(R.id.btnEditTransaction);
         btnEdit.setOnClickListener(v -> openEditActivity());
