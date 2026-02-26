@@ -15,7 +15,8 @@ import com.phynix.artham.utils.ThemeManager;
 
 public class SplashActivity extends AppCompatActivity {
 
-    private static final int SPLASH_DELAY = 3000;
+    // Changed from 3000 to 2000 for a 2-second delay
+    private static final int SPLASH_DELAY = 2000;
     private ProgressBar splashProgress;
     private FirebaseAuth mAuth;
 

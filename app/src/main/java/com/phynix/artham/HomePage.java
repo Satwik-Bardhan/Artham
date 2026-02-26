@@ -234,14 +234,12 @@ public class HomePage extends AppCompatActivity {
             backProfileImage = balanceCardBack.findViewById(R.id.backProfileImage);
             btnYoutube = balanceCardBack.findViewById(R.id.btnYoutube);
             btnInstagram = balanceCardBack.findViewById(R.id.btnInstagram);
-            btnWebsite = balanceCardBack.findViewById(R.id.btnWebsite);
             btnGmail = balanceCardBack.findViewById(R.id.btnGmail);
             btnFacebook = balanceCardBack.findViewById(R.id.btnFacebook);
             btnWhatsapp = balanceCardBack.findViewById(R.id.btnWhatsapp);
 
-            if (btnYoutube != null) btnYoutube.setOnClickListener(v -> openUrl("https://www.youtube.com/@ArthamApp"));
+            if (btnYoutube != null) btnYoutube.setOnClickListener(v -> openUrl("https://www.youtube.com/@artham-06"));
             if (btnInstagram != null) btnInstagram.setOnClickListener(v -> openUrl("https://www.instagram.com/artham.in"));
-            if (btnWebsite != null) btnWebsite.setOnClickListener(v -> openUrl("https://www.artham.com"));
             if (btnFacebook != null) btnFacebook.setOnClickListener(v -> openUrl("https://www.facebook.com/arthamapp"));
             if (btnWhatsapp != null) btnWhatsapp.setOnClickListener(v -> openUrl("https://whatsapp.com/channel/0029Vb6sFJv7dmeibXDqc014"));
             if (btnGmail != null) btnGmail.setOnClickListener(v -> sendEmail());
@@ -263,7 +261,7 @@ public class HomePage extends AppCompatActivity {
     private void sendEmail() {
         try {
             Intent intent = new Intent(Intent.ACTION_SENDTO);
-            intent.setData(Uri.parse("mailto:support@artham.com"));
+            intent.setData(Uri.parse("mailto:codewithsatwik06@gmail.com"));
             intent.putExtra(Intent.EXTRA_SUBJECT, "Support Request");
             startActivity(intent);
         } catch (Exception e) {
@@ -328,8 +326,6 @@ public class HomePage extends AppCompatActivity {
                 binding.userNameTop.setText(cashbook.getName());
                 binding.currentCashbookText.setText(cashbook.getName());
 
-                currentCashbookId = cashbook.getCashbookId();
-
                 // Set Exact Date and Time in IST with Seconds
                 binding.lastOpenedText.setText("Last opened: " + formatExactDateTimeIST(cashbook.getLastModified()));
 
@@ -356,10 +352,10 @@ public class HomePage extends AppCompatActivity {
                 binding.currentCashbookText.setText("No Cashbook Selected");
                 binding.lastOpenedText.setText("Create a new cashbook to start");
 
-                // Visibility management
+                // Visibility management - ensure empty state isn't showing a demo row if there's no cashbook at all
                 binding.transactionSection.setVisibility(View.GONE);
                 binding.transactionTable.setVisibility(View.GONE);
-                binding.emptyStateView.setVisibility(View.VISIBLE);
+                binding.emptyStateView.setVisibility(View.GONE);
 
                 currentCashbookId = null;
             }
@@ -412,7 +408,6 @@ public class HomePage extends AppCompatActivity {
 
         bookRef.updateChildren(updates).addOnFailureListener(e -> {
             Log.e(TAG, "Failed to update last opened time", e);
-            // Helps identify permission errors in Logcat
             if (e.getMessage() != null && e.getMessage().contains("Permission denied")) {
                 Log.e(TAG, "CHECK FIREBASE RULES: Write denied at " + bookRef.toString());
             }
@@ -473,16 +468,31 @@ public class HomePage extends AppCompatActivity {
         }
     }
 
+    // --- ENHANCED LOGIC FOR EMPTY STATE & DEMO ROW ---
     private void updateTransactionTable(List<TransactionModel> transactions) {
         binding.transactionTable.removeAllViews();
 
         if (transactions == null || transactions.isEmpty()) {
             binding.transactionCount.setText("TODAY (0)");
+
+            // Show our styled empty state banner
+            binding.emptyStateView.setVisibility(View.VISIBLE);
+            // Keep the table visible so the user can see the fake demo row
+            binding.transactionTable.setVisibility(View.VISIBLE);
+
+
         } else {
             binding.transactionCount.setText("TODAY (" + transactions.size() + ")");
+
+            // Hide the empty state banner as we have real data
+            binding.emptyStateView.setVisibility(View.GONE);
+            binding.transactionTable.setVisibility(View.VISIBLE);
+
             for (TransactionModel t : transactions) addTransactionRow(t);
         }
     }
+
+    // ------------------------------------------------
 
     private void addTransactionRow(TransactionModel transaction) {
         View rowView = LayoutInflater.from(this).inflate(R.layout.item_transaction_report_row, binding.transactionTable, false);

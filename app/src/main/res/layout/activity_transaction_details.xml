@@ -26,9 +26,12 @@
 
             <ImageView
                 android:id="@+id/closeButton"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:padding="8dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:focusable="true"
                 android:contentDescription="Back"
                 android:src="@drawable/ic_arrow_left"
                 app:layout_constraintBottom_toBottomOf="parent"
@@ -69,9 +72,12 @@
 
             <ImageView
                 android:id="@+id/menuButton"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:padding="8dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:focusable="true"
                 android:contentDescription="Options"
                 android:src="@drawable/ic_more_vert"
                 app:layout_constraintBottom_toBottomOf="parent"

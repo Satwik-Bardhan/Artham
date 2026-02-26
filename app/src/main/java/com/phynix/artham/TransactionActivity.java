@@ -13,6 +13,7 @@ import android.text.TextWatcher;
 import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -126,8 +127,9 @@ public class TransactionActivity extends AppCompatActivity {
         currentUser = mAuth.getCurrentUser();
         currentMonthCalendar = Calendar.getInstance();
 
-        if (currentCashbookId == null || currentUser == null) {
-            showSnackbar("Error: No active cashbook found.");
+        // Safely check against null AND empty cashbook ID before executing Firebase calls
+        if (currentUser == null || currentCashbookId == null || currentCashbookId.trim().isEmpty()) {
+            Toast.makeText(this, "Error: No active cashbook found.", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }

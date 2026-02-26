@@ -4,8 +4,10 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -17,7 +19,7 @@ import androidx.lifecycle.ViewModelProvider;
 import com.google.android.material.button.MaterialButton;
 import com.phynix.artham.models.TransactionModel;
 import com.phynix.artham.utils.SnackbarHelper;
-import com.phynix.artham.utils.ThemeManager; // [NEW IMPORT]
+import com.phynix.artham.utils.ThemeManager;
 import com.phynix.artham.viewmodels.TransactionViewModel;
 import com.phynix.artham.viewmodels.TransactionViewModelFactory;
 
@@ -45,7 +47,7 @@ public class TransactionDetailsActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        // [FIX] Apply Theme BEFORE super.onCreate()
+        // Apply Theme BEFORE super.onCreate()
         ThemeManager.applyActivityTheme(this);
 
         super.onCreate(savedInstanceState);
@@ -81,7 +83,7 @@ public class TransactionDetailsActivity extends AppCompatActivity {
         closeButton.setOnClickListener(v -> finish());
 
         View menuButton = findViewById(R.id.menuButton);
-        // Menu functionality can be added here if needed (e.g. Delete/Share)
+        menuButton.setOnClickListener(v -> showPopupMenu(v));
 
         TextView detailAmount = findViewById(R.id.detailAmount);
         TextView detailType = findViewById(R.id.detailType);
@@ -149,6 +151,28 @@ public class TransactionDetailsActivity extends AppCompatActivity {
         btnEdit.setOnClickListener(v -> openEditActivity());
     }
 
+    private void showPopupMenu(View view) {
+        PopupMenu popupMenu = new PopupMenu(this, view);
+        popupMenu.inflate(R.menu.transaction_options);
+
+        popupMenu.setOnMenuItemClickListener(item -> {
+            int itemId = item.getItemId();
+            if (itemId == R.id.action_edit) {
+                openEditActivity();
+                return true;
+            } else if (itemId == R.id.action_copy) {
+                duplicateTransaction();
+                return true;
+            } else if (itemId == R.id.action_delete) {
+                showDeleteConfirmation();
+                return true;
+            }
+            return false;
+        });
+
+        popupMenu.show();
+    }
+
     private void openEditActivity() {
         Intent intent = new Intent(this, EditTransactionActivity.class);
         intent.putExtra("transaction_model", (Serializable) transaction);
@@ -168,7 +192,6 @@ public class TransactionDetailsActivity extends AppCompatActivity {
     }
 
     private void duplicateTransaction() {
-        // Logic handled in calling activity or viewModel
         Intent resultIntent = new Intent();
         resultIntent.putExtra("action", "duplicate");
         resultIntent.putExtra("transaction", transaction);

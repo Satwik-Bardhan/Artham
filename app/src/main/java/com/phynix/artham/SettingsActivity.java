@@ -104,12 +104,7 @@ public class SettingsActivity extends AppCompatActivity {
             @Override
             public void onSwipeRight() {
                 // Inverted Logic: Navigate to Transaction Page (Right Page)
-                Intent intent = new Intent(SettingsActivity.this, TransactionActivity.class);
-                intent.putExtra("cashbook_id", currentCashbookId);
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                startActivity(intent);
-                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
-                finish();
+                navigateToActivity(TransactionActivity.class, R.anim.slide_in_right, R.anim.slide_out_left);
             }
         };
     }
@@ -162,24 +157,29 @@ public class SettingsActivity extends AppCompatActivity {
         binding.bottomNavigation.btnSettings.setSelected(true);
 
         binding.bottomNavigation.btnHome.setOnClickListener(v -> {
-            Intent intent = new Intent(this, HomePage.class);
-            intent.putExtra("cashbook_id", currentCashbookId);
-            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-            startActivity(intent);
-            overridePendingTransition(0, 0);
-            finish();
+            navigateToActivity(HomePage.class, 0, 0);
         });
 
         binding.bottomNavigation.btnTransactions.setOnClickListener(v -> {
-            Intent intent = new Intent(this, TransactionActivity.class);
-            intent.putExtra("cashbook_id", currentCashbookId);
-            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-            startActivity(intent);
-            overridePendingTransition(0, 0);
-            finish();
+            navigateToActivity(TransactionActivity.class, 0, 0);
         });
 
         binding.bottomNavigation.btnCashbookSwitch.setOnClickListener(v -> openCashbookSwitcher());
+    }
+
+    // --- Centralized Navigation Method to Prevent Null Intent Crashes ---
+    private void navigateToActivity(Class<?> targetActivityClass, int animIn, int animOut) {
+        if (currentCashbookId == null || currentCashbookId.trim().isEmpty()) {
+            showToast("Please select or create a cashbook first.");
+            return;
+        }
+
+        Intent intent = new Intent(this, targetActivityClass);
+        intent.putExtra("cashbook_id", currentCashbookId);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        startActivity(intent);
+        overridePendingTransition(animIn, animOut);
+        finish();
     }
 
     private void openCashbookSwitcher() {
