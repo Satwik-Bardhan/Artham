@@ -29,7 +29,8 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.phynix.artham.activities.ChooseCategoryActivity;
+// Using the newly updated CategoryPickerActivity
+import com.phynix.artham.activities.CategoryPickerActivity;
 import com.phynix.artham.utils.CategoryColorUtil;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -70,7 +71,7 @@ public class CashInOutActivity extends AppCompatActivity {
     private ImageView backButton, selectedCategoryIcon;
     private TextView dateTextView, timeTextView, selectedCategoryTextView;
     private LinearLayout dateSelectorLayout, timeSelectorLayout;
-    private MaterialCardView categorySelectorCard; // Using CardView for the selector
+    private MaterialCardView categorySelectorCard;
     private View selectedIconContainer;
     private RadioGroup inOutToggle, cashOnlineToggle;
     private RadioButton radioIn, radioOut, radioCash, radioOnline;
@@ -198,9 +199,8 @@ public class CashInOutActivity extends AppCompatActivity {
         remarkEditText = findViewById(R.id.remarkEditText);
         voiceInputButton = findViewById(R.id.voiceInputButton);
 
-        // CATEGORY SELECTOR VIEWS
         selectedCategoryTextView = findViewById(R.id.selectedCategoryTextView);
-        categorySelectorCard = findViewById(R.id.categorySelectorCard); // Matching the Card ID
+        categorySelectorCard = findViewById(R.id.categorySelectorCard);
         selectedIconContainer = findViewById(R.id.selectedIconContainer);
         selectedCategoryIcon = findViewById(R.id.selectedCategoryIcon);
 
@@ -264,7 +264,6 @@ public class CashInOutActivity extends AppCompatActivity {
 
         voiceInputButton.setOnClickListener(v -> startVoiceInput());
 
-        // FIXED: Click listener for category selection
         if (categorySelectorCard != null) {
             categorySelectorCard.setOnClickListener(v -> openCategorySelector());
         }
@@ -325,13 +324,14 @@ public class CashInOutActivity extends AppCompatActivity {
                 }
         );
 
-        // UPDATED: Handle Category Result with Color and Name
+        // PERFECTED: Receives Icon, Name, and Color!
         categoryLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
                     if (result.getResultCode() == RESULT_OK && result.getData() != null) {
                         selectedCategory = result.getData().getStringExtra("category_name");
                         selectedColorHex = result.getData().getStringExtra("category_color");
+                        int selectedIconRes = result.getData().getIntExtra("category_icon_res", 0);
 
                         if (selectedCategory != null) {
                             selectedCategoryTextView.setText(selectedCategory);
@@ -344,6 +344,13 @@ public class CashInOutActivity extends AppCompatActivity {
                                 } catch (Exception e) {
                                     selectedIconContainer.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(this, R.color.primary_blue)));
                                 }
+                            }
+
+                            // Apply Icon (with fallback to CategoryColorUtil)
+                            if (selectedIconRes != 0) {
+                                selectedCategoryIcon.setImageResource(selectedIconRes);
+                            } else {
+                                selectedCategoryIcon.setImageResource(CategoryColorUtil.getCategoryIcon(selectedCategory));
                             }
                         }
                     }
@@ -375,8 +382,12 @@ public class CashInOutActivity extends AppCompatActivity {
         radioOnline.setChecked(true);
         amountEditText.requestFocus();
 
-        // Initial Category state
+        // Safe initial UI population
         selectedCategoryTextView.setText(selectedCategory);
+        try {
+            selectedIconContainer.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor(selectedColorHex)));
+        } catch (Exception ignored) {}
+        selectedCategoryIcon.setImageResource(CategoryColorUtil.getCategoryIcon(selectedCategory));
     }
 
     private void updateHeaderForTransactionType(String type) {
@@ -424,7 +435,11 @@ public class CashInOutActivity extends AppCompatActivity {
 
         selectedCategory = "Other";
         selectedColorHex = "#9E9E9E";
+
+        // Reset Visuals
         selectedIconContainer.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor(selectedColorHex)));
+        selectedCategoryIcon.setImageResource(CategoryColorUtil.getCategoryIcon(selectedCategory));
+
         selectedParty = null;
         currentLocation = null;
 
@@ -529,9 +544,8 @@ public class CashInOutActivity extends AppCompatActivity {
     }
 
     private void openCategorySelector() {
-        Intent intent = new Intent(this, ChooseCategoryActivity.class);
+        Intent intent = new Intent(this, CategoryPickerActivity.class);
         intent.putExtra(Constants.EXTRA_CASHBOOK_ID, currentCashbookId);
-        // Correctly pass the type (IN or OUT) to filter the selection list
         intent.putExtra("type", radioIn.isChecked() ? Constants.TRANSACTION_TYPE_IN : Constants.TRANSACTION_TYPE_OUT);
         categoryLauncher.launch(intent);
     }

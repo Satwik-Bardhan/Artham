@@ -1,68 +1,69 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/rootLayout"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
-    android:gravity="center_vertical"
-    android:padding="10dp"
     android:layout_margin="6dp"
     android:background="@drawable/bg_category_chip"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:padding="8dp"
     android:clickable="true"
-    android:focusable="true">
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackground">
 
     <FrameLayout
-        android:id="@+id/iconContainer"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:background="@drawable/circle_shape">
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <View
+            android:id="@+id/iconContainer"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:background="@drawable/bg_circle"
+            android:backgroundTint="?attr/chk_primary_blue" />
 
         <ImageView
             android:id="@+id/categoryIcon"
-            android:layout_width="22dp"
-            android:layout_height="22dp"
+            android:layout_width="16dp"
+            android:layout_height="16dp"
             android:layout_gravity="center"
             android:src="@drawable/ic_category"
-            app:tint="@android:color/white"
-            android:contentDescription="Category Icon" />
+            app:tint="@android:color/white" />
     </FrameLayout>
 
     <TextView
         android:id="@+id/categoryName"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
         android:layout_weight="1"
-        android:layout_marginStart="12dp"
-        tools:text="Category Name"
+        android:ellipsize="end"
         android:fontFamily="@font/app_font"
+        android:maxLines="2"
+        android:text="Category Name"
         android:textColor="?attr/chk_textColorPrimary"
-        android:textSize="14sp"
-        android:textStyle="bold"
-        android:maxLines="1"
-        android:ellipsize="end"/>
+        android:textSize="13sp"
+        android:textStyle="bold" />
 
     <ImageView
         android:id="@+id/selectionCheck"
         android:layout_width="20dp"
         android:layout_height="20dp"
+        android:layout_marginStart="4dp"
         android:src="@drawable/ic_check"
-        app:tint="?attr/chk_primary_blue"
         android:visibility="gone"
-        tools:visibility="visible"/>
+        app:tint="?attr/chk_primary_blue" />
 
     <ImageView
         android:id="@+id/categoryMenu"
         android:layout_width="24dp"
         android:layout_height="24dp"
-        android:src="@drawable/ic_more_vert"
+        android:layout_marginStart="4dp"
         android:background="?attr/selectableItemBackgroundBorderless"
-        app:tint="?attr/chk_textColorSecondary"
         android:padding="2dp"
-        android:clickable="true"
-        android:focusable="true"
+        android:src="@drawable/ic_more_vert"
         android:visibility="gone"
-        tools:visibility="visible" />
+        app:tint="?attr/chk_textColorSecondary" />
 
 </LinearLayout>

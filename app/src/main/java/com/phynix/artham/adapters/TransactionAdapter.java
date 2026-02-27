@@ -2,6 +2,7 @@ package com.phynix.artham.adapters;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -16,6 +17,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.phynix.artham.R;
 import com.phynix.artham.models.TransactionModel;
+import com.phynix.artham.utils.CategoryColorUtil;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -28,7 +30,7 @@ import java.util.Objects;
 /**
  * Artham Transaction Adapter
  * Implements date-wise grouping with separate headers for each day.
- * Manages Cash In and Cash Out items with unique layouts.
+ * Manages Cash In and Cash Out items with unique layouts and Synced Category Icons.
  */
 public class TransactionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
@@ -92,10 +94,6 @@ public class TransactionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         return items.size();
     }
 
-    /**
-     * Public method to refresh the list with new data.
-     * Handles sorting, grouping, and DiffUtil calculation.
-     */
     public void updateTransactions(List<TransactionModel> newTransactions) {
         updateData(newTransactions);
     }
@@ -139,7 +137,6 @@ public class TransactionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         TextView headerText;
         HeaderViewHolder(@NonNull View itemView) {
             super(itemView);
-            // Fixed: Ensuring the ID matches the XML layout provided.
             headerText = itemView.findViewById(R.id.dateHeaderTextView);
         }
         void bind(String date) {
@@ -149,8 +146,8 @@ public class TransactionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
     class TransactionViewHolder extends RecyclerView.ViewHolder {
         TextView categoryTextView, amountTextView, dateTextView, paymentModeTextView, remarkTextView;
-        View transactionTypeIndicator;
-        ImageView menuButton;
+        View transactionTypeIndicator, iconContainer;
+        ImageView menuButton, categoryIcon;
 
         public TransactionViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -161,12 +158,18 @@ public class TransactionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
             paymentModeTextView = itemView.findViewById(R.id.paymentModeTextView);
             transactionTypeIndicator = itemView.findViewById(R.id.transactionTypeIndicator);
             menuButton = itemView.findViewById(R.id.menuButton);
+
+            // Added views for synced icons and colors
+            categoryIcon = itemView.findViewById(R.id.categoryIcon);
+            iconContainer = itemView.findViewById(R.id.iconContainer);
         }
 
         @SuppressLint({"SetTextI18n", "DefaultLocale"})
         void bind(final TransactionModel transaction) {
             Context context = itemView.getContext();
-            categoryTextView.setText(transaction.getTransactionCategory());
+            String catName = transaction.getTransactionCategory() != null ? transaction.getTransactionCategory() : "Other";
+
+            categoryTextView.setText(catName);
             paymentModeTextView.setText(transaction.getPaymentMode());
 
             if (transaction.getRemark() != null && !transaction.getRemark().isEmpty()) {
@@ -175,6 +178,16 @@ public class TransactionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
             } else {
                 remarkTextView.setVisibility(View.GONE);
             }
+
+            // --- Category Syncing Logic ---
+            if (categoryIcon != null) {
+                categoryIcon.setImageResource(CategoryColorUtil.getCategoryIcon(catName));
+            }
+            if (iconContainer != null) {
+                int catColor = CategoryColorUtil.getCategoryColor(context, catName);
+                iconContainer.setBackgroundTintList(ColorStateList.valueOf(catColor));
+            }
+            // ------------------------------
 
             boolean isIn = "IN".equalsIgnoreCase(transaction.getType());
             int colorAttr = isIn ? R.attr.chk_incomeColor : R.attr.chk_expenseColor;

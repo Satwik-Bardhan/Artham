@@ -2,86 +2,46 @@ package com.phynix.artham.utils;
 
 import android.content.Context;
 import android.graphics.Color;
-import androidx.core.content.ContextCompat;
 import com.phynix.artham.R;
-import java.util.HashMap;
-import java.util.Map;
 
 public class CategoryColorUtil {
 
-    private static final Map<String, Integer> categoryColorMap = new HashMap<>();
-    private static final Map<String, Integer> categoryIconMap = new HashMap<>();
-
-    static {
-        // --- Static Mapping for Default Categories ---
-        categoryColorMap.put("Food & Dining", R.color.category_food);
-        categoryColorMap.put("Bills & Utility", R.color.category_utilities);
-        categoryColorMap.put("Transport", R.color.category_transport);
-        categoryColorMap.put("Rent", R.color.category_rent);
-        categoryColorMap.put("Shopping", R.color.category_shopping);
-        categoryColorMap.put("Entertainment", R.color.category_entertainment);
-        categoryColorMap.put("Health", R.color.category_health);
-        categoryColorMap.put("Education", R.color.category_education);
-        categoryColorMap.put("Salary", R.color.category_salary);
-        categoryColorMap.put("Investment", R.color.category_investment);
-        categoryColorMap.put("Other", R.color.category_other);
-
-        categoryIconMap.put("Food & Dining", R.drawable.ic_food_dining);
-        categoryIconMap.put("Bills & Utility", R.drawable.ic_utilities);
-        categoryIconMap.put("Transport", R.drawable.ic_transportation);
-        categoryIconMap.put("Rent", R.drawable.ic_home);
-        categoryIconMap.put("Shopping", R.drawable.ic_receipt);
-        categoryIconMap.put("Entertainment", R.drawable.ic_entertainment);
-        categoryIconMap.put("Health", R.drawable.ic_medicine);
-        categoryIconMap.put("Education", R.drawable.ic_book);
-        categoryIconMap.put("Salary", R.drawable.ic_money);
-        categoryIconMap.put("Investment", R.drawable.ic_all_inclusive);
-        categoryIconMap.put("Other", R.drawable.ic_category);
-    }
-
-    /**
-     * Converts a Hex string to an Int color. Handles user-created custom colors.
-     */
-    public static int parseHexColor(String hex, int defaultColor) {
-        try {
-            if (hex == null || hex.isEmpty()) return defaultColor;
-            return Color.parseColor(hex);
-        } catch (Exception e) {
-            return defaultColor;
-        }
-    }
-
-    /**
-     * Retrieves the resolved Int color for pie slices and backgrounds.
-     * Guaranteed to return a valid color for both Default and Custom categories.
-     */
-    public static int getCategoryColor(Context context, String categoryName) {
-        if (categoryName == null) return ContextCompat.getColor(context, R.color.category_default);
-
-        if (categoryColorMap.containsKey(categoryName)) {
-            return ContextCompat.getColor(context, categoryColorMap.get(categoryName));
-        } else {
-            // Consistent generated color based on name hash for custom categories
-            return generateConsistentColor(categoryName);
-        }
-    }
-
-    /**
-     * Retrieves the specific drawable resource for the category.
-     */
     public static int getCategoryIcon(String categoryName) {
-        if (categoryName != null && categoryIconMap.containsKey(categoryName)) {
-            return categoryIconMap.get(categoryName);
+        if (categoryName == null) return R.drawable.ic_category;
+
+        switch (categoryName.toLowerCase().trim()) {
+            case "food & dining": case "food": return R.drawable.ic_food_dining;
+            case "transport": case "transportation": return R.drawable.ic_transportation;
+            case "shopping": case "groceries": return R.drawable.ic_shopping_cart;
+            case "rent": case "home": return R.drawable.ic_home;
+            case "entertainment": return R.drawable.ic_entertainment;
+            case "health": case "medicine": return R.drawable.ic_medicine;
+            case "education": return R.drawable.ic_book;
+            case "salary": case "income": return R.drawable.ic_money;
+            case "investment": return R.drawable.ic_all_inclusive;
+            case "travel": case "flight": return R.drawable.ic_flight;
+            case "subscriptions": return R.drawable.ic_subscriptions;
+            case "freelance": case "work": return R.drawable.ic_work;
+            default:
+                return R.drawable.ic_category;
         }
-        return R.drawable.ic_category; // Default fallback for custom categories
     }
 
-    private static int generateConsistentColor(String key) {
-        int hash = key.hashCode();
-        int r = (hash & 0xFF0000) >> 16;
-        int g = (hash & 0x00FF00) >> 8;
-        int b = (hash & 0x0000FF);
-        // Adjust brightness so colors stay in a "vibrant but readable" range
-        return Color.rgb((r + 40) % 200, (g + 40) % 200, (b + 40) % 200);
+    public static int getCategoryColor(Context context, String categoryName) {
+        try {
+            switch (categoryName.toLowerCase().trim()) {
+                case "food & dining": return Color.parseColor("#FF7043");
+                case "groceries": return Color.parseColor("#8BC34A");
+                case "transport": return Color.parseColor("#29B6F6");
+                case "shopping": return Color.parseColor("#EC407A");
+                case "salary": return Color.parseColor("#66BB6A");
+                case "rent": return Color.parseColor("#FFA726");
+                case "health": return Color.parseColor("#EF5350");
+                case "entertainment": return Color.parseColor("#AB47BC");
+                default: return Color.parseColor("#78909C");
+            }
+        } catch (Exception e) {
+            return Color.parseColor("#78909C");
+        }
     }
 }

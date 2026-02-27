@@ -1,8 +1,8 @@
 package com.phynix.artham.adapters;
 
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.graphics.Color;
-import android.graphics.drawable.GradientDrawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,7 +11,6 @@ import android.widget.PopupMenu;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.phynix.artham.R;
@@ -69,24 +68,39 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
         CategoryModel category = categoryList.get(position);
         holder.nameText.setText(category.getName());
 
-        // 1. Handle Colors & Icons
-        int color;
+        // 1. THE BULLETPROOF COLOR FIX
+        int categoryColor;
         try {
-            color = Color.parseColor(category.getColorHex());
+            String hexColor = category.getColorHex();
+            // Safety check: Ensure the hex string has a '#' symbol so it doesn't crash
+            if (hexColor != null && !hexColor.isEmpty() && !hexColor.startsWith("#")) {
+                hexColor = "#" + hexColor;
+            }
+            // Parse the color straight from Firebase
+            categoryColor = Color.parseColor(hexColor);
         } catch (Exception e) {
-            color = ContextCompat.getColor(context, R.color.category_default);
+            // If Firebase color is completely broken, fallback to the dictionary/grey
+            categoryColor = CategoryColorUtil.getCategoryColor(context, category.getName());
         }
 
-        GradientDrawable bgShape = (GradientDrawable) holder.iconContainer.getBackground();
-        bgShape.setColor(color);
+        // Apply the color
+        holder.iconContainer.setBackgroundTintList(ColorStateList.valueOf(categoryColor));
 
-        int iconRes = category.getIconResId() != 0 ? category.getIconResId() : R.drawable.ic_category;
+        // 2. THE BULLETPROOF ICON FIX
+        int iconRes;
+        if (category.getIconResId() != 0) {
+            // Use the icon saved in Firebase
+            iconRes = category.getIconResId();
+        } else {
+            // Fallback to the dictionary if Firebase is missing the icon
+            iconRes = CategoryColorUtil.getCategoryIcon(category.getName());
+        }
         holder.iconImage.setImageResource(iconRes);
 
-        // 2. Mode Logic: Management vs Selection
+        // 3. Mode Logic: Management vs Selection
         if (isManagementMode) {
             holder.selectionCheck.setVisibility(View.GONE);
-            // Only show menu for custom categories (predefined ones usually can't be deleted)
+            // We still check isCustom() here so users can't delete default app categories
             holder.menuBtn.setVisibility(category.isCustom() ? View.VISIBLE : View.GONE);
 
             holder.menuBtn.setOnClickListener(v -> showPopupMenu(v, category));
@@ -101,7 +115,9 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
                 selectedCategoryName = category.getName();
                 notifyDataSetChanged();
             }
-            clickListener.onCategoryClick(category);
+            if (clickListener != null) {
+                clickListener.onCategoryClick(category);
+            }
         });
     }
 
@@ -112,9 +128,9 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
 
         popup.setOnMenuItemClickListener(item -> {
             if (item.getTitle().equals("Edit")) {
-                actionListener.onEditCategory(category);
+                if (actionListener != null) actionListener.onEditCategory(category);
             } else {
-                actionListener.onDeleteCategory(category);
+                if (actionListener != null) actionListener.onDeleteCategory(category);
             }
             return true;
         });
@@ -123,7 +139,7 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
 
     @Override
     public int getItemCount() {
-        return categoryList.size();
+        return categoryList != null ? categoryList.size() : 0;
     }
 
     static class CategoryViewHolder extends RecyclerView.ViewHolder {

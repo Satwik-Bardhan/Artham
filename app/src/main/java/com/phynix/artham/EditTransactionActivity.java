@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.res.ColorStateList;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.net.Uri;
@@ -30,7 +31,9 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.phynix.artham.activities.ChooseCategoryActivity;
+// Updated Imports
+import com.phynix.artham.activities.CategoryPickerActivity;
+import com.phynix.artham.utils.CategoryColorUtil;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -64,10 +67,11 @@ public class EditTransactionActivity extends AppCompatActivity {
 
     // UI Components
     private ImageView backButton, menuButton, timePickerIcon, swapButton;
-
-    // [FIX] Changed from ImageView to View to prevent ClassCastException.
-    // These might be FrameLayouts or LinearLayouts in your XML.
     private View calculatorButton, voiceInputButton, locationButton;
+
+    // Visual Category Indicators
+    private View selectedIconContainer;
+    private ImageView selectedCategoryIcon;
 
     private TextView headerSubtitle, dateTextView, timeTextView, selectedCategoryTextView, partyTextView;
     private TextView createdDateText, updatedDateText;
@@ -88,15 +92,37 @@ public class EditTransactionActivity extends AppCompatActivity {
 
     // --- Activity Launchers ---
 
+    // PERFECTED: Receives Icon, Name, and Color
     private final ActivityResultLauncher<Intent> categoryLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
                 if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
-                    String category = result.getData().getStringExtra("selected_category");
+                    String category = result.getData().getStringExtra("category_name");
+                    String colorHex = result.getData().getStringExtra("category_color");
+                    int iconRes = result.getData().getIntExtra("category_icon_res", 0);
+
                     if (category != null) {
                         selectedCategoryTextView.setText(category);
                         selectedCategoryTextView.setTextColor(getThemeColor(R.attr.chk_primary_blue));
                         currentTransaction.setTransactionCategory(category);
+
+                        // Apply Color to Icon Container
+                        if (selectedIconContainer != null && colorHex != null) {
+                            try {
+                                selectedIconContainer.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor(colorHex)));
+                            } catch (Exception e) {
+                                selectedIconContainer.setBackgroundTintList(ColorStateList.valueOf(getThemeColor(R.attr.chk_primary_blue)));
+                            }
+                        }
+
+                        // Apply Icon
+                        if (selectedCategoryIcon != null) {
+                            if (iconRes != 0) {
+                                selectedCategoryIcon.setImageResource(iconRes);
+                            } else {
+                                selectedCategoryIcon.setImageResource(CategoryColorUtil.getCategoryIcon(category));
+                            }
+                        }
                     }
                 }
             }
@@ -126,7 +152,6 @@ public class EditTransactionActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        // Apply theme before super.onCreate to ensure context is set correctly
         ThemeManager.applyActivityTheme(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_transaction);
@@ -182,12 +207,14 @@ public class EditTransactionActivity extends AppCompatActivity {
         radioCard = findViewById(R.id.radioCard);
 
         amountEditText = findViewById(R.id.amountEditText);
-
-        // [FIX] Initializing as generic View handles any layout type
         calculatorButton = findViewById(R.id.calculatorButton);
 
         selectedCategoryTextView = findViewById(R.id.selectedCategoryTextView);
         categorySelectorLayout = findViewById(R.id.categorySelectorLayout);
+
+        // Added Icon visual sync fields
+        selectedIconContainer = findViewById(R.id.selectedIconContainer);
+        selectedCategoryIcon = findViewById(R.id.selectedCategoryIcon);
 
         partyTextView = findViewById(R.id.partyTextView);
         partySelectorLayout = findViewById(R.id.partySelectorLayout);
@@ -224,7 +251,16 @@ public class EditTransactionActivity extends AppCompatActivity {
         else if ("Card".equalsIgnoreCase(mode) && radioCard != null) radioCard.setChecked(true);
         else radioCash.setChecked(true);
 
-        selectedCategoryTextView.setText(currentTransaction.getTransactionCategory());
+        // Safely set the category text, icon, and background color
+        String catName = currentTransaction.getTransactionCategory();
+        selectedCategoryTextView.setText(catName);
+        if (selectedIconContainer != null) {
+            int catColor = CategoryColorUtil.getCategoryColor(this, catName);
+            selectedIconContainer.setBackgroundTintList(ColorStateList.valueOf(catColor));
+        }
+        if (selectedCategoryIcon != null) {
+            selectedCategoryIcon.setImageResource(CategoryColorUtil.getCategoryIcon(catName));
+        }
 
         String party = currentTransaction.getPartyName();
         if (party != null && !party.isEmpty()) {
@@ -273,11 +309,12 @@ public class EditTransactionActivity extends AppCompatActivity {
 
         if (categorySelectorLayout != null) {
             categorySelectorLayout.setOnClickListener(v -> {
-                Intent intent = new Intent(this, ChooseCategoryActivity.class);
+                Intent intent = new Intent(this, CategoryPickerActivity.class);
                 intent.putExtra("selected_category", selectedCategoryTextView.getText().toString());
                 intent.putExtra("cashbook_id", currentCashbookId);
+                // Matched intent extra to what CategoryPickerActivity expects ("type")
                 String type = radioIn.isChecked() ? "IN" : "OUT";
-                intent.putExtra("transaction_type", type);
+                intent.putExtra("type", type);
                 categoryLauncher.launch(intent);
             });
         }

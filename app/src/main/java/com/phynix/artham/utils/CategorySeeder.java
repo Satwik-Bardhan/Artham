@@ -3,8 +3,10 @@ package com.phynix.artham.utils;
 import android.util.Log;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.phynix.artham.R;
 import com.phynix.artham.models.CategoryModel;
 
 import java.util.ArrayList;
@@ -14,10 +16,6 @@ public class CategorySeeder {
 
     private static final String TAG = "CategorySeeder";
 
-    /**
-     * Seeds default categories into the user's Firebase database if they don't exist.
-     * Call this during user registration or initial app load.
-     */
     public static void seedDefaultCategories() {
         String userId = FirebaseAuth.getInstance().getUid();
         if (userId == null) return;
@@ -25,10 +23,23 @@ public class CategorySeeder {
         DatabaseReference categoryRef = FirebaseDatabase.getInstance().getReference("users")
                 .child(userId).child("categories");
 
-        // Check if categories already exist to avoid duplicating
         categoryRef.get().addOnSuccessListener(snapshot -> {
-            if (!snapshot.exists() || !snapshot.hasChildren()) {
-                Log.d(TAG, "No categories found. Seeding defaults...");
+            boolean hasDefaults = false;
+
+            // Check if there are any non-custom (default) categories in the database
+            if (snapshot.exists() && snapshot.hasChildren()) {
+                for (DataSnapshot ds : snapshot.getChildren()) {
+                    CategoryModel model = ds.getValue(CategoryModel.class);
+                    if (model != null && !model.isCustom()) {
+                        hasDefaults = true;
+                        break;
+                    }
+                }
+            }
+
+            // Only seed if defaults are actually missing
+            if (!hasDefaults) {
+                Log.d(TAG, "Default categories missing. Seeding now...");
                 List<CategoryModel> defaults = getDefaultCategories();
 
                 for (CategoryModel category : defaults) {
@@ -38,42 +49,32 @@ public class CategorySeeder {
                         categoryRef.child(id).setValue(category);
                     }
                 }
-            } else {
-                Log.d(TAG, "Categories already exist. Skipping seed.");
             }
         }).addOnFailureListener(e -> Log.e(TAG, "Failed to check categories", e));
     }
 
-    /**
-     * Requirement #4, #5, #6: Defines the exact default categories,
-     * locking them as custom = false.
-     */
     private static List<CategoryModel> getDefaultCategories() {
         List<CategoryModel> list = new ArrayList<>();
 
         // --- Expenses (OUT) ---
-        list.add(new CategoryModel("Food & Dining", "#FF7043", "OUT", com.phynix.artham.R.drawable.ic_food_dining, false));
-        list.add(new CategoryModel("Groceries", "#8BC34A", "OUT", com.phynix.artham.R.drawable.ic_shopping_cart, false)); // New
-        list.add(new CategoryModel("Bills & Utility", "#26A69A", "OUT", com.phynix.artham.R.drawable.ic_utilities, false));
-        list.add(new CategoryModel("Subscriptions", "#3F51B5", "OUT", com.phynix.artham.R.drawable.ic_subscriptions, false)); // New
-        list.add(new CategoryModel("Transport", "#29B6F6", "OUT", com.phynix.artham.R.drawable.ic_transportation, false));
-        list.add(new CategoryModel("Travel", "#03A9F4", "OUT", com.phynix.artham.R.drawable.ic_flight, false)); // New
-        list.add(new CategoryModel("Rent", "#FFA726", "OUT", com.phynix.artham.R.drawable.ic_home, false));
-        list.add(new CategoryModel("Insurance", "#795548", "OUT", com.phynix.artham.R.drawable.ic_security, false)); // New
-        list.add(new CategoryModel("Shopping", "#EC407A", "OUT", com.phynix.artham.R.drawable.ic_receipt, false));
-        list.add(new CategoryModel("Entertainment", "#AB47BC", "OUT", com.phynix.artham.R.drawable.ic_entertainment, false));
-        list.add(new CategoryModel("Health", "#EF5350", "OUT", com.phynix.artham.R.drawable.ic_medicine, false));
-        list.add(new CategoryModel("Education", "#5C6BC0", "OUT", com.phynix.artham.R.drawable.ic_book, false));
-        list.add(new CategoryModel("Gifts & Donations", "#F06292", "OUT", com.phynix.artham.R.drawable.ic_card_giftcard, false)); // New
+        list.add(new CategoryModel("Food & Dining", "OUT", "#FF7043", R.drawable.ic_food_dining, false));
+        list.add(new CategoryModel("Groceries", "OUT", "#8BC34A", R.drawable.ic_shopping_cart, false));
+        list.add(new CategoryModel("Bills & Utility", "OUT", "#26A69A", R.drawable.ic_utilities, false));
+        list.add(new CategoryModel("Subscriptions", "OUT", "#3F51B5", R.drawable.ic_subscriptions, false));
+        list.add(new CategoryModel("Transport", "OUT", "#29B6F6", R.drawable.ic_transportation, false));
+        list.add(new CategoryModel("Travel", "OUT", "#03A9F4", R.drawable.ic_flight, false));
+        list.add(new CategoryModel("Rent", "OUT", "#FFA726", R.drawable.ic_home, false));
+        list.add(new CategoryModel("Insurance", "OUT", "#795548", R.drawable.ic_security, false));
+        list.add(new CategoryModel("Shopping", "OUT", "#EC407A", R.drawable.ic_receipt, false));
+        list.add(new CategoryModel("Entertainment", "OUT", "#AB47BC", R.drawable.ic_entertainment, false));
+        list.add(new CategoryModel("Health", "OUT", "#EF5350", R.drawable.ic_medicine, false));
+        list.add(new CategoryModel("Education", "OUT", "#5C6BC0", R.drawable.ic_book, false));
 
         // --- Income (IN) ---
-        list.add(new CategoryModel("Salary", "#66BB6A", "IN", com.phynix.artham.R.drawable.ic_money, false));
-        list.add(new CategoryModel("Freelance", "#CDDC39", "IN", com.phynix.artham.R.drawable.ic_work, false)); // New
-        list.add(new CategoryModel("Refunds", "#4DB6AC", "IN", com.phynix.artham.R.drawable.ic_assignment_return, false)); // New
-        list.add(new CategoryModel("Investment", "#009688", "IN", com.phynix.artham.R.drawable.ic_all_inclusive, false));
-
-        // --- Universal / Other ---
-        list.add(new CategoryModel("Other", "#78909C", "UNIVERSAL", com.phynix.artham.R.drawable.ic_category, false));
+        list.add(new CategoryModel("Salary", "IN", "#66BB6A", R.drawable.ic_money, false));
+        list.add(new CategoryModel("Freelance", "IN", "#CDDC39", R.drawable.ic_work, false));
+        list.add(new CategoryModel("Refunds", "IN", "#4DB6AC", R.drawable.ic_category, false));
+        list.add(new CategoryModel("Investment", "IN", "#009688", R.drawable.ic_all_inclusive, false));
 
         return list;
     }

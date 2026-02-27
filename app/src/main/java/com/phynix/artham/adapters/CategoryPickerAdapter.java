@@ -1,6 +1,7 @@
 package com.phynix.artham.adapters;
 
 import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,7 +13,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.phynix.artham.R;
 import com.phynix.artham.models.CategoryModel;
-import com.phynix.artham.utils.CategoryColorUtil;
 
 import java.util.List;
 
@@ -40,7 +40,6 @@ public class CategoryPickerAdapter extends RecyclerView.Adapter<CategoryPickerAd
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        // Uses the theme-compatible item_category.xml
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_category, parent, false);
         return new ViewHolder(view);
@@ -50,12 +49,7 @@ public class CategoryPickerAdapter extends RecyclerView.Adapter<CategoryPickerAd
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         CategoryModel category = categoryList.get(position);
 
-        // Requirement #4: Distinguish custom categories
-        if (category.isCustom()) {
-            holder.categoryName.setText(category.getName() + " (Custom)");
-        } else {
-            holder.categoryName.setText(category.getName());
-        }
+        holder.categoryName.setText(category.getName());
 
         // Hide the 3-dot management menu in picker mode
         holder.categoryMenu.setVisibility(View.GONE);
@@ -67,20 +61,23 @@ public class CategoryPickerAdapter extends RecyclerView.Adapter<CategoryPickerAd
             holder.selectionCheck.setVisibility(View.GONE);
         }
 
-        // Requirement #5 & #6: Apply EXACT synced colors and icons
-        int syncedColor = CategoryColorUtil.getCategoryColor(holder.itemView.getContext(), category.getName());
-        holder.iconContainer.setBackgroundTintList(ColorStateList.valueOf(syncedColor));
+        // THE FIX: Directly apply the exact user-chosen color from the database!
+        int categoryColor;
+        try {
+            categoryColor = Color.parseColor(category.getColorHex());
+        } catch (Exception e) {
+            categoryColor = Color.parseColor("#78909C"); // Safe grey fallback
+        }
+        holder.iconContainer.setBackgroundTintList(ColorStateList.valueOf(categoryColor));
 
-        int iconRes = category.isCustom() && category.getIconResId() != 0
-                ? category.getIconResId()
-                : CategoryColorUtil.getCategoryIcon(category.getName());
-        holder.categoryIcon.setImageResource(iconRes);
+        // THE FIX: Directly apply the exact user-chosen icon from the database!
+        holder.categoryIcon.setImageResource(category.getIconResId());
 
         // Handle clicks
         holder.itemView.setOnClickListener(v -> {
             String previousSelected = selectedCategoryName;
             selectedCategoryName = category.getName();
-            notifyDataSetChanged(); // Refresh to move the checkmark
+            notifyDataSetChanged();
 
             if (listener != null) {
                 listener.onCategoryPicked(category);
@@ -90,7 +87,7 @@ public class CategoryPickerAdapter extends RecyclerView.Adapter<CategoryPickerAd
 
     @Override
     public int getItemCount() {
-        return categoryList.size();
+        return categoryList != null ? categoryList.size() : 0;
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {

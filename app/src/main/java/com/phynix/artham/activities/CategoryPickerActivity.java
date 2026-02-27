@@ -6,9 +6,7 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.RadioButton;
-import android.widget.TextView;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -16,7 +14,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -25,8 +22,10 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.phynix.artham.R;
 import com.phynix.artham.adapters.CategoryPickerAdapter;
-import com.phynix.artham.dialogs.QuickAddCategoryDialog;
 import com.phynix.artham.models.CategoryModel;
+import com.phynix.artham.utils.CategorySeeder;
+import com.phynix.artham.utils.Constants;
+import com.phynix.artham.utils.ThemeManager;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -34,169 +33,174 @@ import java.util.List;
 
 public class CategoryPickerActivity extends AppCompatActivity {
 
-    private ImageView backButton;
-    private EditText searchEditText;
-    private View noCategoryClickable;
-    private RadioButton radioNoCategory;
-    private TextView categoryCount;
-    private RecyclerView categoriesRecyclerView;
-    private ExtendedFloatingActionButton addNewCategoryButton;
+    // UI Elements
+    private RecyclerView defaultRecyclerView;
+    private RecyclerView customRecyclerView;
+    private LinearLayout customCategoriesLayout;
 
-    private DatabaseReference categoryRef;
-    private CategoryPickerAdapter adapter;
-    private List<CategoryModel> fullCategoryList;
-    private List<CategoryModel> filteredCategoryList;
+    // Adapters and Lists for Section 1 (Defaults)
+    private CategoryPickerAdapter defaultAdapter;
+    private List<CategoryModel> defaultFullList = new ArrayList<>();
+    private List<CategoryModel> defaultFilteredList = new ArrayList<>();
 
-    private String selectedCategoryName = "";
+    // Adapters and Lists for Section 2 (User Created)
+    private CategoryPickerAdapter customAdapter;
+    private List<CategoryModel> customFullList = new ArrayList<>();
+    private List<CategoryModel> customFilteredList = new ArrayList<>();
+
+    private DatabaseReference dbRef;
+    private String currentCashbookId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        ThemeManager.applyActivityTheme(this);
         super.onCreate(savedInstanceState);
-        // Note: activity_choose_category.xml was renamed to activity_category_picker.xml
         setContentView(R.layout.activity_category_picker);
 
-        if (getIntent() != null && getIntent().hasExtra("SELECTED_CATEGORY")) {
-            selectedCategoryName = getIntent().getStringExtra("SELECTED_CATEGORY");
-        }
-
-        String userId = FirebaseAuth.getInstance().getUid();
-        if (userId != null) {
-            categoryRef = FirebaseDatabase.getInstance().getReference("users")
-                    .child(userId).child("categories");
-        }
+        currentCashbookId = getIntent().getStringExtra(Constants.EXTRA_CASHBOOK_ID);
 
         initViews();
-        setupRecyclerView();
+        setupFirebase();
         setupSearch();
-        setupListeners();
-        loadCategories();
     }
 
     private void initViews() {
-        backButton = findViewById(R.id.backButton);
-        searchEditText = findViewById(R.id.searchEditText);
-        noCategoryClickable = findViewById(R.id.noCategoryClickable);
-        radioNoCategory = findViewById(R.id.radioNoCategory);
-        categoryCount = findViewById(R.id.categoryCount);
-        categoriesRecyclerView = findViewById(R.id.categoriesRecyclerView);
-        addNewCategoryButton = findViewById(R.id.addNewCategoryButton);
+        defaultRecyclerView = findViewById(R.id.defaultRecyclerView);
+        customRecyclerView = findViewById(R.id.customRecyclerView);
+        customCategoriesLayout = findViewById(R.id.customCategoriesLayout);
 
-        if (selectedCategoryName.isEmpty() || selectedCategoryName.equals("No Category")) {
-            radioNoCategory.setChecked(true);
-        }
-    }
+        defaultRecyclerView.setLayoutManager(new GridLayoutManager(this, 2));
+        customRecyclerView.setLayoutManager(new GridLayoutManager(this, 2));
 
-    private void setupRecyclerView() {
-        fullCategoryList = new ArrayList<>();
-        filteredCategoryList = new ArrayList<>();
-
-        adapter = new CategoryPickerAdapter(filteredCategoryList, selectedCategoryName, category -> {
-            radioNoCategory.setChecked(false);
-
-            // Return the selected category back to the calling activity
+        // Shared Listener for both lists
+        CategoryPickerAdapter.OnCategoryPickedListener selectionListener = category -> {
             Intent resultIntent = new Intent();
-            resultIntent.putExtra("CATEGORY_NAME", category.getName());
-            resultIntent.putExtra("CATEGORY_COLOR", category.getColorHex());
-            resultIntent.putExtra("CATEGORY_ICON_RES", category.getIconResId());
+            resultIntent.putExtra("category_name", category.getName());
+            resultIntent.putExtra("category_color", category.getColorHex());
+            resultIntent.putExtra("category_icon_res", category.getIconResId());
             setResult(RESULT_OK, resultIntent);
             finish();
+        };
+
+        // Initialize both adapters
+        defaultAdapter = new CategoryPickerAdapter(defaultFilteredList, "", selectionListener);
+        customAdapter = new CategoryPickerAdapter(customFilteredList, "", selectionListener);
+
+        defaultRecyclerView.setAdapter(defaultAdapter);
+        customRecyclerView.setAdapter(customAdapter);
+
+        findViewById(R.id.backButton).setOnClickListener(v -> finish());
+
+        findViewById(R.id.addNewCategoryButton).setOnClickListener(v -> {
+            Intent intent = new Intent(this, CreateCategoryActivity.class);
+            intent.putExtra(Constants.EXTRA_CASHBOOK_ID, currentCashbookId);
+            startActivity(intent);
         });
 
-        // Use the 2-span GridLayoutManager exactly as defined in your XML
-        categoriesRecyclerView.setLayoutManager(new GridLayoutManager(this, 2));
-        categoriesRecyclerView.setAdapter(adapter);
+        findViewById(R.id.noCategoryClickable).setOnClickListener(v -> {
+            Intent intent = new Intent();
+            intent.putExtra("category_name", "No Category");
+            intent.putExtra("category_color", "#9E9E9E");
+            intent.putExtra("category_icon_res", R.drawable.ic_category);
+            setResult(RESULT_OK, intent);
+            finish();
+        });
     }
 
-    private void loadCategories() {
-        if (categoryRef == null) return;
+    private void setupFirebase() {
+        String uid = FirebaseAuth.getInstance().getUid();
+        if (uid == null) return;
 
-        categoryRef.addValueEventListener(new ValueEventListener() {
+        dbRef = FirebaseDatabase.getInstance().getReference("users")
+                .child(uid).child("categories");
+
+        dbRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                fullCategoryList.clear();
-                List<CategoryModel> defaultCats = new ArrayList<>();
-                List<CategoryModel> customCats = new ArrayList<>();
+                defaultFullList.clear();
+                customFullList.clear();
+                boolean hasDefaults = false;
 
-                for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
-                    CategoryModel category = dataSnapshot.getValue(CategoryModel.class);
-                    if (category != null) {
-                        if (category.isCustom()) {
-                            customCats.add(category);
-                        } else {
-                            defaultCats.add(category);
+                if (snapshot.exists() && snapshot.hasChildren()) {
+                    for (DataSnapshot ds : snapshot.getChildren()) {
+                        CategoryModel model = ds.getValue(CategoryModel.class);
+                        if (model != null) {
+                            model.setId(ds.getKey());
+
+                            if (!model.isCustom()) {
+                                hasDefaults = true;
+                            }
+
+                            // Removed strict IN/OUT filtering to guarantee they all show up!
+                            if (model.isCustom()) {
+                                customFullList.add(model);
+                            } else {
+                                defaultFullList.add(model);
+                            }
                         }
                     }
                 }
 
-                Collections.sort(defaultCats, (c1, c2) -> c1.getName().compareToIgnoreCase(c2.getName()));
-                Collections.sort(customCats, (c1, c2) -> c1.getName().compareToIgnoreCase(c2.getName()));
+                // If no defaults exist, tell the Seeder to make them.
+                // We DO NOT 'return;' here anymore, so the UI can still update immediately!
+                if (!hasDefaults) {
+                    CategorySeeder.seedDefaultCategories();
+                }
 
-                fullCategoryList.addAll(defaultCats);
-                fullCategoryList.addAll(customCats);
+                // Sort lists alphabetically
+                Collections.sort(defaultFullList, (c1, c2) -> c1.getName().compareToIgnoreCase(c2.getName()));
+                Collections.sort(customFullList, (c1, c2) -> c1.getName().compareToIgnoreCase(c2.getName()));
 
-                categoryCount.setText("All Categories (" + fullCategoryList.size() + ")");
-                filterList("");
+                updateLists("");
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                Toast.makeText(CategoryPickerActivity.this, "Failed to load categories.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(CategoryPickerActivity.this, "Error loading categories", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
     private void setupSearch() {
-        searchEditText.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+        EditText searchBox = findViewById(R.id.searchEditText);
+        if (searchBox != null) {
+            searchBox.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                filterList(s.toString());
-            }
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    updateLists(s.toString());
+                }
 
-            @Override
-            public void afterTextChanged(Editable s) {}
-        });
+                @Override
+                public void afterTextChanged(Editable s) {}
+            });
+        }
     }
 
-    private void filterList(String query) {
-        filteredCategoryList.clear();
-        if (query.trim().isEmpty()) {
-            filteredCategoryList.addAll(fullCategoryList);
-        } else {
-            for (CategoryModel model : fullCategoryList) {
-                if (model.getName().toLowerCase().contains(query.toLowerCase().trim())) {
-                    filteredCategoryList.add(model);
-                }
+    private void updateLists(String query) {
+        defaultFilteredList.clear();
+        for (CategoryModel item : defaultFullList) {
+            if (item.getName().toLowerCase().contains(query.toLowerCase().trim())) {
+                defaultFilteredList.add(item);
             }
         }
-        adapter.updateList(filteredCategoryList);
-    }
+        defaultAdapter.updateList(new ArrayList<>(defaultFilteredList));
 
-    private void setupListeners() {
-        backButton.setOnClickListener(v -> onBackPressed());
+        customFilteredList.clear();
+        for (CategoryModel item : customFullList) {
+            if (item.getName().toLowerCase().contains(query.toLowerCase().trim())) {
+                customFilteredList.add(item);
+            }
+        }
+        customAdapter.updateList(new ArrayList<>(customFilteredList));
 
-        noCategoryClickable.setOnClickListener(v -> {
-            radioNoCategory.setChecked(true);
-            Intent resultIntent = new Intent();
-            resultIntent.putExtra("CATEGORY_NAME", "Other");
-            setResult(RESULT_OK, resultIntent);
-            finish();
-        });
-
-        addNewCategoryButton.setOnClickListener(v -> {
-            // Open the Quick Add Dialog we created previously
-            QuickAddCategoryDialog dialog = new QuickAddCategoryDialog(this, newCategory -> {
-                // When a user successfully creates a new category, automatically select it!
-                Intent resultIntent = new Intent();
-                resultIntent.putExtra("CATEGORY_NAME", newCategory.getName());
-                resultIntent.putExtra("CATEGORY_COLOR", newCategory.getColorHex());
-                resultIntent.putExtra("CATEGORY_ICON_RES", newCategory.getIconResId());
-                setResult(RESULT_OK, resultIntent);
-                finish();
-            });
-            dialog.show();
-        });
+        // Hide the "Created Categories" section if it's empty
+        if (customFilteredList.isEmpty()) {
+            customCategoriesLayout.setVisibility(View.GONE);
+        } else {
+            customCategoriesLayout.setVisibility(View.VISIBLE);
+        }
     }
 }

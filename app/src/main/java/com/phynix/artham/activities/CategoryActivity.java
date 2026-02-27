@@ -10,7 +10,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -23,6 +23,7 @@ import com.google.firebase.database.ValueEventListener;
 import com.phynix.artham.R;
 import com.phynix.artham.adapters.ManageCategoryAdapter;
 import com.phynix.artham.models.CategoryModel;
+import com.phynix.artham.utils.ThemeManager;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -41,7 +42,8 @@ public class CategoryActivity extends AppCompatActivity implements ManageCategor
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        // Theme initialization should happen before super.onCreate if you have a ThemeManager
+        // Theme initialization applied before super.onCreate
+        ThemeManager.applyActivityTheme(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_category);
 
@@ -73,7 +75,9 @@ public class CategoryActivity extends AppCompatActivity implements ManageCategor
     private void setupRecyclerView() {
         categoryList = new ArrayList<>();
         adapter = new ManageCategoryAdapter(categoryList, this);
-        categoriesRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+        // UPDATED: Using GridLayoutManager to display 2 columns perfectly matching the XML
+        categoriesRecyclerView.setLayoutManager(new GridLayoutManager(this, 2));
         categoriesRecyclerView.setAdapter(adapter);
     }
 

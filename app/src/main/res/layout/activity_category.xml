@@ -43,6 +43,8 @@
         android:layout_below="@id/headerLayout"
         android:padding="8dp"
         android:clipToPadding="false"
+        app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+        app:spanCount="2"
         tools:listitem="@layout/item_category" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton

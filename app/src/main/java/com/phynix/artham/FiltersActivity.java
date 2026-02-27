@@ -5,7 +5,6 @@ import android.app.DatePickerDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 import android.widget.Button;
@@ -15,12 +14,12 @@ import android.widget.LinearLayout;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 
-import com.phynix.artham.activities.ChooseCategoryActivity;
-
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
+// UPDATED: Using the new CategoryPickerActivity
+import com.phynix.artham.activities.CategoryPickerActivity;
 import com.phynix.artham.utils.SnackbarHelper;
 
 import java.text.SimpleDateFormat;
@@ -141,7 +140,8 @@ public class FiltersActivity extends AppCompatActivity {
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
                     if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
-                        String returnedCategory = result.getData().getStringExtra("selected_category");
+                        // FIXED: Match the extra key to what CategoryPickerActivity actually returns
+                        String returnedCategory = result.getData().getStringExtra("category_name");
                         if (returnedCategory != null) {
                             selectedCategories.clear();
                             if (!"No Category".equals(returnedCategory)) {
@@ -169,10 +169,17 @@ public class FiltersActivity extends AppCompatActivity {
 
         // Category Listener
         categorySelectorLayout.setOnClickListener(v -> {
-            Intent categoryIntent = new Intent(this, ChooseCategoryActivity.class);
+            // UPDATED: Launch CategoryPickerActivity instead
+            Intent categoryIntent = new Intent(this, CategoryPickerActivity.class);
             if (!selectedCategories.isEmpty()) {
                 categoryIntent.putExtra("selected_category", selectedCategories.iterator().next());
             }
+
+            // Optional enhancement: if a user selected IN or OUT, pass it to filter the list!
+            if ("IN".equals(entryType) || "OUT".equals(entryType)) {
+                categoryIntent.putExtra("type", entryType);
+            }
+
             categoryLauncher.launch(categoryIntent);
         });
 
