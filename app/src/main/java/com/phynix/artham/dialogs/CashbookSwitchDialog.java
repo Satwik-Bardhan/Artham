@@ -32,6 +32,7 @@ import com.phynix.artham.models.CashbookModel;
 import com.phynix.artham.utils.ErrorHandler;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -207,6 +208,16 @@ public class CashbookSwitchDialog extends DialogFragment {
                             }
                         }
 
+                        // --- UPDATED: Apply pinning rule immediately to dialog list ---
+                        allCashbooks.sort((c1, c2) -> {
+                            // Rule 1: Pin Current book to top
+                            if (c1.isCurrent() && !c2.isCurrent()) return -1;
+                            if (!c1.isCurrent() && c2.isCurrent()) return 1;
+
+                            // Rule 2: Sort by recently created descending
+                            return Long.compare(c2.getCreatedDate(), c1.getCreatedDate());
+                        });
+
                         showLoading(false);
                         if (allCashbooks.isEmpty()) {
                             showEmptyState(true);
@@ -233,24 +244,32 @@ public class CashbookSwitchDialog extends DialogFragment {
         }
 
         String lowerQuery = query.toLowerCase().trim();
+        List<CashbookModel> filtered;
 
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
-            List<CashbookModel> filtered = allCashbooks.stream()
+            filtered = allCashbooks.stream()
                     .filter(cashbook -> (cashbook.getName() != null && cashbook.getName().toLowerCase().contains(lowerQuery)) ||
                             (cashbook.getDescription() != null && cashbook.getDescription().toLowerCase().contains(lowerQuery)))
                     .collect(Collectors.toList());
-            adapter.updateCashbooks(filtered);
         } else {
             // Fallback for older Android versions
-            List<CashbookModel> filtered = new ArrayList<>();
+            filtered = new ArrayList<>();
             for (CashbookModel cashbook : allCashbooks) {
                 if ((cashbook.getName() != null && cashbook.getName().toLowerCase().contains(lowerQuery)) ||
                         (cashbook.getDescription() != null && cashbook.getDescription().toLowerCase().contains(lowerQuery))) {
                     filtered.add(cashbook);
                 }
             }
-            adapter.updateCashbooks(filtered);
         }
+
+        // --- UPDATED: Ensure search results also keep the current pinned if it matches ---
+        filtered.sort((c1, c2) -> {
+            if (c1.isCurrent() && !c2.isCurrent()) return -1;
+            if (!c1.isCurrent() && c2.isCurrent()) return 1;
+            return Long.compare(c2.getCreatedDate(), c1.getCreatedDate());
+        });
+
+        adapter.updateCashbooks(filtered);
     }
 
     private void showLoading(boolean show) {

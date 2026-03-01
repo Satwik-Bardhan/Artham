@@ -4,6 +4,7 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Build;
@@ -13,7 +14,6 @@ import android.text.TextWatcher;
 import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -33,6 +33,7 @@ import com.phynix.artham.databinding.LayoutPieChartBinding;
 import com.phynix.artham.databinding.LayoutSearchBarBinding;
 import com.phynix.artham.databinding.LayoutSummaryCardsBinding;
 import com.phynix.artham.models.TransactionModel;
+import com.phynix.artham.utils.Constants;
 import com.phynix.artham.utils.SnackbarHelper;
 import com.phynix.artham.utils.SwipeListener;
 import com.phynix.artham.utils.ThemeManager;
@@ -127,9 +128,8 @@ public class TransactionActivity extends AppCompatActivity {
         currentUser = mAuth.getCurrentUser();
         currentMonthCalendar = Calendar.getInstance();
 
-        // Safely check against null AND empty cashbook ID before executing Firebase calls
-        if (currentUser == null || currentCashbookId == null || currentCashbookId.trim().isEmpty()) {
-            Toast.makeText(this, "Error: No active cashbook found.", Toast.LENGTH_SHORT).show();
+        if (currentCashbookId == null || currentUser == null) {
+            showSnackbar("Error: No active cashbook found.");
             finish();
             return;
         }
@@ -144,6 +144,40 @@ public class TransactionActivity extends AppCompatActivity {
         observeViewModel();
         applySavedChartVisibility();
         setupSwipeNavigation();
+    }
+
+    // [FIX] Add lifecycle overrides to ensure the correct cashbook ID is used when returning or getting Single_Top intent
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (currentUser != null) {
+            SharedPreferences prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+            String savedId = prefs.getString("active_cashbook_id_" + currentUser.getUid(), currentCashbookId);
+            if (savedId != null && !savedId.equals(currentCashbookId)) {
+                currentCashbookId = savedId;
+                fetchCashbookName();
+                if (viewModel != null) {
+                    viewModel.setCashbookId(currentCashbookId);
+                }
+            }
+        }
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        String newId = intent.getStringExtra("cashbook_id");
+        if (newId == null) {
+            newId = intent.getStringExtra(Constants.EXTRA_CASHBOOK_ID);
+        }
+        if (newId != null && !newId.equals(currentCashbookId)) {
+            currentCashbookId = newId;
+            fetchCashbookName();
+            if (viewModel != null) {
+                viewModel.setCashbookId(currentCashbookId);
+            }
+        }
     }
 
     private void setupSwipeNavigation() {
@@ -519,8 +553,12 @@ public class TransactionActivity extends AppCompatActivity {
             if (newId != null && !newId.equals(currentCashbookId)) {
                 currentCashbookId = newId; currentCashbookName = newName;
                 showSnackbar("Switched to: " + newName);
-                getSharedPreferences("AppPrefs", Context.MODE_PRIVATE).edit().putString("active_cashbook_id_" + currentUser.getUid(), newId).apply();
-                initViewModel(); observeViewModel();
+                getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit().putString("active_cashbook_id_" + currentUser.getUid(), newId).apply();
+
+                // [FIX] Update ViewModel dynamically rather than trying to recreate it
+                if (viewModel != null) {
+                    viewModel.setCashbookId(currentCashbookId);
+                }
             }
         }
     }

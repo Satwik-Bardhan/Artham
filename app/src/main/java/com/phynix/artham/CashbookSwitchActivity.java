@@ -79,7 +79,7 @@ public class CashbookSwitchActivity extends AppCompatActivity {
     private CashbookAdapter cashbookAdapter;
     private final List<CashbookModel> allCashbooks = new ArrayList<>();
     private String currentFilter = "active";
-    private String currentSort = "recent"; // Default sort
+    private String currentSort = "recent";
     private String currentCashbookId;
 
     // Firebase
@@ -97,7 +97,7 @@ public class CashbookSwitchActivity extends AppCompatActivity {
         ThemeManager.applyActivityTheme(this);
 
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_cashbook_manager); // Layout file name updated
+        setContentView(R.layout.activity_cashbook_manager);
 
         if (getSupportActionBar() != null) {
             getSupportActionBar().hide();
@@ -113,7 +113,6 @@ public class CashbookSwitchActivity extends AppCompatActivity {
             return;
         }
 
-        // Load persisted sort order
         loadSortPreference();
 
         userCashbooksRef = FirebaseDatabase.getInstance().getReference()
@@ -132,7 +131,6 @@ public class CashbookSwitchActivity extends AppCompatActivity {
         swipeListener = new SwipeListener(this) {
             @Override
             public void onSwipeLeft() {
-                // Inverted Logic: Go to Home Page (Left Page)
                 Intent intent = new Intent(CashbookSwitchActivity.this, HomePage.class);
                 intent.putExtra("cashbook_id", currentCashbookId);
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
@@ -143,7 +141,6 @@ public class CashbookSwitchActivity extends AppCompatActivity {
 
             @Override
             public void onSwipeRight() {
-                // Inverted Logic: No page to the right
             }
         };
     }
@@ -174,11 +171,10 @@ public class CashbookSwitchActivity extends AppCompatActivity {
         emptyStateLayout = findViewById(R.id.emptyStateLayout);
         loadingLayout = findViewById(R.id.loadingLayout);
 
-        // Use RecyclerView as main content view for visibility toggling
         mainContent = cashbookRecyclerView;
 
         emptyStateCreateButton = findViewById(R.id.emptyStateCreateButton);
-        closeButton = findViewById(R.id.closeButton); // Updated ID as requested
+        closeButton = findViewById(R.id.closeButton);
 
         searchEditText = findViewById(R.id.searchEditText);
         chipGroup = findViewById(R.id.includedFilterLayout);
@@ -232,10 +228,7 @@ public class CashbookSwitchActivity extends AppCompatActivity {
     }
 
     private void setupFilterListener() {
-        if (chipGroup == null) {
-            Log.e(TAG, "ChipGroup not found! Check XML IDs.");
-            return;
-        }
+        if (chipGroup == null) return;
 
         chipGroup.setOnCheckedStateChangeListener((group, checkedIds) -> {
             if (!checkedIds.isEmpty()) {
@@ -389,7 +382,6 @@ public class CashbookSwitchActivity extends AppCompatActivity {
             });
 
             btnCancel.setOnClickListener(v -> dialog.dismiss());
-
             dialog.show();
 
         } catch (Exception e) {
@@ -410,7 +402,11 @@ public class CashbookSwitchActivity extends AppCompatActivity {
         newCashbook.setActive(true);
 
         userCashbooksRef.child(cashbookId).setValue(newCashbook)
-                .addOnSuccessListener(aVoid -> showSnackbar("Cashbook created successfully!"))
+                .addOnSuccessListener(aVoid -> {
+                    showSnackbar("Cashbook created successfully!");
+                    // Ensure the newly created book becomes the active one immediately
+                    onCashbookSelected(newCashbook);
+                })
                 .addOnFailureListener(e -> showSnackbar("Failed: " + e.getMessage()));
     }
 
@@ -493,7 +489,8 @@ public class CashbookSwitchActivity extends AppCompatActivity {
 
     private void deleteCashbookFromFirebase(CashbookModel cashbook) {
         userCashbooksRef.child(cashbook.getCashbookId()).removeValue()
-                .addOnSuccessListener(aVoid -> showSnackbar("Cashbook deleted successfully"));
+                .addOnSuccessListener(aVoid -> showSnackbar("Cashbook deleted successfully"))
+                .addOnFailureListener(e -> showSnackbar("Failed to delete cashbook"));
     }
 
     private void showSortOptionsDialog() {
@@ -582,40 +579,46 @@ public class CashbookSwitchActivity extends AppCompatActivity {
             case "favorites":
                 filteredList = searchResults.stream().filter(CashbookModel::isFavorite).collect(Collectors.toList());
                 break;
-            default:
-                filteredList = searchResults;
-                break;
-        }
-
-        switch (currentSort) {
-            case "name_asc":
-                filteredList.sort((c1, c2) -> c1.getName().compareToIgnoreCase(c2.getName()));
-                break;
-            case "name_desc":
-                filteredList.sort((c1, c2) -> c2.getName().compareToIgnoreCase(c1.getName()));
-                break;
-            case "oldest":
-                filteredList.sort((c1, c2) -> Long.compare(c1.getCreatedDate(), c2.getCreatedDate()));
-                break;
-            case "most_transactions":
-                filteredList.sort((c1, c2) -> Integer.compare(c2.getTransactionCount(), c1.getTransactionCount()));
-                break;
-            case "balance_high":
-                filteredList.sort((c1, c2) -> Double.compare(c2.getTotalBalance(), c1.getTotalBalance()));
-                break;
-            case "balance_low":
-                filteredList.sort((c1, c2) -> Double.compare(c1.getTotalBalance(), c2.getTotalBalance()));
-                break;
             case "recent":
+                // If "Recent" tab is pressed, we don't apply Active/Favorite exclusions, we just show all
+                filteredList = new ArrayList<>(searchResults);
+                break;
             default:
-                filteredList.sort((c1, c2) -> Long.compare(c2.getLastModified(), c1.getLastModified()));
+                filteredList = new ArrayList<>(searchResults);
                 break;
         }
 
+        // Use Collections.sort with Unified Comparator
         Collections.sort(filteredList, (c1, c2) -> {
-            if (c1.isCurrent()) return -1;
-            if (c2.isCurrent()) return 1;
-            return 0;
+            // Rule 1: Always ensure Current book stays on top regardless of applied sort
+            if (c1.isCurrent() && !c2.isCurrent()) return -1;
+            if (!c1.isCurrent() && c2.isCurrent()) return 1;
+
+            // Rule 2: IMPORTANT FIX - If the user is on the "Recent" filter tab, override any active
+            // sort preference and FORCE it to sort by newest created date.
+            if ("recent".equals(currentFilter)) {
+                return Long.compare(c2.getCreatedDate(), c1.getCreatedDate());
+            }
+
+            // Fall back to requested sub-sort from the Dialog
+            switch (currentSort) {
+                case "name_asc":
+                    return c1.getName().compareToIgnoreCase(c2.getName());
+                case "name_desc":
+                    return c2.getName().compareToIgnoreCase(c1.getName());
+                case "oldest":
+                    return Long.compare(c1.getCreatedDate(), c2.getCreatedDate());
+                case "most_transactions":
+                    return Integer.compare(c2.getTransactionCount(), c1.getTransactionCount());
+                case "balance_high":
+                    return Double.compare(c2.getTotalBalance(), c1.getTotalBalance());
+                case "balance_low":
+                    return Double.compare(c1.getTotalBalance(), c2.getTotalBalance());
+                case "recent":
+                default:
+                    // Sort strictly by newly created date
+                    return Long.compare(c2.getCreatedDate(), c1.getCreatedDate());
+            }
         });
 
         cashbookAdapter.updateCashbooks(filteredList);

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/cashbookItemCard"
@@ -12,7 +12,8 @@
     android:foreground="?attr/selectableItemBackground"
     app:cardBackgroundColor="?attr/chk_surfaceColor"
     app:cardCornerRadius="8dp"
-    app:cardElevation="2dp">
+    app:cardElevation="2dp"
+    app:strokeWidth="0dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -65,7 +66,6 @@
                     android:maxLines="1"
                     tools:text="Personal Finance" />
 
-                <!-- Active Status with previous styling: Blue, Bold, No Background -->
                 <TextView
                     android:id="@+id/activeStatus"
                     android:layout_width="wrap_content"
@@ -230,4 +230,4 @@
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>
-</androidx.cardview.widget.CardView>
+</com.google.android.material.card.MaterialCardView>

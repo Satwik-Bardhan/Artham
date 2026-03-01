@@ -40,9 +40,7 @@
             android:layout_marginBottom="6dp"
             android:textColor="?attr/chk_textColorPrimary"/>
 
-        <!-- Added ID 'yearContainer' here to reference it in Java -->
         <com.google.android.material.card.MaterialCardView
-            android:id="@+id/yearContainer"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:cardBackgroundColor="@android:color/transparent"

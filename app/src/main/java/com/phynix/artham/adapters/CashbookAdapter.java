@@ -1,7 +1,6 @@
 package com.phynix.artham.adapters;
 
 import android.content.Context;
-import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -13,10 +12,10 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
 import androidx.core.content.ContextCompat;
-import androidx.core.widget.ImageViewCompat;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.card.MaterialCardView;
 import com.phynix.artham.R;
 import com.phynix.artham.models.CashbookModel;
 import com.phynix.artham.utils.DateTimeUtils;
@@ -41,7 +40,6 @@ public class CashbookAdapter extends RecyclerView.Adapter<CashbookAdapter.Cashbo
     private final NumberFormat currencyFormat;
 
     // Theme Colors
-    private final int primaryColor;
     private final int successColor;
     private final int secondaryColor;
     private final int favoriteColor;
@@ -53,20 +51,15 @@ public class CashbookAdapter extends RecyclerView.Adapter<CashbookAdapter.Cashbo
         this.listener = listener;
         this.currencyFormat = NumberFormat.getCurrencyInstance(new Locale("en", "IN"));
 
-        // Load colors dynamically from the current theme (Light/Dark/Purple)
-        this.primaryColor = ThemeUtil.getThemeAttrColor(context, R.attr.chk_balanceColor);
         this.successColor = ThemeUtil.getThemeAttrColor(context, R.attr.chk_incomeColor);
         this.secondaryColor = ThemeUtil.getThemeAttrColor(context, R.attr.chk_textColorSecondary);
         this.expenseColor = ThemeUtil.getThemeAttrColor(context, R.attr.chk_expenseColor);
-
-        // Fallback or specific color from colors.xml
-        this.favoriteColor = ContextCompat.getColor(context, R.color.category_rent); // Using orange/gold for favorites
+        this.favoriteColor = ContextCompat.getColor(context, R.color.category_rent);
     }
 
     @NonNull
     @Override
     public CashbookViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        // Ensure 'item_cashbook.xml' exists in your layout folder
         View view = LayoutInflater.from(context).inflate(R.layout.item_cashbook, parent, false);
         return new CashbookViewHolder(view);
     }
@@ -83,7 +76,6 @@ public class CashbookAdapter extends RecyclerView.Adapter<CashbookAdapter.Cashbo
     }
 
     public void updateCashbooks(List<CashbookModel> newCashbooks) {
-        // Use DiffUtil to calculate changes efficiently
         CashbookDiffCallback diffCallback = new CashbookDiffCallback(this.cashbookList, newCashbooks);
         DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(diffCallback);
 
@@ -93,8 +85,7 @@ public class CashbookAdapter extends RecyclerView.Adapter<CashbookAdapter.Cashbo
     }
 
     public class CashbookViewHolder extends RecyclerView.ViewHolder {
-        // UI Components
-        private CardView cashbookItemCard;
+        private MaterialCardView cashbookItemCard; // Updated to MaterialCardView
         private CardView iconCard;
         private ImageView bookIcon;
         private ImageView favoriteButton;
@@ -109,28 +100,15 @@ public class CashbookAdapter extends RecyclerView.Adapter<CashbookAdapter.Cashbo
 
         public CashbookViewHolder(@NonNull View itemView) {
             super(itemView);
-            // Binding Views - Verify these IDs exist in item_cashbook.xml
             cashbookItemCard = itemView.findViewById(R.id.cashbookItemCard);
             iconCard = itemView.findViewById(R.id.iconCard);
-            // Fixed: Changed R.id.bookIcon to R.id.cashbookIcon based on item_cashbook.xml
             bookIcon = itemView.findViewById(R.id.cashbookIcon);
-
-            // Note: In item_cashbook.xml, the ID is cashbookName, but variable was cashbookNameText
-            // Assuming we want to match the XML ID or update here.
-            // XML has: android:id="@+id/cashbookName"
             cashbookNameText = itemView.findViewById(R.id.cashbookName);
-
-            // XML has: android:id="@+id/activeStatus"
             statusBadge = itemView.findViewById(R.id.activeStatus);
-
             favoriteButton = itemView.findViewById(R.id.favoriteButton);
             menuButton = itemView.findViewById(R.id.menuButton);
-
             lastModifiedText = itemView.findViewById(R.id.lastModifiedText);
-
-            // XML has: android:id="@+id/balanceAmount"
             balanceText = itemView.findViewById(R.id.balanceAmount);
-
             transactionCountText = itemView.findViewById(R.id.transactionCountText);
             createdDateText = itemView.findViewById(R.id.createdDateText);
         }
@@ -138,45 +116,46 @@ public class CashbookAdapter extends RecyclerView.Adapter<CashbookAdapter.Cashbo
         public void bind(CashbookModel cashbook) {
             if (cashbook == null) return;
 
-            // 1. Name
             cashbookNameText.setText(cashbook.getName() != null ? cashbook.getName() : "Unnamed");
 
-            // 2. Status Badge Logic
+            // Handles assigning "Current" badge dynamically based on the passed ID
             setupStatusBadge(cashbook);
 
-            // 3. Favorite Icon Logic - KEEPING AS IS
-            setupFavoriteIcon(cashbook);
+            // Dynamically add a border if the book is the Current Book
+            if (cashbookItemCard != null) {
+                if (cashbook.isCurrent()) {
+                    // Set stroke to 2dp
+                    int strokeWidth = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 2, context.getResources().getDisplayMetrics());
+                    cashbookItemCard.setStrokeWidth(strokeWidth);
+                    cashbookItemCard.setStrokeColor(ThemeUtil.getThemeAttrColor(context, R.attr.chk_primary_blue));
+                } else {
+                    // Remove stroke for regular books
+                    cashbookItemCard.setStrokeWidth(0);
+                }
+            }
 
-            // 4. Last Modified Text
+            setupFavoriteIcon(cashbook);
             setupLastModified(cashbook);
 
-            // 5. Balance Text
             double balance = cashbook.getBalance();
             balanceText.setText(currencyFormat.format(balance));
             balanceText.setTextColor(balance >= 0 ? successColor : expenseColor);
 
-            // 6. Transaction Count
             transactionCountText.setText(String.valueOf(cashbook.getTransactionCount()));
 
-            // 7. Created Date
             if (cashbook.getCreatedDate() > 0) {
                 createdDateText.setText(DateTimeUtils.formatDate(cashbook.getCreatedDate(), "MMM yyyy"));
             } else {
                 createdDateText.setText("-");
             }
 
-            // 8. Icon Color Background (Book Icon)
             if (iconCard != null) {
-                // Set background color for the card container (circle)
                 iconCard.setCardBackgroundColor(getIconBackgroundColor(cashbook));
-
-                // Set tint for the book icon itself to BLACK
                 if (bookIcon != null) {
                     bookIcon.setColorFilter(Color.BLACK);
                 }
             }
 
-            // 9. Click Listeners
             setupListeners(cashbook);
         }
 
@@ -184,14 +163,16 @@ public class CashbookAdapter extends RecyclerView.Adapter<CashbookAdapter.Cashbo
             if (statusBadge == null) return;
 
             statusBadge.setVisibility(View.VISIBLE);
+
+            // Evaluates text and explicit color override
             if (cashbook.isCurrent()) {
-                statusBadge.setText(context.getString(R.string.status_current)); // Ensure this string exists
-                statusBadge.setTextColor(primaryColor);
+                statusBadge.setText("Current");
+                statusBadge.setTextColor(ThemeUtil.getThemeAttrColor(context, R.attr.chk_primary_blue));
             } else if (cashbook.isActive()) {
-                statusBadge.setText(context.getString(R.string.status_active));
+                statusBadge.setText("Active");
                 statusBadge.setTextColor(successColor);
             } else {
-                statusBadge.setText(context.getString(R.string.status_inactive));
+                statusBadge.setText("Inactive");
                 statusBadge.setTextColor(secondaryColor);
             }
         }
@@ -226,13 +207,11 @@ public class CashbookAdapter extends RecyclerView.Adapter<CashbookAdapter.Cashbo
                     if (listener != null) listener.onCashbookClick(cashbook);
                 });
             }
-
             if (favoriteButton != null) {
                 favoriteButton.setOnClickListener(v -> {
                     if (listener != null) listener.onFavoriteClick(cashbook);
                 });
             }
-
             if (menuButton != null) {
                 menuButton.setOnClickListener(v -> {
                     if (listener != null) listener.onMenuClick(cashbook, v);
@@ -240,28 +219,24 @@ public class CashbookAdapter extends RecyclerView.Adapter<CashbookAdapter.Cashbo
             }
         }
 
-        // Helper to determine background color of the book icon circle
         private int getIconBackgroundColor(CashbookModel cashbook) {
-            // Priority: Favorite (Gold/Yellow) > Current (Blue) > Active (Green)
-
-            if (cashbook.isFavorite()) {
-                // Gold/Yellow for favorite
-                return Color.parseColor("#FFD700");
-            }
-            if (cashbook.isCurrent()) {
-                // Blue for current book (using theme attribute for compatibility)
-                return ThemeUtil.getThemeAttrColor(context, R.attr.chk_primary_blue);
-            }
-            if (cashbook.isActive()) {
-                // Green for active books (using theme attribute for compatibility)
-                return ThemeUtil.getThemeAttrColor(context, R.attr.chk_incomeColor);
-            }
-            // Inactive - Gray/Divider color
+            if (cashbook.isFavorite()) return Color.parseColor("#FFD700");
+            if (cashbook.isCurrent()) return ThemeUtil.getThemeAttrColor(context, R.attr.chk_primary_blue);
+            if (cashbook.isActive()) return ThemeUtil.getThemeAttrColor(context, R.attr.chk_incomeColor);
             return ThemeUtil.getThemeAttrColor(context, R.attr.chk_dividerHorizontal);
         }
     }
 
-    // --- DiffUtil Callback Class ---
+    static class ThemeUtil {
+        static int getThemeAttrColor(Context context, int attr) {
+            TypedValue typedValue = new TypedValue();
+            if (context.getTheme().resolveAttribute(attr, typedValue, true)) {
+                return typedValue.data;
+            }
+            return ContextCompat.getColor(context, android.R.color.darker_gray);
+        }
+    }
+
     private static class CashbookDiffCallback extends DiffUtil.Callback {
         private final List<CashbookModel> oldList;
         private final List<CashbookModel> newList;
@@ -283,10 +258,7 @@ public class CashbookAdapter extends RecyclerView.Adapter<CashbookAdapter.Cashbo
 
         @Override
         public boolean areItemsTheSame(int oldItemPosition, int newItemPosition) {
-            // Compare unique IDs
-            String oldId = oldList.get(oldItemPosition).getCashbookId();
-            String newId = newList.get(newItemPosition).getCashbookId();
-            return Objects.equals(oldId, newId);
+            return Objects.equals(oldList.get(oldItemPosition).getCashbookId(), newList.get(newItemPosition).getCashbookId());
         }
 
         @Override
@@ -294,26 +266,13 @@ public class CashbookAdapter extends RecyclerView.Adapter<CashbookAdapter.Cashbo
             CashbookModel oldItem = oldList.get(oldItemPosition);
             CashbookModel newItem = newList.get(newItemPosition);
 
-            // Compare content to check if visual update is needed
             return Objects.equals(oldItem.getName(), newItem.getName()) &&
-                    Math.abs(oldItem.getBalance() - newItem.getBalance()) < 0.01 && // Compare double with tolerance
+                    Math.abs(oldItem.getBalance() - newItem.getBalance()) < 0.01 &&
                     oldItem.getTransactionCount() == newItem.getTransactionCount() &&
                     oldItem.isActive() == newItem.isActive() &&
                     oldItem.isCurrent() == newItem.isCurrent() &&
                     oldItem.isFavorite() == newItem.isFavorite() &&
                     oldItem.getLastModified() == newItem.getLastModified();
-        }
-    }
-
-    // --- Theme Helper Class ---
-    static class ThemeUtil {
-        static int getThemeAttrColor(Context context, int attr) {
-            TypedValue typedValue = new TypedValue();
-            if (context.getTheme().resolveAttribute(attr, typedValue, true)) {
-                return typedValue.data;
-            }
-            // Fallback color if attribute not found
-            return ContextCompat.getColor(context, android.R.color.darker_gray);
         }
     }
 }

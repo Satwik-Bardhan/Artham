@@ -108,7 +108,7 @@ public class HomePage extends AppCompatActivity {
     private final ActivityResultLauncher<Intent> detailsLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
-                // Handle any result from details if needed (e.g., refresh data)
+                // Handle any result from details if needed
             }
     );
 
@@ -123,7 +123,15 @@ public class HomePage extends AppCompatActivity {
                     if (newId != null) {
                         currentActiveBookId = null;
                         isTimestampUpdatedForCurrentBook = false;
+
+                        currentCashbookId = newId;
                         viewModel.switchCashbook(newId);
+
+                        if (newName != null) {
+                            binding.userNameTop.setText(newName);
+                            binding.currentCashbookText.setText(newName);
+                        }
+
                         showSnackbar("Switched to: " + (newName != null ? newName : "New Cashbook"));
                     }
                 }
@@ -142,7 +150,6 @@ public class HomePage extends AppCompatActivity {
             getSupportActionBar().hide();
         }
 
-        // Initialize ViewModel
         viewModel = new ViewModelProvider(this).get(HomePageViewModel.class);
 
         currencyFormat = NumberFormat.getCurrencyInstance(new Locale("en", "IN"));
@@ -167,7 +174,6 @@ public class HomePage extends AppCompatActivity {
     private void setupStickyScrollLogic() {
         binding.mainScrollView.setOnScrollChangeListener((NestedScrollView.OnScrollChangeListener) (v, scrollX, scrollY, oldScrollX, oldScrollY) -> {
             int buttonsTop = binding.originalButtons.getRoot().getTop();
-            // Show sticky header when original buttons are scrolled out of view
             if (scrollY >= buttonsTop) {
                 if (binding.stickyActionButtonsContainer.getVisibility() != View.VISIBLE) {
                     binding.stickyActionButtonsContainer.setVisibility(View.VISIBLE);
@@ -184,7 +190,6 @@ public class HomePage extends AppCompatActivity {
         swipeListener = new SwipeListener(this) {
             @Override
             public void onSwipeLeft() {
-                // Swipe Left -> Go to Transactions List (if loaded)
                 String idToUse = (currentCashbookId != null) ? currentCashbookId : viewModel.getCurrentCashbookId();
                 if (idToUse != null) {
                     Intent intent = new Intent(HomePage.this, TransactionActivity.class);
@@ -198,7 +203,6 @@ public class HomePage extends AppCompatActivity {
             }
             @Override
             public void onSwipeRight() {
-                // Swipe Right -> Open Cashbook Switcher
                 openCashbookSwitcher();
                 overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
             }
@@ -326,19 +330,21 @@ public class HomePage extends AppCompatActivity {
                 binding.userNameTop.setText(cashbook.getName());
                 binding.currentCashbookText.setText(cashbook.getName());
 
-                // Set Exact Date and Time in IST with Seconds
-                binding.lastOpenedText.setText("Last opened: " + formatExactDateTimeIST(cashbook.getLastModified()));
-
                 if (backCashbookIdText != null) backCashbookIdText.setText(cashbook.getCashbookId());
 
-                // Visibility management
                 binding.transactionSection.setVisibility(View.VISIBLE);
                 binding.transactionTable.setVisibility(View.VISIBLE);
                 binding.emptyStateView.setVisibility(View.GONE);
 
+                currentCashbookId = cashbook.getCashbookId();
+
+                // FIX: Freeze the text so it only updates the very first time the book loads!
                 if (currentActiveBookId == null || !currentActiveBookId.equals(cashbook.getCashbookId())) {
                     currentActiveBookId = cashbook.getCashbookId();
                     isTimestampUpdatedForCurrentBook = false;
+
+                    // Set Exact Date and Time BEFORE we push the new update to Firebase
+                    binding.lastOpenedText.setText("Last opened: " + formatExactDateTimeIST(cashbook.getLastModified()));
                 }
 
                 if (!isTimestampUpdatedForCurrentBook) {
@@ -347,12 +353,11 @@ public class HomePage extends AppCompatActivity {
                 }
 
             } else {
-                // EMPTY STATE: No Cashbook found
+                // EMPTY STATE
                 binding.userNameTop.setText("Welcome!");
                 binding.currentCashbookText.setText("No Cashbook Selected");
                 binding.lastOpenedText.setText("Create a new cashbook to start");
 
-                // Visibility management - ensure empty state isn't showing a demo row if there's no cashbook at all
                 binding.transactionSection.setVisibility(View.GONE);
                 binding.transactionTable.setVisibility(View.GONE);
                 binding.emptyStateView.setVisibility(View.GONE);
@@ -388,7 +393,6 @@ public class HomePage extends AppCompatActivity {
         if (timestamp <= 0) return "Never";
 
         SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy, hh:mm:ss a", Locale.getDefault());
-        // Set to Indian Standard Time
         sdf.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
 
         return sdf.format(new Date(timestamp));
@@ -468,31 +472,21 @@ public class HomePage extends AppCompatActivity {
         }
     }
 
-    // --- ENHANCED LOGIC FOR EMPTY STATE & DEMO ROW ---
     private void updateTransactionTable(List<TransactionModel> transactions) {
         binding.transactionTable.removeAllViews();
 
         if (transactions == null || transactions.isEmpty()) {
             binding.transactionCount.setText("TODAY (0)");
-
-            // Show our styled empty state banner
             binding.emptyStateView.setVisibility(View.VISIBLE);
-            // Keep the table visible so the user can see the fake demo row
             binding.transactionTable.setVisibility(View.VISIBLE);
-
-
         } else {
             binding.transactionCount.setText("TODAY (" + transactions.size() + ")");
-
-            // Hide the empty state banner as we have real data
             binding.emptyStateView.setVisibility(View.GONE);
             binding.transactionTable.setVisibility(View.VISIBLE);
 
             for (TransactionModel t : transactions) addTransactionRow(t);
         }
     }
-
-    // ------------------------------------------------
 
     private void addTransactionRow(TransactionModel transaction) {
         View rowView = LayoutInflater.from(this).inflate(R.layout.item_transaction_report_row, binding.transactionTable, false);
@@ -579,7 +573,13 @@ public class HomePage extends AppCompatActivity {
 
     private void openCashbookSwitcher() {
         Intent intent = new Intent(this, CashbookSwitchActivity.class);
-        intent.putExtra("current_cashbook_id", currentCashbookId);
+
+        String idToPass = currentCashbookId;
+        if (idToPass == null && viewModel != null) {
+            idToPass = viewModel.getCurrentCashbookId();
+        }
+
+        intent.putExtra("current_cashbook_id", idToPass);
         cashbookSwitchLauncher.launch(intent);
     }
 

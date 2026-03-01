@@ -21,7 +21,7 @@ public class TransactionViewModel extends AndroidViewModel {
     private static final String TAG = "TransactionViewModel";
 
     private final DataRepository repository;
-    private final String cashbookId;
+    private String cashbookId;
 
     // LiveData for reactive UI updates
     private final MutableLiveData<List<TransactionModel>> allTransactions = new MutableLiveData<>();
@@ -40,6 +40,13 @@ public class TransactionViewModel extends AndroidViewModel {
         filteredTransactions.setValue(new ArrayList<>());
 
         loadTransactions();
+    }
+
+    public void setCashbookId(String newCashbookId) {
+        if (newCashbookId != null && !newCashbookId.equals(this.cashbookId)) {
+            this.cashbookId = newCashbookId;
+            loadTransactions();
+        }
     }
 
     // --- Public Getters for LiveData ---
@@ -117,7 +124,6 @@ public class TransactionViewModel extends AndroidViewModel {
     }
 
     /**
-     * [FIXED] Added this method to solve the error in EditTransactionActivity
      * Updates an existing transaction.
      */
     public void updateTransaction(TransactionModel transaction) {
@@ -218,22 +224,22 @@ public class TransactionViewModel extends AndroidViewModel {
     }
 
     /**
-     * [NEW] Calculates the running balance up to and including a specific timestamp.
+     * Calculates the running balance up to a specific timestamp.
      */
-    public double getRunningBalanceUpTo(long targetTimestamp) {
-        List<TransactionModel> allList = allTransactions.getValue();
-        if (allList == null || allList.isEmpty()) {
+    public double getRunningBalanceUpTo(long timestamp) {
+        List<TransactionModel> transactions = allTransactions.getValue();
+        if (transactions == null || transactions.isEmpty()) {
             return 0.0;
         }
 
         double balance = 0.0;
-        for (TransactionModel tm : allList) {
-            // Include transactions that are strictly older or the same exact timestamp
-            if (tm.getTimestamp() <= targetTimestamp) {
-                if ("IN".equalsIgnoreCase(tm.getType())) {
-                    balance += tm.getAmount();
-                } else if ("OUT".equalsIgnoreCase(tm.getType())) {
-                    balance -= tm.getAmount();
+        for (TransactionModel transaction : transactions) {
+            // Include transactions that occurred on or before this timestamp
+            if (transaction.getTimestamp() <= timestamp) {
+                if ("IN".equalsIgnoreCase(transaction.getType())) {
+                    balance += transaction.getAmount();
+                } else if ("OUT".equalsIgnoreCase(transaction.getType())) {
+                    balance -= transaction.getAmount();
                 }
             }
         }
