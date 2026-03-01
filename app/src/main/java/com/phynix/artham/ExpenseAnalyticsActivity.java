@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.TypedValue;
@@ -11,6 +12,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -33,6 +35,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.phynix.artham.models.CategoryModel;
 import com.phynix.artham.models.TransactionModel;
 import com.phynix.artham.utils.ThemeManager;
 
@@ -65,12 +68,18 @@ public class ExpenseAnalyticsActivity extends AppCompatActivity {
     // Data
     private List<TransactionModel> allTransactions = new ArrayList<>();
     private List<MonthlyExpense> monthlyExpenses = new ArrayList<>();
+
+    // Map to store categories fetched from Firebase
+    private final Map<String, CategoryModel> categoryMap = new HashMap<>();
+
     private MonthlyCardAdapter monthlyAdapter;
     private LegendAdapter legendAdapter;
 
     // Firebase
     private String cashbookId;
+    private String userId;
     private DatabaseReference transactionsRef;
+    private DatabaseReference categoriesRef;
     private ValueEventListener transactionsListener;
 
     @Override
@@ -84,8 +93,9 @@ public class ExpenseAnalyticsActivity extends AppCompatActivity {
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
 
         if (currentUser != null) {
+            userId = currentUser.getUid();
             SharedPreferences prefs = getSharedPreferences("AppPrefs", Context.MODE_PRIVATE);
-            cashbookId = prefs.getString("active_cashbook_id_" + currentUser.getUid(), getIntent().getStringExtra("cashbook_id"));
+            cashbookId = prefs.getString("active_cashbook_id_" + userId, getIntent().getStringExtra("cashbook_id"));
         } else {
             cashbookId = getIntent().getStringExtra("cashbook_id");
         }
@@ -98,13 +108,17 @@ public class ExpenseAnalyticsActivity extends AppCompatActivity {
         }
 
         transactionsRef = FirebaseDatabase.getInstance().getReference("users")
-                .child(currentUser.getUid()).child("cashbooks")
+                .child(userId).child("cashbooks")
                 .child(cashbookId).child("transactions");
+
+        categoriesRef = FirebaseDatabase.getInstance().getReference("users")
+                .child(userId).child("categories");
 
         initializeUI();
         setupRecyclerViews();
         setupPieChart();
-        loadTransactionData();
+
+        loadCategoriesAndTransactions();
     }
 
     private void initializeUI() {
@@ -145,9 +159,34 @@ public class ExpenseAnalyticsActivity extends AppCompatActivity {
         detailedLegendRecyclerView.setAdapter(legendAdapter);
     }
 
-    private void loadTransactionData() {
+    private void loadCategoriesAndTransactions() {
         loadingProgressBar.setVisibility(View.VISIBLE);
 
+        categoriesRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                categoryMap.clear();
+                if (snapshot.exists()) {
+                    for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
+                        CategoryModel category = dataSnapshot.getValue(CategoryModel.class);
+                        if (category != null && category.getName() != null) {
+                            // Store user's custom or synced categories
+                            categoryMap.put(category.getName(), category);
+                        }
+                    }
+                }
+                loadTransactionData();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e(TAG, "Failed to load categories: " + error.getMessage());
+                loadTransactionData();
+            }
+        });
+    }
+
+    private void loadTransactionData() {
         transactionsListener = transactionsRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -262,21 +301,46 @@ public class ExpenseAnalyticsActivity extends AppCompatActivity {
 
         ArrayList<PieEntry> entries = new ArrayList<>();
         ArrayList<LegendItem> legendItems = new ArrayList<>();
-        ArrayList<Integer> colors = getChartColors();
+        ArrayList<Integer> colors = new ArrayList<>();
 
-        int colorIndex = 0;
         for (Map.Entry<String, Double> entry : expenseByCategory.entrySet()) {
+            String categoryName = entry.getKey();
             float amount = entry.getValue().floatValue();
-            entries.add(new PieEntry(amount, entry.getKey()));
 
-            int color = colors.get(colorIndex % colors.size());
+            int categoryColor = Color.parseColor("#9E9E9E"); // Ultimate fallback grey
+            int categoryIcon = R.drawable.ic_category; // Ultimate fallback icon
+
+            // 1. Check Firebase Map First (prioritizes user custom choices)
+            if (categoryMap.containsKey(categoryName)) {
+                CategoryModel model = categoryMap.get(categoryName);
+                if (model != null) {
+                    try {
+                        categoryColor = Color.parseColor(model.getColorHex());
+                    } catch (Exception ignored) {}
+                    categoryIcon = model.getIconResId();
+                }
+            }
+            // 2. Check Static Default Map Second (covers default categories perfectly)
+            else {
+                CategoryModel defaultModel = getFallbackDefaultCategory(categoryName);
+                if (defaultModel != null) {
+                    try {
+                        categoryColor = Color.parseColor(defaultModel.getColorHex());
+                    } catch (Exception ignored) {}
+                    categoryIcon = defaultModel.getIconResId();
+                }
+            }
+
+            entries.add(new PieEntry(amount, categoryName));
+            colors.add(categoryColor);
+
             legendItems.add(new LegendItem(
-                    entry.getKey(),
+                    categoryName,
                     amount,
                     (float) (amount / monthlyExpense.getTotalExpense() * 100),
-                    color
+                    categoryColor,
+                    categoryIcon
             ));
-            colorIndex++;
         }
 
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
@@ -308,6 +372,53 @@ public class ExpenseAnalyticsActivity extends AppCompatActivity {
         legendAdapter.updateData(legendItems);
     }
 
+    /**
+     * Exact mapping from CategorySeeder to ensure Default categories ALWAYS have
+     * the correct color and icon if they fail to fetch from Firebase.
+     */
+    @SuppressLint("DiscouragedApi")
+    private CategoryModel getFallbackDefaultCategory(String name) {
+        if (name == null) return null;
+        String normalized = name.toLowerCase(Locale.US).trim();
+
+        int icFood = getResources().getIdentifier("ic_food_dining", "drawable", getPackageName());
+        int icCart = getResources().getIdentifier("ic_groceries", "drawable", getPackageName());
+        int icUtil = getResources().getIdentifier("ic_utilities", "drawable", getPackageName());
+        int icSubs = getResources().getIdentifier("ic_subscriptions", "drawable", getPackageName());
+        int icTran = getResources().getIdentifier("ic_transportation", "drawable", getPackageName());
+        int icFlgt = getResources().getIdentifier("ic_flight", "drawable", getPackageName());
+        int icHome = getResources().getIdentifier("ic_home", "drawable", getPackageName());
+        int icSecu = getResources().getIdentifier("ic_security", "drawable", getPackageName());
+        int icRcpt = getResources().getIdentifier("ic_receipt", "drawable", getPackageName());
+        int icEntr = getResources().getIdentifier("ic_entertainment", "drawable", getPackageName());
+        int icMedc = getResources().getIdentifier("ic_medicine", "drawable", getPackageName());
+        int icBook = getResources().getIdentifier("ic_book", "drawable", getPackageName());
+        int icMony = getResources().getIdentifier("ic_money", "drawable", getPackageName());
+        int icWork = getResources().getIdentifier("ic_work", "drawable", getPackageName());
+        int icCatg = getResources().getIdentifier("ic_assignment_return", "drawable", getPackageName());
+        int icAllI = getResources().getIdentifier("ic_trending_up", "drawable", getPackageName());
+
+        switch (normalized) {
+            case "food & dining": return new CategoryModel("Food & Dining", "OUT", "#FF7043", icFood != 0 ? icFood : R.drawable.ic_food_dining, false);
+            case "groceries": return new CategoryModel("Groceries", "OUT", "#8BC34A", icCart != 0 ? icCart : R.drawable.ic_groceries, false);
+            case "bills & utility": return new CategoryModel("Bills & Utility", "OUT", "#26A69A", icUtil != 0 ? icUtil : R.drawable.ic_utilities, false);
+            case "subscriptions": return new CategoryModel("Subscriptions", "OUT", "#3F51B5", icSubs != 0 ? icSubs : R.drawable.ic_subscriptions, false);
+            case "transport": return new CategoryModel("Transport", "OUT", "#29B6F6", icTran != 0 ? icTran : R.drawable.ic_transportation, false);
+            case "travel": return new CategoryModel("Travel", "OUT", "#03A9F4", icFlgt != 0 ? icFlgt : R.drawable.ic_flight, false);
+            case "rent": return new CategoryModel("Rent", "OUT", "#FFA726", icHome != 0 ? icHome : R.drawable.ic_home, false);
+            case "insurance": return new CategoryModel("Insurance", "OUT", "#795548", icSecu != 0 ? icSecu : R.drawable.ic_security, false);
+            case "shopping": return new CategoryModel("Shopping", "OUT", "#EC407A", icRcpt != 0 ? icRcpt : R.drawable.ic_shopping_cart, false);
+            case "entertainment": return new CategoryModel("Entertainment", "OUT", "#AB47BC", icEntr != 0 ? icEntr : R.drawable.ic_entertainment, false);
+            case "health": return new CategoryModel("Health", "OUT", "#EF5350", icMedc != 0 ? icMedc : R.drawable.ic_medicine, false);
+            case "education": return new CategoryModel("Education", "OUT", "#5C6BC0", icBook != 0 ? icBook : R.drawable.ic_book, false);
+            case "salary": return new CategoryModel("Salary", "IN", "#66BB6A", icMony != 0 ? icMony : R.drawable.ic_money, false);
+            case "freelance": return new CategoryModel("Freelance", "IN", "#CDDC39", icWork != 0 ? icWork : R.drawable.ic_work, false);
+            case "refunds": return new CategoryModel("Refunds", "IN", "#4DB6AC", icCatg != 0 ? icCatg : R.drawable.ic_assignment_return, false);
+            case "investment": return new CategoryModel("Investment", "IN", "#009688", icAllI != 0 ? icAllI : R.drawable.ic_trending_up, false);
+        }
+        return null;
+    }
+
     private void showEmptyState() {
         noDataTextView.setVisibility(View.VISIBLE);
         contentLayout.setVisibility(View.GONE);
@@ -319,21 +430,6 @@ public class ExpenseAnalyticsActivity extends AppCompatActivity {
     private void showContentState() {
         noDataTextView.setVisibility(View.GONE);
         contentLayout.setVisibility(View.VISIBLE);
-    }
-
-    private ArrayList<Integer> getChartColors() {
-        ArrayList<Integer> colors = new ArrayList<>();
-        colors.add(Color.parseColor("#FF5252"));
-        colors.add(Color.parseColor("#448AFF"));
-        colors.add(Color.parseColor("#69F0AE"));
-        colors.add(Color.parseColor("#FFD740"));
-        colors.add(Color.parseColor("#E040FB"));
-        colors.add(Color.parseColor("#FF5722"));
-        colors.add(Color.parseColor("#00BCD4"));
-        colors.add(Color.parseColor("#8BC34A"));
-        colors.add(Color.parseColor("#9C27B0"));
-        colors.add(Color.parseColor("#795548"));
-        return colors;
     }
 
     @Override
@@ -357,9 +453,10 @@ public class ExpenseAnalyticsActivity extends AppCompatActivity {
     }
 
     static class LegendItem {
-        String category; float amount; float percentage; int color;
-        public LegendItem(String category, float amount, float percentage, int color) {
-            this.category = category; this.amount = amount; this.percentage = percentage; this.color = color;
+        String category; float amount; float percentage; int color; int iconResId;
+        public LegendItem(String category, float amount, float percentage, int color, int iconResId) {
+            this.category = category; this.amount = amount; this.percentage = percentage;
+            this.color = color; this.iconResId = iconResId;
         }
     }
 
@@ -443,41 +540,69 @@ public class ExpenseAnalyticsActivity extends AppCompatActivity {
     static class LegendAdapter extends RecyclerView.Adapter<LegendAdapter.ViewHolder> {
         private List<LegendItem> list;
         LegendAdapter(List<LegendItem> list) { this.list = list; }
-        public void updateData(List<LegendItem> newList) { this.list = newList; notifyDataSetChanged(); }
+
+        @SuppressLint("NotifyDataSetChanged")
+        public void updateData(List<LegendItem> newList) {
+            this.list = newList;
+            notifyDataSetChanged();
+        }
 
         @NonNull @Override public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            return new ViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.legend_item, parent, false));
+            return new ViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.item_category_report, parent, false));
         }
         @Override public void onBindViewHolder(@NonNull ViewHolder holder, int position) { holder.bind(list.get(position)); }
         @Override public int getItemCount() { return list.size(); }
 
         static class ViewHolder extends RecyclerView.ViewHolder {
-            View color; TextView cat, amt, pct;
+            View iconContainer;
+            ImageView icon;
+            TextView cat, amt, pct;
+            ProgressBar progressBar;
+
             ViewHolder(View v) {
                 super(v);
-
-                // [FIX] Dynamically fetch the colorIndicator ID to completely bypass the compiler error
-                @SuppressLint("DiscouragedApi")
-                int colorId = v.getContext().getResources().getIdentifier("colorIndicator", "id", v.getContext().getPackageName());
-                if (colorId != 0) {
-                    color = v.findViewById(colorId);
-                }
-
-                cat=v.findViewById(R.id.categoryName);
-                amt=v.findViewById(R.id.categoryAmount);
-                pct=v.findViewById(R.id.categoryPercentage);
+                iconContainer = v.findViewById(R.id.iconContainer);
+                icon = v.findViewById(R.id.categoryIcon);
+                cat = v.findViewById(R.id.categoryName);
+                amt = v.findViewById(R.id.categoryAmount);
+                pct = v.findViewById(R.id.categoryPercentage);
+                progressBar = v.findViewById(R.id.categoryProgressBar);
             }
             void bind(LegendItem i) {
-                if (color != null) {
-                    color.setBackgroundColor(i.color);
-                }
                 cat.setText(i.category);
                 amt.setText("₹" + String.format(Locale.US, "%.2f", i.amount));
-                pct.setText(String.format(Locale.US, "(%.1f%%)", i.percentage));
+                pct.setText(String.format(Locale.US, "%.1f%%", i.percentage));
+
+                if (progressBar != null) {
+                    progressBar.setProgress((int) i.percentage);
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+                        progressBar.setProgressTintList(android.content.res.ColorStateList.valueOf(i.color));
+                    }
+                }
+
+                if (iconContainer != null) {
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+                        iconContainer.setBackgroundTintList(android.content.res.ColorStateList.valueOf(i.color));
+                    } else {
+                        iconContainer.getBackground().setColorFilter(i.color, PorterDuff.Mode.SRC_IN);
+                    }
+                }
+
+                if (icon != null) {
+                    if (i.iconResId != 0) {
+                        icon.setImageResource(i.iconResId);
+                    } else {
+                        icon.setImageResource(R.drawable.ic_category);
+                    }
+
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+                        icon.setImageTintList(android.content.res.ColorStateList.valueOf(Color.WHITE));
+                    }
+                }
 
                 Context ctx = itemView.getContext();
                 cat.setTextColor(ThemeUtil.getThemeAttrColor(ctx, R.attr.chk_textColorPrimary));
-                amt.setTextColor(ThemeUtil.getThemeAttrColor(ctx, R.attr.chk_textColorSecondary));
+                amt.setTextColor(ThemeUtil.getThemeAttrColor(ctx, R.attr.chk_textColorPrimary));
                 pct.setTextColor(ThemeUtil.getThemeAttrColor(ctx, R.attr.chk_textColorSecondary));
             }
         }
