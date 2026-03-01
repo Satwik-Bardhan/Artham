@@ -8,8 +8,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.phynix.artham.activities.CategoryActivity;
-
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -17,6 +15,9 @@ import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.phynix.artham.utils.ThemeManager;
+
+// [FIX] Import the CategoryActivity from its new sub-package
+import com.phynix.artham.activities.CategoryActivity;
 
 public class AppSettingsActivity extends AppCompatActivity {
 
@@ -129,17 +130,18 @@ public class AppSettingsActivity extends AppCompatActivity {
             });
         }
 
-        // [FIXED] Open CategoryActivity (Changed from CategoryManagementActivity)
         if (manageCategoriesLayout != null) {
             manageCategoriesLayout.setOnClickListener(v -> {
                 Intent intent = new Intent(AppSettingsActivity.this, CategoryActivity.class);
 
-                // NOTE: CategoryActivity requires a 'cashbook_id' to load data.
-                // You should retrieve the current cashbook ID from SharedPreferences and pass it here.
-                // Example:
-                // SharedPreferences prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
-                // String currentCashbookId = prefs.getString("current_cashbook_id", "");
-                // intent.putExtra("cashbook_id", currentCashbookId);
+                FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                if (user != null) {
+                    SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+                    String currentCashbookId = prefs.getString("active_cashbook_id_" + user.getUid(), "");
+                    if (!currentCashbookId.isEmpty()) {
+                        intent.putExtra("cashbook_id", currentCashbookId);
+                    }
+                }
 
                 startActivity(intent);
             });

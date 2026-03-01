@@ -8,12 +8,13 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
-import com.phynix.artham.activities.CategoryActivity;
-
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.widget.NestedScrollView;
 
 import com.phynix.artham.utils.ThemeManager;
+
+// [FIX] Import the CategoryActivity from its new sub-package
+import com.phynix.artham.activities.CategoryActivity;
 
 /**
  * Artham Help & Support Activity
@@ -94,6 +95,19 @@ public class HelpSupportActivity extends AppCompatActivity {
         if (layout != null) {
             layout.setOnClickListener(v -> {
                 Intent intent = new Intent(HelpSupportActivity.this, destinationClass);
+
+                // Add cashbook_id if navigating to CategoryActivity, as it expects it
+                if (destinationClass == CategoryActivity.class) {
+                    com.google.firebase.auth.FirebaseUser user = com.google.firebase.auth.FirebaseAuth.getInstance().getCurrentUser();
+                    if (user != null) {
+                        android.content.SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+                        String currentCashbookId = prefs.getString("active_cashbook_id_" + user.getUid(), "");
+                        if (!currentCashbookId.isEmpty()) {
+                            intent.putExtra("cashbook_id", currentCashbookId);
+                        }
+                    }
+                }
+
                 startActivity(intent);
             });
         }

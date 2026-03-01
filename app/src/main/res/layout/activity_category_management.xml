@@ -21,7 +21,8 @@
             android:layout_centerVertical="true"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@drawable/ic_arrow_left"
-            app:tint="?attr/chk_textColorPrimary" />
+            app:tint="?attr/chk_textColorPrimary"
+            android:contentDescription="Back" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -36,13 +37,50 @@
             android:textStyle="bold" />
     </RelativeLayout>
 
+    <LinearLayout
+        android:id="@+id/searchSortLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/headerLayout"
+        android:orientation="horizontal"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="12dp"
+        android:gravity="center_vertical">
+
+        <EditText
+            android:id="@+id/searchEditText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@drawable/bg_search_field"
+            android:hint="Search categories..."
+            android:padding="12dp"
+            android:drawableStart="@drawable/ic_search"
+            android:drawablePadding="8dp"
+            android:textColor="?attr/chk_textColorPrimary"
+            android:textColorHint="?attr/chk_textColorSecondary"
+            android:inputType="textNoSuggestions"
+            android:maxLines="1" />
+
+        <ImageButton
+            android:id="@+id/sortButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="8dp"
+            android:background="@drawable/bg_rounded_square_soft"
+            android:src="@drawable/ic_sort"
+            app:tint="?attr/chk_textColorPrimary"
+            android:contentDescription="Sort" />
+    </LinearLayout>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/categoriesRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/headerLayout"
+        android:layout_below="@id/searchSortLayout"
         android:padding="8dp"
         android:clipToPadding="false"
+        android:paddingBottom="80dp"
         app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
         app:spanCount="2"
         tools:listitem="@layout/item_category" />

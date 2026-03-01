@@ -1,9 +1,12 @@
 package com.phynix.artham.activities;
 
-import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.ImageView;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.util.TypedValue;
+import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 import android.widget.Toast;
 
@@ -13,106 +16,133 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.phynix.artham.R;
-import com.phynix.artham.adapters.ManageCategoryAdapter;
+
+import com.phynix.artham.R; // [FIX] Imported R class from the main package
+import com.phynix.artham.adapters.CategoryAdapter;
 import com.phynix.artham.models.CategoryModel;
 import com.phynix.artham.utils.ThemeManager;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
+import java.util.Random;
 
-public class CategoryActivity extends AppCompatActivity implements ManageCategoryAdapter.OnCategoryActionClickListener {
+public class CategoryActivity extends AppCompatActivity {
 
     private RecyclerView categoriesRecyclerView;
-    private FloatingActionButton fabAdd;
-    private ImageView backButton;
+    private CategoryAdapter categoryAdapter;
+    private DatabaseReference userCategoriesRef;
 
-    private ManageCategoryAdapter adapter;
-    private List<CategoryModel> categoryList;
-    private DatabaseReference categoryRef;
-    private String userId;
+    private EditText searchEditText;
+    private ImageButton sortButton;
+
+    private List<CategoryModel> allCategories = new ArrayList<>();
+    private String currentSearchQuery = "";
+    private int currentSortMethod = 0; // 0 = Default, 1 = A-Z, 2 = Z-A
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        // Theme initialization applied before super.onCreate
         ThemeManager.applyActivityTheme(this);
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_category);
+        setContentView(R.layout.activity_category_management);
 
-        userId = FirebaseAuth.getInstance().getUid();
-        if (userId != null) {
-            categoryRef = FirebaseDatabase.getInstance().getReference("users")
-                    .child(userId).child("categories");
+        if (getSupportActionBar() != null) getSupportActionBar().hide();
+
+        categoriesRecyclerView = findViewById(R.id.categoriesRecyclerView);
+        searchEditText = findViewById(R.id.searchEditText);
+        sortButton = findViewById(R.id.sortButton);
+
+        String uid = FirebaseAuth.getInstance().getUid();
+        if (uid != null) {
+            userCategoriesRef = FirebaseDatabase.getInstance().getReference("users")
+                    .child(uid).child("categories");
         }
 
-        initViews();
         setupRecyclerView();
+        setupSearchAndSort();
+
+        findViewById(R.id.backButton).setOnClickListener(v -> finish());
+        findViewById(R.id.fabAdd).setOnClickListener(v -> showAddDialog(null));
+
         loadCategories();
     }
 
-    private void initViews() {
-        categoriesRecyclerView = findViewById(R.id.categoriesRecyclerView);
-        fabAdd = findViewById(R.id.fabAdd);
-        backButton = findViewById(R.id.backButton);
+    private void setupSearchAndSort() {
+        searchEditText.addTextChangedListener(new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                currentSearchQuery = s.toString().trim().toLowerCase(Locale.US);
+                applyFilterAndSort();
+            }
+            @Override public void afterTextChanged(Editable s) {}
+        });
 
-        backButton.setOnClickListener(v -> onBackPressed());
-
-        fabAdd.setOnClickListener(v -> {
-            // Navigate to Create Category Screen
-            Intent intent = new Intent(CategoryActivity.this, CreateCategoryActivity.class);
-            startActivity(intent);
+        sortButton.setOnClickListener(v -> {
+            PopupMenu popup = new PopupMenu(this, sortButton);
+            popup.getMenu().add(0, 0, 0, "Default Order");
+            popup.getMenu().add(0, 1, 1, "A to Z");
+            popup.getMenu().add(0, 2, 2, "Z to A");
+            popup.setOnMenuItemClickListener(item -> {
+                currentSortMethod = item.getItemId();
+                applyFilterAndSort();
+                return true;
+            });
+            popup.show();
         });
     }
 
     private void setupRecyclerView() {
-        categoryList = new ArrayList<>();
-        adapter = new ManageCategoryAdapter(categoryList, this);
+        GridLayoutManager layoutManager = new GridLayoutManager(this, 2);
 
-        // UPDATED: Using GridLayoutManager to display 2 columns perfectly matching the XML
-        categoriesRecyclerView.setLayoutManager(new GridLayoutManager(this, 2));
-        categoriesRecyclerView.setAdapter(adapter);
+        layoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
+            @Override
+            public int getSpanSize(int position) {
+                if (categoryAdapter.getItemViewType(position) == CategoryAdapter.TYPE_HEADER) {
+                    return 2; // Headers take up 2 columns
+                }
+                return 1; // Items take up 1 column
+            }
+        });
+
+        categoriesRecyclerView.setLayoutManager(layoutManager);
+
+        categoryAdapter = new CategoryAdapter(new ArrayList<>(), this,
+                category -> { /* Optional row click logic */ },
+                new CategoryAdapter.OnCategoryActionListener() {
+                    @Override
+                    public void onEditCategory(CategoryModel category) { showAddDialog(category); }
+                    @Override
+                    public void onDeleteCategory(CategoryModel category) { deleteCategory(category); }
+                });
+
+        categoriesRecyclerView.setAdapter(categoryAdapter);
     }
 
     private void loadCategories() {
-        if (categoryRef == null) return;
+        if (userCategoriesRef == null) return;
 
-        categoryRef.addValueEventListener(new ValueEventListener() {
+        userCategoriesRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                categoryList.clear();
-                List<CategoryModel> defaultCats = new ArrayList<>();
-                List<CategoryModel> customCats = new ArrayList<>();
+                allCategories.clear();
 
-                for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
-                    CategoryModel category = dataSnapshot.getValue(CategoryModel.class);
-                    if (category != null) {
-                        category.setId(dataSnapshot.getKey());
-                        // Requirement #4: Separate Default and Custom
-                        if (category.isCustom()) {
-                            customCats.add(category);
-                        } else {
-                            defaultCats.add(category);
+                for (DataSnapshot s : snapshot.getChildren()) {
+                    CategoryModel c = s.getValue(CategoryModel.class);
+                    if (c != null) {
+                        c.setId(s.getKey());
+                        if ("OUT".equalsIgnoreCase(c.getType())) { // Currently showing only expenses
+                            allCategories.add(c);
                         }
                     }
                 }
-
-                // Sort alphabetically within their groups
-                Collections.sort(defaultCats, (c1, c2) -> c1.getName().compareToIgnoreCase(c2.getName()));
-                Collections.sort(customCats, (c1, c2) -> c1.getName().compareToIgnoreCase(c2.getName()));
-
-                // Combine: Defaults first, then User-Created
-                categoryList.addAll(defaultCats);
-                categoryList.addAll(customCats);
-
-                adapter.updateData(categoryList);
+                applyFilterAndSort();
             }
 
             @Override
@@ -122,46 +152,110 @@ public class CategoryActivity extends AppCompatActivity implements ManageCategor
         });
     }
 
-    @Override
-    public void onMenuClick(CategoryModel category, View anchorView) {
-        // Only Custom categories will trigger this due to adapter logic (Req #4)
-        PopupMenu popupMenu = new PopupMenu(this, anchorView);
-        popupMenu.getMenuInflater().inflate(R.menu.menu_category_actions, popupMenu.getMenu());
-
-        popupMenu.setOnMenuItemClickListener(item -> {
-            int itemId = item.getItemId();
-            if (itemId == R.id.action_edit) {
-                // Navigate to edit screen (pass category ID)
-                Intent intent = new Intent(CategoryActivity.this, CreateCategoryActivity.class);
-                intent.putExtra("CATEGORY_ID", category.getId());
-                startActivity(intent);
-                return true;
-            } else if (itemId == R.id.action_delete) {
-                showDeleteConfirmationDialog(category);
-                return true;
+    private void applyFilterAndSort() {
+        // 1. Filter
+        List<CategoryModel> filteredList = new ArrayList<>();
+        for (CategoryModel c : allCategories) {
+            if (c.getName() != null && c.getName().toLowerCase(Locale.US).contains(currentSearchQuery)) {
+                filteredList.add(c);
             }
-            return false;
-        });
-        popupMenu.show();
+        }
+
+        // 2. Sort
+        if (currentSortMethod == 1) {
+            Collections.sort(filteredList, (a, b) -> a.getName().compareToIgnoreCase(b.getName()));
+        } else if (currentSortMethod == 2) {
+            Collections.sort(filteredList, (a, b) -> b.getName().compareToIgnoreCase(a.getName()));
+        }
+
+        // 3. Group
+        List<CategoryModel> defaultCategories = new ArrayList<>();
+        List<CategoryModel> customCategories = new ArrayList<>();
+
+        for(CategoryModel c : filteredList) {
+            if (c.isCustom()) customCategories.add(c);
+            else defaultCategories.add(c);
+        }
+
+        // Build list with headers
+        List<Object> combinedList = new ArrayList<>();
+
+        if (!defaultCategories.isEmpty()) {
+            combinedList.add("Default Categories");
+            combinedList.addAll(defaultCategories);
+        }
+
+        if (!customCategories.isEmpty()) {
+            combinedList.add("Created Categories");
+            combinedList.addAll(customCategories);
+        }
+
+        categoryAdapter.updateData(combinedList);
     }
 
-    @Override
-    public void onCategoryClick(CategoryModel category) {
-        // Optional: Do something when the whole category row is clicked
-    }
+    private void showAddDialog(CategoryModel category) {
+        boolean isEdit = category != null;
 
-    private void showDeleteConfirmationDialog(CategoryModel category) {
+        EditText input = new EditText(this);
+        input.setHint("Category Name");
+        input.setBackgroundResource(R.drawable.rounded_input_background);
+        input.setTextColor(getThemeColor(R.attr.chk_textColorPrimary));
+        input.setHintTextColor(getThemeColor(R.attr.chk_textColorHint));
+
+        int padding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 12, getResources().getDisplayMetrics());
+        input.setPadding(padding, padding, padding, padding);
+
+        if (isEdit) input.setText(category.getName());
+
+        LinearLayout container = new LinearLayout(this);
+        container.setOrientation(LinearLayout.VERTICAL);
+        int pad = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 20, getResources().getDisplayMetrics());
+        container.setPadding(pad, pad, pad, 0);
+        container.addView(input);
+
         new AlertDialog.Builder(this)
-                .setTitle("Delete Category")
-                .setMessage("Are you sure you want to delete '" + category.getName() + "'? Transactions using this category will not be deleted, but may show as 'Other'.")
-                .setPositiveButton("Delete", (dialog, which) -> {
-                    if (categoryRef != null && category.getId() != null) {
-                        categoryRef.child(category.getId()).removeValue()
-                                .addOnSuccessListener(aVoid -> Toast.makeText(CategoryActivity.this, "Category deleted", Toast.LENGTH_SHORT).show())
-                                .addOnFailureListener(e -> Toast.makeText(CategoryActivity.this, "Failed to delete", Toast.LENGTH_SHORT).show());
+                .setTitle(isEdit ? "Edit Category" : "Add Category")
+                .setView(container)
+                .setPositiveButton("Save", (d, w) -> {
+                    String name = input.getText().toString().trim();
+                    if (!name.isEmpty()) {
+                        String color = isEdit ? category.getColorHex() : getRandomColor();
+
+                        if (isEdit && !category.getName().equals(name) && category.getId() != null) {
+                            userCategoriesRef.child(category.getId()).removeValue();
+                        }
+
+                        String id = (isEdit && category.getId() != null) ? category.getId() : userCategoriesRef.push().getKey();
+
+                        if (id != null) {
+                            CategoryModel newCategory = new CategoryModel(name, "OUT", color, R.drawable.ic_category, true);
+                            newCategory.setId(id);
+                            userCategoriesRef.child(id).setValue(newCategory);
+                        }
                     }
                 })
                 .setNegativeButton("Cancel", null)
                 .show();
+    }
+
+    private void deleteCategory(CategoryModel c) {
+        if (c.getId() == null) return;
+        new AlertDialog.Builder(this)
+                .setTitle("Delete Category")
+                .setMessage("Are you sure you want to delete " + c.getName() + "?")
+                .setPositiveButton("Delete", (d, w) -> userCategoriesRef.child(c.getId()).removeValue())
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private String getRandomColor() {
+        Random r = new Random();
+        return String.format("#%02X%02X%02X", r.nextInt(200) + 55, r.nextInt(200) + 55, r.nextInt(200) + 55);
+    }
+
+    private int getThemeColor(int attrId) {
+        TypedValue typedValue = new TypedValue();
+        getTheme().resolveAttribute(attrId, typedValue, true);
+        return typedValue.data;
     }
 }
