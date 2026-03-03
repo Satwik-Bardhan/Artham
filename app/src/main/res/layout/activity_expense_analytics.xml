@@ -81,8 +81,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:background="?attr/chk_backgroundColor"
-                android:elevation="4dp"
-                android:paddingBottom="8dp">
+                android:elevation="4dp">
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/monthlyCardsRecyclerView"
@@ -90,7 +89,7 @@
                     android:layout_height="wrap_content"
                     android:clipToPadding="false"
                     android:paddingHorizontal="12dp"
-                    android:paddingVertical="12dp"
+                    android:paddingVertical="8dp"
                     android:scrollbars="none"
                     tools:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                     tools:orientation="horizontal"
@@ -102,7 +101,6 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginHorizontal="16dp"
-                    android:layout_marginTop="4dp"
                     app:cardBackgroundColor="?attr/chk_surfaceColor"
                     app:cardCornerRadius="16dp"
                     app:cardElevation="2dp"

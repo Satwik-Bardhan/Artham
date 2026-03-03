@@ -37,6 +37,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.phynix.artham.models.CategoryModel;
 import com.phynix.artham.models.TransactionModel;
+import com.phynix.artham.utils.DefaultCategoryManager;
 import com.phynix.artham.utils.ThemeManager;
 
 import java.text.ParseException;
@@ -170,7 +171,6 @@ public class ExpenseAnalyticsActivity extends AppCompatActivity {
                     for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
                         CategoryModel category = dataSnapshot.getValue(CategoryModel.class);
                         if (category != null && category.getName() != null) {
-                            // Store user's custom or synced categories
                             categoryMap.put(category.getName(), category);
                         }
                     }
@@ -310,24 +310,23 @@ public class ExpenseAnalyticsActivity extends AppCompatActivity {
             int categoryColor = Color.parseColor("#9E9E9E"); // Ultimate fallback grey
             int categoryIcon = R.drawable.ic_category; // Ultimate fallback icon
 
-            // 1. Check Firebase Map First (prioritizes user custom choices)
-            if (categoryMap.containsKey(categoryName)) {
-                CategoryModel model = categoryMap.get(categoryName);
-                if (model != null) {
-                    try {
-                        categoryColor = Color.parseColor(model.getColorHex());
-                    } catch (Exception ignored) {}
-                    categoryIcon = model.getIconResId();
-                }
+            // [THE FIX]
+            // 1. Fetch from our centralized DefaultCategoryManager!
+            CategoryModel defaultModel = DefaultCategoryManager.getCategoryByName(categoryName);
+
+            if (defaultModel != null) {
+                // Guaranteed right icon and default color for this category
+                categoryIcon = defaultModel.getIconResId();
+                try { categoryColor = Color.parseColor(defaultModel.getColorHex()); } catch (Exception ignored) {}
             }
-            // 2. Check Static Default Map Second (covers default categories perfectly)
-            else {
-                CategoryModel defaultModel = getFallbackDefaultCategory(categoryName);
-                if (defaultModel != null) {
+
+            // 2. Check Firebase Map to override the Color (if user modified it)
+            if (categoryMap.containsKey(categoryName)) {
+                CategoryModel fbModel = categoryMap.get(categoryName);
+                if (fbModel != null && fbModel.getColorHex() != null) {
                     try {
-                        categoryColor = Color.parseColor(defaultModel.getColorHex());
+                        categoryColor = Color.parseColor(fbModel.getColorHex());
                     } catch (Exception ignored) {}
-                    categoryIcon = defaultModel.getIconResId();
                 }
             }
 
@@ -370,53 +369,6 @@ public class ExpenseAnalyticsActivity extends AppCompatActivity {
         fullScreenPieChart.invalidate();
 
         legendAdapter.updateData(legendItems);
-    }
-
-    /**
-     * Exact mapping from CategorySeeder to ensure Default categories ALWAYS have
-     * the correct color and icon if they fail to fetch from Firebase.
-     */
-    @SuppressLint("DiscouragedApi")
-    private CategoryModel getFallbackDefaultCategory(String name) {
-        if (name == null) return null;
-        String normalized = name.toLowerCase(Locale.US).trim();
-
-        int icFood = getResources().getIdentifier("ic_food_dining", "drawable", getPackageName());
-        int icCart = getResources().getIdentifier("ic_groceries", "drawable", getPackageName());
-        int icUtil = getResources().getIdentifier("ic_utilities", "drawable", getPackageName());
-        int icSubs = getResources().getIdentifier("ic_subscriptions", "drawable", getPackageName());
-        int icTran = getResources().getIdentifier("ic_transportation", "drawable", getPackageName());
-        int icFlgt = getResources().getIdentifier("ic_flight", "drawable", getPackageName());
-        int icHome = getResources().getIdentifier("ic_home", "drawable", getPackageName());
-        int icSecu = getResources().getIdentifier("ic_security", "drawable", getPackageName());
-        int icRcpt = getResources().getIdentifier("ic_receipt", "drawable", getPackageName());
-        int icEntr = getResources().getIdentifier("ic_entertainment", "drawable", getPackageName());
-        int icMedc = getResources().getIdentifier("ic_medicine", "drawable", getPackageName());
-        int icBook = getResources().getIdentifier("ic_book", "drawable", getPackageName());
-        int icMony = getResources().getIdentifier("ic_money", "drawable", getPackageName());
-        int icWork = getResources().getIdentifier("ic_work", "drawable", getPackageName());
-        int icCatg = getResources().getIdentifier("ic_assignment_return", "drawable", getPackageName());
-        int icAllI = getResources().getIdentifier("ic_trending_up", "drawable", getPackageName());
-
-        switch (normalized) {
-            case "food & dining": return new CategoryModel("Food & Dining", "OUT", "#FF7043", icFood != 0 ? icFood : R.drawable.ic_food_dining, false);
-            case "groceries": return new CategoryModel("Groceries", "OUT", "#8BC34A", icCart != 0 ? icCart : R.drawable.ic_groceries, false);
-            case "bills & utility": return new CategoryModel("Bills & Utility", "OUT", "#26A69A", icUtil != 0 ? icUtil : R.drawable.ic_utilities, false);
-            case "subscriptions": return new CategoryModel("Subscriptions", "OUT", "#3F51B5", icSubs != 0 ? icSubs : R.drawable.ic_subscriptions, false);
-            case "transport": return new CategoryModel("Transport", "OUT", "#29B6F6", icTran != 0 ? icTran : R.drawable.ic_transportation, false);
-            case "travel": return new CategoryModel("Travel", "OUT", "#03A9F4", icFlgt != 0 ? icFlgt : R.drawable.ic_flight, false);
-            case "rent": return new CategoryModel("Rent", "OUT", "#FFA726", icHome != 0 ? icHome : R.drawable.ic_home, false);
-            case "insurance": return new CategoryModel("Insurance", "OUT", "#795548", icSecu != 0 ? icSecu : R.drawable.ic_security, false);
-            case "shopping": return new CategoryModel("Shopping", "OUT", "#EC407A", icRcpt != 0 ? icRcpt : R.drawable.ic_shopping_cart, false);
-            case "entertainment": return new CategoryModel("Entertainment", "OUT", "#AB47BC", icEntr != 0 ? icEntr : R.drawable.ic_entertainment, false);
-            case "health": return new CategoryModel("Health", "OUT", "#EF5350", icMedc != 0 ? icMedc : R.drawable.ic_medicine, false);
-            case "education": return new CategoryModel("Education", "OUT", "#5C6BC0", icBook != 0 ? icBook : R.drawable.ic_book, false);
-            case "salary": return new CategoryModel("Salary", "IN", "#66BB6A", icMony != 0 ? icMony : R.drawable.ic_money, false);
-            case "freelance": return new CategoryModel("Freelance", "IN", "#CDDC39", icWork != 0 ? icWork : R.drawable.ic_work, false);
-            case "refunds": return new CategoryModel("Refunds", "IN", "#4DB6AC", icCatg != 0 ? icCatg : R.drawable.ic_assignment_return, false);
-            case "investment": return new CategoryModel("Investment", "IN", "#009688", icAllI != 0 ? icAllI : R.drawable.ic_trending_up, false);
-        }
-        return null;
     }
 
     private void showEmptyState() {

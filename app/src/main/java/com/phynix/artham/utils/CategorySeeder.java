@@ -6,7 +6,6 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.phynix.artham.R;
 import com.phynix.artham.models.CategoryModel;
 
 import java.util.ArrayList;
@@ -24,58 +23,63 @@ public class CategorySeeder {
                 .child(userId).child("categories");
 
         categoryRef.get().addOnSuccessListener(snapshot -> {
-            boolean hasDefaults = false;
+            List<CategoryModel> masterDefaults = DefaultCategoryManager.getAllDefaultCategories();
 
-            // Check if there are any non-custom (default) categories in the database
-            if (snapshot.exists() && snapshot.hasChildren()) {
-                for (DataSnapshot ds : snapshot.getChildren()) {
-                    CategoryModel model = ds.getValue(CategoryModel.class);
-                    if (model != null && !model.isCustom()) {
-                        hasDefaults = true;
-                        break;
-                    }
-                }
-            }
-
-            // Only seed if defaults are actually missing
-            if (!hasDefaults) {
-                Log.d(TAG, "Default categories missing. Seeding now...");
-                List<CategoryModel> defaults = getDefaultCategories();
-
-                for (CategoryModel category : defaults) {
+            if (!snapshot.exists() || !snapshot.hasChildren()) {
+                // 1. FIRST TIME USER: No categories exist. Push all defaults to Firebase.
+                Log.d(TAG, "No categories found. Seeding initial defaults...");
+                for (CategoryModel category : masterDefaults) {
                     String id = categoryRef.push().getKey();
                     if (id != null) {
                         category.setId(id);
                         categoryRef.child(id).setValue(category);
                     }
                 }
+            } else {
+                // 2. EXISTING USER: Sync defaults to catch any color/name updates from code
+                Log.d(TAG, "Categories exist. Syncing default properties...");
+                List<String> existingDefaultNames = new ArrayList<>();
+
+                for (DataSnapshot ds : snapshot.getChildren()) {
+                    CategoryModel dbModel = ds.getValue(CategoryModel.class);
+                    if (dbModel != null) {
+                        if (!dbModel.isCustom()) {
+                            // Track existing default names to check for missing ones later
+                            existingDefaultNames.add(dbModel.getName());
+
+                            // Look up this category in our master code file
+                            CategoryModel masterModel = DefaultCategoryManager.getCategoryByName(dbModel.getName());
+
+                            if (masterModel != null) {
+                                boolean needsUpdate = false;
+
+                                // If the developer changed the color in code, force update Firebase!
+                                if (!dbModel.getColorHex().equalsIgnoreCase(masterModel.getColorHex())) {
+                                    dbModel.setColorHex(masterModel.getColorHex());
+                                    needsUpdate = true;
+                                }
+
+                                if (needsUpdate) {
+                                    Log.d(TAG, "Updating default category: " + dbModel.getName());
+                                    categoryRef.child(ds.getKey()).setValue(dbModel);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // 3. Add any NEW default categories you might have added to DefaultCategoryManager later
+                for (CategoryModel masterCategory : masterDefaults) {
+                    if (!existingDefaultNames.contains(masterCategory.getName())) {
+                        Log.d(TAG, "Adding missing new default category: " + masterCategory.getName());
+                        String id = categoryRef.push().getKey();
+                        if (id != null) {
+                            masterCategory.setId(id);
+                            categoryRef.child(id).setValue(masterCategory);
+                        }
+                    }
+                }
             }
         }).addOnFailureListener(e -> Log.e(TAG, "Failed to check categories", e));
-    }
-
-    private static List<CategoryModel> getDefaultCategories() {
-        List<CategoryModel> list = new ArrayList<>();
-
-        // --- Expenses (OUT) ---
-        list.add(new CategoryModel("Food & Dining", "OUT", "#FF7043", R.drawable.ic_food_dining, false));
-        list.add(new CategoryModel("Groceries", "OUT", "#8BC34A", R.drawable.ic_groceries, false));
-        list.add(new CategoryModel("Bills & Utility", "OUT", "#26A69A", R.drawable.ic_utilities, false));
-        list.add(new CategoryModel("Subscriptions", "OUT", "#3F51B5", R.drawable.ic_subscriptions, false));
-        list.add(new CategoryModel("Transport", "OUT", "#29B6F6", R.drawable.ic_transportation, false));
-        list.add(new CategoryModel("Travel", "OUT", "#03A9F4", R.drawable.ic_flight, false));
-        list.add(new CategoryModel("Rent", "OUT", "#FFA726", R.drawable.ic_home, false));
-        list.add(new CategoryModel("Insurance", "OUT", "#795548", R.drawable.ic_security, false));
-        list.add(new CategoryModel("Shopping", "OUT", "#EC407A", R.drawable.ic_receipt, false));
-        list.add(new CategoryModel("Entertainment", "OUT", "#AB47BC", R.drawable.ic_entertainment, false));
-        list.add(new CategoryModel("Health", "OUT", "#EF5350", R.drawable.ic_medicine, false));
-        list.add(new CategoryModel("Education", "OUT", "#5C6BC0", R.drawable.ic_book, false));
-
-        // --- Income (IN) ---
-        list.add(new CategoryModel("Salary", "IN", "#66BB6A", R.drawable.ic_money, false));
-        list.add(new CategoryModel("Freelance", "IN", "#CDDC39", R.drawable.ic_work, false));
-        list.add(new CategoryModel("Refunds", "IN", "#4DB6AC", R.drawable.ic_assignment_return, false));
-        list.add(new CategoryModel("Investment", "IN", "#009688", R.drawable.ic_trending_up, false));
-
-        return list;
     }
 }

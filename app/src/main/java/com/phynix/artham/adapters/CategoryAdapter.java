@@ -7,7 +7,6 @@ import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.TextView;
@@ -110,7 +109,9 @@ public class CategoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     class CategoryViewHolder extends RecyclerView.ViewHolder {
         TextView nameTextView;
         ImageView iconView, menuView, selectionCheck;
-        FrameLayout iconContainer;
+
+        // [FIX] Changed from FrameLayout to View to prevent ClassCastException
+        View iconContainer;
 
         public CategoryViewHolder(@NonNull View itemView) {
             super(itemView);
