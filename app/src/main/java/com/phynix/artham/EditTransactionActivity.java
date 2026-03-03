@@ -31,7 +31,6 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
-// Updated Imports
 import com.phynix.artham.activities.CategoryPickerActivity;
 import com.phynix.artham.utils.CategoryColorUtil;
 
@@ -81,7 +80,15 @@ public class EditTransactionActivity extends AppCompatActivity {
     private CheckBox taxCheckbox;
     private RadioGroup inOutToggle, cashOnlineToggle;
     private RadioButton radioIn, radioOut, radioCash, radioOnline, radioCard;
-    private LinearLayout dateSelectorLayout, timeSelectorLayout, categorySelectorLayout, partySelectorLayout;
+    private LinearLayout dateSelectorLayout, timeSelectorLayout, partySelectorLayout;
+
+    // Quick Amount Buttons
+    private Button quickAmount100, quickAmount500, quickAmount1000, quickAmount5000;
+
+    // Category Selector Views (We define both to be safe!)
+    private View categorySelectorLayout;
+    private View categorySelectorCard;
+
     private Button saveChangesButton, cancelButton;
 
     // ViewModel & Data
@@ -91,8 +98,6 @@ public class EditTransactionActivity extends AppCompatActivity {
     private Calendar calendar;
 
     // --- Activity Launchers ---
-
-    // PERFECTED: Receives Icon, Name, and Color
     private final ActivityResultLauncher<Intent> categoryLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
@@ -106,16 +111,19 @@ public class EditTransactionActivity extends AppCompatActivity {
                         selectedCategoryTextView.setTextColor(getThemeColor(R.attr.chk_primary_blue));
                         currentTransaction.setTransactionCategory(category);
 
-                        // Apply Color to Icon Container
+                        // Apply Color to Icon Container safely
                         if (selectedIconContainer != null && colorHex != null) {
                             try {
+                                if (!colorHex.trim().isEmpty() && !colorHex.startsWith("#")) {
+                                    colorHex = "#" + colorHex;
+                                }
                                 selectedIconContainer.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor(colorHex)));
                             } catch (Exception e) {
                                 selectedIconContainer.setBackgroundTintList(ColorStateList.valueOf(getThemeColor(R.attr.chk_primary_blue)));
                             }
                         }
 
-                        // Apply Icon
+                        // Apply Icon safely
                         if (selectedCategoryIcon != null) {
                             if (iconRes != 0) {
                                 selectedCategoryIcon.setImageResource(iconRes);
@@ -209,10 +217,18 @@ public class EditTransactionActivity extends AppCompatActivity {
         amountEditText = findViewById(R.id.amountEditText);
         calculatorButton = findViewById(R.id.calculatorButton);
 
-        selectedCategoryTextView = findViewById(R.id.selectedCategoryTextView);
-        categorySelectorLayout = findViewById(R.id.categorySelectorLayout);
+        // Initialize Quick Amount Buttons
+        quickAmount100 = findViewById(R.id.quickAmount100);
+        quickAmount500 = findViewById(R.id.quickAmount500);
+        quickAmount1000 = findViewById(R.id.quickAmount1000);
+        quickAmount5000 = findViewById(R.id.quickAmount5000);
 
-        // Added Icon visual sync fields
+        selectedCategoryTextView = findViewById(R.id.selectedCategoryTextView);
+
+        // Try finding both possible ID names for the category button
+        categorySelectorLayout = findViewById(R.id.categorySelectorLayout);
+        categorySelectorCard = findViewById(R.id.categorySelectorCard);
+
         selectedIconContainer = findViewById(R.id.selectedIconContainer);
         selectedCategoryIcon = findViewById(R.id.selectedCategoryIcon);
 
@@ -251,7 +267,6 @@ public class EditTransactionActivity extends AppCompatActivity {
         else if ("Card".equalsIgnoreCase(mode) && radioCard != null) radioCard.setChecked(true);
         else radioCash.setChecked(true);
 
-        // Safely set the category text, icon, and background color
         String catName = currentTransaction.getTransactionCategory();
         selectedCategoryTextView.setText(catName);
         if (selectedIconContainer != null) {
@@ -307,17 +322,22 @@ public class EditTransactionActivity extends AppCompatActivity {
         if (calculatorButton != null) calculatorButton.setOnClickListener(v -> checkAndOpenCalculator());
         if (voiceInputButton != null) voiceInputButton.setOnClickListener(v -> startVoiceInput());
 
-        if (categorySelectorLayout != null) {
-            categorySelectorLayout.setOnClickListener(v -> {
-                Intent intent = new Intent(this, CategoryPickerActivity.class);
-                intent.putExtra("selected_category", selectedCategoryTextView.getText().toString());
-                intent.putExtra("cashbook_id", currentCashbookId);
-                // Matched intent extra to what CategoryPickerActivity expects ("type")
-                String type = radioIn.isChecked() ? "IN" : "OUT";
-                intent.putExtra("type", type);
-                categoryLauncher.launch(intent);
-            });
-        }
+        // Setup Quick Amount Buttons
+        setupQuickAmountButtons();
+
+        // We attach the click listener to BOTH possible ID variables, and the Text View!
+        View.OnClickListener categoryClickListener = v -> {
+            Intent intent = new Intent(this, CategoryPickerActivity.class);
+            intent.putExtra("selected_category", selectedCategoryTextView.getText().toString());
+            intent.putExtra("cashbook_id", currentCashbookId);
+            String type = radioIn.isChecked() ? "IN" : "OUT";
+            intent.putExtra("type", type);
+            categoryLauncher.launch(intent);
+        };
+
+        if (categorySelectorLayout != null) categorySelectorLayout.setOnClickListener(categoryClickListener);
+        if (categorySelectorCard != null) categorySelectorCard.setOnClickListener(categoryClickListener);
+        if (selectedCategoryTextView != null) selectedCategoryTextView.setOnClickListener(categoryClickListener);
 
         if (partySelectorLayout != null) {
             partySelectorLayout.setOnClickListener(v -> {
@@ -343,6 +363,31 @@ public class EditTransactionActivity extends AppCompatActivity {
         }
 
         if (saveChangesButton != null) saveChangesButton.setOnClickListener(v -> saveChanges());
+    }
+
+    // THE FIX: Quick Amount Logic Added
+    private void setupQuickAmountButtons() {
+        View.OnClickListener quickAmountClickListener = v -> {
+            clearQuickAmountSelections();
+            v.setSelected(true);
+            Button clickedButton = (Button) v;
+            String amountText = clickedButton.getText().toString();
+            String cleanAmount = amountText.replace("₹", "").replace("K", "000");
+            amountEditText.setText(cleanAmount);
+            amountEditText.setSelection(amountEditText.getText().length());
+        };
+
+        if (quickAmount100 != null) quickAmount100.setOnClickListener(quickAmountClickListener);
+        if (quickAmount500 != null) quickAmount500.setOnClickListener(quickAmountClickListener);
+        if (quickAmount1000 != null) quickAmount1000.setOnClickListener(quickAmountClickListener);
+        if (quickAmount5000 != null) quickAmount5000.setOnClickListener(quickAmountClickListener);
+    }
+
+    private void clearQuickAmountSelections() {
+        if (quickAmount100 != null) quickAmount100.setSelected(false);
+        if (quickAmount500 != null) quickAmount500.setSelected(false);
+        if (quickAmount1000 != null) quickAmount1000.setSelected(false);
+        if (quickAmount5000 != null) quickAmount5000.setSelected(false);
     }
 
     private void showPopupMenu(View view) {
@@ -585,12 +630,34 @@ public class EditTransactionActivity extends AppCompatActivity {
     private String safeEvaluate(String expression) {
         try {
             expression = expression.replace("%", "/100");
+
             if (expression.contains("+")) {
                 String[] parts = expression.split("\\+");
-                return String.valueOf(Double.parseDouble(parts[0]) + Double.parseDouble(parts[1]));
+                return formatCalcResult(Double.parseDouble(parts[0]) + Double.parseDouble(parts[1]));
+            } else if (expression.contains("-")) {
+                String[] parts = expression.split("-");
+                if (parts.length == 2) {
+                    return formatCalcResult(Double.parseDouble(parts[0]) - Double.parseDouble(parts[1]));
+                }
+            } else if (expression.contains("*")) {
+                String[] parts = expression.split("\\*");
+                return formatCalcResult(Double.parseDouble(parts[0]) * Double.parseDouble(parts[1]));
+            } else if (expression.contains("/")) {
+                String[] parts = expression.split("/");
+                return formatCalcResult(Double.parseDouble(parts[0]) / Double.parseDouble(parts[1]));
             }
             return expression;
-        } catch (Exception e) { return "Error"; }
+        } catch (Exception e) {
+            return "Error";
+        }
+    }
+
+    private String formatCalcResult(double result) {
+        if (result == (long) result) {
+            return String.format(Locale.US, "%d", (long) result);
+        } else {
+            return String.format(Locale.US, "%.2f", result);
+        }
     }
 
     private void openSystemCalculator() {
@@ -603,11 +670,9 @@ public class EditTransactionActivity extends AppCompatActivity {
     }
 
     private void showSnackbar(String message) {
-        // Anchor snackbar to footer
         SnackbarHelper.show(this, message, findViewById(R.id.footerLayout));
     }
 
-    // Helper for theme colors
     private int getThemeColor(int attr) {
         TypedValue typedValue = new TypedValue();
         if (getTheme().resolveAttribute(attr, typedValue, true)) {

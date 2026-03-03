@@ -29,6 +29,8 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
+
 // Using the newly updated CategoryPickerActivity
 import com.phynix.artham.activities.CategoryPickerActivity;
 import com.phynix.artham.utils.CategoryColorUtil;
@@ -37,7 +39,6 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -340,6 +341,9 @@ public class CashInOutActivity extends AppCompatActivity {
                             // Apply Color to Icon Container
                             if (selectedColorHex != null) {
                                 try {
+                                    if (!selectedColorHex.startsWith("#")) {
+                                        selectedColorHex = "#" + selectedColorHex;
+                                    }
                                     selectedIconContainer.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor(selectedColorHex)));
                                 } catch (Exception e) {
                                     selectedIconContainer.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(this, R.color.primary_blue)));
@@ -514,12 +518,94 @@ public class CashInOutActivity extends AppCompatActivity {
         }
     }
 
+    // --- FULLY UPDATED CALCULATOR LOGIC ---
     private void showBuiltInCalculator() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         View view = getLayoutInflater().inflate(R.layout.dialog_calculator, null);
         builder.setView(view);
         AlertDialog dialog = builder.create();
+
+        TextView display = view.findViewById(R.id.calc_display);
+        display.setText(amountEditText.getText().toString().isEmpty() ? "0" : amountEditText.getText().toString());
+
+        View.OnClickListener listener = v -> {
+            Button b = (Button) v;
+            String text = b.getText().toString();
+            StringBuilder expression = new StringBuilder(display.getText().toString());
+
+            switch (text) {
+                case "C":
+                    expression.setLength(0);
+                    display.setText("0");
+                    break;
+                case "⌫":
+                    if (expression.length() > 0) expression.deleteCharAt(expression.length() - 1);
+                    display.setText(expression.length() > 0 ? expression.toString() : "0");
+                    break;
+                case "=":
+                    String result = safeEvaluate(expression.toString());
+                    display.setText(result);
+                    break;
+                default:
+                    if (display.getText().toString().equals("0")) expression.setLength(0);
+                    expression.append(text);
+                    display.setText(expression.toString());
+                    break;
+            }
+        };
+
+        int[] btnIds = {
+                R.id.btn_0, R.id.btn_1, R.id.btn_2, R.id.btn_3, R.id.btn_4, R.id.btn_5,
+                R.id.btn_6, R.id.btn_7, R.id.btn_8, R.id.btn_9, R.id.btn_dot,
+                R.id.btn_plus, R.id.btn_minus, R.id.btn_multiply, R.id.btn_divide,
+                R.id.btn_percent, R.id.btn_clear, R.id.btn_backspace, R.id.btn_equals
+        };
+        for (int id : btnIds) {
+            View btn = view.findViewById(id);
+            if (btn != null) btn.setOnClickListener(listener);
+        }
+
+        view.findViewById(R.id.btn_done).setOnClickListener(v -> {
+            if (!display.getText().toString().equals("Error")) {
+                amountEditText.setText(display.getText().toString());
+                amountEditText.setSelection(amountEditText.getText().length());
+            }
+            dialog.dismiss();
+        });
         dialog.show();
+    }
+
+    private String safeEvaluate(String expression) {
+        try {
+            expression = expression.replace("%", "/100");
+
+            if (expression.contains("+")) {
+                String[] parts = expression.split("\\+");
+                return formatCalcResult(Double.parseDouble(parts[0]) + Double.parseDouble(parts[1]));
+            } else if (expression.contains("-")) {
+                String[] parts = expression.split("-");
+                if (parts.length == 2) {
+                    return formatCalcResult(Double.parseDouble(parts[0]) - Double.parseDouble(parts[1]));
+                }
+            } else if (expression.contains("*")) {
+                String[] parts = expression.split("\\*");
+                return formatCalcResult(Double.parseDouble(parts[0]) * Double.parseDouble(parts[1]));
+            } else if (expression.contains("/")) {
+                String[] parts = expression.split("/");
+                return formatCalcResult(Double.parseDouble(parts[0]) / Double.parseDouble(parts[1]));
+            }
+            return expression;
+        } catch (Exception e) {
+            return "Error";
+        }
+    }
+
+    private String formatCalcResult(double result) {
+        if (result == (long) result) {
+            return String.format(Locale.US, "%d", (long) result);
+        } else {
+            return String.format(Locale.US, "%.2f", result);
+        }
     }
 
     private void openSystemCalculator() {
