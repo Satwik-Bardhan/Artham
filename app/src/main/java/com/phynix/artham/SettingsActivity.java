@@ -15,7 +15,6 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.phynix.artham.databinding.ActivitySettingsBinding;
 import com.phynix.artham.models.CashbookModel;
 import com.phynix.artham.models.Users;
@@ -251,13 +250,13 @@ public class SettingsActivity extends AppCompatActivity {
                 }
 
                 // 2. Update Profile Picture
+                // PERFECT FIX: Removed DiskCacheStrategy.NONE and skipMemoryCache.
+                // Since the Firebase download URL contains an updated token every time, Glide automatically busts the cache without flashing!
                 if (userProfile != null && userProfile.getProfile() != null && !userProfile.getProfile().isEmpty()) {
                     Glide.with(SettingsActivity.this)
                             .load(userProfile.getProfile())
                             .placeholder(R.drawable.ic_person_placeholder)
                             .error(R.drawable.ic_person_placeholder)
-                            .diskCacheStrategy(DiskCacheStrategy.NONE)
-                            .skipMemoryCache(true)
                             .circleCrop()
                             .into(binding.primarySettingsLayout.profileImg);
                 } else {

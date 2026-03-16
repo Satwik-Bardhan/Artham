@@ -26,21 +26,14 @@
             android:layout_marginTop="20dp"
             android:layout_marginBottom="12dp">
 
-            <androidx.cardview.widget.CardView
+            <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/backProfileImage"
                 android:layout_width="50dp"
                 android:layout_height="50dp"
-                app:cardCornerRadius="25dp"
-                app:cardElevation="0dp"
-                app:cardBackgroundColor="#33FFFFFF">
-
-                <ImageView
-                    android:id="@+id/backProfileImage"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:src="@drawable/ic_person_placeholder"
-                    android:scaleType="centerCrop"
-                    app:tint="#FFFFFF"/>
-            </androidx.cardview.widget.CardView>
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_person_placeholder"
+                android:background="#33FFFFFF"
+                app:shapeAppearanceOverlay="@style/CircleImageViewStyle" />
 
             <LinearLayout
                 android:layout_width="0dp"

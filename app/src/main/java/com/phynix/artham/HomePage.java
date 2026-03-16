@@ -93,6 +93,8 @@ public class HomePage extends AppCompatActivity {
     private TextView balanceCardMoneyIn;
     private TextView balanceCardMoneyOut;
 
+    private ImageView profileImg;
+
     // Back Card Views
     private View balanceCardBack;
     private TextView backCashbookIdText;
@@ -303,6 +305,8 @@ public class HomePage extends AppCompatActivity {
         balanceCardUserName = findViewById(R.id.userNameBottom);
         balanceCardMoneyIn = findViewById(R.id.moneyIn);
         balanceCardMoneyOut = findViewById(R.id.moneyOut);
+
+        profileImg = findViewById(R.id.profileImg);
     }
 
     private void setupUI() {
@@ -438,25 +442,55 @@ public class HomePage extends AppCompatActivity {
         String name = "User";
         String uid = "";
         String photoUrl = null;
+
+        // Safely extract the user profile string
         if (user != null) {
             if (user.getUserName() != null && !user.getUserName().isEmpty()) name = user.getUserName();
             else if (user.getName() != null && !user.getName().isEmpty()) name = user.getName();
             photoUrl = user.getProfile();
         }
+
         if (name.equals("User") && fbUser != null && fbUser.getDisplayName() != null && !fbUser.getDisplayName().isEmpty()) {
             name = fbUser.getDisplayName();
         }
+
         if (fbUser != null) uid = fbUser.getUid();
+
+        // Fallback for photoURL
         if (photoUrl == null && fbUser != null && fbUser.getPhotoUrl() != null) {
             photoUrl = fbUser.getPhotoUrl().toString();
         }
+
         if (balanceCardUserName != null) balanceCardUserName.setText(name);
         if (balanceCardUidText != null) balanceCardUidText.setText("UID: " + uid);
         if (backUserName != null) backUserName.setText(name);
-        if (backProfileImage != null) {
-            backProfileImage.clearColorFilter();
-            Glide.with(this).load(photoUrl).placeholder(R.drawable.ic_person_placeholder).circleCrop().into(backProfileImage);
+
+        // PERFECT FIX: We load 'photoUrl' which is securely checked above, preventing NullPointerExceptions!
+        if (!isFinishing() && !isDestroyed()) {
+
+            // Load image into the front UI card
+            if (profileImg != null) {
+                Glide.with(HomePage.this)
+                        .load(photoUrl)
+                        .placeholder(R.drawable.ic_person_placeholder)
+                        .error(R.drawable.ic_person_placeholder)
+                        .centerCrop()
+                        .circleCrop()
+                        .into(profileImg);
+            }
+
+            // Load image into the back UI card
+            if (backProfileImage != null) {
+                Glide.with(HomePage.this)
+                        .load(photoUrl)
+                        .placeholder(R.drawable.ic_person_placeholder)
+                        .error(R.drawable.ic_person_placeholder)
+                        .centerCrop()
+                        .circleCrop()
+                        .into(backProfileImage);
+            }
         }
+
         if (balanceCardCopyUidButton != null && !uid.isEmpty()) {
             final String uidToCopy = uid;
             balanceCardCopyUidButton.setOnClickListener(v -> copyToClipboard("UID", uidToCopy));

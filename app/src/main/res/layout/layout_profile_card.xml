@@ -28,23 +28,14 @@
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
-            <androidx.cardview.widget.CardView
+            <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/profileImg"
                 android:layout_width="60dp"
                 android:layout_height="60dp"
-                app:cardBackgroundColor="?attr/chk_dividerHorizontal"
-                app:cardCornerRadius="30dp"
-                app:cardElevation="0dp">
-
-                <!-- REQUIRED ELEMENT TO DISPLAY IMAGE -->
-                <!-- Removed app:tint so the actual profile photo colors are shown -->
-                <ImageView
-                    android:id="@+id/profileImg"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:scaleType="centerCrop"
-                    android:src="@drawable/ic_person_placeholder"
-                    android:padding="0dp"/>
-            </androidx.cardview.widget.CardView>
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_person_placeholder"
+                android:background="?attr/chk_dividerHorizontal"
+                app:shapeAppearanceOverlay="@style/CircleImageViewStyle" />
 
             <LinearLayout
                 android:layout_width="0dp"

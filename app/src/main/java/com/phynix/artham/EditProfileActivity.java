@@ -4,7 +4,6 @@ import android.app.DatePickerDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -23,13 +22,9 @@ import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
-import com.google.android.gms.tasks.Continuation;
-import com.google.android.gms.tasks.Task;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -46,8 +41,6 @@ import com.phynix.artham.models.Users;
 import com.phynix.artham.utils.ThemeManager;
 
 import java.io.ByteArrayOutputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -67,7 +60,6 @@ public class EditProfileActivity extends AppCompatActivity {
 
     private FirebaseAuth mAuth;
     private DatabaseReference userDatabaseRef;
-    private StorageReference userProfileStorageRef;
     private FirebaseUser currentUser;
 
     private Uri imageUri;
@@ -87,14 +79,12 @@ public class EditProfileActivity extends AppCompatActivity {
         currentUser = mAuth.getCurrentUser();
 
         if (currentUser == null) {
+            Toast.makeText(this, "User not logged in!", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
 
         userDatabaseRef = FirebaseDatabase.getInstance().getReference("users").child(currentUser.getUid());
-
-        // [FIX] Changed path to match Firebase Storage Rules: "profile_pictures"
-        userProfileStorageRef = FirebaseStorage.getInstance().getReference().child("profile_pictures");
 
         initViews();
         setupImagePicker();
@@ -102,7 +92,12 @@ public class EditProfileActivity extends AppCompatActivity {
 
         backButton.setOnClickListener(v -> finish());
         cancelButton.setOnClickListener(v -> finish());
-        saveProfileButton.setOnClickListener(v -> saveProfileChanges());
+
+        // EXPLICIT BUTTON LISTENER
+        saveProfileButton.setOnClickListener(v -> {
+            Log.d(TAG, "Save Button Clicked!");
+            saveProfileChanges();
+        });
 
         View.OnClickListener imgClick = v -> openImageChooser();
         editProfilePictureButton.setOnClickListener(imgClick);
@@ -113,14 +108,14 @@ public class EditProfileActivity extends AppCompatActivity {
     }
 
     private void initViews() {
+        // Even if using ShapeableImageView in XML, referencing it as ImageView here is perfectly fine
         profileImageView = findViewById(R.id.profileImageView);
         backButton = findViewById(R.id.backButton);
         editProfilePictureButton = findViewById(R.id.editProfilePictureButton);
 
         editFullName = findViewById(R.id.editFullName);
-
         displayEmail = findViewById(R.id.displayEmail);
-        displayUid = findViewById(R.id.displayUid); // Added binding for UID
+        displayUid = findViewById(R.id.displayUid);
 
         dateOfBirthText = findViewById(R.id.dateOfBirthText);
         dateOfBirthLayout = findViewById(R.id.dateOfBirthLayout);
@@ -136,7 +131,15 @@ public class EditProfileActivity extends AppCompatActivity {
                 result -> {
                     if (result.getResultCode() == RESULT_OK && result.getData() != null) {
                         imageUri = result.getData().getData();
-                        profileImageView.setImageURI(imageUri);
+
+                        // Temporarily show the selected image locally before uploading
+                        Glide.with(this)
+                                .load(imageUri)
+                                .centerCrop()
+                                .circleCrop()
+                                .into(profileImageView);
+
+                        Log.d(TAG, "Image selected: " + imageUri.toString());
                     }
                 }
         );
@@ -149,35 +152,29 @@ public class EditProfileActivity extends AppCompatActivity {
     }
 
     private void loadUserInfo() {
-        if (currentUser.getEmail() != null) {
-            displayEmail.setText(currentUser.getEmail());
-        }
-        // Set UID from Auth
-        if (currentUser.getUid() != null) {
-            displayUid.setText(currentUser.getUid());
-        }
+        if (currentUser.getEmail() != null) displayEmail.setText(currentUser.getEmail());
+        if (currentUser.getUid() != null) displayUid.setText(currentUser.getUid());
 
         userDatabaseRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 Users user = snapshot.getValue(Users.class);
                 if (user != null) {
-                    if (user.getUserName() != null) {
-                        editFullName.setText(user.getUserName());
-                    } else if (user.getName() != null) {
-                        editFullName.setText(user.getName());
-                    }
+                    if (user.getUserName() != null) editFullName.setText(user.getUserName());
+                    else if (user.getName() != null) editFullName.setText(user.getName());
 
-                    if (user.getEmail() != null && !user.getEmail().isEmpty()) {
-                        displayEmail.setText(user.getEmail());
-                    }
+                    if (user.getEmail() != null && !user.getEmail().isEmpty()) displayEmail.setText(user.getEmail());
 
                     if (user.getProfile() != null && !user.getProfile().isEmpty() && !isDestroyed()) {
                         currentPhotoUrl = user.getProfile();
+
+                        // PERFECT CIRCLE GLIDE LOGIC
                         Glide.with(EditProfileActivity.this)
                                 .load(currentPhotoUrl)
                                 .placeholder(R.drawable.ic_person_placeholder)
-                                .circleCrop()
+                                .error(R.drawable.ic_person_placeholder)
+                                .centerCrop() // Scales image to fill bounds without stretching
+                                .circleCrop() // Crops into a perfect circle
                                 .into(profileImageView);
                     }
 
@@ -192,7 +189,7 @@ public class EditProfileActivity extends AppCompatActivity {
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                Toast.makeText(EditProfileActivity.this, "Failed to load data.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(EditProfileActivity.this, "Failed to load user data.", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -202,6 +199,7 @@ public class EditProfileActivity extends AppCompatActivity {
 
         if (TextUtils.isEmpty(name)) {
             editFullName.setError("Name is required");
+            Toast.makeText(this, "Please enter your name", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -212,61 +210,97 @@ public class EditProfileActivity extends AppCompatActivity {
         progressDialog.show();
 
         if (imageUri != null) {
-            // Path: profile_pictures/UID.jpg
-            final StorageReference fileRef = userProfileStorageRef.child(currentUser.getUid() + ".jpg");
+            progressDialog.setMessage("Uploading image to Firebase...");
+            Log.d(TAG, "Starting image upload process");
 
+            /* * IMPORTANT: Bulletproof storage initialization.
+             * Tries the specific bucket first, falls back to default if it fails.
+             */
+            FirebaseStorage storage;
             try {
-                InputStream stream = getContentResolver().openInputStream(imageUri);
-                Bitmap bitmap = BitmapFactory.decodeStream(stream);
+                storage = FirebaseStorage.getInstance("gs://artham-67.firebasestorage.app");
+            } catch (Exception e) {
+                Log.e(TAG, "Storage init failed. Falling back to default.", e);
+                storage = FirebaseStorage.getInstance();
+            }
 
-                if (bitmap == null) {
+            StorageReference fileRef = storage.getReference().child("profile_pictures/" + currentUser.getUid() + ".jpg");
+            byte[] imageData = getCompressedImageData(imageUri);
+
+            if (imageData == null || imageData.length == 0) {
+                progressDialog.dismiss();
+                Toast.makeText(this, "Image processing failed. Try a different photo.", Toast.LENGTH_LONG).show();
+                return;
+            }
+
+            StorageMetadata metadata = new StorageMetadata.Builder().setContentType("image/jpeg").build();
+            UploadTask uploadTask = fileRef.putBytes(imageData, metadata);
+
+            uploadTask.addOnSuccessListener(taskSnapshot -> {
+                Log.d(TAG, "Upload successful, fetching URL...");
+                progressDialog.setMessage("Image uploaded! Securing link...");
+
+                fileRef.getDownloadUrl().addOnSuccessListener(uri -> {
+                    updateDatabase(name, uri.toString(), progressDialog);
+                }).addOnFailureListener(e -> {
                     progressDialog.dismiss();
-                    Toast.makeText(this, "Failed to decode image", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 75, baos);
-                byte[] data = baos.toByteArray();
-
-                StorageMetadata metadata = new StorageMetadata.Builder()
-                        .setContentType("image/jpeg")
-                        .build();
-
-                UploadTask uploadTask = fileRef.putBytes(data, metadata);
-
-                // Use robust Task chaining for URL retrieval
-                uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
-                    @Override
-                    public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
-                        if (!task.isSuccessful()) {
-                            throw task.getException();
-                        }
-                        // Continue with the task to get the download URL
-                        return fileRef.getDownloadUrl();
-                    }
-                }).addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        Uri downloadUri = task.getResult();
-                        updateDatabase(name, downloadUri.toString(), progressDialog);
-                    } else {
-                        progressDialog.dismiss();
-                        String error = task.getException() != null ? task.getException().getMessage() : "Unknown error";
-                        Log.e(TAG, "Upload/Url Error", task.getException());
-                        Toast.makeText(EditProfileActivity.this, "Failed to update image: " + error, Toast.LENGTH_LONG).show();
-                    }
+                    Log.e(TAG, "Failed to get download URL", e);
+                    Toast.makeText(EditProfileActivity.this, "Error getting link: " + e.getMessage(), Toast.LENGTH_LONG).show();
                 });
 
-            } catch (FileNotFoundException e) {
+            }).addOnFailureListener(e -> {
                 progressDialog.dismiss();
-                Toast.makeText(this, "File not found", Toast.LENGTH_SHORT).show();
-            }
+                Log.e(TAG, "Image Upload Failed", e);
+                Toast.makeText(EditProfileActivity.this, "Image Upload Failed. Check your network or Firebase rules.", Toast.LENGTH_LONG).show();
+            });
+
         } else {
+            Log.d(TAG, "No image selected. Updating database only.");
+            progressDialog.setMessage("Saving profile data...");
             updateDatabase(name, null, progressDialog);
         }
     }
 
+    private byte[] getCompressedImageData(Uri uri) {
+        try {
+            InputStream inputBounds = getContentResolver().openInputStream(uri);
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inJustDecodeBounds = true;
+            BitmapFactory.decodeStream(inputBounds, null, options);
+            if (inputBounds != null) inputBounds.close();
+
+            int reqWidth = 600;
+            int reqHeight = 600;
+            int inSampleSize = 1;
+
+            if (options.outHeight > reqHeight || options.outWidth > reqWidth) {
+                final int halfHeight = options.outHeight / 2;
+                final int halfWidth = options.outWidth / 2;
+                while ((halfHeight / inSampleSize) >= reqHeight && (halfWidth / inSampleSize) >= reqWidth) {
+                    inSampleSize *= 2;
+                }
+            }
+
+            options.inJustDecodeBounds = false;
+            options.inSampleSize = inSampleSize;
+
+            InputStream inputImage = getContentResolver().openInputStream(uri);
+            Bitmap scaledBitmap = BitmapFactory.decodeStream(inputImage, null, options);
+            if (inputImage != null) inputImage.close();
+
+            if (scaledBitmap != null) {
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                scaledBitmap.compress(Bitmap.CompressFormat.JPEG, 60, baos);
+                return baos.toByteArray();
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error compressing image: " + e.getMessage());
+        }
+        return null;
+    }
+
     private void updateDatabase(String name, String imageUrl, ProgressDialog loadingBar) {
+        loadingBar.setMessage("Finalizing update...");
         Map<String, Object> profileUpdates = new HashMap<>();
         profileUpdates.put("name", name);
         profileUpdates.put("userName", name);
@@ -275,14 +309,15 @@ public class EditProfileActivity extends AppCompatActivity {
         if (imageUrl != null) profileUpdates.put("profile", imageUrl);
 
         userDatabaseRef.updateChildren(profileUpdates)
-                .addOnCompleteListener(task -> {
+                .addOnSuccessListener(aVoid -> {
                     loadingBar.dismiss();
-                    if (task.isSuccessful()) {
-                        Toast.makeText(EditProfileActivity.this, "Profile updated successfully!", Toast.LENGTH_SHORT).show();
-                        finish();
-                    } else {
-                        Toast.makeText(EditProfileActivity.this, "Failed to update database.", Toast.LENGTH_SHORT).show();
-                    }
+                    Toast.makeText(EditProfileActivity.this, "Profile updated successfully!", Toast.LENGTH_SHORT).show();
+                    finish();
+                })
+                .addOnFailureListener(e -> {
+                    loadingBar.dismiss();
+                    Log.e(TAG, "Database Update Failed", e);
+                    Toast.makeText(EditProfileActivity.this, "Database Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
                 });
     }
 
