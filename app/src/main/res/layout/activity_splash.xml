@@ -51,6 +51,17 @@
             android:text="_Track Your Finance_"
             android:textColor="?attr/chk_textColorSecondary"
             android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/made_in_india_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="64dp"
+            android:text="Made in India 🇮🇳 with ❤️"
+            android:textColor="?attr/chk_textColorPrimary"
+            android:textSize="14sp"
+            android:fontFamily="sans-serif-medium" />
+
     </LinearLayout>
 
     <ProgressBar
