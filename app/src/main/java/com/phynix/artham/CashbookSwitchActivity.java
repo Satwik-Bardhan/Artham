@@ -41,6 +41,7 @@ import com.google.firebase.database.ValueEventListener;
 import com.phynix.artham.adapters.CashbookAdapter;
 import com.phynix.artham.models.CashbookModel;
 import com.phynix.artham.models.TransactionModel;
+import com.phynix.artham.utils.Constants;
 import com.phynix.artham.utils.ErrorHandler;
 import com.phynix.artham.utils.SwipeListener;
 import com.phynix.artham.utils.ThemeManager;
@@ -105,7 +106,21 @@ public class CashbookSwitchActivity extends AppCompatActivity {
 
         mAuth = FirebaseAuth.getInstance();
         currentUser = mAuth.getCurrentUser();
+
+        // 4. READ FROM PREFERENCES IF INTENT FAILS
         currentCashbookId = getIntent().getStringExtra("current_cashbook_id");
+        if (currentCashbookId == null) {
+            currentCashbookId = getIntent().getStringExtra("cashbook_id");
+        }
+        if (currentCashbookId == null) {
+            currentCashbookId = getIntent().getStringExtra(Constants.EXTRA_CASHBOOK_ID);
+        }
+
+        // Final ultimate fallback: Read from persistent secure storage
+        if (currentCashbookId == null) {
+            SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+            currentCashbookId = prefs.getString("last_selected_cashbook_id", null);
+        }
 
         if (currentUser == null) {
             showSnackbar("Not authenticated. Please log in again.");
@@ -404,7 +419,6 @@ public class CashbookSwitchActivity extends AppCompatActivity {
         userCashbooksRef.child(cashbookId).setValue(newCashbook)
                 .addOnSuccessListener(aVoid -> {
                     showSnackbar("Cashbook created successfully!");
-                    // Ensure the newly created book becomes the active one immediately
                     onCashbookSelected(newCashbook);
                 })
                 .addOnFailureListener(e -> showSnackbar("Failed: " + e.getMessage()));
@@ -580,7 +594,6 @@ public class CashbookSwitchActivity extends AppCompatActivity {
                 filteredList = searchResults.stream().filter(CashbookModel::isFavorite).collect(Collectors.toList());
                 break;
             case "recent":
-                // If "Recent" tab is pressed, we don't apply Active/Favorite exclusions, we just show all
                 filteredList = new ArrayList<>(searchResults);
                 break;
             default:
@@ -588,19 +601,14 @@ public class CashbookSwitchActivity extends AppCompatActivity {
                 break;
         }
 
-        // Use Collections.sort with Unified Comparator
         Collections.sort(filteredList, (c1, c2) -> {
-            // Rule 1: Always ensure Current book stays on top regardless of applied sort
             if (c1.isCurrent() && !c2.isCurrent()) return -1;
             if (!c1.isCurrent() && c2.isCurrent()) return 1;
 
-            // Rule 2: IMPORTANT FIX - If the user is on the "Recent" filter tab, override any active
-            // sort preference and FORCE it to sort by newest created date.
             if ("recent".equals(currentFilter)) {
                 return Long.compare(c2.getCreatedDate(), c1.getCreatedDate());
             }
 
-            // Fall back to requested sub-sort from the Dialog
             switch (currentSort) {
                 case "name_asc":
                     return c1.getName().compareToIgnoreCase(c2.getName());
@@ -616,7 +624,6 @@ public class CashbookSwitchActivity extends AppCompatActivity {
                     return Double.compare(c1.getTotalBalance(), c2.getTotalBalance());
                 case "recent":
                 default:
-                    // Sort strictly by newly created date
                     return Long.compare(c2.getCreatedDate(), c1.getCreatedDate());
             }
         });
@@ -632,6 +639,12 @@ public class CashbookSwitchActivity extends AppCompatActivity {
 
     private void onCashbookSelected(CashbookModel cashbook) {
         if (cashbook == null) return;
+
+        // 5. FINALLY, ENSURE THE SELECTION IS SAVED EVERY TIME A BOOK IS CLICKED
+        getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
+                .edit()
+                .putString("last_selected_cashbook_id", cashbook.getCashbookId())
+                .apply();
 
         Intent result = new Intent();
         result.putExtra("selected_cashbook_id", cashbook.getCashbookId());

@@ -8,6 +8,7 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.Uri;
@@ -69,6 +70,7 @@ public class HomePage extends AppCompatActivity {
 
     private static final String TAG = "HomePage";
     private static final int PERMISSION_REQUEST_CODE_NOTIFICATIONS = 101;
+    private static final String PREFS_NAME = "AppPrefs";
 
     // ViewBinding
     private ActivityHomePageBinding binding;
@@ -123,7 +125,22 @@ public class HomePage extends AppCompatActivity {
                     if (newId != null) {
                         currentActiveBookId = null;
                         isTimestampUpdatedForCurrentBook = false;
+
+                        currentCashbookId = newId;
+
+                        // SAVE THE SELECTION SECURELY
+                        getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
+                                .edit()
+                                .putString("last_selected_cashbook_id", newId)
+                                .apply();
+
                         viewModel.switchCashbook(newId);
+
+                        if (newName != null) {
+                            binding.userNameTop.setText(newName);
+                            binding.currentCashbookText.setText(newName);
+                        }
+
                         showSnackbar("Switched to: " + (newName != null ? newName : "New Cashbook"));
                     }
                 }
@@ -152,6 +169,24 @@ public class HomePage extends AppCompatActivity {
             return;
         }
 
+        // READ THE SELECTION SECURELY ON STARTUP
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        String intentId = getIntent().getStringExtra(Constants.EXTRA_CASHBOOK_ID);
+        if (intentId == null) intentId = getIntent().getStringExtra("cashbook_id");
+        if (intentId == null) intentId = getIntent().getStringExtra("current_cashbook_id");
+
+        if (intentId != null) {
+            currentCashbookId = intentId;
+            prefs.edit().putString("last_selected_cashbook_id", intentId).apply();
+            viewModel.switchCashbook(intentId);
+        } else {
+            String savedId = prefs.getString("last_selected_cashbook_id", null);
+            if (savedId != null) {
+                currentCashbookId = savedId;
+                viewModel.switchCashbook(savedId);
+            }
+        }
+
         bindBalanceCardViews();
         setupBalanceCardFlip();
         setupBottomNavigation();
@@ -161,6 +196,26 @@ public class HomePage extends AppCompatActivity {
         fetchUserDataDirectly();
         checkNotificationPermissionAndShowFeedback();
         setupSwipeNavigation();
+    }
+
+    // HANDLE RESUMING FROM SETTINGS ACTIVITY
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+
+        String newId = intent.getStringExtra(Constants.EXTRA_CASHBOOK_ID);
+        if (newId == null) newId = intent.getStringExtra("cashbook_id");
+        if (newId == null) newId = intent.getStringExtra("current_cashbook_id");
+
+        if (newId != null && !newId.equals(currentCashbookId)) {
+            currentCashbookId = newId;
+            getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
+                    .edit()
+                    .putString("last_selected_cashbook_id", newId)
+                    .apply();
+            viewModel.switchCashbook(newId);
+        }
     }
 
     private void setupStickyScrollLogic() {
@@ -348,9 +403,6 @@ public class HomePage extends AppCompatActivity {
                 if(binding.userNameTop != null) binding.userNameTop.setText(cashbook.getName());
                 if(binding.currentCashbookText != null) binding.currentCashbookText.setText(cashbook.getName());
 
-                // Set Exact Date and Time in IST with Seconds
-                if(binding.lastOpenedText != null) binding.lastOpenedText.setText("Last opened: " + formatExactDateTimeIST(cashbook.getLastModified()));
-
                 if (backCashbookIdText != null) backCashbookIdText.setText(cashbook.getCashbookId());
 
                 // Visibility management
@@ -358,9 +410,14 @@ public class HomePage extends AppCompatActivity {
                 if(binding.transactionTable != null) binding.transactionTable.setVisibility(View.VISIBLE);
                 if(binding.emptyStateView != null) binding.emptyStateView.setVisibility(View.GONE);
 
+                currentCashbookId = cashbook.getCashbookId();
+
                 if (currentActiveBookId == null || !currentActiveBookId.equals(cashbook.getCashbookId())) {
                     currentActiveBookId = cashbook.getCashbookId();
                     isTimestampUpdatedForCurrentBook = false;
+
+                    // Set Exact Date and Time BEFORE we push the new update to Firebase
+                    if(binding.lastOpenedText != null) binding.lastOpenedText.setText("Last opened: " + formatExactDateTimeIST(cashbook.getLastModified()));
                 }
 
                 if (!isTimestampUpdatedForCurrentBook) {
@@ -417,6 +474,9 @@ public class HomePage extends AppCompatActivity {
         viewModel.getTodaysTransactions().observe(this, this::updateTransactionTable);
     }
 
+    /**
+     * Formats timestamp to exact dd MMM yyyy, hh:mm:ss a format in IST.
+     */
     private String formatExactDateTimeIST(long timestamp) {
         if (timestamp <= 0) return "Never";
 
