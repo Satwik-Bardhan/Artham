@@ -93,8 +93,6 @@ public class HomePage extends AppCompatActivity {
     private TextView balanceCardMoneyIn;
     private TextView balanceCardMoneyOut;
 
-    private ImageView profileImg;
-
     // Back Card Views
     private View balanceCardBack;
     private TextView backCashbookIdText;
@@ -110,7 +108,7 @@ public class HomePage extends AppCompatActivity {
     private final ActivityResultLauncher<Intent> detailsLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
-                // Handle any result from details if needed
+                // Handle any result from details if needed (e.g., refresh data)
             }
     );
 
@@ -125,15 +123,7 @@ public class HomePage extends AppCompatActivity {
                     if (newId != null) {
                         currentActiveBookId = null;
                         isTimestampUpdatedForCurrentBook = false;
-
-                        currentCashbookId = newId;
                         viewModel.switchCashbook(newId);
-
-                        if (newName != null) {
-                            binding.userNameTop.setText(newName);
-                            binding.currentCashbookText.setText(newName);
-                        }
-
                         showSnackbar("Switched to: " + (newName != null ? newName : "New Cashbook"));
                     }
                 }
@@ -152,6 +142,7 @@ public class HomePage extends AppCompatActivity {
             getSupportActionBar().hide();
         }
 
+        // Initialize ViewModel
         viewModel = new ViewModelProvider(this).get(HomePageViewModel.class);
 
         currencyFormat = NumberFormat.getCurrencyInstance(new Locale("en", "IN"));
@@ -162,7 +153,6 @@ public class HomePage extends AppCompatActivity {
         }
 
         bindBalanceCardViews();
-        setupUI();
         setupBalanceCardFlip();
         setupBottomNavigation();
         setupClickListeners();
@@ -175,14 +165,23 @@ public class HomePage extends AppCompatActivity {
 
     private void setupStickyScrollLogic() {
         binding.mainScrollView.setOnScrollChangeListener((NestedScrollView.OnScrollChangeListener) (v, scrollX, scrollY, oldScrollX, oldScrollY) -> {
-            int buttonsTop = binding.originalButtons.getRoot().getTop();
-            if (scrollY >= buttonsTop) {
-                if (binding.stickyActionButtonsContainer.getVisibility() != View.VISIBLE) {
-                    binding.stickyActionButtonsContainer.setVisibility(View.VISIBLE);
-                }
-            } else {
-                if (binding.stickyActionButtonsContainer.getVisibility() == View.VISIBLE) {
-                    binding.stickyActionButtonsContainer.setVisibility(View.GONE);
+            // Safety check in case the view is null or hidden
+            if (binding.homeContentLayout == null || binding.homeContentLayout.getVisibility() != View.VISIBLE) return;
+
+            // Wait to ensure views are measured
+            if (binding.originalButtons != null && binding.originalButtons.getRoot() != null) {
+                // Calculate absolute position inside the scroll view relative layout container
+                int buttonsTop = binding.originalButtons.getRoot().getTop() + binding.homeContentLayout.getTop();
+
+                // Show sticky header when original buttons are scrolled out of view
+                if (scrollY >= buttonsTop && buttonsTop > 0) {
+                    if (binding.stickyActionButtonsContainer.getVisibility() != View.VISIBLE) {
+                        binding.stickyActionButtonsContainer.setVisibility(View.VISIBLE);
+                    }
+                } else {
+                    if (binding.stickyActionButtonsContainer.getVisibility() == View.VISIBLE) {
+                        binding.stickyActionButtonsContainer.setVisibility(View.GONE);
+                    }
                 }
             }
         });
@@ -192,6 +191,7 @@ public class HomePage extends AppCompatActivity {
         swipeListener = new SwipeListener(this) {
             @Override
             public void onSwipeLeft() {
+                // Swipe Left -> Go to Transactions List (if loaded)
                 String idToUse = (currentCashbookId != null) ? currentCashbookId : viewModel.getCurrentCashbookId();
                 if (idToUse != null) {
                     Intent intent = new Intent(HomePage.this, TransactionActivity.class);
@@ -205,6 +205,7 @@ public class HomePage extends AppCompatActivity {
             }
             @Override
             public void onSwipeRight() {
+                // Swipe Right -> Open Cashbook Switcher
                 openCashbookSwitcher();
                 overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
             }
@@ -220,7 +221,7 @@ public class HomePage extends AppCompatActivity {
     }
 
     private void setupBalanceCardFlip() {
-        balanceCardFront = findViewById(R.id.balanceCardView);
+        balanceCardFront = binding.balanceCardView.getRoot();
         if (balanceCardFront == null) return;
 
         balanceCardBack = LayoutInflater.from(this).inflate(R.layout.component_balance_card_back, null);
@@ -244,8 +245,9 @@ public class HomePage extends AppCompatActivity {
             btnFacebook = balanceCardBack.findViewById(R.id.btnFacebook);
             btnWhatsapp = balanceCardBack.findViewById(R.id.btnWhatsapp);
 
-            if (btnYoutube != null) btnYoutube.setOnClickListener(v -> openUrl("https://www.youtube.com/@artham-06"));
+            if (btnYoutube != null) btnYoutube.setOnClickListener(v -> openUrl("https://www.youtube.com/@ArthamApp"));
             if (btnInstagram != null) btnInstagram.setOnClickListener(v -> openUrl("https://www.instagram.com/artham.in"));
+            if (btnWebsite != null) btnWebsite.setOnClickListener(v -> openUrl("https://www.artham.com"));
             if (btnFacebook != null) btnFacebook.setOnClickListener(v -> openUrl("https://www.facebook.com/arthamapp"));
             if (btnWhatsapp != null) btnWhatsapp.setOnClickListener(v -> openUrl("https://whatsapp.com/channel/0029Vb6sFJv7dmeibXDqc014"));
             if (btnGmail != null) btnGmail.setOnClickListener(v -> sendEmail());
@@ -267,7 +269,7 @@ public class HomePage extends AppCompatActivity {
     private void sendEmail() {
         try {
             Intent intent = new Intent(Intent.ACTION_SENDTO);
-            intent.setData(Uri.parse("mailto:codewithsatwik06@gmail.com"));
+            intent.setData(Uri.parse("mailto:support@artham.com"));
             intent.putExtra(Intent.EXTRA_SUBJECT, "Support Request");
             startActivity(intent);
         } catch (Exception e) {
@@ -300,25 +302,37 @@ public class HomePage extends AppCompatActivity {
     }
 
     private void bindBalanceCardViews() {
-        balanceCardUidText = findViewById(R.id.uidText);
-        balanceCardCopyUidButton = findViewById(R.id.copyUidButton);
-        balanceCardUserName = findViewById(R.id.userNameBottom);
-        balanceCardMoneyIn = findViewById(R.id.moneyIn);
-        balanceCardMoneyOut = findViewById(R.id.moneyOut);
-
-        profileImg = findViewById(R.id.profileImg);
-    }
-
-    private void setupUI() {
-        binding.transactionSection.setVisibility(View.VISIBLE);
-        binding.transactionTable.setVisibility(View.VISIBLE);
-        binding.emptyStateView.setVisibility(View.GONE);
+        // Safe access through the included balanceCardView binding
+        balanceCardUidText = binding.balanceCardView.getRoot().findViewById(R.id.uidText);
+        balanceCardCopyUidButton = binding.balanceCardView.getRoot().findViewById(R.id.copyUidButton);
+        balanceCardUserName = binding.balanceCardView.getRoot().findViewById(R.id.userNameBottom);
+        balanceCardMoneyIn = binding.balanceCardView.getRoot().findViewById(R.id.moneyIn);
+        balanceCardMoneyOut = binding.balanceCardView.getRoot().findViewById(R.id.moneyOut);
     }
 
     private void observeViewModel() {
+
+        // Handle Skeleton Loading State Toggle
         viewModel.getIsLoading().observe(this, isLoading -> {
-            if (isLoading && binding.userNameTop.getText().toString().isEmpty()) {
-                binding.userNameTop.setText("Loading...");
+            if (isLoading) {
+                // Show Skeleton, Hide Real Data
+                if (binding.homeSkeletonLayout != null) {
+                    binding.homeSkeletonLayout.getRoot().setVisibility(View.VISIBLE); // .getRoot() needed for included layout
+                }
+                if (binding.homeContentLayout != null) {
+                    binding.homeContentLayout.setVisibility(View.GONE);
+                }
+                if (binding.stickyActionButtonsContainer != null) {
+                    binding.stickyActionButtonsContainer.setVisibility(View.GONE);
+                }
+            } else {
+                // Hide Skeleton, Show Real Data
+                if (binding.homeSkeletonLayout != null) {
+                    binding.homeSkeletonLayout.getRoot().setVisibility(View.GONE);
+                }
+                if (binding.homeContentLayout != null) {
+                    binding.homeContentLayout.setVisibility(View.VISIBLE);
+                }
             }
         });
 
@@ -331,24 +345,22 @@ public class HomePage extends AppCompatActivity {
         viewModel.getActiveCashbook().observe(this, cashbook -> {
             if (cashbook != null) {
                 // NORMAL STATE: Data exists
-                binding.userNameTop.setText(cashbook.getName());
-                binding.currentCashbookText.setText(cashbook.getName());
+                if(binding.userNameTop != null) binding.userNameTop.setText(cashbook.getName());
+                if(binding.currentCashbookText != null) binding.currentCashbookText.setText(cashbook.getName());
+
+                // Set Exact Date and Time in IST with Seconds
+                if(binding.lastOpenedText != null) binding.lastOpenedText.setText("Last opened: " + formatExactDateTimeIST(cashbook.getLastModified()));
 
                 if (backCashbookIdText != null) backCashbookIdText.setText(cashbook.getCashbookId());
 
-                binding.transactionSection.setVisibility(View.VISIBLE);
-                binding.transactionTable.setVisibility(View.VISIBLE);
-                binding.emptyStateView.setVisibility(View.GONE);
+                // Visibility management
+                if(binding.transactionSection != null) binding.transactionSection.setVisibility(View.VISIBLE);
+                if(binding.transactionTable != null) binding.transactionTable.setVisibility(View.VISIBLE);
+                if(binding.emptyStateView != null) binding.emptyStateView.setVisibility(View.GONE);
 
-                currentCashbookId = cashbook.getCashbookId();
-
-                // FIX: Freeze the text so it only updates the very first time the book loads!
                 if (currentActiveBookId == null || !currentActiveBookId.equals(cashbook.getCashbookId())) {
                     currentActiveBookId = cashbook.getCashbookId();
                     isTimestampUpdatedForCurrentBook = false;
-
-                    // Set Exact Date and Time BEFORE we push the new update to Firebase
-                    binding.lastOpenedText.setText("Last opened: " + formatExactDateTimeIST(cashbook.getLastModified()));
                 }
 
                 if (!isTimestampUpdatedForCurrentBook) {
@@ -357,14 +369,15 @@ public class HomePage extends AppCompatActivity {
                 }
 
             } else {
-                // EMPTY STATE
-                binding.userNameTop.setText("Welcome!");
-                binding.currentCashbookText.setText("No Cashbook Selected");
-                binding.lastOpenedText.setText("Create a new cashbook to start");
+                // EMPTY STATE: No Cashbook found
+                if(binding.userNameTop != null) binding.userNameTop.setText("Welcome!");
+                if(binding.currentCashbookText != null) binding.currentCashbookText.setText("No Cashbook Selected");
+                if(binding.lastOpenedText != null) binding.lastOpenedText.setText("Create a new cashbook to start");
 
-                binding.transactionSection.setVisibility(View.GONE);
-                binding.transactionTable.setVisibility(View.GONE);
-                binding.emptyStateView.setVisibility(View.GONE);
+                // Visibility management
+                if(binding.transactionSection != null) binding.transactionSection.setVisibility(View.GONE);
+                if(binding.transactionTable != null) binding.transactionTable.setVisibility(View.GONE);
+                if(binding.emptyStateView != null) binding.emptyStateView.setVisibility(View.GONE);
 
                 currentCashbookId = null;
             }
@@ -373,21 +386,32 @@ public class HomePage extends AppCompatActivity {
         viewModel.getTotalIncome().observe(this, income -> {
             if (balanceCardMoneyIn != null) balanceCardMoneyIn.setText(formatCurrency(income));
         });
+
         viewModel.getTotalExpense().observe(this, expense -> {
             if (balanceCardMoneyOut != null) balanceCardMoneyOut.setText(formatCurrency(expense));
         });
+
         viewModel.getCurrentBalance().observe(this, balance -> {
-            if (binding.balanceCardView != null) {
-                binding.balanceCardView.balanceText.setText(formatCurrency(balance));
-                binding.balanceCardView.balanceText.setTextColor(Color.WHITE);
+            // Using ViewBinding to get the balanceText within the balance card
+            TextView balanceText = binding.balanceCardView.getRoot().findViewById(R.id.balanceText);
+            if (balanceText != null) {
+                balanceText.setText(formatCurrency(balance));
+                balanceText.setTextColor(Color.WHITE);
             }
         });
 
         viewModel.getTodayBalance().observe(this, balance -> {
-            binding.dailySummaryInclude.dailyDateText.setText(DateTimeUtils.formatDate(System.currentTimeMillis(), Constants.DATE_FORMAT_DISPLAY));
-            String sign = balance >= 0 ? "+ " : "- ";
-            binding.dailySummaryInclude.dailyBalanceText.setText(sign + formatCurrency(Math.abs(balance)));
-            binding.dailySummaryInclude.dailyBalanceText.setTextColor(ThemeUtil.getThemeAttrColor(this, balance >= 0 ? R.attr.chk_incomeColor : R.attr.chk_expenseColor));
+            // Utilizing the included layout reference for safe access
+            TextView dailyDateText = binding.dailySummaryInclude.getRoot().findViewById(R.id.dailyDateText);
+            TextView dailyBalanceText = binding.dailySummaryInclude.getRoot().findViewById(R.id.dailyBalanceText);
+
+            if(dailyDateText != null) dailyDateText.setText(DateTimeUtils.formatDate(System.currentTimeMillis(), Constants.DATE_FORMAT_DISPLAY));
+
+            if(dailyBalanceText != null) {
+                String sign = balance >= 0 ? "+ " : "- ";
+                dailyBalanceText.setText(sign + formatCurrency(Math.abs(balance)));
+                dailyBalanceText.setTextColor(ThemeUtil.getThemeAttrColor(this, balance >= 0 ? R.attr.chk_incomeColor : R.attr.chk_expenseColor));
+            }
         });
 
         viewModel.getTodaysTransactions().observe(this, this::updateTransactionTable);
@@ -397,6 +421,7 @@ public class HomePage extends AppCompatActivity {
         if (timestamp <= 0) return "Never";
 
         SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy, hh:mm:ss a", Locale.getDefault());
+        // Set to Indian Standard Time
         sdf.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
 
         return sdf.format(new Date(timestamp));
@@ -442,55 +467,25 @@ public class HomePage extends AppCompatActivity {
         String name = "User";
         String uid = "";
         String photoUrl = null;
-
-        // Safely extract the user profile string
         if (user != null) {
             if (user.getUserName() != null && !user.getUserName().isEmpty()) name = user.getUserName();
             else if (user.getName() != null && !user.getName().isEmpty()) name = user.getName();
             photoUrl = user.getProfile();
         }
-
         if (name.equals("User") && fbUser != null && fbUser.getDisplayName() != null && !fbUser.getDisplayName().isEmpty()) {
             name = fbUser.getDisplayName();
         }
-
         if (fbUser != null) uid = fbUser.getUid();
-
-        // Fallback for photoURL
         if (photoUrl == null && fbUser != null && fbUser.getPhotoUrl() != null) {
             photoUrl = fbUser.getPhotoUrl().toString();
         }
-
         if (balanceCardUserName != null) balanceCardUserName.setText(name);
         if (balanceCardUidText != null) balanceCardUidText.setText("UID: " + uid);
         if (backUserName != null) backUserName.setText(name);
-
-        // PERFECT FIX: We load 'photoUrl' which is securely checked above, preventing NullPointerExceptions!
-        if (!isFinishing() && !isDestroyed()) {
-
-            // Load image into the front UI card
-            if (profileImg != null) {
-                Glide.with(HomePage.this)
-                        .load(photoUrl)
-                        .placeholder(R.drawable.ic_person_placeholder)
-                        .error(R.drawable.ic_person_placeholder)
-                        .centerCrop()
-                        .circleCrop()
-                        .into(profileImg);
-            }
-
-            // Load image into the back UI card
-            if (backProfileImage != null) {
-                Glide.with(HomePage.this)
-                        .load(photoUrl)
-                        .placeholder(R.drawable.ic_person_placeholder)
-                        .error(R.drawable.ic_person_placeholder)
-                        .centerCrop()
-                        .circleCrop()
-                        .into(backProfileImage);
-            }
+        if (backProfileImage != null) {
+            backProfileImage.clearColorFilter();
+            Glide.with(this).load(photoUrl).placeholder(R.drawable.ic_person_placeholder).circleCrop().into(backProfileImage);
         }
-
         if (balanceCardCopyUidButton != null && !uid.isEmpty()) {
             final String uidToCopy = uid;
             balanceCardCopyUidButton.setOnClickListener(v -> copyToClipboard("UID", uidToCopy));
@@ -506,24 +501,33 @@ public class HomePage extends AppCompatActivity {
         }
     }
 
+    // --- ENHANCED LOGIC FOR EMPTY STATE & DEMO ROW ---
     private void updateTransactionTable(List<TransactionModel> transactions) {
+        if(binding.transactionTable == null || binding.transactionCount == null || binding.emptyStateView == null) return;
+
         binding.transactionTable.removeAllViews();
 
         if (transactions == null || transactions.isEmpty()) {
             binding.transactionCount.setText("TODAY (0)");
+
+            // Show our styled empty state banner
             binding.emptyStateView.setVisibility(View.VISIBLE);
+            // Keep the table visible so the user can see the fake demo row
             binding.transactionTable.setVisibility(View.VISIBLE);
+
         } else {
             binding.transactionCount.setText("TODAY (" + transactions.size() + ")");
+
+            // Hide the empty state banner as we have real data
             binding.emptyStateView.setVisibility(View.GONE);
             binding.transactionTable.setVisibility(View.VISIBLE);
 
-            for (TransactionModel t : transactions) addTransactionRow(t);
+            for (TransactionModel t : transactions) addTransactionRow(t, binding.transactionTable);
         }
     }
 
-    private void addTransactionRow(TransactionModel transaction) {
-        View rowView = LayoutInflater.from(this).inflate(R.layout.item_transaction_report_row, binding.transactionTable, false);
+    private void addTransactionRow(TransactionModel transaction, ViewGroup tableLayout) {
+        View rowView = LayoutInflater.from(this).inflate(R.layout.item_transaction_report_row, tableLayout, false);
         TextView rowCategory = rowView.findViewById(R.id.rowCategory);
         TextView rowMode = rowView.findViewById(R.id.rowMode);
         TextView rowIn = rowView.findViewById(R.id.rowIn);
@@ -547,12 +551,13 @@ public class HomePage extends AppCompatActivity {
             rowOut.setTextColor(ThemeUtil.getThemeAttrColor(this, R.attr.chk_expenseColor));
         }
         rowView.setOnClickListener(v -> openTransactionDetail(transaction));
-        binding.transactionTable.addView(rowView);
+        tableLayout.addView(rowView);
     }
 
     private void setupBottomNavigation() {
-        binding.bottomNavCard.btnHome.setSelected(true);
-        binding.bottomNavCard.btnTransactions.setOnClickListener(v -> {
+        // Updated to use the viewbinding mapped object for bottom navigation
+        binding.bottomNavCard.getRoot().findViewById(R.id.btnHome).setSelected(true);
+        binding.bottomNavCard.getRoot().findViewById(R.id.btnTransactions).setOnClickListener(v -> {
             String idToUse = (currentCashbookId != null) ? currentCashbookId : viewModel.getCurrentCashbookId();
             if (idToUse != null) {
                 Intent intent = new Intent(this, TransactionActivity.class);
@@ -564,8 +569,8 @@ public class HomePage extends AppCompatActivity {
                 showSnackbar("Please select a cashbook first");
             }
         });
-        binding.bottomNavCard.btnCashbookSwitch.setOnClickListener(v -> openCashbookSwitcher());
-        binding.bottomNavCard.btnSettings.setOnClickListener(v -> {
+        binding.bottomNavCard.getRoot().findViewById(R.id.btnCashbookSwitch).setOnClickListener(v -> openCashbookSwitcher());
+        binding.bottomNavCard.getRoot().findViewById(R.id.btnSettings).setOnClickListener(v -> {
             Intent intent = new Intent(this, SettingsActivity.class);
             intent.putExtra("cashbook_id", currentCashbookId);
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
@@ -576,12 +581,21 @@ public class HomePage extends AppCompatActivity {
     }
 
     private void setupClickListeners() {
-        binding.originalButtons.btnCashIn.setOnClickListener(v -> openCashInOutActivity(Constants.TRANSACTION_TYPE_IN));
-        binding.originalButtons.btnCashOut.setOnClickListener(v -> openCashInOutActivity(Constants.TRANSACTION_TYPE_OUT));
-        binding.stickyButtons.btnCashIn.setOnClickListener(v -> openCashInOutActivity(Constants.TRANSACTION_TYPE_IN));
-        binding.stickyButtons.btnCashOut.setOnClickListener(v -> openCashInOutActivity(Constants.TRANSACTION_TYPE_OUT));
+        if(binding.userBox != null) {
+            binding.userBox.setOnClickListener(v -> openCashbookSwitcher());
+        }
 
-        binding.userBox.setOnClickListener(v -> openCashbookSwitcher());
+        // Setup original buttons utilizing ViewBinding's include handling
+        if (binding.originalButtons != null) {
+            binding.originalButtons.btnCashIn.setOnClickListener(v -> openCashInOutActivity(Constants.TRANSACTION_TYPE_IN));
+            binding.originalButtons.btnCashOut.setOnClickListener(v -> openCashInOutActivity(Constants.TRANSACTION_TYPE_OUT));
+        }
+
+        // Setup sticky buttons utilizing ViewBinding's include handling
+        if(binding.stickyButtons != null) {
+            binding.stickyButtons.btnCashIn.setOnClickListener(v -> openCashInOutActivity(Constants.TRANSACTION_TYPE_IN));
+            binding.stickyButtons.btnCashOut.setOnClickListener(v -> openCashInOutActivity(Constants.TRANSACTION_TYPE_OUT));
+        }
     }
 
     private void openTransactionDetail(TransactionModel transaction) {
@@ -607,13 +621,7 @@ public class HomePage extends AppCompatActivity {
 
     private void openCashbookSwitcher() {
         Intent intent = new Intent(this, CashbookSwitchActivity.class);
-
-        String idToPass = currentCashbookId;
-        if (idToPass == null && viewModel != null) {
-            idToPass = viewModel.getCurrentCashbookId();
-        }
-
-        intent.putExtra("current_cashbook_id", idToPass);
+        intent.putExtra("current_cashbook_id", currentCashbookId);
         cashbookSwitchLauncher.launch(intent);
     }
 
