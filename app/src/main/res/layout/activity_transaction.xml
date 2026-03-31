@@ -9,7 +9,6 @@
     android:fitsSystemWindows="true"
     tools:context=".TransactionActivity">
 
-    <!-- Bottom Navigation -->
     <include
         android:id="@+id/bottomNavCard"
         layout="@layout/layout_bottom_navigation"
@@ -17,11 +16,37 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true" />
 
-    <!-- Main Content Area -->
+    <LinearLayout
+        android:id="@+id/fixed_search_bar_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:orientation="vertical"
+        android:paddingTop="12dp"
+        android:paddingBottom="8dp"
+        android:elevation="4dp"
+        android:background="?attr/chk_backgroundColor">
+
+        <include
+            android:id="@+id/search_bar_layout"
+            layout="@layout/layout_search_bar"/>
+
+    </LinearLayout>
+
+    <com.facebook.shimmer.ShimmerFrameLayout
+        android:id="@+id/skeletonLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/bottomNavCard"
+        android:visibility="gone">
+        <include layout="@layout/layout_skeleton_transaction" />
+    </com.facebook.shimmer.ShimmerFrameLayout>
+
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/swipeRefreshLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_below="@id/fixed_search_bar_container"
         android:layout_above="@id/bottomNavCard">
 
         <androidx.core.widget.NestedScrollView
@@ -36,12 +61,6 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
-                <!-- Search & Filters -->
-                <include
-                    android:id="@+id/search_bar_layout"
-                    layout="@layout/layout_search_bar"/>
-
-                <!-- Summary Overview -->
                 <include
                     android:id="@+id/summary_cards_layout"
                     layout="@layout/layout_summary_cards"
@@ -51,7 +70,6 @@
                     android:layout_marginTop="8dp"
                     android:layout_marginBottom="16dp" />
 
-                <!-- Analytics Pie Chart -->
                 <include
                     android:id="@+id/pie_chart_layout"
                     layout="@layout/layout_pie_chart"
@@ -60,7 +78,6 @@
                     android:layout_marginHorizontal="16dp"
                     android:layout_marginBottom="16dp" />
 
-                <!-- Transaction Header & Quick Actions -->
                 <RelativeLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -96,7 +113,6 @@
                             android:textSize="14sp" />
                     </LinearLayout>
 
-                    <!-- Row Actions: All Toggle and Download -->
                     <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -141,8 +157,6 @@
                     </LinearLayout>
                 </RelativeLayout>
 
-                <!-- Transaction List Container -->
-                <!-- The RecyclerView inside this fragment will handle the date-wise headers -->
                 <FrameLayout
                     android:id="@+id/transaction_fragment_container"
                     android:layout_width="match_parent"

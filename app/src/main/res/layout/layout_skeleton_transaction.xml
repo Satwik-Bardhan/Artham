@@ -1,0 +1,983 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/chk_backgroundColor"
+    android:fitsSystemWindows="true">
+
+    <LinearLayout
+        android:id="@+id/skel_fixed_search_bar_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:background="?attr/chk_backgroundColor"
+        android:elevation="4dp"
+        android:orientation="vertical"
+        android:paddingTop="12dp"
+        android:paddingBottom="8dp">
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginHorizontal="12dp"
+            android:alpha="0.15"
+            android:background="@drawable/bg_rounded_square_soft"
+            android:backgroundTint="?attr/chk_textColorHint" />
+    </LinearLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/skel_fixed_search_bar_container"
+        android:clipToPadding="false"
+        android:fillViewport="true"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="16dp"
+                app:cardBackgroundColor="?attr/chk_surfaceColor"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="2dp"
+                app:strokeWidth="0dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="8dp">
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
+                        android:layout_marginBottom="8dp"
+                        android:alpha="0.15"
+                        android:background="@drawable/bg_rounded_square_soft"
+                        android:backgroundTint="?attr/chk_textColorHint" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
+                        android:layout_marginBottom="8dp"
+                        android:alpha="0.15"
+                        android:background="@drawable/bg_rounded_square_soft"
+                        android:backgroundTint="?attr/chk_textColorHint" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
+                        android:alpha="0.15"
+                        android:background="@drawable/bg_rounded_square_soft"
+                        android:backgroundTint="?attr/chk_textColorHint" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginBottom="16dp"
+                app:cardBackgroundColor="?attr/chk_surfaceColor"
+                app:cardCornerRadius="8dp"
+                app:cardElevation="2dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="8dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:padding="8dp">
+
+                        <View
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:alpha="0.2"
+                            android:background="@drawable/circle_shape"
+                            android:backgroundTint="?attr/chk_textColorHint" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:gravity="center"
+                            android:orientation="vertical">
+
+                            <View
+                                android:layout_width="160dp"
+                                android:layout_height="22dp"
+                                android:alpha="0.2"
+                                android:background="@drawable/bg_rounded_tag"
+                                android:backgroundTint="?attr/chk_textColorHint" />
+
+                            <View
+                                android:layout_width="120dp"
+                                android:layout_height="12dp"
+                                android:layout_marginTop="8dp"
+                                android:alpha="0.15"
+                                android:background="@drawable/bg_rounded_tag"
+                                android:backgroundTint="?attr/chk_textColorHint" />
+                        </LinearLayout>
+
+                        <View
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:alpha="0.2"
+                            android:background="@drawable/circle_shape"
+                            android:backgroundTint="?attr/chk_textColorHint" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="300dp"
+                        android:layout_marginTop="10dp"
+                        android:gravity="center">
+
+                        <View
+                            android:layout_width="260dp"
+                            android:layout_height="260dp"
+                            android:alpha="0.1"
+                            android:background="@drawable/circle_shape"
+                            android:backgroundTint="?attr/chk_textColorHint" />
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="100dp"
+                        android:layout_height="16dp"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_marginTop="20dp"
+                        android:layout_marginBottom="8dp"
+                        android:alpha="0.15"
+                        android:background="@drawable/bg_rounded_tag"
+                        android:backgroundTint="?attr/chk_textColorHint" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:background="?attr/chk_backgroundColor"
+                        android:orientation="horizontal"
+                        android:padding="12dp">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:gravity="center"
+                            android:orientation="vertical">
+
+                            <View
+                                android:layout_width="70dp"
+                                android:layout_height="12dp"
+                                android:alpha="0.15"
+                                android:background="@drawable/bg_rounded_tag"
+                                android:backgroundTint="?attr/chk_textColorHint" />
+
+                            <View
+                                android:layout_width="30dp"
+                                android:layout_height="18dp"
+                                android:layout_marginTop="6dp"
+                                android:alpha="0.2"
+                                android:background="@drawable/bg_rounded_tag"
+                                android:backgroundTint="?attr/chk_textColorHint" />
+                        </LinearLayout>
+
+                        <View
+                            android:layout_width="1dp"
+                            android:layout_height="match_parent"
+                            android:alpha="0.2"
+                            android:background="?attr/chk_textColorHint" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:gravity="center"
+                            android:orientation="vertical">
+
+                            <View
+                                android:layout_width="90dp"
+                                android:layout_height="12dp"
+                                android:alpha="0.15"
+                                android:background="@drawable/bg_rounded_tag"
+                                android:backgroundTint="?attr/chk_textColorHint" />
+
+                            <View
+                                android:layout_width="70dp"
+                                android:layout_height="18dp"
+                                android:layout_marginTop="6dp"
+                                android:alpha="0.2"
+                                android:background="@drawable/bg_rounded_tag"
+                                android:backgroundTint="?attr/chk_textColorHint" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingHorizontal="16dp"
+                android:paddingVertical="12dp">
+
+                <View
+                    android:layout_width="120dp"
+                    android:layout_height="18dp"
+                    android:layout_alignParentStart="true"
+                    android:layout_centerVertical="true"
+                    android:alpha="0.2"
+                    android:background="@drawable/bg_rounded_tag"
+                    android:backgroundTint="?attr/chk_textColorHint" />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:orientation="horizontal">
+
+                    <View
+                        android:layout_width="50dp"
+                        android:layout_height="32dp"
+                        android:layout_marginEnd="10dp"
+                        android:alpha="0.15"
+                        android:layout_gravity="center"
+                        android:background="@drawable/button_download_rounded"
+                        android:backgroundTint="?attr/chk_textColorHint" />
+
+                    <View
+                        android:layout_width="90dp"
+                        android:layout_height="40dp"
+                        android:alpha="0.15"
+                        android:background="@drawable/button_download_rounded"
+                        android:backgroundTint="?attr/chk_textColorHint" />
+                </LinearLayout>
+            </RelativeLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingBottom="40dp">
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="12dp"
+                    android:layout_marginVertical="6dp"
+                    app:cardBackgroundColor="?attr/chk_surfaceColor"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="0dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:minHeight="90dp"
+                        android:orientation="horizontal">
+
+                        <View
+                            android:layout_width="6dp"
+                            android:layout_height="match_parent"
+                            android:alpha="0.1"
+                            android:background="?attr/chk_textColorHint" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:padding="12dp">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginBottom="8dp"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal">
+
+                                <View
+                                    android:layout_width="0dp"
+                                    android:layout_height="16dp"
+                                    android:layout_marginEnd="16dp"
+                                    android:layout_weight="1"
+                                    android:alpha="0.2"
+                                    android:background="@drawable/bg_rounded_tag"
+                                    android:backgroundTint="?attr/chk_textColorHint" />
+
+                                <View
+                                    android:layout_width="60dp"
+                                    android:layout_height="16dp"
+                                    android:alpha="0.2"
+                                    android:background="@drawable/bg_rounded_tag"
+                                    android:backgroundTint="?attr/chk_textColorHint" />
+                            </LinearLayout>
+
+                            <View
+                                android:layout_width="match_parent"
+                                android:layout_height="12dp"
+                                android:layout_marginEnd="32dp"
+                                android:layout_marginBottom="4dp"
+                                android:alpha="0.15"
+                                android:background="@drawable/bg_rounded_tag"
+                                android:backgroundTint="?attr/chk_textColorHint" />
+
+                            <View
+                                android:layout_width="120dp"
+                                android:layout_height="12dp"
+                                android:layout_marginBottom="12dp"
+                                android:alpha="0.15"
+                                android:background="@drawable/bg_rounded_tag"
+                                android:backgroundTint="?attr/chk_textColorHint" />
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal">
+
+                                <View
+                                    android:layout_width="50dp"
+                                    android:layout_height="16dp"
+                                    android:layout_marginEnd="16dp"
+                                    android:alpha="0.15"
+                                    android:background="@drawable/bg_rounded_tag"
+                                    android:backgroundTint="?attr/chk_textColorHint" />
+
+                                <View
+                                    android:layout_width="14dp"
+                                    android:layout_height="14dp"
+                                    android:layout_marginEnd="4dp"
+                                    android:alpha="0.15"
+                                    android:background="@drawable/circle_shape"
+                                    android:backgroundTint="?attr/chk_textColorHint" />
+
+                                <View
+                                    android:layout_width="80dp"
+                                    android:layout_height="12dp"
+                                    android:alpha="0.15"
+                                    android:background="@drawable/bg_rounded_tag"
+                                    android:backgroundTint="?attr/chk_textColorHint" />
+                            </LinearLayout>
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:gravity="center_vertical"
+                            android:paddingEnd="12dp">
+
+                            <View
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:alpha="0.15"
+                                android:background="@drawable/circle_shape"
+                                android:backgroundTint="?attr/chk_textColorHint" />
+                        </LinearLayout>
+
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="12dp"
+                    android:layout_marginVertical="6dp"
+                    app:cardBackgroundColor="?attr/chk_surfaceColor"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="0dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:minHeight="90dp"
+                        android:orientation="horizontal">
+
+                        <View
+                            android:layout_width="6dp"
+                            android:layout_height="match_parent"
+                            android:alpha="0.1"
+                            android:background="?attr/chk_textColorHint" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:padding="12dp">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginBottom="8dp"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal">
+
+                                <View
+                                    android:layout_width="0dp"
+                                    android:layout_height="16dp"
+                                    android:layout_marginEnd="16dp"
+                                    android:layout_weight="1"
+                                    android:alpha="0.2"
+                                    android:background="@drawable/bg_rounded_tag"
+                                    android:backgroundTint="?attr/chk_textColorHint" />
+
+                                <View
+                                    android:layout_width="60dp"
+                                    android:layout_height="16dp"
+                                    android:alpha="0.2"
+                                    android:background="@drawable/bg_rounded_tag"
+                                    android:backgroundTint="?attr/chk_textColorHint" />
+                            </LinearLayout>
+
+                            <View
+                                android:layout_width="match_parent"
+                                android:layout_height="12dp"
+                                android:layout_marginEnd="32dp"
+                                android:layout_marginBottom="4dp"
+                                android:alpha="0.15"
+                                android:background="@drawable/bg_rounded_tag"
+                                android:backgroundTint="?attr/chk_textColorHint" />
+
+                            <View
+                                android:layout_width="120dp"
+                                android:layout_height="12dp"
+                                android:layout_marginBottom="12dp"
+                                android:alpha="0.15"
+                                android:background="@drawable/bg_rounded_tag"
+                                android:backgroundTint="?attr/chk_textColorHint" />
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal">
+
+                                <View
+                                    android:layout_width="50dp"
+                                    android:layout_height="16dp"
+                                    android:layout_marginEnd="16dp"
+                                    android:alpha="0.15"
+                                    android:background="@drawable/bg_rounded_tag"
+                                    android:backgroundTint="?attr/chk_textColorHint" />
+
+                                <View
+                                    android:layout_width="14dp"
+                                    android:layout_height="14dp"
+                                    android:layout_marginEnd="4dp"
+                                    android:alpha="0.15"
+                                    android:background="@drawable/circle_shape"
+                                    android:backgroundTint="?attr/chk_textColorHint" />
+
+                                <View
+                                    android:layout_width="80dp"
+                                    android:layout_height="12dp"
+                                    android:alpha="0.15"
+                                    android:background="@drawable/bg_rounded_tag"
+                                    android:backgroundTint="?attr/chk_textColorHint" />
+                            </LinearLayout>
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:gravity="center_vertical"
+                            android:paddingEnd="12dp">
+
+                            <View
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:alpha="0.15"
+                                android:background="@drawable/circle_shape"
+                                android:backgroundTint="?attr/chk_textColorHint" />
+                        </LinearLayout>
+
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="12dp"
+                    android:layout_marginVertical="6dp"
+                    app:cardBackgroundColor="?attr/chk_surfaceColor"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="0dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:minHeight="90dp"
+                        android:orientation="horizontal">
+
+                        <View
+                            android:layout_width="6dp"
+                            android:layout_height="match_parent"
+                            android:alpha="0.1"
+                            android:background="?attr/chk_textColorHint" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:padding="12dp">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginBottom="8dp"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal">
+
+                                <View
+                                    android:layout_width="0dp"
+                                    android:layout_height="16dp"
+                                    android:layout_marginEnd="16dp"
+                                    android:layout_weight="1"
+                                    android:alpha="0.2"
+                                    android:background="@drawable/bg_rounded_tag"
+                                    android:backgroundTint="?attr/chk_textColorHint" />
+
+                                <View
+                                    android:layout_width="60dp"
+                                    android:layout_height="16dp"
+                                    android:alpha="0.2"
+                                    android:background="@drawable/bg_rounded_tag"
+                                    android:backgroundTint="?attr/chk_textColorHint" />
+                            </LinearLayout>
+
+                            <View
+                                android:layout_width="match_parent"
+                                android:layout_height="12dp"
+                                android:layout_marginEnd="32dp"
+                                android:layout_marginBottom="4dp"
+                                android:alpha="0.15"
+                                android:background="@drawable/bg_rounded_tag"
+                                android:backgroundTint="?attr/chk_textColorHint" />
+
+                            <View
+                                android:layout_width="120dp"
+                                android:layout_height="12dp"
+                                android:layout_marginBottom="12dp"
+                                android:alpha="0.15"
+                                android:background="@drawable/bg_rounded_tag"
+                                android:backgroundTint="?attr/chk_textColorHint" />
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal">
+
+                                <View
+                                    android:layout_width="50dp"
+                                    android:layout_height="16dp"
+                                    android:layout_marginEnd="16dp"
+                                    android:alpha="0.15"
+                                    android:background="@drawable/bg_rounded_tag"
+                                    android:backgroundTint="?attr/chk_textColorHint" />
+
+                                <View
+                                    android:layout_width="14dp"
+                                    android:layout_height="14dp"
+                                    android:layout_marginEnd="4dp"
+                                    android:alpha="0.15"
+                                    android:background="@drawable/circle_shape"
+                                    android:backgroundTint="?attr/chk_textColorHint" />
+
+                                <View
+                                    android:layout_width="80dp"
+                                    android:layout_height="12dp"
+                                    android:alpha="0.15"
+                                    android:background="@drawable/bg_rounded_tag"
+                                    android:backgroundTint="?attr/chk_textColorHint" />
+                            </LinearLayout>
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:gravity="center_vertical"
+                            android:paddingEnd="12dp">
+
+                            <View
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:alpha="0.15"
+                                android:background="@drawable/circle_shape"
+                                android:backgroundTint="?attr/chk_textColorHint" />
+                        </LinearLayout>
+
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="12dp"
+                    android:layout_marginVertical="6dp"
+                    app:cardBackgroundColor="?attr/chk_surfaceColor"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="0dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:minHeight="90dp"
+                        android:orientation="horizontal">
+
+                        <View
+                            android:layout_width="6dp"
+                            android:layout_height="match_parent"
+                            android:alpha="0.1"
+                            android:background="?attr/chk_textColorHint" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:padding="12dp">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginBottom="8dp"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal">
+
+                                <View
+                                    android:layout_width="0dp"
+                                    android:layout_height="16dp"
+                                    android:layout_marginEnd="16dp"
+                                    android:layout_weight="1"
+                                    android:alpha="0.2"
+                                    android:background="@drawable/bg_rounded_tag"
+                                    android:backgroundTint="?attr/chk_textColorHint" />
+
+                                <View
+                                    android:layout_width="60dp"
+                                    android:layout_height="16dp"
+                                    android:alpha="0.2"
+                                    android:background="@drawable/bg_rounded_tag"
+                                    android:backgroundTint="?attr/chk_textColorHint" />
+                            </LinearLayout>
+
+                            <View
+                                android:layout_width="match_parent"
+                                android:layout_height="12dp"
+                                android:layout_marginEnd="32dp"
+                                android:layout_marginBottom="4dp"
+                                android:alpha="0.15"
+                                android:background="@drawable/bg_rounded_tag"
+                                android:backgroundTint="?attr/chk_textColorHint" />
+
+                            <View
+                                android:layout_width="120dp"
+                                android:layout_height="12dp"
+                                android:layout_marginBottom="12dp"
+                                android:alpha="0.15"
+                                android:background="@drawable/bg_rounded_tag"
+                                android:backgroundTint="?attr/chk_textColorHint" />
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal">
+
+                                <View
+                                    android:layout_width="50dp"
+                                    android:layout_height="16dp"
+                                    android:layout_marginEnd="16dp"
+                                    android:alpha="0.15"
+                                    android:background="@drawable/bg_rounded_tag"
+                                    android:backgroundTint="?attr/chk_textColorHint" />
+
+                                <View
+                                    android:layout_width="14dp"
+                                    android:layout_height="14dp"
+                                    android:layout_marginEnd="4dp"
+                                    android:alpha="0.15"
+                                    android:background="@drawable/circle_shape"
+                                    android:backgroundTint="?attr/chk_textColorHint" />
+
+                                <View
+                                    android:layout_width="80dp"
+                                    android:layout_height="12dp"
+                                    android:alpha="0.15"
+                                    android:background="@drawable/bg_rounded_tag"
+                                    android:backgroundTint="?attr/chk_textColorHint" />
+                            </LinearLayout>
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:gravity="center_vertical"
+                            android:paddingEnd="12dp">
+
+                            <View
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:alpha="0.15"
+                                android:background="@drawable/circle_shape"
+                                android:backgroundTint="?attr/chk_textColorHint" />
+                        </LinearLayout>
+
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="12dp"
+                    android:layout_marginVertical="6dp"
+                    app:cardBackgroundColor="?attr/chk_surfaceColor"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="0dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:minHeight="90dp"
+                        android:orientation="horizontal">
+
+                        <View
+                            android:layout_width="6dp"
+                            android:layout_height="match_parent"
+                            android:alpha="0.1"
+                            android:background="?attr/chk_textColorHint" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:padding="12dp">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginBottom="8dp"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal">
+
+                                <View
+                                    android:layout_width="0dp"
+                                    android:layout_height="16dp"
+                                    android:layout_marginEnd="16dp"
+                                    android:layout_weight="1"
+                                    android:alpha="0.2"
+                                    android:background="@drawable/bg_rounded_tag"
+                                    android:backgroundTint="?attr/chk_textColorHint" />
+
+                                <View
+                                    android:layout_width="60dp"
+                                    android:layout_height="16dp"
+                                    android:alpha="0.2"
+                                    android:background="@drawable/bg_rounded_tag"
+                                    android:backgroundTint="?attr/chk_textColorHint" />
+                            </LinearLayout>
+
+                            <View
+                                android:layout_width="match_parent"
+                                android:layout_height="12dp"
+                                android:layout_marginEnd="32dp"
+                                android:layout_marginBottom="4dp"
+                                android:alpha="0.15"
+                                android:background="@drawable/bg_rounded_tag"
+                                android:backgroundTint="?attr/chk_textColorHint" />
+
+                            <View
+                                android:layout_width="120dp"
+                                android:layout_height="12dp"
+                                android:layout_marginBottom="12dp"
+                                android:alpha="0.15"
+                                android:background="@drawable/bg_rounded_tag"
+                                android:backgroundTint="?attr/chk_textColorHint" />
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal">
+
+                                <View
+                                    android:layout_width="50dp"
+                                    android:layout_height="16dp"
+                                    android:layout_marginEnd="16dp"
+                                    android:alpha="0.15"
+                                    android:background="@drawable/bg_rounded_tag"
+                                    android:backgroundTint="?attr/chk_textColorHint" />
+
+                                <View
+                                    android:layout_width="14dp"
+                                    android:layout_height="14dp"
+                                    android:layout_marginEnd="4dp"
+                                    android:alpha="0.15"
+                                    android:background="@drawable/circle_shape"
+                                    android:backgroundTint="?attr/chk_textColorHint" />
+
+                                <View
+                                    android:layout_width="80dp"
+                                    android:layout_height="12dp"
+                                    android:alpha="0.15"
+                                    android:background="@drawable/bg_rounded_tag"
+                                    android:backgroundTint="?attr/chk_textColorHint" />
+                            </LinearLayout>
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:gravity="center_vertical"
+                            android:paddingEnd="12dp">
+
+                            <View
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:alpha="0.15"
+                                android:background="@drawable/circle_shape"
+                                android:backgroundTint="?attr/chk_textColorHint" />
+                        </LinearLayout>
+
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="12dp"
+                    android:layout_marginVertical="6dp"
+                    app:cardBackgroundColor="?attr/chk_surfaceColor"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="0dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:minHeight="90dp"
+                        android:orientation="horizontal">
+
+                        <View
+                            android:layout_width="6dp"
+                            android:layout_height="match_parent"
+                            android:alpha="0.1"
+                            android:background="?attr/chk_textColorHint" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:padding="12dp">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginBottom="8dp"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal">
+
+                                <View
+                                    android:layout_width="0dp"
+                                    android:layout_height="16dp"
+                                    android:layout_marginEnd="16dp"
+                                    android:layout_weight="1"
+                                    android:alpha="0.2"
+                                    android:background="@drawable/bg_rounded_tag"
+                                    android:backgroundTint="?attr/chk_textColorHint" />
+
+                                <View
+                                    android:layout_width="60dp"
+                                    android:layout_height="16dp"
+                                    android:alpha="0.2"
+                                    android:background="@drawable/bg_rounded_tag"
+                                    android:backgroundTint="?attr/chk_textColorHint" />
+                            </LinearLayout>
+
+                            <View
+                                android:layout_width="match_parent"
+                                android:layout_height="12dp"
+                                android:layout_marginEnd="32dp"
+                                android:layout_marginBottom="4dp"
+                                android:alpha="0.15"
+                                android:background="@drawable/bg_rounded_tag"
+                                android:backgroundTint="?attr/chk_textColorHint" />
+
+                            <View
+                                android:layout_width="120dp"
+                                android:layout_height="12dp"
+                                android:layout_marginBottom="12dp"
+                                android:alpha="0.15"
+                                android:background="@drawable/bg_rounded_tag"
+                                android:backgroundTint="?attr/chk_textColorHint" />
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal">
+
+                                <View
+                                    android:layout_width="50dp"
+                                    android:layout_height="16dp"
+                                    android:layout_marginEnd="16dp"
+                                    android:alpha="0.15"
+                                    android:background="@drawable/bg_rounded_tag"
+                                    android:backgroundTint="?attr/chk_textColorHint" />
+
+                                <View
+                                    android:layout_width="14dp"
+                                    android:layout_height="14dp"
+                                    android:layout_marginEnd="4dp"
+                                    android:alpha="0.15"
+                                    android:background="@drawable/circle_shape"
+                                    android:backgroundTint="?attr/chk_textColorHint" />
+
+                                <View
+                                    android:layout_width="80dp"
+                                    android:layout_height="12dp"
+                                    android:alpha="0.15"
+                                    android:background="@drawable/bg_rounded_tag"
+                                    android:backgroundTint="?attr/chk_textColorHint" />
+                            </LinearLayout>
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:gravity="center_vertical"
+                            android:paddingEnd="12dp">
+
+                            <View
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:alpha="0.15"
+                                android:background="@drawable/circle_shape"
+                                android:backgroundTint="?attr/chk_textColorHint" />
+                        </LinearLayout>
+
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+
+
+            </LinearLayout>
+
+        </LinearLayout>
+    </ScrollView>
+</RelativeLayout>

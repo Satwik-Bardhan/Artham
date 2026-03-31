@@ -45,7 +45,7 @@
 
             <include
                 android:id="@+id/homeSkeletonLayout"
-                layout="@layout/layout_home_skeleton"
+                layout="@layout/layout_skeleton_home"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:visibility="visible"

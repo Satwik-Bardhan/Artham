@@ -24,6 +24,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.facebook.shimmer.ShimmerFrameLayout;
 import com.github.mikephil.charting.animation.Easing;
 import com.github.mikephil.charting.formatter.ValueFormatter;
 import com.phynix.artham.adapters.TransactionAdapter;
@@ -61,10 +62,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-/**
- * Main Transaction Activity for Artham.
- * Manages transaction list, summary cards, and spending analytics.
- */
 public class TransactionActivity extends AppCompatActivity {
 
     private static final int STORAGE_PERMISSION_CODE = 101;
@@ -80,6 +77,8 @@ public class TransactionActivity extends AppCompatActivity {
     private LayoutPieChartBinding pieChartBinding;
     private LayoutSearchBarBinding searchBinding;
     private LayoutBottomNavigationBinding bottomNavBinding;
+
+    private View skeletonLayout; // Reference for the skeleton layout wrapper
 
     private TransactionItemFragment transactionFragment;
     private TransactionViewModel viewModel;
@@ -146,7 +145,6 @@ public class TransactionActivity extends AppCompatActivity {
         setupSwipeNavigation();
     }
 
-    // [FIX] Add lifecycle overrides to ensure the correct cashbook ID is used when returning or getting Single_Top intent
     @Override
     protected void onResume() {
         super.onResume();
@@ -218,6 +216,9 @@ public class TransactionActivity extends AppCompatActivity {
 
         binding.swipeRefreshLayout.setColorSchemeColors(getThemeColor(R.attr.chk_primary_blue));
 
+        // Initialize Skeleton View reference
+        skeletonLayout = findViewById(R.id.skeletonLayout);
+
         // Pie Chart Configuration
         pieChartBinding.pieChart.setUsePercentValues(true);
         pieChartBinding.pieChart.getDescription().setEnabled(false);
@@ -241,21 +242,50 @@ public class TransactionActivity extends AppCompatActivity {
 
     private void observeViewModel() {
         if (viewModel == null) return;
+
         viewModel.getFilteredTransactions().observe(this, transactions -> {
             this.allTransactions = transactions;
             displayDataForCurrentMonth();
             binding.swipeRefreshLayout.setRefreshing(false);
+            toggleSkeletonLoading(false); // Data loaded, hide skeleton
         });
+
         viewModel.getIsLoading().observe(this, isLoading -> {
+            toggleSkeletonLoading(isLoading); // Show/hide skeleton based on loading state
             if (transactionFragment != null) transactionFragment.showLoading(isLoading);
         });
+
         viewModel.getErrorMessage().observe(this, error -> {
             if (error != null) {
                 showSnackbar(error);
                 viewModel.clearError();
                 binding.swipeRefreshLayout.setRefreshing(false);
+                toggleSkeletonLoading(false); // Error occurred, hide skeleton
             }
         });
+    }
+
+    private void toggleSkeletonLoading(boolean show) {
+        if (skeletonLayout != null) {
+            skeletonLayout.setVisibility(show ? View.VISIBLE : View.GONE);
+
+            // Handle Shimmer Animation securely
+            if (skeletonLayout instanceof ShimmerFrameLayout) {
+                if (show) {
+                    ((ShimmerFrameLayout) skeletonLayout).startShimmer();
+                } else {
+                    ((ShimmerFrameLayout) skeletonLayout).stopShimmer();
+                }
+            }
+        }
+
+        // Hide primary content containers when loading
+        int contentVisibility = show ? View.GONE : View.VISIBLE;
+        binding.swipeRefreshLayout.setVisibility(contentVisibility);
+
+        if (binding.fixedSearchBarContainer != null) {
+            binding.fixedSearchBarContainer.setVisibility(contentVisibility);
+        }
     }
 
     private void displayDataForCurrentMonth() {
@@ -555,7 +585,6 @@ public class TransactionActivity extends AppCompatActivity {
                 showSnackbar("Switched to: " + newName);
                 getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit().putString("active_cashbook_id_" + currentUser.getUid(), newId).apply();
 
-                // [FIX] Update ViewModel dynamically rather than trying to recreate it
                 if (viewModel != null) {
                     viewModel.setCashbookId(currentCashbookId);
                 }
