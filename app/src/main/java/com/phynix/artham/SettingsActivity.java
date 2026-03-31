@@ -6,8 +6,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.util.TypedValue;
 import android.view.MotionEvent;
+import android.view.View;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -61,7 +61,6 @@ public class SettingsActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        // Apply Theme BEFORE super.onCreate()
         ThemeManager.applyActivityTheme(this);
 
         super.onCreate(savedInstanceState);
@@ -70,20 +69,26 @@ public class SettingsActivity extends AppCompatActivity {
 
         if (getSupportActionBar() != null) getSupportActionBar().hide();
 
-        // Track the current theme to detect changes when returning
         originalTheme = ThemeManager.getTheme(this);
 
-        // Init Firebase & State
         mAuth = FirebaseAuth.getInstance();
         currentUser = mAuth.getCurrentUser();
         mDatabase = FirebaseDatabase.getInstance().getReference();
-
-        currentCashbookId = getIntent().getStringExtra("cashbook_id");
 
         if (currentUser == null) {
             Toast.makeText(this, "Not logged in.", Toast.LENGTH_SHORT).show();
             logoutUser();
             return;
+        }
+
+        // --- CRITICAL FIX: Robust Cashbook ID Resolution ---
+        // 1. Try to get it from the intent
+        currentCashbookId = getIntent().getStringExtra("cashbook_id");
+
+        // 2. If the intent missed it (due to fast navigation), pull it instantly from local memory
+        if (currentCashbookId == null || currentCashbookId.trim().isEmpty()) {
+            SharedPreferences prefs = getSharedPreferences("AppPrefs", Context.MODE_PRIVATE);
+            currentCashbookId = prefs.getString("active_cashbook_id_" + currentUser.getUid(), "");
         }
 
         userRef = mDatabase.child("users").child(currentUser.getUid());
@@ -96,13 +101,10 @@ public class SettingsActivity extends AppCompatActivity {
     private void setupSwipeNavigation() {
         swipeListener = new SwipeListener(this) {
             @Override
-            public void onSwipeLeft() {
-                // Inverted Logic: No page to the left
-            }
+            public void onSwipeLeft() {}
 
             @Override
             public void onSwipeRight() {
-                // Inverted Logic: Navigate to Transaction Page (Right Page)
                 navigateToActivity(TransactionActivity.class, R.anim.slide_in_right, R.anim.slide_out_left);
             }
         };
@@ -119,60 +121,49 @@ public class SettingsActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        // Check if theme changed while we were away (e.g., in App Settings)
         String currentTheme = ThemeManager.getTheme(this);
         if (originalTheme != null && !originalTheme.equals(currentTheme)) {
-            recreate(); // Reload activity to apply new theme colors
+            recreate();
         }
     }
 
     private void setupClickListeners() {
         binding.backButton.setOnClickListener(v -> finish());
 
-        // Primary Settings Listeners
-        binding.primarySettingsLayout.profileSection.setOnClickListener(v ->
-                startActivity(new Intent(this, EditProfileActivity.class)));
-        binding.primarySettingsLayout.editButton.setOnClickListener(v ->
-                startActivity(new Intent(this, EditProfileActivity.class)));
+        if (binding.primarySettingsLayout != null) {
+            binding.primarySettingsLayout.profileSection.setOnClickListener(v ->
+                    startActivity(new Intent(this, EditProfileActivity.class)));
+            binding.primarySettingsLayout.editButton.setOnClickListener(v ->
+                    startActivity(new Intent(this, EditProfileActivity.class)));
+        }
 
-        // General Settings Listeners
-        binding.generalSettingsLayout.helpSupport.setOnClickListener(v ->
-                startActivity(new Intent(this, HelpSupportActivity.class)));
+        if (binding.generalSettingsLayout != null) {
+            binding.generalSettingsLayout.helpSupport.setOnClickListener(v ->
+                    startActivity(new Intent(this, HelpSupportActivity.class)));
+            binding.generalSettingsLayout.appSettings.setOnClickListener(v ->
+                    startActivity(new Intent(this, AppSettingsActivity.class)));
+            binding.generalSettingsLayout.yourProfile.setOnClickListener(v ->
+                    startActivity(new Intent(this, EditProfileActivity.class)));
+            binding.generalSettingsLayout.aboutCashFlow.setOnClickListener(v ->
+                    startActivity(new Intent(this, AboutActivity.class)));
+        }
 
-        binding.generalSettingsLayout.appSettings.setOnClickListener(v ->
-                startActivity(new Intent(this, AppSettingsActivity.class)));
-
-        binding.generalSettingsLayout.yourProfile.setOnClickListener(v ->
-                startActivity(new Intent(this, EditProfileActivity.class)));
-
-        binding.generalSettingsLayout.aboutCashFlow.setOnClickListener(v ->
-                startActivity(new Intent(this, AboutActivity.class)));
-
-        // Account Actions - Logout Only (Delete removed as requested)
-        binding.logoutSection.setOnClickListener(v -> showLogoutConfirmationDialog());
+        if (binding.logoutSection != null) {
+            binding.logoutSection.setOnClickListener(v -> showLogoutConfirmationDialog());
+        }
     }
 
     private void setupBottomNavigation() {
         binding.bottomNavigation.btnSettings.setSelected(true);
-
-        binding.bottomNavigation.btnHome.setOnClickListener(v -> {
-            navigateToActivity(HomePage.class, 0, 0);
-        });
-
-        binding.bottomNavigation.btnTransactions.setOnClickListener(v -> {
-            navigateToActivity(TransactionActivity.class, 0, 0);
-        });
-
+        binding.bottomNavigation.btnHome.setOnClickListener(v -> navigateToActivity(HomePage.class, 0, 0));
+        binding.bottomNavigation.btnTransactions.setOnClickListener(v -> navigateToActivity(TransactionActivity.class, 0, 0));
         binding.bottomNavigation.btnCashbookSwitch.setOnClickListener(v -> openCashbookSwitcher());
     }
 
-    // --- Centralized Navigation Method to Prevent Null Intent Crashes ---
+    // --- CRITICAL FIX: Unrestricted Navigation ---
     private void navigateToActivity(Class<?> targetActivityClass, int animIn, int animOut) {
-        if (currentCashbookId == null || currentCashbookId.trim().isEmpty()) {
-            showToast("Please select or create a cashbook first.");
-            return;
-        }
-
+        // We removed the block here! Even if data is still loading,
+        // you can seamlessly click away to the Home page or Transactions without getting trapped.
         Intent intent = new Intent(this, targetActivityClass);
         intent.putExtra("cashbook_id", currentCashbookId);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
@@ -207,15 +198,19 @@ public class SettingsActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
         if (currentUser != null) {
+            showSkeleton();
+
             startListeningForUserProfile();
-            if (currentCashbookId != null) {
+
+            if (currentCashbookId != null && !currentCashbookId.isEmpty()) {
                 startListeningForCashbookName(currentCashbookId);
-            } else {
+            } else if (binding.primarySettingsLayout != null) {
                 binding.primarySettingsLayout.activeCashbookName.setText("No Active Cashbook");
             }
 
-            // Simple & Private Location Badge
-            binding.primarySettingsLayout.dataLocation.setText("Google Cloud • Private Storage");
+            if (binding.primarySettingsLayout != null) {
+                binding.primarySettingsLayout.dataLocation.setText("Google Cloud • Private Storage");
+            }
         }
     }
 
@@ -223,6 +218,35 @@ public class SettingsActivity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
         removeFirebaseListeners();
+    }
+
+    private void showSkeleton() {
+        if (binding.profileShimmerLayout != null && binding.profileContentLayout != null) {
+            binding.profileShimmerLayout.setVisibility(View.VISIBLE);
+            binding.profileShimmerLayout.startShimmer();
+
+            binding.profileContentLayout.setVisibility(View.INVISIBLE);
+        }
+    }
+
+    private void hideSkeleton() {
+        if (binding.profileShimmerLayout != null && binding.profileContentLayout != null) {
+            // Decreased to 600ms for a snappier feel.
+            binding.profileShimmerLayout.postDelayed(() -> {
+
+                // CRITICAL SAFETY CHECK: If you click away while it's loading,
+                // this safely stops the animation without crashing or locking up the dead page.
+                if (isDestroyed() || isFinishing()) return;
+
+                if (binding.profileShimmerLayout != null) {
+                    binding.profileShimmerLayout.stopShimmer();
+                    binding.profileShimmerLayout.setVisibility(View.GONE);
+                }
+                if (binding.profileContentLayout != null) {
+                    binding.profileContentLayout.setVisibility(View.VISIBLE);
+                }
+            }, 600);
+        }
     }
 
     private void startListeningForUserProfile() {
@@ -236,54 +260,56 @@ public class SettingsActivity extends AppCompatActivity {
             @SuppressLint("SetTextI18n")
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if (!dataSnapshot.exists()) return;
+                if (!dataSnapshot.exists()) {
+                    hideSkeleton();
+                    return;
+                }
 
                 Users userProfile = dataSnapshot.getValue(Users.class);
 
-                // 1. Update User Name
-                if (userProfile != null && !TextUtils.isEmpty(userProfile.getUserName())) {
-                    binding.primarySettingsLayout.userName.setText(userProfile.getUserName());
-                } else if (currentUser.getDisplayName() != null && !currentUser.getDisplayName().isEmpty()) {
-                    binding.primarySettingsLayout.userName.setText(currentUser.getDisplayName());
-                } else {
-                    binding.primarySettingsLayout.userName.setText("Artham User");
+                if (binding.primarySettingsLayout != null) {
+                    if (userProfile != null && !TextUtils.isEmpty(userProfile.getUserName())) {
+                        binding.primarySettingsLayout.userName.setText(userProfile.getUserName());
+                    } else if (currentUser.getDisplayName() != null && !currentUser.getDisplayName().isEmpty()) {
+                        binding.primarySettingsLayout.userName.setText(currentUser.getDisplayName());
+                    } else {
+                        binding.primarySettingsLayout.userName.setText("Artham User");
+                    }
+
+                    if (userProfile != null && userProfile.getProfile() != null && !userProfile.getProfile().isEmpty()) {
+                        Glide.with(SettingsActivity.this)
+                                .load(userProfile.getProfile())
+                                .placeholder(R.drawable.ic_person_placeholder)
+                                .error(R.drawable.ic_person_placeholder)
+                                .circleCrop()
+                                .into(binding.primarySettingsLayout.profileImg);
+                    } else {
+                        binding.primarySettingsLayout.profileImg.setImageResource(R.drawable.ic_person_placeholder);
+                    }
+
+                    binding.primarySettingsLayout.uidText.setText("UID: " + currentUser.getUid().substring(0, 8) + "...");
+
+                    if (currentUser.getMetadata() != null) {
+                        SimpleDateFormat sdf = new SimpleDateFormat("dd MMM, yyyy", Locale.getDefault());
+                        String creationDate = sdf.format(new Date(currentUser.getMetadata().getCreationTimestamp()));
+                        binding.primarySettingsLayout.createdDate.setText("Created on " + creationDate);
+                    }
                 }
 
-                // 2. Update Profile Picture
-                // PERFECT FIX: Removed DiskCacheStrategy.NONE and skipMemoryCache.
-                // Since the Firebase download URL contains an updated token every time, Glide automatically busts the cache without flashing!
-                if (userProfile != null && userProfile.getProfile() != null && !userProfile.getProfile().isEmpty()) {
-                    Glide.with(SettingsActivity.this)
-                            .load(userProfile.getProfile())
-                            .placeholder(R.drawable.ic_person_placeholder)
-                            .error(R.drawable.ic_person_placeholder)
-                            .circleCrop()
-                            .into(binding.primarySettingsLayout.profileImg);
-                } else {
-                    binding.primarySettingsLayout.profileImg.setImageResource(R.drawable.ic_person_placeholder);
-                }
-
-                // 3. Update UID & Date
-                binding.primarySettingsLayout.uidText.setText("UID: " + currentUser.getUid().substring(0, 8) + "...");
-
-                if (currentUser.getMetadata() != null) {
-                    SimpleDateFormat sdf = new SimpleDateFormat("dd MMM, yyyy", Locale.getDefault());
-                    String creationDate = sdf.format(new Date(currentUser.getMetadata().getCreationTimestamp()));
-                    binding.primarySettingsLayout.createdDate.setText("Created on " + creationDate);
-                }
+                hideSkeleton();
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
+                hideSkeleton();
                 ErrorHandler.handleFirebaseError(SettingsActivity.this, databaseError);
             }
         };
-
         userRef.addValueEventListener(userProfileListener);
     }
 
     private void startListeningForCashbookName(String cashbookId) {
-        if (userRef == null) return;
+        if (userRef == null || cashbookId == null || cashbookId.isEmpty()) return;
 
         if (cashbookNameListener != null) {
             userRef.child("cashbooks").child(cashbookId).removeEventListener(cashbookNameListener);
@@ -293,7 +319,7 @@ public class SettingsActivity extends AppCompatActivity {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 CashbookModel cashbook = dataSnapshot.getValue(CashbookModel.class);
-                if (cashbook != null) {
+                if (cashbook != null && binding.primarySettingsLayout != null) {
                     binding.primarySettingsLayout.activeCashbookName.setText(cashbook.getName());
                 }
             }
@@ -333,7 +359,7 @@ public class SettingsActivity extends AppCompatActivity {
         if (userProfileListener != null) {
             userRef.removeEventListener(userProfileListener);
         }
-        if (cashbookNameListener != null && currentCashbookId != null) {
+        if (cashbookNameListener != null && currentCashbookId != null && !currentCashbookId.isEmpty()) {
             userRef.child("cashbooks").child(currentCashbookId).removeEventListener(cashbookNameListener);
         }
     }
@@ -341,9 +367,5 @@ public class SettingsActivity extends AppCompatActivity {
     private void saveActiveCashbookId(String cashbookId) {
         SharedPreferences prefs = getSharedPreferences("AppPrefs", Context.MODE_PRIVATE);
         prefs.edit().putString("active_cashbook_id_" + currentUser.getUid(), cashbookId).apply();
-    }
-
-    private int dpToPx(int dp) {
-        return Math.round(dp * getResources().getDisplayMetrics().density);
     }
 }

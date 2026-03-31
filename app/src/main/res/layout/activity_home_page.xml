@@ -30,6 +30,17 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true" />
 
+    <com.facebook.shimmer.ShimmerFrameLayout
+        android:id="@+id/skeletonLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/bottomNavCard"
+        android:visibility="gone">
+
+        <include layout="@layout/layout_skeleton_home" />
+    </com.facebook.shimmer.ShimmerFrameLayout>
+
+
     <androidx.core.widget.NestedScrollView
         android:id="@+id/mainScrollView"
         android:layout_width="match_parent"
