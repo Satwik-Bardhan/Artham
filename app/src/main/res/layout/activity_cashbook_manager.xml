@@ -82,8 +82,6 @@
                     app:tint="?attr/chk_textColorPrimary" />
             </LinearLayout>
 
-
-
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 
@@ -200,6 +198,19 @@
                     </LinearLayout>
                 </LinearLayout>
 
+                <LinearLayout
+                    android:id="@+id/loadingLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <include layout="@layout/item_skeleton_cashbook" />
+                    <include layout="@layout/item_skeleton_cashbook" />
+                    <include layout="@layout/item_skeleton_cashbook" />
+
+                </LinearLayout>
+
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/cashbookRecyclerView"
                     android:layout_width="match_parent"
@@ -266,41 +277,6 @@
             </LinearLayout>
         </androidx.core.widget.NestedScrollView>
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
-
-    <LinearLayout
-        android:id="@+id/loadingLayout"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="?attr/chk_backgroundColor"
-        android:gravity="center"
-        android:orientation="vertical"
-        android:visibility="gone"
-        android:alpha="0.95">
-
-        <ProgressBar
-            android:layout_width="60dp"
-            android:layout_height="60dp"
-            android:layout_marginBottom="24dp"
-            android:indeterminateTint="?attr/chk_balanceColor" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/loading_cashbooks"
-            android:textColor="?attr/chk_balanceColor"
-            android:fontFamily="@font/app_font"
-            android:textSize="16sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="@string/loading_wait_message"
-            android:fontFamily="@font/app_font"
-            android:textColor="?attr/chk_textColorSecondary"
-            android:textSize="14sp" />
-    </LinearLayout>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/quickAddFab"
