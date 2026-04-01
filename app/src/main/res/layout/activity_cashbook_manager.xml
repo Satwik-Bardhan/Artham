@@ -4,19 +4,19 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="true"
-    android:background="?attr/chk_backgroundColor">
+    android:background="?attr/chk_backgroundColor"
+    android:fitsSystemWindows="true">
 
     <androidx.cardview.widget.CardView
         android:id="@+id/headerCard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginHorizontal="16dp"
+        android:layout_alignParentTop="true"
+        android:layout_marginHorizontal="12dp"
         android:layout_marginBottom="8dp"
         app:cardBackgroundColor="?attr/chk_headerColor"
         app:cardCornerRadius="16dp"
-        app:cardElevation="4dp"
-        android:layout_alignParentTop="true">
+        app:cardElevation="4dp">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -42,8 +42,8 @@
                         android:layout_width="24dp"
                         android:layout_height="24dp"
                         android:layout_gravity="center"
-                        android:src="@drawable/ic_book"
                         android:contentDescription="@string/cashbook_icon"
+                        android:src="@drawable/ic_book"
                         app:tint="@android:color/white" />
                 </androidx.cardview.widget.CardView>
 
@@ -56,17 +56,17 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:fontFamily="@font/app_font"
                         android:text="@string/cashbook_manager_title"
                         android:textColor="?attr/chk_textColorPrimary"
                         android:textSize="20sp"
-                        android:fontFamily="@font/app_font"
                         android:textStyle="bold" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/switch_create_subtitle"
                         android:fontFamily="@font/app_font"
+                        android:text="@string/switch_create_subtitle"
                         android:textColor="?attr/chk_textColorSecondary"
                         android:textSize="12sp" />
                 </LinearLayout>
@@ -75,10 +75,10 @@
                     android:id="@+id/closeButton"
                     android:layout_width="40dp"
                     android:layout_height="40dp"
-                    android:padding="10dp"
-                    android:src="@drawable/ic_close"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:contentDescription="@string/close_button"
+                    android:padding="10dp"
+                    android:src="@drawable/ic_close"
                     app:tint="?attr/chk_textColorPrimary" />
             </LinearLayout>
 
@@ -103,7 +103,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:paddingHorizontal="16dp"
+                android:paddingHorizontal="12dp"
                 android:paddingTop="8dp"
                 android:paddingBottom="100dp">
 
@@ -115,8 +115,8 @@
                     app:cardBackgroundColor="?attr/chk_surfaceColor"
                     app:cardCornerRadius="8dp"
                     app:cardElevation="0dp"
-                    app:strokeWidth="1dp"
-                    app:strokeColor="?attr/chk_dividerHorizontal">
+                    app:strokeColor="?attr/chk_dividerHorizontal"
+                    app:strokeWidth="1dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -130,8 +130,8 @@
                             android:layout_width="20dp"
                             android:layout_height="20dp"
                             android:layout_marginEnd="12dp"
-                            android:src="@drawable/ic_search"
                             android:contentDescription="@string/search_icon"
+                            android:src="@drawable/ic_search"
                             app:tint="?attr/chk_textColorSecondary" />
 
                         <EditText
@@ -140,35 +140,37 @@
                             android:layout_height="match_parent"
                             android:layout_weight="1"
                             android:background="@null"
+                            android:fontFamily="@font/app_font"
                             android:hint="@string/search_cashbooks_hint"
                             android:inputType="text"
-                            android:fontFamily="@font/app_font"
                             android:textColor="?attr/chk_textColorPrimary"
                             android:textColorHint="?attr/chk_textColorHint"
                             android:textSize="14sp" />
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
+
                 <include
                     android:id="@+id/includedFilterLayout"
                     layout="@layout/layout_cashbook_filters"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content" />
+
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
-                    android:layout_marginBottom="16dp"
                     android:layout_marginHorizontal="4dp"
+                    android:layout_marginBottom="16dp"
+                    android:gravity="center_vertical"
                     android:orientation="horizontal">
 
                     <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
+                        android:fontFamily="@font/app_font"
                         android:text="@string/your_cashbooks_title"
                         android:textColor="?attr/chk_balanceColor"
                         android:textSize="15sp"
-                        android:fontFamily="@font/app_font"
                         android:textStyle="bold" />
 
                     <LinearLayout
@@ -185,16 +187,16 @@
                             android:layout_width="16dp"
                             android:layout_height="16dp"
                             android:src="@drawable/ic_sort"
-                            app:tint="?attr/chk_textColorSecondary"/>
+                            app:tint="?attr/chk_textColorSecondary" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="4dp"
+                            android:fontFamily="@font/app_font"
                             android:text="@string/sort_button"
                             android:textColor="?attr/chk_textColorSecondary"
-                            android:textSize="13sp"
-                            android:fontFamily="@font/app_font"/>
+                            android:textSize="13sp" />
                     </LinearLayout>
                 </LinearLayout>
 
@@ -205,9 +207,23 @@
                     android:orientation="vertical"
                     android:visibility="gone">
 
-                    <include layout="@layout/item_skeleton_cashbook" />
-                    <include layout="@layout/item_skeleton_cashbook" />
-                    <include layout="@layout/item_skeleton_cashbook" />
+                    <include
+                        layout="@layout/item_skeleton_cashbook"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginVertical="6dp" />
+
+                    <include
+                        layout="@layout/item_skeleton_cashbook"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginVertical="6dp" />
+
+                    <include
+                        layout="@layout/item_skeleton_cashbook"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginVertical="6dp" />
 
                 </LinearLayout>
 
@@ -216,10 +232,10 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:clipToPadding="false"
-                    android:overScrollMode="never"
                     android:nestedScrollingEnabled="false"
-                    tools:listitem="@layout/item_cashbook"
-                    tools:itemCount="3" />
+                    android:overScrollMode="never"
+                    tools:itemCount="3"
+                    tools:listitem="@layout/item_cashbook" />
 
                 <LinearLayout
                     android:id="@+id/emptyStateLayout"
@@ -234,17 +250,17 @@
                         android:layout_width="100dp"
                         android:layout_height="100dp"
                         android:layout_marginBottom="24dp"
-                        android:src="@drawable/ic_folder_open"
                         android:contentDescription="@string/empty_state_icon"
+                        android:src="@drawable/ic_folder_open"
                         app:tint="?attr/chk_textColorHint" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:fontFamily="@font/app_font"
                         android:text="@string/no_cashbooks_title"
                         android:textColor="?attr/chk_textColorPrimary"
                         android:textSize="18sp"
-                        android:fontFamily="@font/app_font"
                         android:textStyle="bold" />
 
                     <TextView
@@ -252,10 +268,10 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
                         android:layout_marginBottom="32dp"
+                        android:fontFamily="@font/app_font"
                         android:gravity="center"
                         android:text="@string/no_cashbooks_message"
                         android:textColor="?attr/chk_textColorSecondary"
-                        android:fontFamily="@font/app_font"
                         android:textSize="14sp" />
 
                     <Button
@@ -263,14 +279,14 @@
                         android:layout_width="wrap_content"
                         android:layout_height="56dp"
                         android:background="@drawable/button_primary"
+                        android:fontFamily="@font/app_font"
                         android:paddingStart="24dp"
                         android:paddingEnd="24dp"
                         android:text="@string/create_first_cashbook"
+                        android:textAllCaps="false"
                         android:textColor="@android:color/white"
                         android:textSize="14sp"
-                        android:fontFamily="@font/app_font"
                         android:textStyle="bold"
-                        android:textAllCaps="false"
                         app:backgroundTint="?attr/chk_secondary_green" />
                 </LinearLayout>
 
@@ -282,10 +298,10 @@
         android:id="@+id/quickAddFab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
-        android:layout_marginBottom="40dp"
+        android:layout_alignParentBottom="true"
         android:layout_marginEnd="24dp"
+        android:layout_marginBottom="40dp"
         android:contentDescription="@string/quick_add_cashbook"
         app:backgroundTint="?attr/chk_incomeColor"
         app:srcCompat="@drawable/ic_add"

@@ -655,7 +655,17 @@ public class CashbookSwitchActivity extends AppCompatActivity {
 
     private void showLoading(boolean show) {
         isLoading = show;
-        if (loadingLayout != null) loadingLayout.setVisibility(show ? View.VISIBLE : View.GONE);
+
+        // Show or hide the skeleton items container
+        if (loadingLayout != null) {
+            loadingLayout.setVisibility(show ? View.VISIBLE : View.GONE);
+        }
+
+        // Hide the actual list while loading, show it when done
+        if (cashbookRecyclerView != null) {
+            cashbookRecyclerView.setVisibility(show ? View.GONE : View.VISIBLE);
+        }
+
         if (show) {
             if (emptyStateLayout != null) emptyStateLayout.setVisibility(View.GONE);
         }
