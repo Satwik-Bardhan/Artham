@@ -22,7 +22,6 @@
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:orientation="vertical"
-        android:paddingTop="12dp"
         android:elevation="4dp"
         android:background="?attr/chk_backgroundColor">
 

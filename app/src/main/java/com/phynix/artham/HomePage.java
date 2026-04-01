@@ -36,6 +36,8 @@ import androidx.core.content.ContextCompat;
 import androidx.core.widget.NestedScrollView;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.facebook.shimmer.ShimmerFrameLayout;
+
 import com.bumptech.glide.Glide;
 import com.google.firebase.appdistribution.FirebaseAppDistribution;
 import com.google.firebase.appdistribution.InterruptionLevel;
@@ -103,6 +105,10 @@ public class HomePage extends AppCompatActivity {
     private ImageView btnYoutube, btnInstagram, btnWebsite, btnGmail, btnFacebook, btnWhatsapp;
 
     private boolean isBackVisible = false;
+
+    // Firebase user listener for cleanup
+    private DatabaseReference userRef;
+    private ValueEventListener userListener;
 
     // --- Launchers ---
 
@@ -370,9 +376,10 @@ public class HomePage extends AppCompatActivity {
         // Handle Skeleton Loading State Toggle
         viewModel.getIsLoading().observe(this, isLoading -> {
             if (isLoading) {
-                // Show Skeleton, Hide Real Data
-                if (binding.homeSkeletonLayout != null) {
-                    binding.homeSkeletonLayout.getRoot().setVisibility(View.VISIBLE); // .getRoot() needed for included layout
+                // Show Skeleton with Shimmer Animation, Hide Real Data
+                if (binding.homeShimmerLayout != null) {
+                    binding.homeShimmerLayout.setVisibility(View.VISIBLE);
+                    binding.homeShimmerLayout.startShimmer();
                 }
                 if (binding.homeContentLayout != null) {
                     binding.homeContentLayout.setVisibility(View.GONE);
@@ -381,9 +388,10 @@ public class HomePage extends AppCompatActivity {
                     binding.stickyActionButtonsContainer.setVisibility(View.GONE);
                 }
             } else {
-                // Hide Skeleton, Show Real Data
-                if (binding.homeSkeletonLayout != null) {
-                    binding.homeSkeletonLayout.getRoot().setVisibility(View.GONE);
+                // Hide Skeleton, Stop Shimmer, Show Real Data
+                if (binding.homeShimmerLayout != null) {
+                    binding.homeShimmerLayout.stopShimmer();
+                    binding.homeShimmerLayout.setVisibility(View.GONE);
                 }
                 if (binding.homeContentLayout != null) {
                     binding.homeContentLayout.setVisibility(View.VISIBLE);
@@ -511,15 +519,17 @@ public class HomePage extends AppCompatActivity {
         FirebaseUser fbUser = FirebaseAuth.getInstance().getCurrentUser();
         if (fbUser == null) return;
         updateUserUI(null);
-        DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("users").child(fbUser.getUid());
-        userRef.addValueEventListener(new ValueEventListener() {
+        userRef = FirebaseDatabase.getInstance().getReference("users").child(fbUser.getUid());
+        userListener = new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (isDestroyed() || isFinishing()) return;
                 Users user = snapshot.getValue(Users.class);
                 updateUserUI(user);
             }
             @Override public void onCancelled(@NonNull DatabaseError error) {}
-        });
+        };
+        userRef.addValueEventListener(userListener);
     }
 
     private void updateUserUI(Users user) {
@@ -542,7 +552,7 @@ public class HomePage extends AppCompatActivity {
         if (balanceCardUserName != null) balanceCardUserName.setText(name);
         if (balanceCardUidText != null) balanceCardUidText.setText("UID: " + uid);
         if (backUserName != null) backUserName.setText(name);
-        if (backProfileImage != null) {
+        if (backProfileImage != null && !isDestroyed() && !isFinishing()) {
             backProfileImage.clearColorFilter();
             Glide.with(this).load(photoUrl).placeholder(R.drawable.ic_person_placeholder).circleCrop().into(backProfileImage);
         }
@@ -725,6 +735,9 @@ public class HomePage extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        if (userRef != null && userListener != null) {
+            userRef.removeEventListener(userListener);
+        }
         binding = null;
     }
 

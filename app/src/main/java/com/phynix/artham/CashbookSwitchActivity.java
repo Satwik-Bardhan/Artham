@@ -27,6 +27,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import com.facebook.shimmer.ShimmerFrameLayout;
+
 import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -62,6 +64,7 @@ public class CashbookSwitchActivity extends AppCompatActivity {
     private SwipeRefreshLayout swipeRefreshLayout;
     private LinearLayout emptyStateLayout;
     private LinearLayout loadingLayout;
+    private ShimmerFrameLayout shimmerLoadingLayout;
     private View mainContent;
 
     // UI Components - Buttons
@@ -185,6 +188,7 @@ public class CashbookSwitchActivity extends AppCompatActivity {
         swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
         emptyStateLayout = findViewById(R.id.emptyStateLayout);
         loadingLayout = findViewById(R.id.loadingLayout);
+        shimmerLoadingLayout = findViewById(R.id.shimmerLoadingLayout);
 
         mainContent = cashbookRecyclerView;
 
@@ -656,9 +660,14 @@ public class CashbookSwitchActivity extends AppCompatActivity {
     private void showLoading(boolean show) {
         isLoading = show;
 
-        // Show or hide the skeleton items container
-        if (loadingLayout != null) {
-            loadingLayout.setVisibility(show ? View.VISIBLE : View.GONE);
+        // Show or hide the shimmer skeleton container
+        if (shimmerLoadingLayout != null) {
+            shimmerLoadingLayout.setVisibility(show ? View.VISIBLE : View.GONE);
+            if (show) {
+                shimmerLoadingLayout.startShimmer();
+            } else {
+                shimmerLoadingLayout.stopShimmer();
+            }
         }
 
         // Hide the actual list while loading, show it when done

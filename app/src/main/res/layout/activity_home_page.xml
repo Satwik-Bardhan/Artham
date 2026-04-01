@@ -54,13 +54,20 @@
             android:layout_height="wrap_content"
             android:paddingHorizontal="12dp">
 
-            <include
-                android:id="@+id/homeSkeletonLayout"
-                layout="@layout/layout_skeleton_home"
+            <com.facebook.shimmer.ShimmerFrameLayout
+                android:id="@+id/homeShimmerLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                app:shimmer_auto_start="true"
                 android:visibility="visible"
-                tools:visibility="gone" />
+                tools:visibility="gone">
+
+                <include
+                    android:id="@+id/homeSkeletonLayout"
+                    layout="@layout/layout_skeleton_home"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+            </com.facebook.shimmer.ShimmerFrameLayout>
 
             <LinearLayout
                 android:id="@+id/homeContentLayout"

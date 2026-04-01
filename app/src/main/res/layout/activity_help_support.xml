@@ -11,14 +11,16 @@
         android:id="@+id/headerCard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
         app:cardBackgroundColor="?attr/chk_headerColor"
-        app:cardCornerRadius="0dp"
+        app:cardCornerRadius="8dp"
         app:cardElevation="4dp">
 
         <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:paddingHorizontal="16dp">
+            android:layout_height="wrap_content"
+            android:padding="16dp">
 
             <ImageView
                 android:id="@+id/backButton"
@@ -26,21 +28,38 @@
                 android:layout_height="32dp"
                 android:layout_centerVertical="true"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Back"
-                android:src="@drawable/ic_arrow_left"
                 android:clickable="true"
                 android:focusable="true"
+                android:contentDescription="Back"
+                android:src="@drawable/ic_arrow_left"
                 app:tint="?attr/chk_textColorPrimary" />
 
-            <TextView
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
-                android:text="Help &amp; Support"
-                android:fontFamily="@font/app_font"
-                android:textColor="?attr/chk_textColorPrimary"
-                android:textSize="20sp"
-                android:textStyle="bold" />
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/headerTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/app_font"
+                    android:text="Help &amp; Support"
+                    android:textColor="?attr/chk_textColorPrimary"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/headerSubtitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/app_font"
+                    android:text="Get assistance"
+                    android:textColor="?attr/chk_textColorSecondary"
+                    android:textSize="12sp" />
+            </LinearLayout>
         </RelativeLayout>
     </androidx.cardview.widget.CardView>
 

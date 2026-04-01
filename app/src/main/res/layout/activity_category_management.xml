@@ -7,35 +7,61 @@
     android:background="?attr/chk_backgroundColor"
     android:fitsSystemWindows="true">
 
-    <RelativeLayout
+    <androidx.cardview.widget.CardView
         android:id="@+id/headerLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="?attr/chk_headerColor"
-        android:padding="16dp">
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        app:cardBackgroundColor="?attr/chk_headerColor"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="4dp">
 
-        <ImageView
-            android:id="@+id/backButton"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:layout_centerVertical="true"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@drawable/ic_arrow_left"
-            app:tint="?attr/chk_textColorPrimary"
-            android:contentDescription="Back" />
-
-        <TextView
-            android:layout_width="wrap_content"
+        <RelativeLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_marginStart="16dp"
-            android:layout_toEndOf="@id/backButton"
-            android:fontFamily="@font/app_font"
-            android:text="Manage Categories"
-            android:textColor="?attr/chk_textColorPrimary"
-            android:textSize="20sp"
-            android:textStyle="bold" />
-    </RelativeLayout>
+            android:padding="16dp">
+
+            <ImageView
+                android:id="@+id/backButton"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_centerVertical="true"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:focusable="true"
+                android:src="@drawable/ic_arrow_left"
+                app:tint="?attr/chk_textColorPrimary"
+                android:contentDescription="Back" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/headerTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/app_font"
+                    android:text="Manage Categories"
+                    android:textColor="?attr/chk_textColorPrimary"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/headerSubtitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/app_font"
+                    android:text="Add or edit categories"
+                    android:textColor="?attr/chk_textColorSecondary"
+                    android:textSize="12sp" />
+            </LinearLayout>
+        </RelativeLayout>
+    </androidx.cardview.widget.CardView>
 
     <LinearLayout
         android:id="@+id/searchSortLayout"

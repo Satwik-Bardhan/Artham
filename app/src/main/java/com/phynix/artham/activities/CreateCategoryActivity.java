@@ -85,7 +85,7 @@ public class CreateCategoryActivity extends AppCompatActivity {
 
     private void initViews() {
         backButton = findViewById(R.id.backButton);
-        titleText = findViewById(R.id.titleText);
+        titleText = findViewById(R.id.headerTitle);
         categoryNameInput = findViewById(R.id.categoryNameInput);
         colorPickerView = findViewById(R.id.colorPickerView);
         alphaSlideBar = findViewById(R.id.alphaSlideBar);

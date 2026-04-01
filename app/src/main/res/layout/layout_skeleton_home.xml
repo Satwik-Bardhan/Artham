@@ -3,10 +3,10 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginHorizontal="12dp"
     android:orientation="vertical"
     android:paddingBottom="20dp">
 
+    <!-- Section 1: User Box Card (matches userBoxCard - headerColor, 8dp corner, 2dp elev) -->
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -16,7 +16,7 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="68.5dp"
+            android:layout_height="wrap_content"
             android:gravity="center_vertical"
             android:orientation="horizontal"
             android:padding="10dp">
@@ -43,9 +43,9 @@
                     android:backgroundTint="?attr/chk_textColorHint" />
 
                 <View
-                    android:layout_width="90dp"
-                    android:layout_height="12dp"
-                    android:layout_marginTop="6dp"
+                    android:layout_width="170dp"
+                    android:layout_height="13dp"
+                    android:layout_marginTop="2dp"
                     android:alpha="0.1"
                     android:background="@drawable/bg_rounded_tag"
                     android:backgroundTint="?attr/chk_textColorHint" />
@@ -53,13 +53,14 @@
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 
+    <!-- Section 2: Balance Card (matches component_balance_card - 10dp corner, 2dp elev, marginTop=12dp) -->
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
         app:cardBackgroundColor="?attr/chk_surfaceColor"
-        app:cardCornerRadius="12dp"
-        app:cardElevation="0dp">
+        app:cardCornerRadius="10dp"
+        app:cardElevation="2dp">
 
         <RelativeLayout
             android:layout_width="match_parent"
@@ -114,9 +115,9 @@
             <LinearLayout
                 android:id="@+id/skelInOutSection"
                 android:layout_width="match_parent"
-                android:layout_height="35dp"
+                android:layout_height="wrap_content"
                 android:layout_below="@id/skelBalanceSection"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="10dp"
                 android:gravity="center"
                 android:orientation="horizontal">
 
@@ -137,7 +138,7 @@
                     <View
                         android:layout_width="80dp"
                         android:layout_height="18dp"
-                        android:layout_marginTop="8dp"
+                        android:layout_marginTop="4dp"
                         android:alpha="0.15"
                         android:background="@drawable/bg_rounded_tag"
                         android:backgroundTint="?attr/chk_textColorHint" />
@@ -166,7 +167,7 @@
                     <View
                         android:layout_width="80dp"
                         android:layout_height="18dp"
-                        android:layout_marginTop="8dp"
+                        android:layout_marginTop="4dp"
                         android:alpha="0.15"
                         android:background="@drawable/bg_rounded_tag"
                         android:backgroundTint="?attr/chk_textColorHint" />
@@ -179,7 +180,7 @@
                 android:layout_height="12dp"
                 android:layout_below="@id/skelInOutSection"
                 android:layout_centerHorizontal="true"
-                android:layout_marginTop="30dp"
+                android:layout_marginTop="15dp"
                 android:alpha="0.1"
                 android:background="@drawable/bg_rounded_tag"
                 android:backgroundTint="?attr/chk_textColorHint" />
@@ -196,37 +197,53 @@
         </RelativeLayout>
     </androidx.cardview.widget.CardView>
 
+    <!-- Section 3: Action Buttons (matches layout_home_action_buttons - CardView wrappers, 12dp corner, 4dp elev) -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
         android:orientation="horizontal"
         android:paddingHorizontal="12dp"
-        android:weightSum="2">
+        android:paddingVertical="8dp">
 
-        <View
+        <androidx.cardview.widget.CardView
             android:layout_width="0dp"
-            android:layout_height="60dp"
+            android:layout_height="wrap_content"
             android:layout_marginEnd="8dp"
             android:layout_weight="1"
-            android:alpha="0.1"
-            android:background="@drawable/bg_rounded_square_soft"
-            android:backgroundTint="?attr/chk_textColorHint" />
+            app:cardCornerRadius="12dp"
+            app:cardElevation="4dp">
 
-        <View
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:alpha="0.1"
+                android:background="@drawable/bg_rounded_square_soft"
+                android:backgroundTint="?attr/chk_textColorHint" />
+        </androidx.cardview.widget.CardView>
+
+        <androidx.cardview.widget.CardView
             android:layout_width="0dp"
-            android:layout_height="60dp"
+            android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_weight="1"
-            android:alpha="0.1"
-            android:background="@drawable/bg_rounded_square_soft"
-            android:backgroundTint="?attr/chk_textColorHint" />
+            app:cardCornerRadius="12dp"
+            app:cardElevation="4dp">
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:alpha="0.1"
+                android:background="@drawable/bg_rounded_square_soft"
+                android:backgroundTint="?attr/chk_textColorHint" />
+        </androidx.cardview.widget.CardView>
     </LinearLayout>
 
+    <!-- Section 4: Daily Summary (matches layout_daily_summary_header - marginTop=12dp, marginH=4dp, 12dp corner, 1dp stroke) -->
     <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_marginHorizontal="4dp"
+        android:layout_marginTop="12dp"
         android:layout_marginBottom="8dp"
         app:cardBackgroundColor="?attr/chk_surfaceColor"
         app:cardCornerRadius="12dp"
@@ -327,21 +344,23 @@
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 
+    <!-- Section 5: Transaction Table Card (matches transactionListCard - surfaceColor, 12dp corner, 2dp elev) -->
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:cardBackgroundColor="?attr/chk_surfaceColor"
         app:cardCornerRadius="12dp"
-        app:cardElevation="0dp">
+        app:cardElevation="2dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
+            <!-- Header row (weight 2:1:1:1, padding=12dp) -->
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="70dp"
+                android:layout_height="wrap_content"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
                 android:padding="12dp">
@@ -361,7 +380,6 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:gravity="center">
-
                     <View
                         android:layout_width="36dp"
                         android:layout_height="10dp"
@@ -375,7 +393,6 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:gravity="center">
-
                     <View
                         android:layout_width="24dp"
                         android:layout_height="10dp"
@@ -389,7 +406,6 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:gravity="center">
-
                     <View
                         android:layout_width="24dp"
                         android:layout_height="10dp"
@@ -405,9 +421,10 @@
                 android:alpha="0.1"
                 android:background="?attr/chk_textColorHint" />
 
+            <!-- Transaction row 1 -->
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="70dp"
+                android:layout_height="wrap_content"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
                 android:padding="12dp">
@@ -427,7 +444,6 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:gravity="center">
-
                     <View
                         android:layout_width="36dp"
                         android:layout_height="10dp"
@@ -441,7 +457,6 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:gravity="center">
-
                     <View
                         android:layout_width="24dp"
                         android:layout_height="10dp"
@@ -455,7 +470,6 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:gravity="center">
-
                     <View
                         android:layout_width="24dp"
                         android:layout_height="10dp"
@@ -471,9 +485,10 @@
                 android:alpha="0.1"
                 android:background="?attr/chk_textColorHint" />
 
+            <!-- Transaction row 2 -->
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="70dp"
+                android:layout_height="wrap_content"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
                 android:padding="12dp">
@@ -493,7 +508,6 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:gravity="center">
-
                     <View
                         android:layout_width="36dp"
                         android:layout_height="10dp"
@@ -507,7 +521,6 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:gravity="center">
-
                     <View
                         android:layout_width="24dp"
                         android:layout_height="10dp"
@@ -521,7 +534,70 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:gravity="center">
+                    <View
+                        android:layout_width="24dp"
+                        android:layout_height="10dp"
+                        android:alpha="0.15"
+                        android:background="@drawable/bg_rounded_tag"
+                        android:backgroundTint="?attr/chk_textColorHint" />
+                </LinearLayout>
+            </LinearLayout>
 
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:alpha="0.1"
+                android:background="?attr/chk_textColorHint" />
+
+            <!-- Transaction row 3 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:padding="12dp">
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="14dp"
+                    android:layout_marginStart="4dp"
+                    android:layout_marginEnd="16dp"
+                    android:layout_weight="2"
+                    android:alpha="0.15"
+                    android:background="@drawable/bg_rounded_tag"
+                    android:backgroundTint="?attr/chk_textColorHint" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center">
+                    <View
+                        android:layout_width="36dp"
+                        android:layout_height="10dp"
+                        android:alpha="0.15"
+                        android:background="@drawable/bg_rounded_tag"
+                        android:backgroundTint="?attr/chk_textColorHint" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center">
+                    <View
+                        android:layout_width="24dp"
+                        android:layout_height="10dp"
+                        android:alpha="0.15"
+                        android:background="@drawable/bg_rounded_tag"
+                        android:backgroundTint="?attr/chk_textColorHint" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center">
                     <View
                         android:layout_width="24dp"
                         android:layout_height="10dp"
