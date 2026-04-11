@@ -260,6 +260,8 @@ public class CashbookSwitchActivity extends AppCompatActivity {
                     currentFilter = "recent";
                 } else if (checkedId == R.id.chipFavorites) {
                     currentFilter = "favorites";
+                } else if (checkedId == R.id.chipInactive) {
+                    currentFilter = "inactive";
                 }
                 applyFiltersAndSort();
             }
@@ -596,6 +598,9 @@ public class CashbookSwitchActivity extends AppCompatActivity {
                 break;
             case "favorites":
                 filteredList = searchResults.stream().filter(CashbookModel::isFavorite).collect(Collectors.toList());
+                break;
+            case "inactive":
+                filteredList = searchResults.stream().filter(c -> !c.isActive()).collect(Collectors.toList());
                 break;
             case "recent":
                 filteredList = new ArrayList<>(searchResults);

@@ -91,6 +91,7 @@
     <string name="chip_active">Active</string>
     <string name="chip_recent">Recent</string>
     <string name="chip_favorites">Favorites</string>
+    <string name="chip_inactive">Inactive</string>
     <string name="status_current">CURRENT</string>
     <string name="status_active">ACTIVE</string>
     <string name="status_inactive">INACTIVE</string>

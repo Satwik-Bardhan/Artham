@@ -9,7 +9,7 @@ plugins {
 
 android {
     namespace = "com.phynix.artham"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.phynix.artham"
@@ -57,6 +57,7 @@ android {
     buildFeatures {
         viewBinding = true
     }
+    compileSdkMinor = 1
 }
 
 dependencies {
