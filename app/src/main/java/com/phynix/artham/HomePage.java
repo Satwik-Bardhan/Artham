@@ -175,6 +175,9 @@ public class HomePage extends AppCompatActivity {
             return;
         }
 
+        // Initialize category cache so user-created category icons/colors are used everywhere
+        com.phynix.artham.utils.CategoryColorUtil.initialize();
+
         // READ THE SELECTION SECURELY ON STARTUP
         SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         String intentId = getIntent().getStringExtra(Constants.EXTRA_CASHBOOK_ID);

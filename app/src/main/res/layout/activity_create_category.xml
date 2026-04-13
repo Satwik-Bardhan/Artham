@@ -178,20 +178,41 @@
                         android:background="@drawable/circle_shape" />
 
                     <LinearLayout
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
+                        android:layout_weight="1"
                         android:layout_marginStart="16dp"
                         android:orientation="vertical">
 
-                        <TextView
-                            android:id="@+id/colorHexText"
+                        <LinearLayout
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:fontFamily="@font/app_font"
-                            android:text="#FFFFFFFF"
-                            android:textColor="?attr/chk_textColorPrimary"
-                            android:textSize="16sp"
-                            android:textStyle="bold" />
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical">
+
+                            <TextView
+                                android:id="@+id/colorHexText"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="@font/app_font"
+                                android:text="#FFFFFFFF"
+                                android:textColor="?attr/chk_textColorPrimary"
+                                android:textSize="16sp"
+                                android:textStyle="bold" />
+
+                            <ImageView
+                                android:id="@+id/editHexButton"
+                                android:layout_width="28dp"
+                                android:layout_height="28dp"
+                                android:layout_marginStart="8dp"
+                                android:padding="4dp"
+                                android:src="@drawable/ic_edit"
+                                android:background="?attr/selectableItemBackgroundBorderless"
+                                android:clickable="true"
+                                android:focusable="true"
+                                app:tint="?attr/chk_primary_blue"
+                                android:contentDescription="Edit hex color" />
+                        </LinearLayout>
 
                         <TextView
                             android:layout_width="wrap_content"
@@ -216,12 +237,11 @@
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/iconsRecyclerView"
                 android:layout_width="match_parent"
-                android:layout_height="220dp"
+                android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
                 android:layout_marginBottom="80dp"
-                android:orientation="horizontal"
-                app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
-                app:spanCount="4"
+                android:clipToPadding="false"
+                android:paddingHorizontal="4dp"
                 tools:listitem="@layout/item_icon_select" />
 
         </LinearLayout>

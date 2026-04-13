@@ -3,12 +3,18 @@ package com.phynix.artham.activities;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.text.InputFilter;
+import android.text.InputType;
+import android.view.Gravity;
 import android.view.View;
+import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -44,6 +50,7 @@ public class CreateCategoryActivity extends AppCompatActivity {
     private TextView colorHexText;
     private RecyclerView iconsRecyclerView;
     private MaterialButton saveButton;
+    private ImageView editHexButton;
 
     private DatabaseReference categoryRef;
     private String categoryId = null; // Null means create new, otherwise edit existing
@@ -93,9 +100,15 @@ public class CreateCategoryActivity extends AppCompatActivity {
         colorHexText = findViewById(R.id.colorHexText);
         iconsRecyclerView = findViewById(R.id.iconsRecyclerView);
         saveButton = findViewById(R.id.saveButton);
+        editHexButton = findViewById(R.id.editHexButton);
 
         // Attach alpha slider to color picker
         colorPickerView.attachAlphaSlider(alphaSlideBar);
+
+        // Setup manual hex code edit button
+        if (editHexButton != null) {
+            editHexButton.setOnClickListener(v -> showHexInputDialog());
+        }
     }
 
     private void setupColorPicker() {
@@ -166,8 +179,9 @@ public class CreateCategoryActivity extends AppCompatActivity {
 
         iconAdapter = new CategoryIconAdapter(availableIcons, iconResId -> selectedIconResId = iconResId);
 
-        // Use GridLayoutManager with 5 columns to match the updated XML layout
-        iconsRecyclerView.setLayoutManager(new GridLayoutManager(this, 5));
+        // Use horizontal GridLayoutManager with 2 rows for left-right scrolling
+        GridLayoutManager gridLayoutManager = new GridLayoutManager(this, 2, GridLayoutManager.HORIZONTAL, false);
+        iconsRecyclerView.setLayoutManager(gridLayoutManager);
         iconsRecyclerView.setAdapter(iconAdapter);
     }
 
@@ -255,5 +269,49 @@ public class CreateCategoryActivity extends AppCompatActivity {
 
     private void showError(String message) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+
+    private void showHexInputDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Enter Hex Color Code");
+
+        // Create input field
+        final EditText hexInput = new EditText(this);
+        hexInput.setInputType(InputType.TYPE_CLASS_TEXT);
+        hexInput.setHint("e.g. #FF5252");
+        hexInput.setText(selectedHexColor);
+        hexInput.setFilters(new InputFilter[]{new InputFilter.LengthFilter(9)}); // Max #AARRGGBB
+        hexInput.setSelection(hexInput.getText().length());
+        hexInput.setTextColor(colorHexText.getCurrentTextColor());
+
+        // Wrap in a FrameLayout for padding
+        FrameLayout container = new FrameLayout(this);
+        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.WRAP_CONTENT);
+        int margin = (int) (20 * getResources().getDisplayMetrics().density);
+        params.setMargins(margin, margin / 2, margin, 0);
+        hexInput.setLayoutParams(params);
+        container.addView(hexInput);
+
+        builder.setView(container);
+
+        builder.setPositiveButton("Apply", (dialog, which) -> {
+            String hex = hexInput.getText().toString().trim();
+            if (!hex.startsWith("#")) {
+                hex = "#" + hex;
+            }
+            try {
+                int color = Color.parseColor(hex);
+                selectedHexColor = hex;
+                colorHexText.setText(selectedHexColor);
+                colorPreview.setBackgroundTintList(ColorStateList.valueOf(color));
+            } catch (Exception e) {
+                Toast.makeText(this, "Invalid hex color code", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        builder.setNegativeButton("Cancel", null);
+        builder.show();
     }
 }
