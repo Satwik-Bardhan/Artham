@@ -2,6 +2,7 @@ package com.phynix.artham;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
@@ -65,6 +66,7 @@ public class ExpenseAnalyticsActivity extends AppCompatActivity {
     private TextView totalExpenseValue;
     private ProgressBar loadingProgressBar;
     private LinearLayout contentLayout;
+    private String currentMonthLabel = "";
 
     // Data
     private List<TransactionModel> allTransactions = new ArrayList<>();
@@ -156,8 +158,21 @@ public class ExpenseAnalyticsActivity extends AppCompatActivity {
         monthlyCardsRecyclerView.setAdapter(monthlyAdapter);
 
         detailedLegendRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        legendAdapter = new LegendAdapter(new ArrayList<>());
+        legendAdapter = new LegendAdapter(new ArrayList<>(), this::onCategoryClicked);
         detailedLegendRecyclerView.setAdapter(legendAdapter);
+    }
+
+    private void onCategoryClicked(LegendItem item) {
+        Intent intent = new Intent(this, CategoryDetailActivity.class);
+        intent.putExtra(CategoryDetailActivity.EXTRA_CATEGORY_NAME, item.category);
+        intent.putExtra(CategoryDetailActivity.EXTRA_CATEGORY_AMOUNT, item.amount);
+        intent.putExtra(CategoryDetailActivity.EXTRA_CATEGORY_PERCENTAGE, item.percentage);
+        intent.putExtra(CategoryDetailActivity.EXTRA_CATEGORY_COLOR, item.color);
+        intent.putExtra(CategoryDetailActivity.EXTRA_CATEGORY_ICON_RES_ID, item.iconResId);
+        intent.putExtra(CategoryDetailActivity.EXTRA_MONTH_LABEL, currentMonthLabel);
+        intent.putExtra(CategoryDetailActivity.EXTRA_TRANSACTIONS, item.transactions);
+        intent.putExtra(CategoryDetailActivity.EXTRA_CASHBOOK_ID, cashbookId);
+        startActivity(intent);
     }
 
     private void loadCategoriesAndTransactions() {
@@ -280,11 +295,30 @@ public class ExpenseAnalyticsActivity extends AppCompatActivity {
     }
 
     private void updatePieChartForMonth(MonthlyExpense monthlyExpense) {
+        // Format and store month label for category detail navigation
+        try {
+            java.util.Date date = new SimpleDateFormat("yyyy-MM", Locale.US).parse(monthlyExpense.getMonth());
+            currentMonthLabel = new SimpleDateFormat("MMMM yyyy", Locale.US).format(date);
+        } catch (ParseException e) {
+            currentMonthLabel = monthlyExpense.getMonth();
+        }
+
         if (totalExpenseValue != null) {
             totalExpenseValue.setText("₹" + String.format(Locale.US, "%.2f", monthlyExpense.getTotalExpense()));
         }
 
         Map<String, Double> expenseByCategory;
+        Map<String, ArrayList<TransactionModel>> transactionsByCategory = new HashMap<>();
+
+        // Group transactions by category (both amounts and transaction lists)
+        for (TransactionModel t : monthlyExpense.getTransactions()) {
+            String cat = t.getTransactionCategory() != null ? t.getTransactionCategory() : "Others";
+            if (!transactionsByCategory.containsKey(cat)) {
+                transactionsByCategory.put(cat, new ArrayList<>());
+            }
+            transactionsByCategory.get(cat).add(t);
+        }
+
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
             expenseByCategory = monthlyExpense.getTransactions().stream()
                     .collect(Collectors.groupingBy(
@@ -333,12 +367,17 @@ public class ExpenseAnalyticsActivity extends AppCompatActivity {
             entries.add(new PieEntry(amount, categoryName));
             colors.add(categoryColor);
 
+            ArrayList<TransactionModel> catTransactions = transactionsByCategory.containsKey(categoryName)
+                    ? transactionsByCategory.get(categoryName)
+                    : new ArrayList<>();
+
             legendItems.add(new LegendItem(
                     categoryName,
                     amount,
                     (float) (amount / monthlyExpense.getTotalExpense() * 100),
                     categoryColor,
-                    categoryIcon
+                    categoryIcon,
+                    catTransactions
             ));
         }
 
@@ -406,11 +445,14 @@ public class ExpenseAnalyticsActivity extends AppCompatActivity {
 
     static class LegendItem {
         String category; float amount; float percentage; int color; int iconResId;
-        public LegendItem(String category, float amount, float percentage, int color, int iconResId) {
+        ArrayList<TransactionModel> transactions;
+        public LegendItem(String category, float amount, float percentage, int color, int iconResId, ArrayList<TransactionModel> transactions) {
             this.category = category; this.amount = amount; this.percentage = percentage;
-            this.color = color; this.iconResId = iconResId;
+            this.color = color; this.iconResId = iconResId; this.transactions = transactions;
         }
     }
+
+    interface OnCategoryClickListener { void onCategoryClick(LegendItem item); }
 
     interface OnMonthClickListener { void onMonthClick(MonthlyExpense monthlyExpense); }
 
@@ -491,7 +533,12 @@ public class ExpenseAnalyticsActivity extends AppCompatActivity {
 
     static class LegendAdapter extends RecyclerView.Adapter<LegendAdapter.ViewHolder> {
         private List<LegendItem> list;
-        LegendAdapter(List<LegendItem> list) { this.list = list; }
+        private final OnCategoryClickListener clickListener;
+
+        LegendAdapter(List<LegendItem> list, OnCategoryClickListener clickListener) {
+            this.list = list;
+            this.clickListener = clickListener;
+        }
 
         @SuppressLint("NotifyDataSetChanged")
         public void updateData(List<LegendItem> newList) {
@@ -502,7 +549,13 @@ public class ExpenseAnalyticsActivity extends AppCompatActivity {
         @NonNull @Override public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
             return new ViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.item_category_report, parent, false));
         }
-        @Override public void onBindViewHolder(@NonNull ViewHolder holder, int position) { holder.bind(list.get(position)); }
+        @Override public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+            LegendItem item = list.get(position);
+            holder.bind(item);
+            holder.itemView.setOnClickListener(v -> {
+                if (clickListener != null) clickListener.onCategoryClick(item);
+            });
+        }
         @Override public int getItemCount() { return list.size(); }
 
         static class ViewHolder extends RecyclerView.ViewHolder {

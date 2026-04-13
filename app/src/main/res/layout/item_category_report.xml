@@ -82,4 +82,13 @@
             android:textSize="12sp"/>
     </LinearLayout>
 
+    <ImageView
+        android:id="@+id/chevronRight"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_marginStart="8dp"
+        android:src="@drawable/ic_chevron_right"
+        app:tint="?attr/chk_textColorHint"
+        android:contentDescription="View details" />
+
 </LinearLayout>
