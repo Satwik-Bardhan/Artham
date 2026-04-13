@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.phynix.artham.R;
 import com.phynix.artham.models.CategoryModel;
+import com.phynix.artham.utils.CategoryColorUtil;
 
 import java.util.List;
 
@@ -61,17 +62,29 @@ public class CategoryPickerAdapter extends RecyclerView.Adapter<CategoryPickerAd
             holder.selectionCheck.setVisibility(View.GONE);
         }
 
-        // THE FIX: Directly apply the exact user-chosen color from the database!
+        // Resolve icon and color by NAME for default categories
+        // (Firebase-stored iconResId values become stale across builds)
         int categoryColor;
-        try {
-            categoryColor = Color.parseColor(category.getColorHex());
-        } catch (Exception e) {
-            categoryColor = Color.parseColor("#78909C"); // Safe grey fallback
-        }
-        holder.iconContainer.setBackgroundTintList(ColorStateList.valueOf(categoryColor));
+        int iconRes;
 
-        // THE FIX: Directly apply the exact user-chosen icon from the database!
-        holder.categoryIcon.setImageResource(category.getIconResId());
+        if (category.isCustom()) {
+            // Custom categories: use stored color/icon, fallback to name lookup
+            try {
+                categoryColor = Color.parseColor(category.getColorHex());
+            } catch (Exception e) {
+                categoryColor = CategoryColorUtil.getCategoryColor(holder.itemView.getContext(), category.getName());
+            }
+            iconRes = (category.getIconResId() != 0)
+                    ? category.getIconResId()
+                    : CategoryColorUtil.getCategoryIcon(category.getName());
+        } else {
+            // Default categories: ALWAYS resolve by name for correct icons
+            categoryColor = CategoryColorUtil.getCategoryColor(holder.itemView.getContext(), category.getName());
+            iconRes = CategoryColorUtil.getCategoryIcon(category.getName());
+        }
+
+        holder.iconContainer.setBackgroundTintList(ColorStateList.valueOf(categoryColor));
+        holder.categoryIcon.setImageResource(iconRes);
 
         // Handle clicks
         holder.itemView.setOnClickListener(v -> {

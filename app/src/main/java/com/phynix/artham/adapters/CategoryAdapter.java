@@ -17,6 +17,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.phynix.artham.R;
 import com.phynix.artham.models.CategoryModel;
+import com.phynix.artham.utils.CategoryColorUtil;
 
 import java.util.List;
 
@@ -125,23 +126,33 @@ public class CategoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         void bind(CategoryModel category) {
             nameTextView.setText(category.getName());
 
-            // Get Background Color
+            // Always resolve icon and color by NAME for reliable mapping
+            // (Firebase-stored iconResId values become stale across builds)
             int color;
-            try {
-                color = Color.parseColor(category.getColorHex());
-            } catch (Exception e) {
-                color = Color.parseColor("#9E9E9E"); // Default grey
+            int iconRes;
+
+            if (category.isCustom()) {
+                // Custom categories: try stored color first, fallback to name lookup
+                try {
+                    color = Color.parseColor(category.getColorHex());
+                } catch (Exception e) {
+                    color = CategoryColorUtil.getCategoryColor(context, category.getName());
+                }
+                // Custom icon: try stored, fallback to name lookup
+                iconRes = (category.getIconResId() != 0)
+                        ? category.getIconResId()
+                        : CategoryColorUtil.getCategoryIcon(category.getName());
+            } else {
+                // Default categories: ALWAYS resolve by name for correct icons
+                color = CategoryColorUtil.getCategoryColor(context, category.getName());
+                iconRes = CategoryColorUtil.getCategoryIcon(category.getName());
             }
 
             // Apply Background Color
             iconContainer.setBackgroundTintList(ColorStateList.valueOf(color));
 
-            // Apply Icon if available, force white tint to contrast colored background
-            if (category.getIconResId() != 0) {
-                iconView.setImageResource(category.getIconResId());
-            } else {
-                iconView.setImageResource(R.drawable.ic_category);
-            }
+            // Apply Icon
+            iconView.setImageResource(iconRes);
             iconView.setImageTintList(ColorStateList.valueOf(Color.WHITE));
 
             // Selection Checkmark

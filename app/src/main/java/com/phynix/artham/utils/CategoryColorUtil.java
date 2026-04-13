@@ -54,7 +54,12 @@ public class CategoryColorUtil {
                 for (DataSnapshot s : snapshot.getChildren()) {
                     CategoryModel model = s.getValue(CategoryModel.class);
                     if (model != null && model.getName() != null) {
-                        userCategoryCache.put(model.getName().trim().toLowerCase(), model);
+                        // Only cache CUSTOM categories from Firebase.
+                        // Default categories must always resolve from DefaultCategoryManager
+                        // because Firebase stores stale iconResId integers that change across builds.
+                        if (model.isCustom()) {
+                            userCategoryCache.put(model.getName().trim().toLowerCase(), model);
+                        }
                     }
                 }
                 isInitialized = true;
@@ -83,24 +88,28 @@ public class CategoryColorUtil {
 
         // 2. Check DefaultCategoryManager
         CategoryModel defaultModel = DefaultCategoryManager.getCategoryByName(categoryName);
-        if (defaultModel != null) {
+        if (defaultModel != null && defaultModel.getIconResId() != 0) {
             return defaultModel.getIconResId();
         }
 
         // 3. Legacy hardcoded fallback
         switch (categoryName.toLowerCase().trim()) {
             case "food & dining": case "food": return R.drawable.ic_food_dining;
+            case "groceries": return R.drawable.ic_groceries;
+            case "bills & utility": case "bills": return R.drawable.ic_utilities;
+            case "subscriptions": return R.drawable.ic_subscriptions;
             case "transport": case "transportation": return R.drawable.ic_transportation;
-            case "shopping": case "groceries": return R.drawable.ic_shopping_cart;
+            case "travel": case "flight": return R.drawable.ic_flight;
             case "rent": case "home": return R.drawable.ic_home;
+            case "insurance": return R.drawable.ic_security;
+            case "shopping": return R.drawable.ic_shopping_cart;
             case "entertainment": return R.drawable.ic_entertainment;
             case "health": case "medicine": return R.drawable.ic_medicine;
             case "education": return R.drawable.ic_book;
             case "salary": case "income": return R.drawable.ic_money;
-            case "investment": return R.drawable.ic_all_inclusive;
-            case "travel": case "flight": return R.drawable.ic_flight;
-            case "subscriptions": return R.drawable.ic_subscriptions;
             case "freelance": case "work": return R.drawable.ic_work;
+            case "refunds": return R.drawable.ic_assignment_return;
+            case "investment": return R.drawable.ic_trending_up;
             default:
                 return R.drawable.ic_category;
         }
@@ -128,14 +137,22 @@ public class CategoryColorUtil {
 
             // 3. Legacy hardcoded fallback
             switch (categoryName.toLowerCase().trim()) {
-                case "food & dining": return Color.parseColor("#FF7043");
+                case "food & dining": case "food": return Color.parseColor("#FF7043");
                 case "groceries": return Color.parseColor("#8BC34A");
-                case "transport": return Color.parseColor("#29B6F6");
-                case "shopping": return Color.parseColor("#EC407A");
-                case "salary": return Color.parseColor("#66BB6A");
+                case "bills & utility": case "bills": return Color.parseColor("#FFDE21");
+                case "subscriptions": return Color.parseColor("#3F51B5");
+                case "transport": case "transportation": return Color.parseColor("#29B6F6");
+                case "travel": return Color.parseColor("#03A9F4");
                 case "rent": return Color.parseColor("#FFA726");
-                case "health": return Color.parseColor("#EF5350");
+                case "insurance": return Color.parseColor("#795548");
+                case "shopping": return Color.parseColor("#EC407A");
                 case "entertainment": return Color.parseColor("#AB47BC");
+                case "health": case "medicine": return Color.parseColor("#EF5350");
+                case "education": return Color.parseColor("#5C6BC0");
+                case "salary": case "income": return Color.parseColor("#66BB6A");
+                case "freelance": case "work": return Color.parseColor("#CDDC39");
+                case "refunds": return Color.parseColor("#4DB6AC");
+                case "investment": return Color.parseColor("#009688");
                 default: return Color.parseColor("#78909C");
             }
         } catch (Exception e) {

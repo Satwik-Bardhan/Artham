@@ -354,16 +354,19 @@ public class ExpenseAnalyticsActivity extends AppCompatActivity {
                 try { categoryColor = Color.parseColor(defaultModel.getColorHex()); } catch (Exception ignored) {}
             }
 
-            // 2. Check Firebase Map to override the Color and Icon (if user modified it)
+            // 2. Check Firebase Map to override Color (and Icon for custom categories only)
             if (categoryMap.containsKey(categoryName)) {
                 CategoryModel fbModel = categoryMap.get(categoryName);
                 if (fbModel != null) {
+                    // Always allow color override from Firebase
                     if (fbModel.getColorHex() != null) {
                         try {
                             categoryColor = Color.parseColor(fbModel.getColorHex());
                         } catch (Exception ignored) {}
                     }
-                    if (fbModel.getIconResId() != 0) {
+                    // Only allow icon override for CUSTOM categories
+                    // Default categories use stale iconResId in Firebase — resolve by name instead
+                    if (fbModel.isCustom() && fbModel.getIconResId() != 0) {
                         categoryIcon = fbModel.getIconResId();
                     }
                 }
