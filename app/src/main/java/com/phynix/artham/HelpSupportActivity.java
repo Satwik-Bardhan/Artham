@@ -81,11 +81,14 @@ public class HelpSupportActivity extends AppCompatActivity {
         setRedirect(R.id.faqAllTransactions, TransactionActivity.class);
         setRedirect(R.id.faqAnalytics, ExpenseAnalyticsActivity.class);
         setRedirect(R.id.faqFilters, FiltersActivity.class);
+        setRedirect(R.id.faqAddTransaction, CashInOutActivity.class);
+        setRedirect(R.id.faqDownload, DownloadOptionsActivity.class);
         setRedirect(R.id.faqManageCategory, CategoryActivity.class);
         setRedirect(R.id.faqSwitchBook, CashbookSwitchActivity.class);
         setRedirect(R.id.faqEditProfile, EditProfileActivity.class);
         setRedirect(R.id.faqSecuritySettings, SettingsActivity.class);
         setRedirect(R.id.faqDeleteData, SettingsActivity.class);
+        setRedirect(R.id.faqThemeSelection, ThemeSelectionActivity.class);
         setRedirect(R.id.faqThemeSync, AppSettingsActivity.class);
         setRedirect(R.id.faqAboutDev, AboutActivity.class);
     }
