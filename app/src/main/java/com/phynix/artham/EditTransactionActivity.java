@@ -46,6 +46,7 @@ import androidx.lifecycle.ViewModelProvider;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.phynix.artham.models.TransactionModel;
+import com.phynix.artham.utils.AmountFormatter;
 import com.phynix.artham.utils.SnackbarHelper;
 import com.phynix.artham.utils.ThemeManager;
 import com.phynix.artham.viewmodels.TransactionViewModel;
@@ -250,6 +251,9 @@ public class EditTransactionActivity extends AppCompatActivity {
 
         saveChangesButton = findViewById(R.id.saveChangesButton);
         cancelButton = findViewById(R.id.CancelTransactionButton);
+
+        // Attach amount input validation: max 15 digits before decimal, 2 after
+        amountEditText.addTextChangedListener(AmountFormatter.createAmountInputWatcher(amountEditText));
     }
 
     private void populateData() {

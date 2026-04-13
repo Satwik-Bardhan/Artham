@@ -24,6 +24,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.phynix.artham.models.CategoryModel;
 import com.phynix.artham.models.TransactionModel;
+import com.phynix.artham.utils.AmountFormatter;
 import com.phynix.artham.utils.DefaultCategoryManager;
 import com.phynix.artham.utils.ThemeManager;
 
@@ -127,7 +128,7 @@ public class CategoryDetailActivity extends AppCompatActivity {
 
         // Set texts
         categoryNameTv.setText(categoryName);
-        categoryTotalAmount.setText("₹" + String.format(Locale.US, "%.2f", amount));
+        categoryTotalAmount.setText(AmountFormatter.formatCompactSpannable(amount));
         categoryPercentage.setText(String.format(Locale.US, "%.1f%%", percentage));
         transactionCount.setText(String.valueOf(txnCount));
 
@@ -233,7 +234,8 @@ public class CategoryDetailActivity extends AppCompatActivity {
                 }
 
                 // Amount
-                amountText.setText("- ₹" + String.format(Locale.US, "%.2f", txn.getAmount()));
+                CharSequence amtSpan = com.phynix.artham.utils.AmountFormatter.formatCompactSpannable(txn.getAmount());
+                amountText.setText(android.text.TextUtils.concat("- ", amtSpan));
 
                 // Apply theme colors
                 Context ctx = itemView.getContext();

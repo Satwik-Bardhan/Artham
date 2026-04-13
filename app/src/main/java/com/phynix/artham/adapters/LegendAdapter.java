@@ -40,8 +40,7 @@ public class LegendAdapter extends RecyclerView.Adapter<LegendAdapter.ViewHolder
 
         holder.categoryName.setText(data.getCategoryName());
 
-        NumberFormat currencyFormat = NumberFormat.getCurrencyInstance(new Locale("en", "IN"));
-        holder.amount.setText(currencyFormat.format(data.getAmount()));
+        holder.amount.setText(com.phynix.artham.utils.AmountFormatter.formatCompactSpannable(data.getAmount()));
 
         int percentInt = (int) (data.getPercentage() * 100);
         holder.percentage.setText(percentInt + "%");

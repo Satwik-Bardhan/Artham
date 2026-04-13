@@ -17,6 +17,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.phynix.artham.R;
 import com.phynix.artham.models.TransactionModel;
+import com.phynix.artham.utils.AmountFormatter;
 import com.phynix.artham.utils.CategoryColorUtil;
 
 import java.text.SimpleDateFormat;
@@ -193,7 +194,9 @@ public class TransactionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
             int colorAttr = isIn ? R.attr.chk_incomeColor : R.attr.chk_expenseColor;
             int color = ThemeUtil.getThemeAttrColor(context, colorAttr);
 
-            amountTextView.setText((isIn ? "" : "- ") + "₹" + String.format("%.2f", transaction.getAmount()));
+            String prefix = isIn ? "" : "- ";
+            CharSequence amountSpan = AmountFormatter.formatCompactSpannable(transaction.getAmount());
+            amountTextView.setText(android.text.TextUtils.concat(prefix, amountSpan));
             amountTextView.setTextColor(color);
             if (transactionTypeIndicator != null) transactionTypeIndicator.setBackgroundColor(color);
 

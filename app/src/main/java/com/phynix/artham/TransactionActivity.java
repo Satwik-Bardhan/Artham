@@ -34,6 +34,7 @@ import com.phynix.artham.databinding.LayoutPieChartBinding;
 import com.phynix.artham.databinding.LayoutSearchBarBinding;
 import com.phynix.artham.databinding.LayoutSummaryCardsBinding;
 import com.phynix.artham.models.TransactionModel;
+import com.phynix.artham.utils.AmountFormatter;
 import com.phynix.artham.utils.Constants;
 import com.phynix.artham.utils.SnackbarHelper;
 import com.phynix.artham.utils.SwipeListener;
@@ -397,7 +398,7 @@ public class TransactionActivity extends AppCompatActivity {
 
         PieData data = new PieData(dataSet);
         pieChartBinding.pieChart.setData(data);
-        pieChartBinding.pieChart.setCenterText("Total\n₹" + String.format(Locale.US, "%.0f", totalExpense));
+        pieChartBinding.pieChart.setCenterText("Total\n" + AmountFormatter.formatCompact(totalExpense));
         pieChartBinding.pieChart.setCenterTextSize(16f);
         pieChartBinding.pieChart.setCenterTextColor(textColor);
         pieChartBinding.pieChart.animateY(1000, Easing.EaseInOutQuad);
@@ -411,9 +412,9 @@ public class TransactionActivity extends AppCompatActivity {
             if ("IN".equalsIgnoreCase(t.getType())) totalIncome += t.getAmount();
             else totalExpense += t.getAmount();
         }
-        summaryBinding.incomeText.setText("₹" + String.format(Locale.US, "%.2f", totalIncome));
-        summaryBinding.expenseText.setText("₹" + String.format(Locale.US, "%.2f", totalExpense));
-        summaryBinding.balanceText.setText("₹" + String.format(Locale.US, "%.2f", totalIncome - totalExpense));
+        summaryBinding.incomeText.setText(AmountFormatter.formatCompactSpannable(totalIncome));
+        summaryBinding.expenseText.setText(AmountFormatter.formatCompactSpannable(totalExpense));
+        summaryBinding.balanceText.setText(AmountFormatter.formatCompactSpannable(totalIncome - totalExpense));
     }
 
     private void fetchCashbookName() {

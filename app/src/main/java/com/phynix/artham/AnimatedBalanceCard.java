@@ -15,6 +15,8 @@ import androidx.cardview.widget.CardView;
 import java.text.NumberFormat; // [FIX] Added NumberFormat import
 import java.util.Locale;
 
+import com.phynix.artham.utils.AmountFormatter;
+
 public class AnimatedBalanceCard {
 
     private static final String TAG = "AnimatedBalanceCard";
@@ -111,8 +113,8 @@ public class AnimatedBalanceCard {
         animator.addUpdateListener(animation -> {
             float progress = animation.getAnimatedFraction();
             double currentValue = oldBalance + (newBalance - oldBalance) * progress;
-            // [FIX] Use currency formatter
-            balanceText.setText(currencyFormat.format(currentValue));
+            // Use adaptive balance formatter for auto-sizing + smaller paise
+            AmountFormatter.setAdaptiveBalance(balanceText, currentValue);
 
             // Add subtle scale effect during animation
             float scale = 1f + (0.05f * (float) Math.sin(progress * Math.PI));
@@ -134,8 +136,7 @@ public class AnimatedBalanceCard {
         animator.addUpdateListener(animation -> {
             float progress = animation.getAnimatedFraction();
             double currentValue = oldIncome + (newIncome - oldIncome) * progress;
-            // [FIX] Use currency formatter
-            moneyInText.setText(currencyFormat.format(currentValue));
+            moneyInText.setText(AmountFormatter.formatCompactSpannable(currentValue));
         });
 
         animator.start();
@@ -152,8 +153,7 @@ public class AnimatedBalanceCard {
         animator.addUpdateListener(animation -> {
             float progress = animation.getAnimatedFraction();
             double currentValue = oldExpense + (newExpense - oldExpense) * progress;
-            // [FIX] Use currency formatter
-            moneyOutText.setText(currencyFormat.format(currentValue));
+            moneyOutText.setText(AmountFormatter.formatCompactSpannable(currentValue));
         });
 
         animator.start();
@@ -231,10 +231,9 @@ public class AnimatedBalanceCard {
         currentIncome = income;
         currentExpense = expense;
 
-        // [FIX] Use currency formatter
-        balanceText.setText(currencyFormat.format(balance));
-        moneyInText.setText(currencyFormat.format(income));
-        moneyOutText.setText(currencyFormat.format(expense));
+        AmountFormatter.setAdaptiveBalance(balanceText, balance);
+        moneyInText.setText(AmountFormatter.formatCompactSpannable(income));
+        moneyOutText.setText(AmountFormatter.formatCompactSpannable(expense));
     }
 
     public void setOnCardClickListener(View.OnClickListener listener) {

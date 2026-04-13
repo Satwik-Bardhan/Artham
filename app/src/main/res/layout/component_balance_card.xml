@@ -65,26 +65,28 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/uidSection"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="6dp"
             android:gravity="center_horizontal"
-            android:orientation="horizontal">
+            android:orientation="vertical">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/app_font"
-                android:text="Balance: "
-                android:textColor="#FFFFFF"
-                android:textSize="24sp"
-                android:textStyle="bold"
+                android:text="Balance:"
+                android:textColor="#CCCCCC"
+                android:textSize="13sp"
                 tools:ignore="HardcodedText" />
 
             <TextView
                 android:id="@+id/balanceText"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
                 android:contentDescription="Current balance amount"
                 android:fontFamily="@font/app_font"
+                android:gravity="center"
+                android:maxLines="2"
                 android:text="₹0.00"
                 android:textColor="#FFFFFF"
                 android:textSize="32sp"

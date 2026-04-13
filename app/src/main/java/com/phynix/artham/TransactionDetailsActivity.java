@@ -19,6 +19,7 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.button.MaterialButton;
 import com.phynix.artham.models.TransactionModel;
+import com.phynix.artham.utils.AmountFormatter;
 import com.phynix.artham.utils.SnackbarHelper;
 import com.phynix.artham.utils.ThemeManager;
 import com.phynix.artham.viewmodels.TransactionViewModel;
@@ -101,8 +102,7 @@ public class TransactionDetailsActivity extends AppCompatActivity {
 
         ImageView typeIcon = findViewById(R.id.typeIcon);
 
-        NumberFormat currencyFormat = NumberFormat.getCurrencyInstance(new Locale("en", "IN"));
-        detailAmount.setText(currencyFormat.format(transaction.getAmount()));
+        detailAmount.setText(AmountFormatter.formatCompactSpannable(transaction.getAmount()));
 
         if ("IN".equalsIgnoreCase(transaction.getType())) {
             detailType.setText("INCOME");
@@ -168,7 +168,7 @@ public class TransactionDetailsActivity extends AppCompatActivity {
                 // Expand and Calculate
                 double calculatedRunningBalance = viewModel.getRunningBalanceUpTo(transaction.getTimestamp());
 
-                runningBalanceAmount.setText(currencyFormat.format(calculatedRunningBalance));
+                runningBalanceAmount.setText(AmountFormatter.formatCompactSpannable(calculatedRunningBalance));
                 runningBalanceAmount.setVisibility(View.VISIBLE);
                 runningBalanceLabel.setText("Balance after this entry");
 

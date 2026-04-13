@@ -53,6 +53,7 @@ import com.phynix.artham.databinding.ActivityHomePageBinding;
 import com.phynix.artham.models.TransactionModel;
 import com.phynix.artham.models.Users;
 import com.phynix.artham.utils.Constants;
+import com.phynix.artham.utils.AmountFormatter;
 import com.phynix.artham.utils.DateTimeUtils;
 import com.phynix.artham.utils.SnackbarHelper;
 import com.phynix.artham.utils.SwipeListener;
@@ -452,18 +453,19 @@ public class HomePage extends AppCompatActivity {
         });
 
         viewModel.getTotalIncome().observe(this, income -> {
-            if (balanceCardMoneyIn != null) balanceCardMoneyIn.setText(formatCurrency(income));
+            if (balanceCardMoneyIn != null) balanceCardMoneyIn.setText(AmountFormatter.formatCompactSpannable(income));
         });
 
         viewModel.getTotalExpense().observe(this, expense -> {
-            if (balanceCardMoneyOut != null) balanceCardMoneyOut.setText(formatCurrency(expense));
+            if (balanceCardMoneyOut != null) balanceCardMoneyOut.setText(AmountFormatter.formatCompactSpannable(expense));
         });
 
         viewModel.getCurrentBalance().observe(this, balance -> {
             // Using ViewBinding to get the balanceText within the balance card
             TextView balanceText = binding.balanceCardView.getRoot().findViewById(R.id.balanceText);
             if (balanceText != null) {
-                balanceText.setText(formatCurrency(balance));
+                // Adaptive sizing: text shrinks as digit count grows, paise rendered smaller
+                AmountFormatter.setAdaptiveBalance(balanceText, balance);
                 balanceText.setTextColor(Color.WHITE);
             }
         });
@@ -477,7 +479,8 @@ public class HomePage extends AppCompatActivity {
 
             if(dailyBalanceText != null) {
                 String sign = balance >= 0 ? "+ " : "- ";
-                dailyBalanceText.setText(sign + formatCurrency(Math.abs(balance)));
+                String raw = sign + AmountFormatter.formatCompact(Math.abs(balance));
+                dailyBalanceText.setText(AmountFormatter.buildPaiseSpannable(raw));
                 dailyBalanceText.setTextColor(ThemeUtil.getThemeAttrColor(this, balance >= 0 ? R.attr.chk_incomeColor : R.attr.chk_expenseColor));
             }
         });
@@ -615,12 +618,12 @@ public class HomePage extends AppCompatActivity {
         rowOut.setGravity(Gravity.CENTER);
 
         if (Constants.TRANSACTION_TYPE_IN.equalsIgnoreCase(transaction.getType())) {
-            rowIn.setText(formatCurrency(transaction.getAmount()));
+            rowIn.setText(AmountFormatter.formatCompactSpannable(transaction.getAmount()));
             rowIn.setTextColor(ThemeUtil.getThemeAttrColor(this, R.attr.chk_incomeColor));
             rowOut.setText("-");
         } else {
             rowIn.setText("-");
-            rowOut.setText(formatCurrency(transaction.getAmount()));
+            rowOut.setText(AmountFormatter.formatCompactSpannable(transaction.getAmount()));
             rowOut.setTextColor(ThemeUtil.getThemeAttrColor(this, R.attr.chk_expenseColor));
         }
         rowView.setOnClickListener(v -> openTransactionDetail(transaction));

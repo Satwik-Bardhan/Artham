@@ -18,6 +18,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.card.MaterialCardView;
 import com.phynix.artham.R;
 import com.phynix.artham.models.CashbookModel;
+import com.phynix.artham.utils.AmountFormatter;
 import com.phynix.artham.utils.DateTimeUtils;
 
 import java.text.NumberFormat;
@@ -138,7 +139,7 @@ public class CashbookAdapter extends RecyclerView.Adapter<CashbookAdapter.Cashbo
             setupLastModified(cashbook);
 
             double balance = cashbook.getBalance();
-            balanceText.setText(currencyFormat.format(balance));
+            balanceText.setText(AmountFormatter.formatCompactSpannable(balance));
             balanceText.setTextColor(balance >= 0 ? successColor : expenseColor);
 
             transactionCountText.setText(String.valueOf(cashbook.getTransactionCount()));

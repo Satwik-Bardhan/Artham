@@ -50,6 +50,7 @@ import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.phynix.artham.models.TransactionModel;
+import com.phynix.artham.utils.AmountFormatter;
 import com.phynix.artham.utils.Constants;
 import com.phynix.artham.utils.ThemeManager;
 import com.phynix.artham.viewmodels.CashInOutViewModel;
@@ -75,7 +76,7 @@ public class CashInOutActivity extends AppCompatActivity {
     private MaterialCardView categorySelectorCard;
     private View selectedIconContainer;
     private RadioGroup inOutToggle, cashOnlineToggle;
-    private RadioButton radioIn, radioOut, radioCash, radioOnline;
+    private RadioButton radioIn, radioOut, radioCash, radioOnline, radioCard;
     private View swapButton, calculatorButton, voiceInputButton, locationButton, contactBookButton;
     private CheckBox taxCheckbox;
     private TextInputLayout taxAmountLayout;
@@ -136,6 +137,9 @@ public class CashInOutActivity extends AppCompatActivity {
 
         observeViewModel();
         startRealTimeClock();
+
+        // Attach amount input validation: max 15 digits before decimal, 2 after
+        amountEditText.addTextChangedListener(AmountFormatter.createAmountInputWatcher(amountEditText));
     }
 
     private void observeViewModel() {
@@ -184,6 +188,7 @@ public class CashInOutActivity extends AppCompatActivity {
         cashOnlineToggle = findViewById(R.id.cashOnlineToggle);
         radioCash = findViewById(R.id.radioCash);
         radioOnline = findViewById(R.id.radioOnline);
+        radioCard = findViewById(R.id.radioCard);
 
         taxCheckbox = findViewById(R.id.taxCheckbox);
         taxAmountLayout = findViewById(R.id.taxAmountLayout);
@@ -420,7 +425,10 @@ public class CashInOutActivity extends AppCompatActivity {
         }
 
         transaction.setType(radioIn.isChecked() ? Constants.TRANSACTION_TYPE_IN : Constants.TRANSACTION_TYPE_OUT);
-        transaction.setPaymentMode(radioCash.isChecked() ? "Cash" : "Online");
+        String mode = "Online";
+        if (radioCash.isChecked()) mode = "Cash";
+        else if (radioCard != null && radioCard.isChecked()) mode = "Card";
+        transaction.setPaymentMode(mode);
         transaction.setTransactionCategory(selectedCategory);
         transaction.setTimestamp(calendar.getTimeInMillis());
         transaction.setRemark(remarkEditText.getText().toString().trim());

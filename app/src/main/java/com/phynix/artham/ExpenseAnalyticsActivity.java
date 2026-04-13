@@ -38,6 +38,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.phynix.artham.models.CategoryModel;
 import com.phynix.artham.models.TransactionModel;
+import com.phynix.artham.utils.AmountFormatter;
 import com.phynix.artham.utils.DefaultCategoryManager;
 import com.phynix.artham.utils.ThemeManager;
 
@@ -304,7 +305,7 @@ public class ExpenseAnalyticsActivity extends AppCompatActivity {
         }
 
         if (totalExpenseValue != null) {
-            totalExpenseValue.setText("₹" + String.format(Locale.US, "%.2f", monthlyExpense.getTotalExpense()));
+            totalExpenseValue.setText(AmountFormatter.formatCompactSpannable(monthlyExpense.getTotalExpense()));
         }
 
         Map<String, Double> expenseByCategory;
@@ -407,7 +408,7 @@ public class ExpenseAnalyticsActivity extends AppCompatActivity {
         PieData pieData = new PieData(dataSet);
         fullScreenPieChart.setData(pieData);
 
-        String centerText = "Monthly Total\n₹" + String.format(Locale.US, "%.0f", monthlyExpense.getTotalExpense());
+        String centerText = "Monthly Total\n" + AmountFormatter.formatCompact(monthlyExpense.getTotalExpense());
         fullScreenPieChart.setCenterText(centerText);
         fullScreenPieChart.setCenterTextSize(14f);
         fullScreenPieChart.setCenterTextColor(ThemeUtil.getThemeAttrColor(this, R.attr.chk_textColorPrimary));
@@ -422,7 +423,7 @@ public class ExpenseAnalyticsActivity extends AppCompatActivity {
         noDataTextView.setVisibility(View.VISIBLE);
         contentLayout.setVisibility(View.GONE);
         if (totalExpenseValue != null) {
-            totalExpenseValue.setText("₹0.00");
+            totalExpenseValue.setText(AmountFormatter.formatCompactSpannable(0));
         }
     }
 
@@ -583,7 +584,7 @@ public class ExpenseAnalyticsActivity extends AppCompatActivity {
             }
             void bind(LegendItem i) {
                 cat.setText(i.category);
-                amt.setText("₹" + String.format(Locale.US, "%.2f", i.amount));
+                amt.setText(AmountFormatter.formatCompactSpannable(i.amount));
                 pct.setText(String.format(Locale.US, "%.1f%%", i.percentage));
 
                 if (progressBar != null) {

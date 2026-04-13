@@ -69,7 +69,7 @@ public class DistributionAdapter extends RecyclerView.Adapter<DistributionAdapte
         public void bind(DistributionItem item) {
             // Set Text Data
             categoryName.setText(item.getCategoryName());
-            categoryAmount.setText(String.format(Locale.US, "₹%.2f", item.getAmount()));
+            categoryAmount.setText(com.phynix.artham.utils.AmountFormatter.formatCompactSpannable(item.getAmount()));
 
             int percentInt = (int) item.getPercentage();
             categoryPercentage.setText(percentInt + "%");
