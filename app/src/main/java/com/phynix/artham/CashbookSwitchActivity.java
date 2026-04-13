@@ -19,6 +19,8 @@ import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 import android.widget.TextView;
 
+import java.util.Locale;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
@@ -46,6 +48,7 @@ import com.phynix.artham.models.TransactionModel;
 import com.phynix.artham.utils.Constants;
 import com.phynix.artham.utils.ErrorHandler;
 import com.phynix.artham.utils.SwipeListener;
+import com.phynix.artham.utils.PdfReportGenerator;
 import com.phynix.artham.utils.ThemeManager;
 
 import java.util.ArrayList;
@@ -75,6 +78,7 @@ public class CashbookSwitchActivity extends AppCompatActivity {
     private EditText searchEditText;
     private ChipGroup chipGroup;
     private LinearLayout sortButton;
+    private TextView cashbookCountText;
 
     // UI Components - FAB
     private FloatingActionButton quickAddFab;
@@ -198,6 +202,7 @@ public class CashbookSwitchActivity extends AppCompatActivity {
         searchEditText = findViewById(R.id.searchEditText);
         chipGroup = findViewById(R.id.includedFilterLayout);
         sortButton = findViewById(R.id.sortButton);
+        cashbookCountText = findViewById(R.id.cashbookCountText);
         quickAddFab = findViewById(R.id.quickAddFab);
     }
 
@@ -472,6 +477,9 @@ public class CashbookSwitchActivity extends AppCompatActivity {
             } else if (itemId == R.id.menu_toggle_active) {
                 toggleCashbookActive(cashbook);
                 return true;
+            } else if (itemId == R.id.menu_export) {
+                exportCashbookAsPdf(cashbook);
+                return true;
             } else if (itemId == R.id.menu_delete) {
                 showDeleteConfirmation(cashbook);
                 return true;
@@ -479,6 +487,58 @@ public class CashbookSwitchActivity extends AppCompatActivity {
             return false;
         });
         popup.show();
+    }
+
+    private void exportCashbookAsPdf(CashbookModel cashbook) {
+        if (cashbook == null) return;
+
+        showSnackbar("Preparing export...");
+
+        DatabaseReference txnRef = userCashbooksRef
+                .child(cashbook.getCashbookId())
+                .child("transactions");
+
+        txnRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                List<TransactionModel> transactions = new ArrayList<>();
+                long earliest = Long.MAX_VALUE;
+                long latest = Long.MIN_VALUE;
+
+                for (DataSnapshot snap : dataSnapshot.getChildren()) {
+                    try {
+                        TransactionModel txn = snap.getValue(TransactionModel.class);
+                        if (txn != null) {
+                            txn.setTransactionId(snap.getKey());
+                            transactions.add(txn);
+                            if (txn.getTimestamp() < earliest) earliest = txn.getTimestamp();
+                            if (txn.getTimestamp() > latest) latest = txn.getTimestamp();
+                        }
+                    } catch (Exception e) {
+                        Log.w(TAG, "Error parsing transaction for export", e);
+                    }
+                }
+
+                if (transactions.isEmpty()) {
+                    showSnackbar("No transactions to export in this cashbook");
+                    return;
+                }
+
+                String bookName = cashbook.getName() != null ? cashbook.getName() : "Cashbook";
+                PdfReportGenerator.generateReport(
+                        CashbookSwitchActivity.this,
+                        transactions,
+                        bookName,
+                        earliest,
+                        latest
+                );
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                showSnackbar("Failed to fetch transactions: " + error.getMessage());
+            }
+        });
     }
 
     private void toggleCashbookActive(CashbookModel cashbook) {
@@ -639,11 +699,25 @@ public class CashbookSwitchActivity extends AppCompatActivity {
 
         cashbookAdapter.updateCashbooks(filteredList);
 
+        // Update cashbook count text
+        if (cashbookCountText != null) {
+            cashbookCountText.setText("(" + formatCount(filteredList.size()) + ")");
+        }
+
         if (allCashbooks.isEmpty()) {
             showEmptyState(true);
         } else {
             showEmptyState(false);
         }
+    }
+
+    private String formatCount(int count) {
+        if (count < 1000) return String.valueOf(count);
+        if (count < 1000000) {
+            if (count % 1000 == 0) return (count / 1000) + "k";
+            return String.format(Locale.US, "%.1fk", count / 1000.0);
+        }
+        return String.format(Locale.US, "%.1fM", count / 1000000.0);
     }
 
     private void onCashbookSelected(CashbookModel cashbook) {
