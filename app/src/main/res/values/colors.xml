@@ -4,55 +4,112 @@
     <color name="white">#FFFFFFFF</color>
     <color name="transparent">@android:color/transparent</color>
 
-    <color name="light_primary">#2196F3</color>
-    <color name="light_primary_dark">#1976D2</color>
-    <color name="light_secondary">#4CAF50</color>
-    <color name="light_background">#E3E7ED</color>
-    <color name="light_surface">#FFFFFF</color>
-    <color name="light_divider">#CED4DA</color>
-    <color name="light_selected_item">#E3F2FD</color>
-    <color name="light_text_primary">#212121</color>
-    <color name="light_text_secondary">#757575</color>
-    <color name="light_text_hint">#9E9E9E</color>
-    <color name="light_balance_blue">#1E88E5</color>
-    <color name="light_header">#FFFFFF</color>
+    <!-- ════════════════════════════════════════════════════════════════
+         LIGHT THEME — "Clean Slate"
+         Inspired by Stripe/Linear. Confident blue primary with cool
+         neutral backgrounds. Trustworthy and modern.
+         ════════════════════════════════════════════════════════════════ -->
+    <color name="light_primary">#2E5BFF</color>          <!-- Confident blue -->
+    <color name="light_primary_dark">#1E3FA0</color>     <!-- Deep blue press -->
+    <color name="light_secondary">#00C48C</color>        <!-- Rich teal-green -->
+    <color name="light_background">#F7F8FC</color>       <!-- Cool off-white -->
+    <color name="light_surface">#FFFFFF</color>          <!-- Pure white cards -->
+    <color name="light_divider">#E4E7F0</color>          <!-- Cool silver -->
+    <color name="light_selected_item">#1A2E5BFF</color>  <!-- Blue @ 10% -->
+    <color name="light_text_primary">#1E2432</color>     <!-- Deep blue-black -->
+    <color name="light_text_secondary">#6E7A8A</color>   <!-- Steel gray -->
+    <color name="light_text_hint">#A0AAB8</color>        <!-- Soft muted -->
+    <color name="light_balance_blue">#2E5BFF</color>     <!-- Confident blue -->
+    <color name="light_header">#FFFFFF</color>           <!-- White header -->
 
-    <color name="dark_primary">#90CAF9</color>
-    <color name="dark_primary_dark">#1565C0</color>
-    <color name="dark_secondary">#81C784</color>
-    <color name="dark_background">#000000</color>
-    <color name="dark_surface">#121212</color>
-    <color name="dark_divider">#2C2C2C</color>
-    <color name="dark_selected_item">#3390CAF9</color>
-    <color name="dark_text_primary">#E0E0E0</color>
-    <color name="dark_text_secondary">#B0B0B0</color>
-    <color name="dark_text_hint">#707070</color>
-    <color name="dark_balance_blue">#0D47A1</color>
-    <color name="dark_header">#2C2C2C</color>
+    <!-- ════════════════════════════════════════════════════════════════
+         DARK THEME — "Midnight"
+         GitHub-inspired deep blacks with luminous soft-blue accents.
+         AMOLED-friendly. Sleek and premium.
+         ════════════════════════════════════════════════════════════════ -->
+    <color name="dark_primary">#7AA2F7</color>           <!-- Luminous soft blue -->
+    <color name="dark_primary_dark">#000000</color>      <!-- Pure black -->
+    <color name="dark_secondary">#73DACA</color>         <!-- Soft teal-cyan -->
+    <color name="dark_background">#000000</color>        <!-- Pure AMOLED black — pixels OFF -->
+    <color name="dark_surface">#0A0A0F</color>           <!-- Near-black card — just enough lift -->
+    <color name="dark_divider">#1A1A22</color>           <!-- Very subtle border -->
+    <color name="dark_selected_item">#12192B</color>     <!-- Deep muted blue selection -->
+    <color name="dark_text_primary">#E6EDF3</color>      <!-- Crisp off-white -->
+    <color name="dark_text_secondary">#8B949E</color>    <!-- Professional gray -->
+    <color name="dark_text_hint">#484F58</color>         <!-- Muted hint -->
+    <color name="dark_balance_blue">#7AA2F7</color>      <!-- Luminous blue -->
+    <color name="dark_header">#0A0A0F</color>            <!-- Near-black header -->
 
-    <color name="purple_primary">#B388FF</color>
-    <color name="purple_primary_dark">#7C4DFF</color>
-    <color name="purple_secondary">#69F0AE</color>
-    <color name="purple_background">#0F0518</color>
-    <color name="purple_surface">#321945</color>
-    <color name="purple_divider">#3D2560</color>
-    <color name="purple_selected_item">#351B57</color>
-    <color name="purple_text_primary">#EDE7F6</color>
-    <color name="purple_text_secondary">#B39DDB</color>
-    <color name="purple_text_hint">#7E57C2</color>
-    <color name="purple_balance_blue">#6A4FE8</color>
-    <color name="purple_accent">#7C4DFF</color>
-    <color name="purple_header">#36013F</color>
+    <!-- ════════════════════════════════════════════════════════════════
+         PURPLE THEME — "Royal"
+         Deep cosmic backgrounds with vivid lavender accents.
+         Luxurious, unique, premium feel.
+         ════════════════════════════════════════════════════════════════ -->
+    <color name="purple_primary">#A78BFA</color>         <!-- Vivid lavender -->
+    <color name="purple_primary_dark">#7C3AED</color>    <!-- Electric violet -->
+    <color name="purple_secondary">#C084FC</color>       <!-- Orchid pink -->
+    <color name="purple_background">#110E1A</color>      <!-- Deep cosmic -->
+    <color name="purple_surface">#1C1828</color>         <!-- Midnight purple -->
+    <color name="purple_divider">#2A2438</color>         <!-- Soft plum border -->
+    <color name="purple_selected_item">#261F3A</color>   <!-- Muted violet -->
+    <color name="purple_text_primary">#EDE9F6</color>    <!-- Pale lavender -->
+    <color name="purple_text_secondary">#9590B0</color>  <!-- Dusty violet -->
+    <color name="purple_text_hint">#615C78</color>       <!-- Deep mauve -->
+    <color name="purple_balance_blue">#A78BFA</color>    <!-- Lavender balance -->
+    <color name="purple_accent">#A78BFA</color>          <!-- Vivid lavender -->
+    <color name="purple_header">#1C1828</color>          <!-- Midnight purple -->
 
-    <color name="splash_wave_light">#03A9F4</color>
-    <color name="splash_wave_dark">#00BCD4</color>
-    <color name="splash_wave_purple">#7C4DFF</color>
+    <!-- ════════════════════════════════════════════════════════════════
+         EMERALD THEME — "Lux Forest"
+         Lush, vibrant emerald with warm gold accents. Deep forest
+         backgrounds with striking green highlights — wealth & growth.
+         ════════════════════════════════════════════════════════════════ -->
+    <color name="emerald_primary">#34D399</color>         <!-- Bright vivid emerald -->
+    <color name="emerald_primary_dark">#059669</color>    <!-- Deep emerald press -->
+    <color name="emerald_secondary">#FBBF24</color>       <!-- Rich warm gold -->
+    <color name="emerald_background">#071A12</color>      <!-- Deep lush forest -->
+    <color name="emerald_surface">#0E2B1F</color>         <!-- Rich moss card -->
+    <color name="emerald_divider">#1A3D2C</color>         <!-- Forest border -->
+    <color name="emerald_selected_item">#133326</color>   <!-- Jade selection -->
+    <color name="emerald_text_primary">#ECFDF5</color>    <!-- Crisp mint white -->
+    <color name="emerald_text_secondary">#6EE7B7</color>  <!-- Medium emerald -->
+    <color name="emerald_text_hint">#3B7A5A</color>       <!-- Muted fern -->
+    <color name="emerald_balance">#34D399</color>         <!-- Bright emerald -->
+    <color name="emerald_accent">#34D399</color>          <!-- Bright emerald -->
+    <color name="emerald_header">#0E2B1F</color>          <!-- Rich moss header -->
 
+    <!-- ════════════════════════════════════════════════════════════════
+         ROSE GOLD THEME — "Blush Luxe"
+         Warm saturated rose with gold accents for a true rose-gold
+         aesthetic. Deep burgundy depth. Apple-inspired elegance.
+         ════════════════════════════════════════════════════════════════ -->
+    <color name="rose_primary">#FB7185</color>            <!-- Warm saturated rose -->
+    <color name="rose_primary_dark">#E11D48</color>       <!-- Deep crimson press -->
+    <color name="rose_secondary">#FBBF24</color>          <!-- Warm rose-gold accent -->
+    <color name="rose_background">#1A0C12</color>         <!-- Deep wine black -->
+    <color name="rose_surface">#2A1520</color>            <!-- Rich plum card -->
+    <color name="rose_divider">#3D2030</color>            <!-- Warm mauve border -->
+    <color name="rose_selected_item">#351C2A</color>      <!-- Deep rose selection -->
+    <color name="rose_text_primary">#FFF1F2</color>       <!-- Rose-tinted white -->
+    <color name="rose_text_secondary">#FDA4AF</color>     <!-- Soft pink -->
+    <color name="rose_text_hint">#8B4F65</color>          <!-- Dusty rose -->
+    <color name="rose_balance">#FB7185</color>            <!-- Warm rose -->
+    <color name="rose_accent">#FB7185</color>             <!-- Warm saturated rose -->
+    <color name="rose_header">#2A1520</color>             <!-- Rich plum header -->
+
+    <!-- Splash wave colors -->
+    <color name="splash_wave_light">#2E5BFF</color>       <!-- Confident blue -->
+    <color name="splash_wave_dark">#7AA2F7</color>        <!-- Luminous blue -->
+    <color name="splash_wave_purple">#A78BFA</color>      <!-- Vivid lavender -->
+    <color name="splash_wave_emerald">#34D399</color>     <!-- Bright emerald -->
+    <color name="splash_wave_rose">#FB7185</color>        <!-- Warm rose -->
+
+    <!-- Convenience aliases (Light defaults) -->
     <color name="primary_blue">@color/light_primary</color>
     <color name="primary_blue_dark">@color/light_primary_dark</color>
     <color name="secondary_green">@color/light_secondary</color>
 
-    <color name="secondary_green_dark">#388E3C</color>
+    <color name="secondary_green_dark">#00A876</color>
 
     <color name="backgroundColor">@color/light_background</color>
     <color name="surfaceColor">@color/light_surface</color>
@@ -67,9 +124,9 @@
     <color name="income_green">#43A047</color>
     <color name="expense_red">#E53935</color>
 
-    <color name="bottom_nav_icon_text_color">#757575</color>
-    <color name="bottom_nav_selected">#2196F3</color>
-    <color name="bottom_nav_item_unselected_border">#E0E0E0</color>
+    <color name="bottom_nav_icon_text_color">#6E7A8A</color>
+    <color name="bottom_nav_selected">#2E5BFF</color>
+    <color name="bottom_nav_item_unselected_border">#E4E7F0</color>
 
     <color name="header_color">@color/light_header</color>
     <color name="splash_wave_color">@color/splash_wave_light</color>
