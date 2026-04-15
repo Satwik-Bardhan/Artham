@@ -3,10 +3,11 @@
     android:shape="rectangle">
 
     <gradient
-        android:angle="45"
+        android:angle="135"
         android:startColor="?attr/chk_card_start"
-        android:endColor="?attr/chk_card_end"
+        android:centerColor="?attr/chk_card_end"
+        android:endColor="?attr/chk_card_start"
         android:type="linear" />
 
-    <corners android:radius="10dp" />
+    <corners android:radius="16dp" />
 </shape>

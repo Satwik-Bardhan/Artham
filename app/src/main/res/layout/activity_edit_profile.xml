@@ -126,7 +126,7 @@
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="16dp"
+                android:layout_marginHorizontal="12dp"
                 android:layout_marginBottom="16dp"
                 app:cardBackgroundColor="?attr/chk_surfaceColor"
                 app:cardCornerRadius="8dp"
@@ -184,7 +184,7 @@
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="16dp"
+                android:layout_marginHorizontal="12dp"
                 android:layout_marginBottom="16dp"
                 app:cardBackgroundColor="?attr/chk_surfaceColor"
                 app:cardCornerRadius="8dp"
@@ -338,7 +338,7 @@
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="16dp"
+                android:layout_marginHorizontal="12dp"
                 android:layout_marginTop="8dp"
                 android:layout_marginBottom="24dp"
                 app:cardCornerRadius="12dp"

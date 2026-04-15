@@ -4,22 +4,22 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
-    android:paddingHorizontal="12dp"
-    android:paddingVertical="8dp">
+    android:paddingHorizontal="4dp"
+    android:paddingVertical="10dp">
 
     <!-- CASH IN BUTTON -->
     <androidx.cardview.widget.CardView
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
+        android:layout_marginEnd="6dp"
         android:layout_weight="1"
-        app:cardCornerRadius="12dp"
-        app:cardElevation="4dp">
+        app:cardCornerRadius="14dp"
+        app:cardElevation="3dp">
 
         <LinearLayout
             android:id="@+id/btnCashIn"
             android:layout_width="match_parent"
-            android:layout_height="60dp"
+            android:layout_height="56dp"
             android:background="@drawable/button_cashin"
             android:clickable="true"
             android:focusable="true"
@@ -28,9 +28,9 @@
             android:orientation="horizontal">
 
             <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:layout_marginEnd="8dp"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:layout_marginEnd="10dp"
                 android:src="@drawable/ic_plus"
                 app:tint="#FFFFFF" />
 
@@ -40,8 +40,9 @@
                 android:fontFamily="@font/app_font"
                 android:text="CASH IN"
                 android:textColor="#FFFFFF"
-                android:textSize="18sp"
-                android:textStyle="bold" />
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.04" />
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 
@@ -49,15 +50,15 @@
     <androidx.cardview.widget.CardView
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
+        android:layout_marginStart="6dp"
         android:layout_weight="1"
-        app:cardCornerRadius="12dp"
-        app:cardElevation="4dp">
+        app:cardCornerRadius="14dp"
+        app:cardElevation="3dp">
 
         <LinearLayout
             android:id="@+id/btnCashOut"
             android:layout_width="match_parent"
-            android:layout_height="60dp"
+            android:layout_height="56dp"
             android:background="@drawable/button_cashout"
             android:clickable="true"
             android:focusable="true"
@@ -66,9 +67,9 @@
             android:orientation="horizontal">
 
             <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:layout_marginEnd="8dp"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:layout_marginEnd="10dp"
                 android:src="@drawable/ic_minus"
                 app:tint="#FFFFFF" />
 
@@ -78,8 +79,9 @@
                 android:fontFamily="@font/app_font"
                 android:text="CASH OUT"
                 android:textColor="#FFFFFF"
-                android:textSize="18sp"
-                android:textStyle="bold" />
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.04" />
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 </LinearLayout>

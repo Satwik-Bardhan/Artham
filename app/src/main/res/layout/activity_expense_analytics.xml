@@ -126,7 +126,7 @@
                     android:id="@+id/totalExpenseCard"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginHorizontal="16dp"
+                    android:layout_marginHorizontal="12dp"
                     app:cardBackgroundColor="?attr/chk_surfaceColor"
                     app:cardCornerRadius="16dp"
                     app:cardElevation="2dp"
@@ -180,7 +180,7 @@
                         android:layout_height="320dp"
                         android:layout_marginTop="16dp"
                         android:layout_marginBottom="24dp"
-                        android:layout_marginHorizontal="16dp" />
+                        android:layout_marginHorizontal="12dp" />
 
                     <!-- Breakdown Header -->
                     <TextView
@@ -188,7 +188,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="8dp"
                         android:fontFamily="@font/app_font"
-                        android:paddingHorizontal="16dp"
+                        android:paddingHorizontal="12dp"
                         android:text="Category Breakdown"
                         android:textColor="?attr/chk_textColorPrimary"
                         android:textSize="16sp"

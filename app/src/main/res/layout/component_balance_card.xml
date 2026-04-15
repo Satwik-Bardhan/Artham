@@ -5,21 +5,21 @@
     android:id="@+id/balanceCardView"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="16dp"
+    android:layout_margin="12dp"
     android:clickable="true"
     android:focusable="true"
     android:foreground="?android:attr/selectableItemBackground"
-    app:cardCornerRadius="10dp"
-    app:cardElevation="2dp">
+    app:cardCornerRadius="16dp"
+    app:cardElevation="3dp">
 
     <RelativeLayout
         android:id="@+id/balanceCard"
         android:layout_width="match_parent"
-        android:layout_height="220dp"
+        android:layout_height="230dp"
         android:background="@drawable/cash_card"
-        android:padding="16dp">
+        android:padding="20dp">
 
-        <!-- UID Section -->
+        <!-- UID Section — Frosted Glass Pill -->
         <LinearLayout
             android:id="@+id/uidSection"
             android:layout_width="match_parent"
@@ -27,7 +27,7 @@
             android:background="@drawable/uid_bg"
             android:gravity="center_vertical"
             android:orientation="horizontal"
-            android:paddingHorizontal="12dp"
+            android:paddingHorizontal="14dp"
             android:paddingVertical="6dp"
             android:layout_alignParentTop="true">
 
@@ -39,33 +39,34 @@
                 android:fontFamily="@font/app_font"
                 android:gravity="center"
                 android:text="UID User Unique Id"
-                android:textColor="#CCCCCC"
-                android:textSize="12sp"
+                android:textColor="#BBBBBB"
+                android:textSize="11sp"
+                android:letterSpacing="0.04"
                 android:ellipsize="end"
                 android:maxLines="1"
                 tools:ignore="HardcodedText" />
 
             <ImageView
                 android:id="@+id/copyUidButton"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
                 android:layout_marginStart="8dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:clickable="true"
                 android:contentDescription="Copy UID"
                 android:focusable="true"
-                android:padding="4dp"
+                android:padding="3dp"
                 android:src="@drawable/ic_copy"
-                app:tint="#CCCCCC" />
+                app:tint="#BBBBBB" />
         </LinearLayout>
 
-        <!-- Balance Section -->
+        <!-- Balance Section — Hero Display -->
         <LinearLayout
             android:id="@+id/balanceSection"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/uidSection"
-            android:layout_marginTop="6dp"
+            android:layout_marginTop="10dp"
             android:gravity="center_horizontal"
             android:orientation="vertical">
 
@@ -73,34 +74,35 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/app_font"
-                android:text="Balance:"
-                android:textColor="#CCCCCC"
-                android:textSize="13sp"
+                android:text="BALANCE"
+                android:textColor="#AAAAAA"
+                android:textSize="11sp"
+                android:letterSpacing="0.15"
                 tools:ignore="HardcodedText" />
 
             <TextView
                 android:id="@+id/balanceText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
+                android:layout_marginTop="4dp"
                 android:contentDescription="Current balance amount"
                 android:fontFamily="@font/app_font"
                 android:gravity="center"
                 android:maxLines="2"
                 android:text="₹0.00"
                 android:textColor="#FFFFFF"
-                android:textSize="32sp"
+                android:textSize="34sp"
                 android:textStyle="bold"
                 tools:ignore="HardcodedText" />
         </LinearLayout>
 
-        <!-- In/Out Section -->
+        <!-- In/Out Section — Split Display -->
         <LinearLayout
             android:id="@+id/inOutSection"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/balanceSection"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="14dp"
             android:gravity="center"
             android:orientation="horizontal">
 
@@ -115,9 +117,10 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/app_font"
-                    android:text="Total In"
-                    android:textColor="#CCCCCC"
-                    android:textSize="14sp"
+                    android:text="TOTAL IN"
+                    android:textColor="#AAAAAA"
+                    android:textSize="11sp"
+                    android:letterSpacing="0.08"
                     tools:ignore="HardcodedText" />
 
                 <TextView
@@ -135,9 +138,9 @@
             </LinearLayout>
 
             <View
-                android:layout_width="2dp"
-                android:layout_height="40dp"
-                android:background="#666666" />
+                android:layout_width="1dp"
+                android:layout_height="36dp"
+                android:background="#33FFFFFF" />
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -150,9 +153,10 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/app_font"
-                    android:text="Total Out"
-                    android:textColor="#CCCCCC"
-                    android:textSize="14sp"
+                    android:text="TOTAL OUT"
+                    android:textColor="#AAAAAA"
+                    android:textSize="11sp"
+                    android:letterSpacing="0.08"
                     tools:ignore="HardcodedText" />
 
                 <TextView
@@ -170,21 +174,22 @@
             </LinearLayout>
         </LinearLayout>
 
-        <!-- User Name (CENTERED) -->
+        <!-- User Name (Bottom Center) -->
         <TextView
             android:id="@+id/userNameBottom"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@id/inOutSection"
             android:layout_centerHorizontal="true"
-            android:layout_marginTop="15dp"
+            android:layout_marginTop="12dp"
             android:fontFamily="@font/app_font"
             android:text="User Name"
-            android:textColor="#CCCCCC"
-            android:textSize="12sp"
+            android:textColor="#999999"
+            android:textSize="11sp"
+            android:letterSpacing="0.04"
             tools:ignore="HardcodedText" />
 
-        <!-- Tap to Flip (Bottom Right) -->
+        <!-- Tap to Flip hint (Bottom Right) -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -192,7 +197,7 @@
             android:layout_alignParentEnd="true"
             android:fontFamily="@font/app_font"
             android:text="Tap to flip"
-            android:textColor="#999999"
+            android:textColor="#666666"
             android:textSize="10sp"
             android:textStyle="italic"
             tools:ignore="HardcodedText" />

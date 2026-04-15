@@ -4,30 +4,40 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:paddingBottom="20dp">
+    android:paddingTop="4dp"
+    android:paddingBottom="24dp">
 
-    <!-- Section 1: User Box Card (matches userBoxCard - headerColor, 8dp corner, 2dp elev) -->
-    <androidx.cardview.widget.CardView
+    <!-- Section 1: User Box Card (MaterialCardView, 16dp corner, 1dp stroke) -->
+    <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:cardBackgroundColor="?attr/chk_headerColor"
-        app:cardCornerRadius="8dp"
-        app:cardElevation="2dp">
+        app:cardCornerRadius="16dp"
+        app:cardElevation="1dp"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/chk_dividerHorizontal">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
             android:orientation="horizontal"
-            android:padding="10dp">
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="14dp">
 
-            <View
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:layout_marginEnd="16dp"
-                android:alpha="0.15"
-                android:background="@drawable/circle_shape"
-                android:backgroundTint="?attr/chk_textColorHint" />
+            <!-- Icon chip -->
+            <FrameLayout
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:layout_marginEnd="14dp">
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:alpha="0.15"
+                    android:background="@drawable/circle_shape"
+                    android:backgroundTint="?attr/chk_textColorHint" />
+            </FrameLayout>
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -37,35 +47,44 @@
 
                 <View
                     android:layout_width="148dp"
-                    android:layout_height="18dp"
+                    android:layout_height="17dp"
                     android:alpha="0.15"
                     android:background="@drawable/bg_rounded_tag"
                     android:backgroundTint="?attr/chk_textColorHint" />
 
                 <View
                     android:layout_width="170dp"
-                    android:layout_height="13dp"
-                    android:layout_marginTop="2dp"
+                    android:layout_height="12dp"
+                    android:layout_marginTop="4dp"
                     android:alpha="0.1"
                     android:background="@drawable/bg_rounded_tag"
                     android:backgroundTint="?attr/chk_textColorHint" />
             </LinearLayout>
-        </LinearLayout>
-    </androidx.cardview.widget.CardView>
 
-    <!-- Section 2: Balance Card (matches component_balance_card - 10dp corner, 2dp elev, marginTop=12dp) -->
+            <!-- Chevron placeholder -->
+            <View
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginStart="8dp"
+                android:alpha="0.1"
+                android:background="@drawable/circle_shape"
+                android:backgroundTint="?attr/chk_textColorHint" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Section 2: Balance Card (230dp, 16dp corner, 3dp elev) -->
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="16dp"
         app:cardBackgroundColor="?attr/chk_surfaceColor"
-        app:cardCornerRadius="10dp"
-        app:cardElevation="2dp">
+        app:cardCornerRadius="16dp"
+        app:cardElevation="3dp">
 
         <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="220dp"
-            android:padding="16dp">
+            android:layout_height="230dp"
+            android:padding="20dp">
 
             <LinearLayout
                 android:id="@+id/skelUidSection"
@@ -74,12 +93,12 @@
                 android:layout_alignParentTop="true"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
-                android:paddingHorizontal="12dp"
+                android:paddingHorizontal="14dp"
                 android:paddingVertical="6dp">
 
                 <View
                     android:layout_width="0dp"
-                    android:layout_height="30dp"
+                    android:layout_height="28dp"
                     android:layout_marginEnd="16dp"
                     android:layout_weight="1"
                     android:alpha="0.1"
@@ -87,8 +106,8 @@
                     android:backgroundTint="?attr/chk_textColorHint" />
 
                 <View
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
                     android:alpha="0.15"
                     android:background="@drawable/circle_shape"
                     android:backgroundTint="?attr/chk_textColorHint" />
@@ -102,11 +121,19 @@
                 android:layout_centerHorizontal="true"
                 android:layout_marginTop="10dp"
                 android:gravity="center_horizontal"
-                android:orientation="horizontal">
+                android:orientation="vertical">
+
+                <View
+                    android:layout_width="60dp"
+                    android:layout_height="10dp"
+                    android:alpha="0.1"
+                    android:background="@drawable/bg_rounded_tag"
+                    android:backgroundTint="?attr/chk_textColorHint" />
 
                 <View
                     android:layout_width="180dp"
                     android:layout_height="36dp"
+                    android:layout_marginTop="6dp"
                     android:alpha="0.15"
                     android:background="@drawable/bg_rounded_tag"
                     android:backgroundTint="?attr/chk_textColorHint" />
@@ -117,7 +144,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/skelBalanceSection"
-                android:layout_marginTop="10dp"
+                android:layout_marginTop="14dp"
                 android:gravity="center"
                 android:orientation="horizontal">
 
@@ -129,8 +156,8 @@
                     android:orientation="vertical">
 
                     <View
-                        android:layout_width="60dp"
-                        android:layout_height="12dp"
+                        android:layout_width="50dp"
+                        android:layout_height="10dp"
                         android:alpha="0.1"
                         android:background="@drawable/bg_rounded_tag"
                         android:backgroundTint="?attr/chk_textColorHint" />
@@ -145,8 +172,8 @@
                 </LinearLayout>
 
                 <View
-                    android:layout_width="2dp"
-                    android:layout_height="40dp"
+                    android:layout_width="1dp"
+                    android:layout_height="36dp"
                     android:alpha="0.1"
                     android:background="?attr/chk_textColorHint" />
 
@@ -158,8 +185,8 @@
                     android:orientation="vertical">
 
                     <View
-                        android:layout_width="60dp"
-                        android:layout_height="12dp"
+                        android:layout_width="50dp"
+                        android:layout_height="10dp"
                         android:alpha="0.1"
                         android:background="@drawable/bg_rounded_tag"
                         android:backgroundTint="?attr/chk_textColorHint" />
@@ -177,10 +204,10 @@
             <View
                 android:id="@+id/skelUserName"
                 android:layout_width="100dp"
-                android:layout_height="12dp"
+                android:layout_height="11dp"
                 android:layout_below="@id/skelInOutSection"
                 android:layout_centerHorizontal="true"
-                android:layout_marginTop="15dp"
+                android:layout_marginTop="12dp"
                 android:alpha="0.1"
                 android:background="@drawable/bg_rounded_tag"
                 android:backgroundTint="?attr/chk_textColorHint" />
@@ -197,25 +224,25 @@
         </RelativeLayout>
     </androidx.cardview.widget.CardView>
 
-    <!-- Section 3: Action Buttons (matches layout_home_action_buttons - CardView wrappers, 12dp corner, 4dp elev) -->
+    <!-- Section 3: Action Buttons (14dp corner, 3dp elev, 56dp height) -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:paddingHorizontal="12dp"
-        android:paddingVertical="8dp">
+        android:paddingHorizontal="4dp"
+        android:paddingVertical="10dp">
 
         <androidx.cardview.widget.CardView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
+            android:layout_marginEnd="6dp"
             android:layout_weight="1"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="4dp">
+            app:cardCornerRadius="14dp"
+            app:cardElevation="3dp">
 
             <View
                 android:layout_width="match_parent"
-                android:layout_height="60dp"
+                android:layout_height="56dp"
                 android:alpha="0.1"
                 android:background="@drawable/bg_rounded_square_soft"
                 android:backgroundTint="?attr/chk_textColorHint" />
@@ -224,29 +251,28 @@
         <androidx.cardview.widget.CardView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
+            android:layout_marginStart="6dp"
             android:layout_weight="1"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="4dp">
+            app:cardCornerRadius="14dp"
+            app:cardElevation="3dp">
 
             <View
                 android:layout_width="match_parent"
-                android:layout_height="60dp"
+                android:layout_height="56dp"
                 android:alpha="0.1"
                 android:background="@drawable/bg_rounded_square_soft"
                 android:backgroundTint="?attr/chk_textColorHint" />
         </androidx.cardview.widget.CardView>
     </LinearLayout>
 
-    <!-- Section 4: Daily Summary (matches layout_daily_summary_header - marginTop=12dp, marginH=4dp, 12dp corner, 1dp stroke) -->
+    <!-- Section 4: Daily Summary (16dp corner, 1dp stroke) -->
     <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginHorizontal="4dp"
         android:layout_marginTop="12dp"
-        android:layout_marginBottom="8dp"
+        android:layout_marginBottom="12dp"
         app:cardBackgroundColor="?attr/chk_surfaceColor"
-        app:cardCornerRadius="12dp"
+        app:cardCornerRadius="16dp"
         app:cardElevation="0dp"
         app:strokeColor="?attr/chk_dividerHorizontal"
         app:strokeWidth="1dp">
@@ -257,7 +283,7 @@
             android:gravity="center_vertical"
             android:orientation="horizontal"
             android:paddingHorizontal="16dp"
-            android:paddingVertical="12dp">
+            android:paddingVertical="14dp">
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -270,8 +296,7 @@
                     android:layout_width="40dp"
                     android:layout_height="40dp"
                     android:alpha="0.1"
-                    android:background="@drawable/bg_rounded_square_soft"
-                    android:backgroundTint="?attr/chk_textColorHint" />
+                    android:background="@drawable/bg_icon_chip" />
 
                 <LinearLayout
                     android:layout_width="wrap_content"
@@ -315,8 +340,7 @@
                     android:layout_width="40dp"
                     android:layout_height="40dp"
                     android:alpha="0.1"
-                    android:background="@drawable/bg_rounded_square_soft"
-                    android:backgroundTint="?attr/chk_textColorHint" />
+                    android:background="@drawable/bg_icon_chip" />
 
                 <LinearLayout
                     android:layout_width="wrap_content"
@@ -344,26 +368,29 @@
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 
-    <!-- Section 5: Transaction Table Card (matches transactionListCard - surfaceColor, 12dp corner, 2dp elev) -->
-    <androidx.cardview.widget.CardView
+    <!-- Section 5: Transaction Table Card (16dp corner, 1dp stroke) -->
+    <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:cardBackgroundColor="?attr/chk_surfaceColor"
-        app:cardCornerRadius="12dp"
-        app:cardElevation="2dp">
+        app:cardCornerRadius="16dp"
+        app:cardElevation="1dp"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/chk_dividerHorizontal">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <!-- Header row (weight 2:1:1:1, padding=12dp) -->
+            <!-- Header row -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
-                android:padding="12dp">
+                android:paddingHorizontal="16dp"
+                android:paddingVertical="14dp">
 
                 <View
                     android:layout_width="0dp"
@@ -427,7 +454,8 @@
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
-                android:padding="12dp">
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="14dp">
 
                 <View
                     android:layout_width="0dp"
@@ -491,7 +519,8 @@
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
-                android:padding="12dp">
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="14dp">
 
                 <View
                     android:layout_width="0dp"
@@ -555,7 +584,8 @@
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
-                android:padding="12dp">
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="14dp">
 
                 <View
                     android:layout_width="0dp"
@@ -608,5 +638,5 @@
             </LinearLayout>
 
         </LinearLayout>
-    </androidx.cardview.widget.CardView>
+    </com.google.android.material.card.MaterialCardView>
 </LinearLayout>

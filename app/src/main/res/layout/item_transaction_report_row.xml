@@ -4,11 +4,11 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
-    android:paddingVertical="12dp"
-    android:paddingHorizontal="8dp"
+    android:paddingVertical="14dp"
+    android:paddingHorizontal="12dp"
     android:gravity="center_vertical"
     android:background="?attr/selectableItemBackground"
-    android:minHeight="48dp">
+    android:minHeight="52dp">
 
     <TextView
         android:id="@+id/rowCategory"

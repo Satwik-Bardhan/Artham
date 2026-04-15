@@ -9,6 +9,7 @@
     android:fitsSystemWindows="true"
     tools:context=".HomePage">
 
+    <!-- Sticky Action Buttons (shown on scroll) -->
     <FrameLayout
         android:id="@+id/stickyActionButtonsContainer"
         android:layout_width="match_parent"
@@ -23,6 +24,7 @@
             layout="@layout/layout_home_action_buttons" />
     </FrameLayout>
 
+    <!-- Bottom Navigation -->
     <include
         android:id="@+id/bottomNavCard"
         layout="@layout/layout_bottom_navigation"
@@ -30,6 +32,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true" />
 
+    <!-- Skeleton Loader (global) -->
     <com.facebook.shimmer.ShimmerFrameLayout
         android:id="@+id/skeletonLayout"
         android:layout_width="match_parent"
@@ -41,6 +44,9 @@
     </com.facebook.shimmer.ShimmerFrameLayout>
 
 
+    <!-- ═══════════════════════════════════════════════════════════════
+         MAIN SCROLLABLE CONTENT
+         ═══════════════════════════════════════════════════════════════ -->
     <androidx.core.widget.NestedScrollView
         android:id="@+id/mainScrollView"
         android:layout_width="match_parent"
@@ -54,6 +60,7 @@
             android:layout_height="wrap_content"
             android:paddingHorizontal="12dp">
 
+            <!-- Shimmer Skeleton (inside scroll) -->
             <com.facebook.shimmer.ShimmerFrameLayout
                 android:id="@+id/homeShimmerLayout"
                 android:layout_width="match_parent"
@@ -69,22 +76,31 @@
                     android:layout_height="wrap_content" />
             </com.facebook.shimmer.ShimmerFrameLayout>
 
+            <!-- ═══════════════════════════════════════════════════════
+                 REAL CONTENT (shown after loading)
+                 ═══════════════════════════════════════════════════════ -->
             <LinearLayout
                 android:id="@+id/homeContentLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:paddingBottom="20dp"
+                android:paddingTop="4dp"
+                android:paddingBottom="24dp"
                 android:visibility="gone"
                 tools:visibility="visible">
 
-                <androidx.cardview.widget.CardView
+                <!-- ─────────────────────────────────────────────────
+                     SECTION 1: Current Cashbook Header
+                     ───────────────────────────────────────────────── -->
+                <com.google.android.material.card.MaterialCardView
                     android:id="@+id/userBoxCard"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     app:cardBackgroundColor="?attr/chk_headerColor"
-                    app:cardCornerRadius="8dp"
-                    app:cardElevation="2dp">
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="1dp"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="?attr/chk_dividerHorizontal">
 
                     <LinearLayout
                         android:id="@+id/userBox"
@@ -92,14 +108,30 @@
                         android:layout_height="wrap_content"
                         android:gravity="center_vertical"
                         android:orientation="horizontal"
-                        android:padding="10dp">
+                        android:paddingHorizontal="16dp"
+                        android:paddingVertical="14dp"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:background="?attr/selectableItemBackground">
 
-                        <ImageView
-                            android:layout_width="36dp"
-                            android:layout_height="36dp"
-                            android:layout_marginEnd="16dp"
-                            android:src="@drawable/ic_book"
-                            app:tint="?attr/chk_balanceColor" />
+                        <!-- Icon with tinted background chip -->
+                        <FrameLayout
+                            android:layout_width="42dp"
+                            android:layout_height="42dp"
+                            android:layout_marginEnd="14dp">
+
+                            <View
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:background="@drawable/bg_icon_chip" />
+
+                            <ImageView
+                                android:layout_width="22dp"
+                                android:layout_height="22dp"
+                                android:layout_gravity="center"
+                                android:src="@drawable/ic_book"
+                                app:tint="?attr/chk_balanceColor" />
+                        </FrameLayout>
 
                         <LinearLayout
                             android:layout_width="0dp"
@@ -114,8 +146,10 @@
                                 android:fontFamily="@font/app_font"
                                 android:text="Current Book"
                                 android:textColor="?attr/chk_textColorPrimary"
-                                android:textSize="18sp"
-                                android:textStyle="bold" />
+                                android:textSize="17sp"
+                                android:textStyle="bold"
+                                android:maxLines="1"
+                                android:ellipsize="end" />
 
                             <TextView
                                 android:id="@+id/lastOpenedText"
@@ -125,42 +159,66 @@
                                 android:fontFamily="@font/app_font"
                                 android:text="Last opened: Just now"
                                 android:textColor="?attr/chk_textColorSecondary"
-                                android:textSize="13sp" />
+                                android:textSize="12sp" />
                         </LinearLayout>
-                    </LinearLayout>
-                </androidx.cardview.widget.CardView>
 
+                        <!-- Chevron arrow for visual affordance -->
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_marginStart="8dp"
+                            android:src="@drawable/ic_chevron_right"
+                            app:tint="?attr/chk_textColorHint"
+                            android:contentDescription="Switch cashbook" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Hidden cashbook name holder (used by ViewModel) -->
                 <TextView
                     android:id="@+id/currentCashbookText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:visibility="gone" />
 
+                <!-- ─────────────────────────────────────────────────
+                     SECTION 2: Balance Card (Flippable)
+                     ───────────────────────────────────────────────── -->
                 <include
                     android:id="@+id/balanceCardView"
                     layout="@layout/component_balance_card"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp" />
+                    android:layout_marginTop="16dp" />
 
+                <!-- ─────────────────────────────────────────────────
+                     SECTION 3: Cash In / Cash Out Buttons
+                     ───────────────────────────────────────────────── -->
                 <include
                     android:id="@+id/originalButtons"
                     layout="@layout/layout_home_action_buttons" />
 
+                <!-- ─────────────────────────────────────────────────
+                     SECTION 4: Daily Summary Header
+                     ───────────────────────────────────────────────── -->
                 <include
                     android:id="@+id/dailySummaryInclude"
                     layout="@layout/layout_daily_summary_header"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="8dp" />
+                    android:layout_marginBottom="12dp" />
 
-                <androidx.cardview.widget.CardView
+                <!-- ─────────────────────────────────────────────────
+                     SECTION 5: Today's Transactions Card
+                     ───────────────────────────────────────────────── -->
+                <com.google.android.material.card.MaterialCardView
                     android:id="@+id/transactionListCard"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     app:cardBackgroundColor="?attr/chk_surfaceColor"
-                    app:cardCornerRadius="12dp"
-                    app:cardElevation="2dp">
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="1dp"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="?attr/chk_dividerHorizontal">
 
                     <LinearLayout
                         android:id="@+id/transaction_section"
@@ -168,14 +226,15 @@
                         android:layout_height="wrap_content"
                         android:orientation="vertical">
 
+                        <!-- Transaction Table Header -->
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:orientation="horizontal"
                             android:background="?attr/chk_surfaceColor"
-                            android:padding="12dp"
-                            android:gravity="center_vertical"
-                            android:elevation="1dp">
+                            android:paddingHorizontal="16dp"
+                            android:paddingVertical="14dp"
+                            android:gravity="center_vertical">
 
                             <TextView
                                 android:id="@+id/transactionCount"
@@ -184,7 +243,6 @@
                                 android:layout_weight="2"
                                 android:fontFamily="@font/app_font"
                                 android:gravity="start"
-                                android:paddingStart="4dp"
                                 android:text="Today's Transactions"
                                 android:textColor="?attr/chk_balanceColor"
                                 android:textSize="14sp"
@@ -197,9 +255,10 @@
                                 android:fontFamily="@font/app_font"
                                 android:gravity="center"
                                 android:text="MODE"
-                                android:textColor="?attr/chk_textColorSecondary"
-                                android:textSize="12sp"
-                                android:textStyle="bold" />
+                                android:textColor="?attr/chk_textColorHint"
+                                android:textSize="11sp"
+                                android:textStyle="bold"
+                                android:letterSpacing="0.08" />
 
                             <TextView
                                 android:layout_width="0dp"
@@ -209,8 +268,9 @@
                                 android:gravity="center"
                                 android:text="IN"
                                 android:textColor="?attr/chk_incomeColor"
-                                android:textSize="12sp"
-                                android:textStyle="bold" />
+                                android:textSize="11sp"
+                                android:textStyle="bold"
+                                android:letterSpacing="0.08" />
 
                             <TextView
                                 android:layout_width="0dp"
@@ -220,8 +280,9 @@
                                 android:gravity="center"
                                 android:text="OUT"
                                 android:textColor="?attr/chk_expenseColor"
-                                android:textSize="12sp"
-                                android:textStyle="bold" />
+                                android:textSize="11sp"
+                                android:textStyle="bold"
+                                android:letterSpacing="0.08" />
                         </LinearLayout>
 
                         <View
@@ -229,6 +290,7 @@
                             android:layout_height="1dp"
                             android:background="?attr/chk_dividerHorizontal" />
 
+                        <!-- Transaction Rows Container -->
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
@@ -242,6 +304,7 @@
                                 android:stretchColumns="*">
                             </TableLayout>
 
+                            <!-- Empty State -->
                             <LinearLayout
                                 android:id="@+id/emptyStateView"
                                 android:layout_width="match_parent"
@@ -249,14 +312,17 @@
                                 android:orientation="vertical"
                                 android:gravity="center"
                                 android:visibility="gone"
-                                android:padding="24dp">
+                                android:paddingHorizontal="24dp"
+                                android:paddingTop="32dp"
+                                android:paddingBottom="28dp">
 
                                 <ImageView
-                                    android:layout_width="80dp"
-                                    android:layout_height="80dp"
+                                    android:layout_width="88dp"
+                                    android:layout_height="88dp"
                                     android:src="@drawable/ic_empty_state"
                                     android:layout_marginBottom="16dp"
-                                    app:tint="?attr/chk_textColorHint" />
+                                    app:tint="?attr/chk_textColorHint"
+                                    android:alpha="0.6" />
 
                                 <TextView
                                     android:layout_width="wrap_content"
@@ -267,36 +333,59 @@
                                     android:textSize="16sp"
                                     android:textStyle="bold" />
 
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="4dp"
+                                    android:text="Start tracking by adding your first entry"
+                                    android:fontFamily="@font/app_font"
+                                    android:textColor="?attr/chk_textColorHint"
+                                    android:textSize="13sp" />
+
+                                <!-- Helpful Tip Banner -->
                                 <LinearLayout
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:orientation="horizontal"
-                                    android:background="@drawable/rounded_surface_variant"
+                                    android:background="@drawable/bg_rounded_square_soft"
                                     android:padding="16dp"
-                                    android:layout_marginTop="20dp"
+                                    android:layout_marginTop="24dp"
                                     android:gravity="center_vertical">
 
-                                    <ImageView
-                                        android:layout_width="24dp"
-                                        android:layout_height="24dp"
-                                        android:src="@drawable/ic_info"
-                                        app:tint="?attr/chk_balanceColor"
-                                        android:layout_marginEnd="12dp"/>
+                                    <FrameLayout
+                                        android:layout_width="36dp"
+                                        android:layout_height="36dp"
+                                        android:layout_marginEnd="12dp">
+
+                                        <View
+                                            android:layout_width="match_parent"
+                                            android:layout_height="match_parent"
+                                            android:background="@drawable/bg_icon_chip" />
+
+                                        <ImageView
+                                            android:layout_width="18dp"
+                                            android:layout_height="18dp"
+                                            android:layout_gravity="center"
+                                            android:src="@drawable/ic_info"
+                                            app:tint="?attr/chk_balanceColor" />
+                                    </FrameLayout>
 
                                     <TextView
-                                        android:layout_width="wrap_content"
+                                        android:layout_width="0dp"
                                         android:layout_height="wrap_content"
-                                        android:text="Click on 'Cash In' or 'Cash Out' above to add your first transaction for today. It will appear right here!"
+                                        android:layout_weight="1"
+                                        android:text="Tap 'Cash In' or 'Cash Out' above to add your first transaction for today."
                                         android:fontFamily="@font/app_font"
                                         android:textColor="?attr/chk_textColorSecondary"
                                         android:textSize="13sp"
-                                        android:lineSpacingExtra="4dp"/>
+                                        android:lineSpacingExtra="3dp" />
                                 </LinearLayout>
                             </LinearLayout>
                         </LinearLayout>
                     </LinearLayout>
-                </androidx.cardview.widget.CardView>
+                </com.google.android.material.card.MaterialCardView>
             </LinearLayout>
         </FrameLayout>
     </androidx.core.widget.NestedScrollView>
+
 </RelativeLayout>

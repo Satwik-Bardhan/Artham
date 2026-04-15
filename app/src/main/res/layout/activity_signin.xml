@@ -90,7 +90,7 @@
         android:layout_height="match_parent"
         android:layout_below="@id/headerCard"
         android:fillViewport="true"
-        android:padding="16dp">
+        android:padding="12dp">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"

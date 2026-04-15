@@ -83,7 +83,7 @@
                 android:id="@+id/categorySummaryCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="16dp"
+                android:layout_marginHorizontal="12dp"
                 android:layout_marginTop="16dp"
                 app:cardBackgroundColor="?attr/chk_surfaceColor"
                 app:cardCornerRadius="20dp"
@@ -243,7 +243,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
-                android:paddingHorizontal="16dp"
+                android:paddingHorizontal="12dp"
                 android:paddingTop="24dp"
                 android:paddingBottom="8dp">
 

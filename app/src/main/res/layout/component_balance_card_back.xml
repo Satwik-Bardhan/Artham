@@ -4,35 +4,36 @@
     android:id="@+id/balanceCardBack"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="16dp"
+    android:layout_margin="12dp"
     android:clickable="true"
     android:focusable="true"
     android:foreground="?android:attr/selectableItemBackground"
-    app:cardCornerRadius="10dp"
-    app:cardElevation="2dp">
+    app:cardCornerRadius="16dp"
+    app:cardElevation="3dp">
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="220dp"
+        android:layout_height="230dp"
         android:background="@drawable/cash_card"
-        android:padding="16dp">
+        android:padding="20dp">
 
+        <!-- Profile Section -->
         <LinearLayout
             android:id="@+id/profileSection"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:layout_marginTop="20dp"
-            android:layout_marginBottom="12dp">
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="14dp">
 
             <com.google.android.material.imageview.ShapeableImageView
                 android:id="@+id/backProfileImage"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
                 android:scaleType="centerCrop"
                 android:src="@drawable/ic_person_placeholder"
-                android:background="#33FFFFFF"
+                android:background="#22FFFFFF"
                 app:shapeAppearanceOverlay="@style/CircleImageViewStyle" />
 
             <LinearLayout
@@ -57,21 +58,25 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
                     android:fontFamily="@font/app_font"
                     android:text="Artham Member"
-                    android:textColor="#CCCCCC"
-                    android:textSize="12sp"/>
+                    android:textColor="#AAAAAA"
+                    android:textSize="12sp"
+                    android:letterSpacing="0.04"/>
             </LinearLayout>
         </LinearLayout>
 
+        <!-- Divider -->
         <View
             android:id="@+id/divider"
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:background="#33FFFFFF"
+            android:background="#22FFFFFF"
             android:layout_below="@id/profileSection"
-            android:layout_marginBottom="16dp"/>
+            android:layout_marginBottom="18dp"/>
 
+        <!-- Social Media Links -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -80,61 +85,58 @@
             android:layout_below="@id/divider"
             android:layout_marginBottom="16dp">
 
-
             <ImageView
                 android:id="@+id/btnInstagram"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
                 android:src="@drawable/instagram"
                 android:contentDescription="Instagram"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:clickable="true"
                 android:focusable="true"
                 android:padding="4dp"
-                android:layout_marginEnd="20dp"/>
+                android:layout_marginEnd="24dp"/>
 
             <ImageView
                 android:id="@+id/btnFacebook"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
                 android:src="@drawable/facebook"
                 android:contentDescription="Facebook"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:clickable="true"
                 android:focusable="true"
                 android:padding="4dp"
-                android:layout_marginEnd="20dp"/>
+                android:layout_marginEnd="24dp"/>
 
             <ImageView
                 android:id="@+id/btnYoutube"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
                 android:src="@drawable/youtube"
                 android:contentDescription="YouTube"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:clickable="true"
                 android:focusable="true"
                 android:padding="4dp"
-                android:layout_marginEnd="20dp"/>
-
+                android:layout_marginEnd="24dp"/>
 
             <ImageView
                 android:id="@+id/btnWhatsapp"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
                 android:src="@drawable/whatsapp"
                 android:contentDescription="WhatsApp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:clickable="true"
                 android:focusable="true"
                 android:padding="4dp"
-                android:layout_marginEnd="20dp"/>
-
+                android:layout_marginEnd="24dp"/>
 
             <ImageView
                 android:id="@+id/btnGmail"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
                 android:src="@drawable/gmail"
                 android:contentDescription="Gmail"
                 android:background="?attr/selectableItemBackgroundBorderless"
@@ -143,31 +145,26 @@
                 android:padding="4dp"/>
         </LinearLayout>
 
-        <LinearLayout
+        <!-- Bottom Left: Made in India -->
+        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
             android:layout_alignParentStart="true"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
+            android:text="Made in india 🇮🇳 with ❤️"
+            android:textColor="#777777"
+            android:textSize="10sp"
+            android:fontFamily="@font/app_font"
+            android:letterSpacing="0.02"/>
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Made in india 🇮🇳 with ❤️"
-                android:textColor="#999999"
-                android:textSize="10sp"
-                android:fontFamily="@font/app_font"/>
-
-        </LinearLayout>
-
+        <!-- Bottom Right: Tap to flip -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
             android:layout_alignParentEnd="true"
             android:text="Tap to flip"
-            android:textColor="#999999"
+            android:textColor="#666666"
             android:textSize="10sp"
             android:fontFamily="@font/app_font"
             android:textStyle="italic" />

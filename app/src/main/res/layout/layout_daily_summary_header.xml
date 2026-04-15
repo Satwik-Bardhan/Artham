@@ -6,9 +6,8 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginTop="12dp"
-    android:layout_marginHorizontal="4dp"
     app:cardBackgroundColor="?attr/chk_surfaceColor"
-    app:cardCornerRadius="12dp"
+    app:cardCornerRadius="16dp"
     app:cardElevation="0dp"
     app:strokeWidth="1dp"
     app:strokeColor="?attr/chk_dividerHorizontal">
@@ -19,13 +18,14 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:paddingVertical="12dp"
+        android:paddingVertical="14dp"
         android:paddingHorizontal="16dp"
         android:baselineAligned="false"
         android:clickable="true"
         android:focusable="true"
         android:background="?attr/selectableItemBackground">
 
+        <!-- Date Section -->
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -35,8 +35,12 @@
 
             <FrameLayout
                 android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:background="@drawable/bg_rounded_square_soft">
+                android:layout_height="40dp">
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/bg_icon_chip" />
 
                 <ImageView
                     android:layout_width="20dp"
@@ -60,25 +64,29 @@
                     tools:text="DD MM YYYY"
                     android:fontFamily="@font/app_font"
                     android:textColor="?attr/chk_textColorPrimary"
-                    android:textSize="15sp"
+                    android:textSize="14sp"
                     android:textStyle="bold" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
                     android:text="Daily Summary"
                     android:fontFamily="@font/app_font"
-                    android:textColor="?attr/chk_textColorSecondary"
-                    android:textSize="11sp" />
+                    android:textColor="?attr/chk_textColorHint"
+                    android:textSize="11sp"
+                    android:letterSpacing="0.02" />
             </LinearLayout>
         </LinearLayout>
 
+        <!-- Vertical Divider -->
         <View
             android:layout_width="1dp"
             android:layout_height="32dp"
             android:background="?attr/chk_dividerHorizontal"
             android:layout_marginHorizontal="8dp"/>
 
+        <!-- Net Balance Section -->
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -89,8 +97,12 @@
 
             <FrameLayout
                 android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:background="@drawable/bg_rounded_square_soft">
+                android:layout_height="40dp">
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/bg_icon_chip" />
 
                 <ImageView
                     android:layout_width="20dp"
@@ -114,16 +126,18 @@
                     tools:text="₹00.00"
                     android:fontFamily="@font/app_font"
                     android:textColor="?attr/chk_incomeColor"
-                    android:textSize="15sp"
+                    android:textSize="14sp"
                     android:textStyle="bold" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
                     android:text="Net Balance"
                     android:fontFamily="@font/app_font"
-                    android:textColor="?attr/chk_textColorSecondary"
-                    android:textSize="11sp" />
+                    android:textColor="?attr/chk_textColorHint"
+                    android:textSize="11sp"
+                    android:letterSpacing="0.02" />
             </LinearLayout>
         </LinearLayout>
 
