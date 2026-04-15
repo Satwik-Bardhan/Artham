@@ -154,7 +154,7 @@
             android:screenOrientation="portrait" />
 
         <activity
-            android:name=".FiltersActivity"
+            android:name=".SearchFiltersActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
 

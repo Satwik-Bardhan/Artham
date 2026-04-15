@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     android:background="?attr/chk_backgroundColor"
     android:fitsSystemWindows="true"
-    tools:context=".FiltersActivity">
+    tools:context=".SearchFiltersActivity">
 
     <androidx.cardview.widget.CardView
         android:id="@+id/headerCard"

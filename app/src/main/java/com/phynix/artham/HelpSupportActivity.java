@@ -9,7 +9,6 @@ import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.widget.NestedScrollView;
 
 import com.phynix.artham.utils.ThemeManager;
 
@@ -80,7 +79,7 @@ public class HelpSupportActivity extends AppCompatActivity {
     private void setupFaqListeners() {
         setRedirect(R.id.faqAllTransactions, TransactionActivity.class);
         setRedirect(R.id.faqAnalytics, ExpenseAnalyticsActivity.class);
-        setRedirect(R.id.faqFilters, FiltersActivity.class);
+        setRedirect(R.id.faqFilters, SearchFiltersActivity.class);
         setRedirect(R.id.faqAddTransaction, CashInOutActivity.class);
         setRedirect(R.id.faqDownload, DownloadOptionsActivity.class);
         setRedirect(R.id.faqManageCategory, CategoryActivity.class);

@@ -21,6 +21,7 @@ import androidx.appcompat.app.AppCompatActivity;
 // UPDATED: Using the new CategoryPickerActivity
 import com.phynix.artham.activities.CategoryPickerActivity;
 import com.phynix.artham.utils.SnackbarHelper;
+import com.phynix.artham.utils.ThemeManager;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -32,7 +33,7 @@ import java.util.Set;
 /**
  * FiltersActivity - Advanced transaction filtering
  */
-public class FiltersActivity extends AppCompatActivity {
+public class SearchFiltersActivity extends AppCompatActivity {
 
     private static final String TAG = "FiltersActivity";
 
@@ -43,7 +44,8 @@ public class FiltersActivity extends AppCompatActivity {
     private TextView startDateText, endDateText, activeFiltersCount, selectedCategoryTextView;
     private RadioGroup inOutToggle, cashOnlineToggle;
     private EditText searchTransactionInput, filterTagsInput;
-    private LinearLayout categorySelectorLayout, partySelectorLayout;
+    private View categorySelectorCard;
+    private LinearLayout partySelectorLayout;
 
     // Filter State
     private Calendar startCalendar, endCalendar;
@@ -55,8 +57,9 @@ public class FiltersActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        ThemeManager.applyActivityTheme(this);
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_filters);
+        setContentView(R.layout.activity_search_filters);
         if (getSupportActionBar() != null) {
             getSupportActionBar().hide();
         }
@@ -92,7 +95,7 @@ public class FiltersActivity extends AppCompatActivity {
 
         // Category & Party
         selectedCategoryTextView = findViewById(R.id.selectedCategoryTextView);
-        categorySelectorLayout = findViewById(R.id.categorySelectorLayout);
+        categorySelectorCard = findViewById(R.id.categorySelectorCard);
         partySelectorLayout = findViewById(R.id.partySelectorLayout);
 
         // Tags
@@ -168,7 +171,7 @@ public class FiltersActivity extends AppCompatActivity {
         endDateLayout.setOnClickListener(v -> showDatePicker(false));
 
         // Category Listener
-        categorySelectorLayout.setOnClickListener(v -> {
+        categorySelectorCard.setOnClickListener(v -> {
             // UPDATED: Launch CategoryPickerActivity instead
             Intent categoryIntent = new Intent(this, CategoryPickerActivity.class);
             if (!selectedCategories.isEmpty()) {

@@ -449,24 +449,36 @@ public class TransactionActivity extends AppCompatActivity {
             }
             @Override public void afterTextChanged(Editable s) {}
         });
-        searchBinding.filterButton.setOnClickListener(v -> {
-            Intent intent = new Intent(this, FiltersActivity.class);
-            intent.putExtra("cashbook_id", currentCashbookId);
-            filterLauncher.launch(intent);
-        });
+
+        // Register the launcher BEFORE using it in click listener
         filterLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
             if (result.getResultCode() == RESULT_OK && result.getData() != null) {
                 Intent data = result.getData();
                 searchBinding.searchEditText.setText(data.getStringExtra("searchQuery"));
+
+                // Build paymentMode list from filter result
+                String paymentMode = data.getStringExtra("paymentMode");
+                java.util.ArrayList<String> paymentModes = null;
+                if (paymentMode != null && !"All".equals(paymentMode)) {
+                    paymentModes = new java.util.ArrayList<>();
+                    paymentModes.add(paymentMode);
+                }
+
                 if(viewModel!=null) viewModel.filter(
                         data.getStringExtra("searchQuery"),
                         data.getLongExtra("startDate", 0),
                         data.getLongExtra("endDate", 0),
                         data.getStringExtra("entryType"),
                         data.getStringArrayListExtra("categories"),
-                        null
+                        paymentModes
                 );
             }
+        });
+
+        searchBinding.filterButton.setOnClickListener(v -> {
+            Intent intent = new Intent(this, SearchFiltersActivity.class);
+            intent.putExtra("cashbook_id", currentCashbookId);
+            filterLauncher.launch(intent);
         });
     }
 
