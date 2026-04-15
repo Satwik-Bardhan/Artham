@@ -521,8 +521,11 @@ public class TransactionActivity extends AppCompatActivity {
 
     private void setupClickListeners() {
         binding.swipeRefreshLayout.setOnRefreshListener(() -> {
-            if (viewModel != null) viewModel.filter(searchBinding.searchEditText.getText().toString(), 0, 0, "All", null, null);
-            else binding.swipeRefreshLayout.setRefreshing(false);
+            if (viewModel != null) {
+                viewModel.refreshTransactions();
+            } else {
+                binding.swipeRefreshLayout.setRefreshing(false);
+            }
         });
 
         binding.allTransactionsButton.setOnClickListener(v -> {
