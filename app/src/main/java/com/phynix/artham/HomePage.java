@@ -14,6 +14,8 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -84,6 +86,21 @@ public class HomePage extends AppCompatActivity {
     // Utils
     private NumberFormat currencyFormat;
     private SwipeListener swipeListener;
+
+    // Skeleton loading timeout handler (force-hide after 2 seconds when offline)
+    private final Handler skeletonTimeoutHandler = new Handler(Looper.getMainLooper());
+    private final Runnable skeletonTimeoutRunnable = () -> {
+        // Force-hide the skeleton and show home content so the user can add entries offline
+        if (binding != null) {
+            if (binding.homeShimmerLayout != null) {
+                binding.homeShimmerLayout.stopShimmer();
+                binding.homeShimmerLayout.setVisibility(View.GONE);
+            }
+            if (binding.homeContentLayout != null) {
+                binding.homeContentLayout.setVisibility(View.VISIBLE);
+            }
+        }
+    };
 
     // Tracking for "Last Opened" logic
     private String currentActiveBookId = null;
@@ -391,7 +408,14 @@ public class HomePage extends AppCompatActivity {
                 if (binding.stickyActionButtonsContainer != null) {
                     binding.stickyActionButtonsContainer.setVisibility(View.GONE);
                 }
+
+                // Schedule a 2-second timeout to force-show home content when offline
+                skeletonTimeoutHandler.removeCallbacks(skeletonTimeoutRunnable);
+                skeletonTimeoutHandler.postDelayed(skeletonTimeoutRunnable, 1000);
             } else {
+                // Data loaded successfully — cancel any pending timeout
+                skeletonTimeoutHandler.removeCallbacks(skeletonTimeoutRunnable);
+
                 // Hide Skeleton, Stop Shimmer, Show Real Data
                 if (binding.homeShimmerLayout != null) {
                     binding.homeShimmerLayout.stopShimmer();
@@ -741,6 +765,8 @@ public class HomePage extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        // Clean up the skeleton timeout to prevent leaks
+        skeletonTimeoutHandler.removeCallbacks(skeletonTimeoutRunnable);
         if (userRef != null && userListener != null) {
             userRef.removeEventListener(userListener);
         }

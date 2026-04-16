@@ -1,6 +1,7 @@
 package com.phynix.artham.db;
 
 import android.app.Application;
+import android.content.Context;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -297,6 +298,46 @@ public class DataRepository {
                     });
         } else {
             if (callback != null) callback.onCallback(false);
+        }
+    }
+
+    /**
+     * Offline-aware transaction save.
+     * - If online: saves directly to Firebase.
+     * - If offline: queues locally for later sync.
+     *
+     * @param context    Application context for network checks and local storage
+     * @param cashbookId Target cashbook ID
+     * @param transaction The transaction to save
+     * @param callback   Returns true on success (either Firebase or local queue)
+     * @param offlineCallback Returns true if the entry was saved offline (for distinct UI feedback)
+     */
+    public void addTransactionOfflineAware(Context context, String cashbookId, TransactionModel transaction,
+                                           DataCallback<Boolean> callback, DataCallback<Boolean> offlineCallback) {
+        if (cashbookId == null || transaction == null) {
+            if (callback != null) callback.onCallback(false);
+            return;
+        }
+
+        if (com.phynix.artham.utils.NetworkMonitor.isOnline(context)) {
+            // Online — save directly to Firebase
+            addTransaction(cashbookId, transaction, success -> {
+                if (success) {
+                    if (callback != null) callback.onCallback(true);
+                } else {
+                    // Firebase failed even though online (e.g., auth issue) — queue offline as fallback
+                    Log.w(TAG, "Firebase save failed while online. Queueing offline as fallback.");
+                    com.phynix.artham.utils.OfflineTransactionManager.queueTransaction(context, cashbookId, transaction);
+                    if (callback != null) callback.onCallback(true);
+                    if (offlineCallback != null) offlineCallback.onCallback(true);
+                }
+            });
+        } else {
+            // Offline — save to local queue
+            Log.d(TAG, "Device offline. Saving transaction to local queue.");
+            com.phynix.artham.utils.OfflineTransactionManager.queueTransaction(context, cashbookId, transaction);
+            if (callback != null) callback.onCallback(true);
+            if (offlineCallback != null) offlineCallback.onCallback(true);
         }
     }
 

@@ -102,4 +102,7 @@ dependencies {
 
     implementation("com.facebook.shimmer:shimmer:0.5.0")
 
+    // --- Offline Support ---
+    implementation("com.google.code.gson:gson:2.10.1")
+
 }

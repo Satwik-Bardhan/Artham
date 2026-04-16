@@ -19,6 +19,7 @@ public class CashInOutViewModel extends AndroidViewModel {
     private final MutableLiveData<Boolean> isLoading = new MutableLiveData<>(false);
     private final MutableLiveData<String> errorMessage = new MutableLiveData<>();
     private final MutableLiveData<Boolean> operationSuccess = new MutableLiveData<>();
+    private final MutableLiveData<Boolean> savedOffline = new MutableLiveData<>();
 
     public CashInOutViewModel(@NonNull Application application) {
         super(application);
@@ -29,6 +30,7 @@ public class CashInOutViewModel extends AndroidViewModel {
     public LiveData<Boolean> getIsLoading() { return isLoading; }
     public LiveData<String> getErrorMessage() { return errorMessage; }
     public LiveData<Boolean> getOperationSuccess() { return operationSuccess; }
+    public LiveData<Boolean> getSavedOffline() { return savedOffline; }
 
     // --- Actions ---
 
@@ -36,14 +38,24 @@ public class CashInOutViewModel extends AndroidViewModel {
         if (!validateTransaction(transaction)) return;
 
         isLoading.setValue(true);
-        repository.addTransaction(cashbookId, transaction, success -> {
-            isLoading.postValue(false);
-            if (success) {
-                operationSuccess.postValue(true);
-            } else {
-                errorMessage.postValue("Failed to save transaction.");
-            }
-        });
+        repository.addTransactionOfflineAware(
+                getApplication(),
+                cashbookId,
+                transaction,
+                success -> {
+                    isLoading.postValue(false);
+                    if (success) {
+                        operationSuccess.postValue(true);
+                    } else {
+                        errorMessage.postValue("Failed to save transaction.");
+                    }
+                },
+                isOffline -> {
+                    if (isOffline) {
+                        savedOffline.postValue(true);
+                    }
+                }
+        );
     }
 
     public void updateTransaction(String cashbookId, TransactionModel transaction) {

@@ -168,6 +168,14 @@ public class CashInOutActivity extends AppCompatActivity {
                 }
             }
         });
+
+        viewModel.getSavedOffline().observe(this, isOffline -> {
+            if (isOffline != null && isOffline) {
+                Toast.makeText(this,
+                        "📱 Entry saved offline — will sync when connected",
+                        Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
     private void initializeUI() {
