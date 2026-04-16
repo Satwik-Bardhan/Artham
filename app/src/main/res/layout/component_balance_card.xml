@@ -174,21 +174,6 @@
             </LinearLayout>
         </LinearLayout>
 
-        <!-- User Name (Bottom Center) -->
-        <TextView
-            android:id="@+id/userNameBottom"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/inOutSection"
-            android:layout_centerHorizontal="true"
-            android:layout_marginTop="12dp"
-            android:fontFamily="@font/app_font"
-            android:text="User Name"
-            android:textColor="#999999"
-            android:textSize="11sp"
-            android:letterSpacing="0.04"
-            tools:ignore="HardcodedText" />
-
         <!-- Tap to Flip hint (Bottom Right) -->
         <TextView
             android:layout_width="wrap_content"
