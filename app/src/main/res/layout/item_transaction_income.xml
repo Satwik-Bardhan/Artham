@@ -94,9 +94,40 @@
                     android:background="@drawable/bg_tag_small"
                     android:paddingHorizontal="8dp"
                     android:paddingVertical="3dp"
-                    android:layout_marginEnd="12dp"
+                    android:layout_marginEnd="8dp"
                     android:textColor="?attr/chk_textColorSecondary"
                     android:textAllCaps="true"/>
+
+                <LinearLayout
+                    android:id="@+id/autoRepeatBadge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_tag_small"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="8dp"
+                    android:paddingVertical="3dp"
+                    android:layout_marginEnd="8dp"
+                    android:visibility="gone">
+
+                    <ImageView
+                        android:layout_width="12dp"
+                        android:layout_height="12dp"
+                        android:src="@drawable/ic_auto_repeat"
+                        app:tint="?attr/chk_primary_blue"
+                        tools:ignore="ContentDescription" />
+
+                    <TextView
+                        android:id="@+id/autoFrequencyText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="4dp"
+                        android:fontFamily="@font/app_font"
+                        android:textColor="?attr/chk_primary_blue"
+                        android:textSize="10sp"
+                        android:textStyle="bold"
+                        tools:text="Daily" />
+                </LinearLayout>
 
                 <ImageView
                     android:layout_width="14dp"

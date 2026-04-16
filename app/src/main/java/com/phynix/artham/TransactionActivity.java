@@ -620,6 +620,7 @@ public class TransactionActivity extends AppCompatActivity {
             @Override public void onEditClick(TransactionModel t) { openEditActivity(t); }
             @Override public void onDeleteClick(TransactionModel t) { showDeleteConfirmation(t); }
             @Override public void onCopyClick(TransactionModel t) { duplicateTransaction(t); }
+            @Override public void onAutoToggleClick(TransactionModel t) { showAutoToggleDialog(t); }
         });
         getSupportFragmentManager().beginTransaction().replace(R.id.transaction_fragment_container, transactionFragment).commit();
     }
@@ -644,6 +645,30 @@ public class TransactionActivity extends AppCompatActivity {
         newT.setPartyName(transaction.getPartyName()); newT.setRemark(transaction.getRemark() + " (Copy)");
         newT.setTimestamp(System.currentTimeMillis()); newT.setTags(transaction.getTags());
         viewModel.addTransaction(newT); showSnackbar("Duplicated");
+    }
+
+    private void showAutoToggleDialog(TransactionModel transaction) {
+        String currentFreq = transaction.getAutoFrequency();
+        String[] options = {"Daily", "Weekly", "Monthly", "Disable Auto"};
+
+        new AlertDialog.Builder(this)
+                .setTitle("Auto Repeat: " + (currentFreq != null ? currentFreq : "Off"))
+                .setItems(options, (dialog, which) -> {
+                    String newFreq;
+                    if (which == 3) {
+                        newFreq = null;
+                        showSnackbar("Auto repeat disabled");
+                    } else {
+                        newFreq = options[which];
+                        showSnackbar("Auto repeat set to " + newFreq);
+                    }
+                    transaction.setAutoFrequency(newFreq);
+                    if (viewModel != null) {
+                        viewModel.updateTransaction(transaction);
+                    }
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
     }
 
     private void applySavedChartVisibility() {

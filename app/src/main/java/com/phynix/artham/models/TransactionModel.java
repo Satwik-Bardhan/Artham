@@ -16,6 +16,7 @@ public class TransactionModel implements Serializable {
     private String tags;
     private String location;
     private String attachmentUri;
+    private String autoFrequency; // null = off, "Daily", "Weekly", "Monthly"
 
     public TransactionModel() {
         // Default constructor required for Firebase
@@ -56,4 +57,7 @@ public class TransactionModel implements Serializable {
 
     public String getAttachmentUri() { return attachmentUri; }
     public void setAttachmentUri(String attachmentUri) { this.attachmentUri = attachmentUri; }
+
+    public String getAutoFrequency() { return autoFrequency; }
+    public void setAutoFrequency(String autoFrequency) { this.autoFrequency = autoFrequency; }
 }

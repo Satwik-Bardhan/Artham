@@ -48,7 +48,6 @@ public class AnimatedBalanceCard {
         moneyInText = rootView.findViewById(R.id.moneyIn);
         moneyOutText = rootView.findViewById(R.id.moneyOut);
         uidText = rootView.findViewById(R.id.uidText);
-        userNameText = rootView.findViewById(R.id.userNameBottom);
     }
 
     private void setupAnimations() {

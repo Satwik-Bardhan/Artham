@@ -69,7 +69,10 @@ public class CashInOutActivity extends AppCompatActivity {
     private static final String KEY_CALCULATOR = "calculator_enabled";
 
     // UI Elements
-    private TextView headerTitle, headerSubtitle;
+    private TextView headerTitle, headerSubtitle, autoRepeatText;
+    private View autoRepeatButton;
+    private ImageView autoRepeatIcon;
+    private String selectedAutoFrequency = null; // null = off, "Daily", "Weekly", "Monthly"
     private ImageView backButton, selectedCategoryIcon;
     private TextView dateTextView, timeTextView, selectedCategoryTextView;
     private LinearLayout dateSelectorLayout, timeSelectorLayout;
@@ -228,6 +231,11 @@ public class CashInOutActivity extends AppCompatActivity {
         saveAndAddNewButton = findViewById(R.id.saveAndAddNewButton);
         clearButton = findViewById(R.id.clearButton);
         loadingOverlay = findViewById(R.id.loadingOverlay);
+
+        // Auto repeat button
+        autoRepeatButton = findViewById(R.id.autoRepeatButton);
+        autoRepeatIcon = findViewById(R.id.autoRepeatIcon);
+        autoRepeatText = findViewById(R.id.autoRepeatText);
     }
 
     private void initializeDateTime() {
@@ -289,6 +297,10 @@ public class CashInOutActivity extends AppCompatActivity {
         saveEntryButton.setOnClickListener(v -> saveTransaction(false));
         saveAndAddNewButton.setOnClickListener(v -> saveTransaction(true));
         clearButton.setOnClickListener(v -> clearForm(false));
+
+        if (autoRepeatButton != null) {
+            autoRepeatButton.setOnClickListener(v -> showAutoFrequencyDialog());
+        }
 
         setupQuickAmountButtons();
     }
@@ -441,6 +453,7 @@ public class CashInOutActivity extends AppCompatActivity {
         transaction.setTimestamp(calendar.getTimeInMillis());
         transaction.setRemark(remarkEditText.getText().toString().trim());
         if (selectedParty != null) transaction.setPartyName(selectedParty);
+        transaction.setAutoFrequency(selectedAutoFrequency);
 
         isSaveAndNew = addNew;
         viewModel.saveTransaction(currentCashbookId, transaction);
@@ -725,5 +738,75 @@ public class CashInOutActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         timeHandler.removeCallbacks(timeRunnable);
+    }
+
+    // ===== AUTO REPEAT LOGIC =====
+
+    private void showAutoFrequencyDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_auto_frequency, null);
+        builder.setView(dialogView);
+        AlertDialog dialog = builder.create();
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
+
+        View optionDaily = dialogView.findViewById(R.id.optionDaily);
+        View optionWeekly = dialogView.findViewById(R.id.optionWeekly);
+        View optionMonthly = dialogView.findViewById(R.id.optionMonthly);
+        TextView btnDisable = dialogView.findViewById(R.id.btnDisableAuto);
+
+        // Show disable button if auto is currently active
+        if (selectedAutoFrequency != null) {
+            btnDisable.setVisibility(View.VISIBLE);
+            // Highlight the currently selected option
+            if ("Daily".equals(selectedAutoFrequency)) optionDaily.setSelected(true);
+            else if ("Weekly".equals(selectedAutoFrequency)) optionWeekly.setSelected(true);
+            else if ("Monthly".equals(selectedAutoFrequency)) optionMonthly.setSelected(true);
+        }
+
+        View.OnClickListener frequencyClick = v -> {
+            String frequency = "";
+            if (v.getId() == R.id.optionDaily) frequency = "Daily";
+            else if (v.getId() == R.id.optionWeekly) frequency = "Weekly";
+            else if (v.getId() == R.id.optionMonthly) frequency = "Monthly";
+
+            selectedAutoFrequency = frequency;
+            updateAutoRepeatButtonState();
+            Toast.makeText(this, "Auto repeat set to " + frequency, Toast.LENGTH_SHORT).show();
+            dialog.dismiss();
+        };
+
+        optionDaily.setOnClickListener(frequencyClick);
+        optionWeekly.setOnClickListener(frequencyClick);
+        optionMonthly.setOnClickListener(frequencyClick);
+
+        btnDisable.setOnClickListener(v -> {
+            selectedAutoFrequency = null;
+            updateAutoRepeatButtonState();
+            Toast.makeText(this, "Auto repeat disabled", Toast.LENGTH_SHORT).show();
+            dialog.dismiss();
+        });
+
+        dialog.show();
+    }
+
+    private void updateAutoRepeatButtonState() {
+        if (autoRepeatButton == null || autoRepeatText == null || autoRepeatIcon == null) return;
+
+        if (selectedAutoFrequency != null) {
+            autoRepeatButton.setSelected(true);
+            autoRepeatText.setText(selectedAutoFrequency);
+            autoRepeatText.setTextColor(ContextCompat.getColor(this, android.R.color.white));
+            autoRepeatIcon.setColorFilter(ContextCompat.getColor(this, android.R.color.white));
+        } else {
+            autoRepeatButton.setSelected(false);
+            autoRepeatText.setText("Auto");
+            // Reset to theme secondary text color
+            android.util.TypedValue typedValue = new android.util.TypedValue();
+            getTheme().resolveAttribute(R.attr.chk_textColorSecondary, typedValue, true);
+            autoRepeatText.setTextColor(typedValue.data);
+            autoRepeatIcon.setColorFilter(typedValue.data);
+        }
     }
 }

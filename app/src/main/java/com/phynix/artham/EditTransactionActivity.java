@@ -66,8 +66,12 @@ public class EditTransactionActivity extends AppCompatActivity {
     private static final int CONTACT_PERMISSION_CODE = 200;
 
     // UI Components
-    private ImageView backButton, menuButton, timePickerIcon, swapButton;
+    private ImageView backButton, timePickerIcon, swapButton;
     private View calculatorButton, voiceInputButton, locationButton;
+    private View autoRepeatButton;
+    private ImageView autoRepeatIcon;
+    private TextView autoRepeatText;
+    private String selectedAutoFrequency = null; // null = off, "Daily", "Weekly", "Monthly"
 
     // Visual Category Indicators
     private View selectedIconContainer;
@@ -196,7 +200,6 @@ public class EditTransactionActivity extends AppCompatActivity {
 
     private void initializeUI() {
         backButton = findViewById(R.id.backButton);
-        menuButton = findViewById(R.id.menuButton);
         headerSubtitle = findViewById(R.id.headerSubtitle);
 
         dateTextView = findViewById(R.id.dateTextView);
@@ -252,6 +255,11 @@ public class EditTransactionActivity extends AppCompatActivity {
         saveChangesButton = findViewById(R.id.saveChangesButton);
         cancelButton = findViewById(R.id.CancelTransactionButton);
 
+        // Auto repeat button
+        autoRepeatButton = findViewById(R.id.autoRepeatButton);
+        autoRepeatIcon = findViewById(R.id.autoRepeatIcon);
+        autoRepeatText = findViewById(R.id.autoRepeatText);
+
         // Attach amount input validation: max 15 digits before decimal, 2 after
         amountEditText.addTextChangedListener(AmountFormatter.createAmountInputWatcher(amountEditText));
     }
@@ -298,6 +306,13 @@ public class EditTransactionActivity extends AppCompatActivity {
         updateDateText();
         updateTimeText();
 
+        // Load auto-repeat frequency
+        String autoFreq = currentTransaction.getAutoFrequency();
+        if (autoFreq != null && !autoFreq.isEmpty()) {
+            selectedAutoFrequency = autoFreq;
+            updateAutoRepeatButtonState();
+        }
+
         SimpleDateFormat headerDateFormat = new SimpleDateFormat("MMM dd, yyyy", Locale.US);
         if (headerSubtitle != null) headerSubtitle.setText("Last modified: " + headerDateFormat.format(new Date()));
 
@@ -309,10 +324,6 @@ public class EditTransactionActivity extends AppCompatActivity {
     private void setupClickListeners() {
         if (backButton != null) backButton.setOnClickListener(v -> finish());
         if (cancelButton != null) cancelButton.setOnClickListener(v -> finish());
-
-        if (menuButton != null) {
-            menuButton.setOnClickListener(v -> showPopupMenu(v));
-        }
 
         View.OnClickListener dateListener = v -> showDatePicker();
         if (dateSelectorLayout != null) dateSelectorLayout.setOnClickListener(dateListener);
@@ -367,6 +378,10 @@ public class EditTransactionActivity extends AppCompatActivity {
         }
 
         if (saveChangesButton != null) saveChangesButton.setOnClickListener(v -> saveChanges());
+
+        if (autoRepeatButton != null) {
+            autoRepeatButton.setOnClickListener(v -> showAutoFrequencyDialog());
+        }
     }
 
     // THE FIX: Quick Amount Logic Added
@@ -394,27 +409,6 @@ public class EditTransactionActivity extends AppCompatActivity {
         if (quickAmount5000 != null) quickAmount5000.setSelected(false);
     }
 
-    private void showPopupMenu(View view) {
-        PopupMenu popup = new PopupMenu(this, view);
-        popup.getMenu().add("Delete");
-        popup.getMenu().add("Share");
-        popup.getMenu().add("Duplicate");
-
-        popup.setOnMenuItemClickListener(item -> {
-            if ("Delete".equals(item.getTitle())) {
-                showDeleteConfirmationDialog();
-                return true;
-            } else if ("Share".equals(item.getTitle())) {
-                shareTransaction();
-                return true;
-            } else if ("Duplicate".equals(item.getTitle())) {
-                duplicateTransaction();
-                return true;
-            }
-            return false;
-        });
-        popup.show();
-    }
 
     private void saveChanges() {
         String amountStr = amountEditText.getText().toString().trim();
@@ -443,6 +437,7 @@ public class EditTransactionActivity extends AppCompatActivity {
 
             String tagsStr = tagsEditText.getText().toString().trim();
             currentTransaction.setTags(tagsStr);
+            currentTransaction.setAutoFrequency(selectedAutoFrequency);
 
             viewModel.updateTransaction(currentTransaction);
 
@@ -462,43 +457,7 @@ public class EditTransactionActivity extends AppCompatActivity {
         finish();
     }
 
-    private void duplicateTransaction() {
-        TransactionModel copy = new TransactionModel();
-        copy.setAmount(currentTransaction.getAmount());
-        copy.setTransactionCategory(currentTransaction.getTransactionCategory());
-        copy.setType(currentTransaction.getType());
-        copy.setPaymentMode(currentTransaction.getPaymentMode());
-        copy.setPartyName(currentTransaction.getPartyName());
-        copy.setRemark(currentTransaction.getRemark() + " (Copy)");
-        copy.setTags(currentTransaction.getTags());
-        copy.setTimestamp(System.currentTimeMillis());
 
-        viewModel.addTransaction(copy);
-        showSnackbar("Transaction Duplicated");
-        finish();
-    }
-
-    private void showDeleteConfirmationDialog() {
-        new AlertDialog.Builder(this)
-                .setTitle("Delete Transaction")
-                .setMessage("Are you sure you want to permanently delete this transaction? This action cannot be undone.")
-                .setPositiveButton("Delete", (dialog, which) -> deleteTransaction())
-                .setNegativeButton("Cancel", null)
-                .show();
-    }
-
-    private void shareTransaction() {
-        String shareText = "Transaction Details:\n" +
-                "Amount: ₹" + amountEditText.getText().toString() + "\n" +
-                "Type: " + (radioIn.isChecked() ? "Income" : "Expense") + "\n" +
-                "Category: " + selectedCategoryTextView.getText().toString() + "\n" +
-                "Date: " + dateTextView.getText().toString();
-
-        Intent intent = new Intent(Intent.ACTION_SEND);
-        intent.setType("text/plain");
-        intent.putExtra(Intent.EXTRA_TEXT, shareText);
-        startActivity(Intent.createChooser(intent, "Share Transaction"));
-    }
 
     private void openContactPicker() {
         Intent intent = new Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI);
@@ -683,5 +642,73 @@ public class EditTransactionActivity extends AppCompatActivity {
             return typedValue.data;
         }
         return Color.BLACK;
+    }
+
+    // ===== AUTO REPEAT LOGIC =====
+
+    private void showAutoFrequencyDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_auto_frequency, null);
+        builder.setView(dialogView);
+        AlertDialog dialog = builder.create();
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
+
+        View optionDaily = dialogView.findViewById(R.id.optionDaily);
+        View optionWeekly = dialogView.findViewById(R.id.optionWeekly);
+        View optionMonthly = dialogView.findViewById(R.id.optionMonthly);
+        TextView btnDisable = dialogView.findViewById(R.id.btnDisableAuto);
+
+        // Show disable button if auto is currently active
+        if (selectedAutoFrequency != null) {
+            btnDisable.setVisibility(View.VISIBLE);
+            if ("Daily".equals(selectedAutoFrequency)) optionDaily.setSelected(true);
+            else if ("Weekly".equals(selectedAutoFrequency)) optionWeekly.setSelected(true);
+            else if ("Monthly".equals(selectedAutoFrequency)) optionMonthly.setSelected(true);
+        }
+
+        View.OnClickListener frequencyClick = v -> {
+            String frequency = "";
+            if (v.getId() == R.id.optionDaily) frequency = "Daily";
+            else if (v.getId() == R.id.optionWeekly) frequency = "Weekly";
+            else if (v.getId() == R.id.optionMonthly) frequency = "Monthly";
+
+            selectedAutoFrequency = frequency;
+            updateAutoRepeatButtonState();
+            Toast.makeText(this, "Auto repeat set to " + frequency, Toast.LENGTH_SHORT).show();
+            dialog.dismiss();
+        };
+
+        optionDaily.setOnClickListener(frequencyClick);
+        optionWeekly.setOnClickListener(frequencyClick);
+        optionMonthly.setOnClickListener(frequencyClick);
+
+        btnDisable.setOnClickListener(v -> {
+            selectedAutoFrequency = null;
+            updateAutoRepeatButtonState();
+            Toast.makeText(this, "Auto repeat disabled", Toast.LENGTH_SHORT).show();
+            dialog.dismiss();
+        });
+
+        dialog.show();
+    }
+
+    private void updateAutoRepeatButtonState() {
+        if (autoRepeatButton == null || autoRepeatText == null || autoRepeatIcon == null) return;
+
+        if (selectedAutoFrequency != null) {
+            autoRepeatButton.setSelected(true);
+            autoRepeatText.setText(selectedAutoFrequency);
+            autoRepeatText.setTextColor(ContextCompat.getColor(this, android.R.color.white));
+            autoRepeatIcon.setColorFilter(ContextCompat.getColor(this, android.R.color.white));
+        } else {
+            autoRepeatButton.setSelected(false);
+            autoRepeatText.setText("Auto");
+            TypedValue typedValue = new TypedValue();
+            getTheme().resolveAttribute(R.attr.chk_textColorSecondary, typedValue, true);
+            autoRepeatText.setTextColor(typedValue.data);
+            autoRepeatIcon.setColorFilter(typedValue.data);
+        }
     }
 }

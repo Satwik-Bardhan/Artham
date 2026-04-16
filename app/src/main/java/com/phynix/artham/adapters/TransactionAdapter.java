@@ -47,6 +47,7 @@ public class TransactionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         void onEditClick(TransactionModel transaction);
         void onDeleteClick(TransactionModel transaction);
         void onCopyClick(TransactionModel transaction);
+        void onAutoToggleClick(TransactionModel transaction);
     }
 
     public TransactionAdapter(List<TransactionModel> transactions, OnItemClickListener listener) {
@@ -146,8 +147,8 @@ public class TransactionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
     }
 
     class TransactionViewHolder extends RecyclerView.ViewHolder {
-        TextView categoryTextView, amountTextView, dateTextView, paymentModeTextView, remarkTextView;
-        View transactionTypeIndicator, iconContainer;
+        TextView categoryTextView, amountTextView, dateTextView, paymentModeTextView, remarkTextView, autoFrequencyText;
+        View transactionTypeIndicator, iconContainer, autoRepeatBadge;
         ImageView menuButton, categoryIcon;
 
         public TransactionViewHolder(@NonNull View itemView) {
@@ -159,6 +160,10 @@ public class TransactionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
             paymentModeTextView = itemView.findViewById(R.id.paymentModeTextView);
             transactionTypeIndicator = itemView.findViewById(R.id.transactionTypeIndicator);
             menuButton = itemView.findViewById(R.id.menuButton);
+
+            // Auto-repeat badge
+            autoRepeatBadge = itemView.findViewById(R.id.autoRepeatBadge);
+            autoFrequencyText = itemView.findViewById(R.id.autoFrequencyText);
 
             // Added views for synced icons and colors
             categoryIcon = itemView.findViewById(R.id.categoryIcon);
@@ -205,6 +210,20 @@ public class TransactionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
             itemView.setOnClickListener(v -> listener.onItemClick(transaction));
             if (menuButton != null) {
                 menuButton.setOnClickListener(v -> showPopupMenu(v, transaction));
+            }
+
+            // Auto-repeat badge & toggle icon
+            String autoFreq = transaction.getAutoFrequency();
+            boolean hasAuto = autoFreq != null && !autoFreq.isEmpty();
+            if (autoRepeatBadge != null) {
+                if (hasAuto) {
+                    autoRepeatBadge.setVisibility(View.VISIBLE);
+                    if (autoFrequencyText != null) {
+                        autoFrequencyText.setText(autoFreq);
+                    }
+                } else {
+                    autoRepeatBadge.setVisibility(View.GONE);
+                }
             }
         }
 
