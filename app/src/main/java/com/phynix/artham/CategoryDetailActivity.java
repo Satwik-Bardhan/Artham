@@ -40,7 +40,7 @@ import java.util.Locale;
  * Shows all transactions for a specific category within a selected month.
  * Launched from ExpenseAnalyticsActivity when user clicks a category in the breakdown.
  */
-public class CategoryDetailActivity extends AppCompatActivity {
+public class CategoryDetailActivity extends BaseActivity {
 
     // Intent Extra Keys
     public static final String EXTRA_CATEGORY_NAME = "category_name";

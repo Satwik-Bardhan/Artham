@@ -55,7 +55,7 @@
             android:id="@+id/made_in_india_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="70dp"
+            android:layout_marginTop="60dp"
             android:text="Made in India 🇮🇳 with ❤️"
             android:textColor="?attr/chk_textColorPrimary"
             android:textSize="14sp"
@@ -68,8 +68,8 @@
         android:layout_width="32dp"
         android:layout_height="32dp"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="80dp"
-        android:layout_above="@id/bottom_waves"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="220dp"
         android:indeterminateTint="?attr/chk_splash_wave"
         android:visibility="gone" />
 

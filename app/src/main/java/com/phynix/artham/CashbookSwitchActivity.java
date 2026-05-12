@@ -56,7 +56,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class CashbookSwitchActivity extends AppCompatActivity {
+public class CashbookSwitchActivity extends BaseActivity {
 
     private static final String TAG = "CashbookSwitchActivity";
     private static final String PREFS_NAME = "AppPrefs";

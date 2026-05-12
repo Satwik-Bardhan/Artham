@@ -1,6 +1,7 @@
 package com.phynix.artham;
 
 import android.Manifest;
+import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
@@ -14,6 +15,11 @@ import android.text.TextWatcher;
 import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.animation.AccelerateDecelerateInterpolator;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -38,6 +44,7 @@ import com.phynix.artham.utils.AmountFormatter;
 import com.phynix.artham.utils.Constants;
 import com.phynix.artham.utils.SnackbarHelper;
 import com.phynix.artham.utils.SwipeListener;
+import com.phynix.artham.utils.NavPillAnimator;
 import com.phynix.artham.utils.ThemeManager;
 import com.phynix.artham.viewmodels.TransactionViewModel;
 import com.phynix.artham.viewmodels.TransactionViewModelFactory;
@@ -63,15 +70,21 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class TransactionActivity extends AppCompatActivity {
+public class TransactionActivity extends BaseActivity {
 
     private static final int STORAGE_PERMISSION_CODE = 101;
     private static final int REQUEST_CODE_CASHBOOK_SWITCH = 1001;
     private static final String PREFS_NAME = "AppPrefs";
     private static final String KEY_SHOW_CHART = "show_pie_chart";
+    private static final String KEY_SHOW_SUMMARY = "show_summary_cards";
+    private static final String KEY_SETTINGS_SHOW_SUMMARY = "settings_show_summary";
+    private static final String KEY_SETTINGS_SHOW_PIE_CHART = "settings_show_pie_chart";
 
     private List<TransactionModel> allTransactions = new ArrayList<>();
     private Calendar currentMonthCalendar;
+
+    // Debounce handler — prevents skeleton flash on fast loads (tab switches)
+    private final android.os.Handler skeletonShowHandler = new android.os.Handler(android.os.Looper.getMainLooper());
 
     private ActivityTransactionBinding binding;
     private LayoutSummaryCardsBinding summaryBinding;
@@ -80,6 +93,13 @@ public class TransactionActivity extends AppCompatActivity {
     private LayoutBottomNavigationBinding bottomNavBinding;
 
     private View skeletonLayout; // Reference for the skeleton layout wrapper
+    private LinearLayout summaryCardsContainer;
+    private LinearLayout summaryToggleHeader;
+    private ImageView summaryToggleArrow;
+
+    // All/Monthly toggle button sub-views
+    private TextView allTransactionsText;
+    private ImageView allTransactionsIcon;
 
     private TransactionItemFragment transactionFragment;
     private TransactionViewModel viewModel;
@@ -160,6 +180,8 @@ public class TransactionActivity extends AppCompatActivity {
                 }
             }
         }
+        // Re-apply settings-level visibility (user may have toggled in AppSettings)
+        applySettingsVisibility();
     }
 
     @Override
@@ -220,6 +242,21 @@ public class TransactionActivity extends AppCompatActivity {
         // Initialize Skeleton View reference
         skeletonLayout = findViewById(R.id.skeletonLayout);
 
+        // Initialize Summary Toggle views
+        summaryCardsContainer = findViewById(R.id.summaryCardsContainer);
+        summaryToggleHeader = findViewById(R.id.summaryToggleHeader);
+        summaryToggleArrow = findViewById(R.id.summaryToggleArrow);
+
+        // Initialize All/Monthly toggle sub-views
+        allTransactionsText = findViewById(R.id.allTransactionsText);
+        allTransactionsIcon = findViewById(R.id.allTransactionsIcon);
+
+        // Apply saved summary visibility (default: hidden)
+        applySavedSummaryVisibility();
+
+        // Apply settings-level visibility (hides entire sections if disabled)
+        applySettingsVisibility();
+
         // Pie Chart Configuration
         pieChartBinding.pieChart.setUsePercentValues(true);
         pieChartBinding.pieChart.getDescription().setEnabled(false);
@@ -252,8 +289,18 @@ public class TransactionActivity extends AppCompatActivity {
         });
 
         viewModel.getIsLoading().observe(this, isLoading -> {
-            toggleSkeletonLoading(isLoading); // Show/hide skeleton based on loading state
-            if (transactionFragment != null) transactionFragment.showLoading(isLoading);
+            if (isLoading) {
+                // Delay skeleton show by 150ms — if data arrives fast (cache hit), skeleton never appears
+                skeletonShowHandler.postDelayed(() -> {
+                    toggleSkeletonLoading(true);
+                    if (transactionFragment != null) transactionFragment.showLoading(true);
+                }, 150);
+            } else {
+                // Cancel any pending skeleton show and hide immediately
+                skeletonShowHandler.removeCallbacksAndMessages(null);
+                toggleSkeletonLoading(false);
+                if (transactionFragment != null) transactionFragment.showLoading(false);
+            }
         });
 
         viewModel.getErrorMessage().observe(this, error -> {
@@ -261,6 +308,7 @@ public class TransactionActivity extends AppCompatActivity {
                 showSnackbar(error);
                 viewModel.clearError();
                 binding.swipeRefreshLayout.setRefreshing(false);
+                skeletonShowHandler.removeCallbacksAndMessages(null);
                 toggleSkeletonLoading(false); // Error occurred, hide skeleton
             }
         });
@@ -278,14 +326,34 @@ public class TransactionActivity extends AppCompatActivity {
                     ((ShimmerFrameLayout) skeletonLayout).stopShimmer();
                 }
             }
+
+            // Hide skeleton sections that are disabled from App Settings
+            if (show) {
+                SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+                View skelSummary = skeletonLayout.findViewById(R.id.skelSummaryCards);
+                View skelPieChart = skeletonLayout.findViewById(R.id.skelPieChart);
+                if (skelSummary != null) {
+                    skelSummary.setVisibility(prefs.getBoolean(KEY_SETTINGS_SHOW_SUMMARY, true) ? View.VISIBLE : View.GONE);
+                }
+                if (skelPieChart != null) {
+                    skelPieChart.setVisibility(prefs.getBoolean(KEY_SETTINGS_SHOW_PIE_CHART, true) ? View.VISIBLE : View.GONE);
+                }
+            }
         }
 
-        // Hide primary content containers when loading
-        int contentVisibility = show ? View.GONE : View.VISIBLE;
-        binding.swipeRefreshLayout.setVisibility(contentVisibility);
-
-        if (binding.fixedSearchBarContainer != null) {
-            binding.fixedSearchBarContainer.setVisibility(contentVisibility);
+        // Smoothly cross-fade content visibility to avoid flicker
+        if (show) {
+            binding.swipeRefreshLayout.setAlpha(0f);
+            binding.swipeRefreshLayout.setVisibility(View.VISIBLE);
+            if (binding.fixedSearchBarContainer != null) {
+                binding.fixedSearchBarContainer.setAlpha(0f);
+                binding.fixedSearchBarContainer.setVisibility(View.VISIBLE);
+            }
+        } else {
+            binding.swipeRefreshLayout.animate().alpha(1f).setDuration(200).start();
+            if (binding.fixedSearchBarContainer != null) {
+                binding.fixedSearchBarContainer.animate().alpha(1f).setDuration(200).start();
+            }
         }
     }
 
@@ -299,7 +367,7 @@ public class TransactionActivity extends AppCompatActivity {
 
         if (isShowingAllTransactions) {
             transactionsToDisplay = new ArrayList<>(allTransactions);
-            binding.allTransactionsButton.setText("Monthly");
+            updateAllTransactionsToggle(true);
         } else {
             transactionsToDisplay = allTransactions.stream()
                     .filter(t -> {
@@ -308,7 +376,7 @@ public class TransactionActivity extends AppCompatActivity {
                         return cal.get(Calendar.YEAR) == currentMonthCalendar.get(Calendar.YEAR) &&
                                 cal.get(Calendar.MONTH) == currentMonthCalendar.get(Calendar.MONTH);
                     }).collect(Collectors.toList());
-            binding.allTransactionsButton.setText("All");
+            updateAllTransactionsToggle(false);
         }
 
         binding.transactionCountText.setText("(" + formatCount(transactionsToDisplay.size()) + ")");
@@ -561,25 +629,51 @@ public class TransactionActivity extends AppCompatActivity {
             if(allTransactions.isEmpty()){ showSnackbar("No data"); return; }
             downloadLauncher.launch(new Intent(this, DownloadOptionsActivity.class));
         });
+
+        // Summary Cards Toggle
+        if (summaryToggleHeader != null) {
+            summaryToggleHeader.setOnClickListener(v -> {
+                boolean isCurrentlyVisible = summaryCardsContainer != null
+                        && summaryCardsContainer.getVisibility() == View.VISIBLE;
+                setSummaryVisibility(!isCurrentlyVisible, true);
+                getSharedPreferences(PREFS_NAME, MODE_PRIVATE).edit()
+                        .putBoolean(KEY_SHOW_SUMMARY, !isCurrentlyVisible).apply();
+            });
+        }
     }
 
     private void setupBottomNavigation() {
+        View navRoot = bottomNavBinding.getRoot();
+        View pill = navRoot.findViewById(R.id.slidingPillIndicator);
+        View targetContainer = NavPillAnimator.getPillContainerForTab(navRoot, NavPillAnimator.TAB_TRANSACTIONS);
+
+        int previousTab = getIntent().getIntExtra(NavPillAnimator.EXTRA_PREVIOUS_TAB, -1);
         bottomNavBinding.btnTransactions.setSelected(true);
+
+        if (previousTab >= 0 && previousTab != NavPillAnimator.TAB_TRANSACTIONS) {
+            View fromContainer = NavPillAnimator.getPillContainerForTab(navRoot, previousTab);
+            NavPillAnimator.slideFromTo(pill, fromContainer, targetContainer);
+        } else {
+            NavPillAnimator.positionAt(pill, targetContainer);
+        }
+
         bottomNavBinding.btnHome.setOnClickListener(v -> {
             Intent intent = new Intent(this, HomePage.class);
             intent.putExtra("cashbook_id", currentCashbookId);
+            intent.putExtra(NavPillAnimator.EXTRA_PREVIOUS_TAB, NavPillAnimator.TAB_TRANSACTIONS);
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
             startActivity(intent);
-            overridePendingTransition(0, 0);
+            overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
             finish();
         });
         bottomNavBinding.btnCashbookSwitch.setOnClickListener(v -> openCashbookSwitcher());
         bottomNavBinding.btnSettings.setOnClickListener(v -> {
             Intent intent = new Intent(this, SettingsActivity.class);
             intent.putExtra("cashbook_id", currentCashbookId);
+            intent.putExtra(NavPillAnimator.EXTRA_PREVIOUS_TAB, NavPillAnimator.TAB_TRANSACTIONS);
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
             startActivity(intent);
-            overridePendingTransition(0, 0);
+            overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
             finish();
         });
     }
@@ -670,9 +764,37 @@ public class TransactionActivity extends AppCompatActivity {
                 .setNegativeButton("Cancel", null)
                 .show();
     }
+    // --- Settings-level visibility (from App Settings toggles) ---
+
+    private void applySettingsVisibility() {
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+
+        // Summary section: hide both the toggle header and the cards container
+        boolean summaryEnabled = prefs.getBoolean(KEY_SETTINGS_SHOW_SUMMARY, true);
+        if (summaryToggleHeader != null) {
+            summaryToggleHeader.setVisibility(summaryEnabled ? View.VISIBLE : View.GONE);
+        }
+        if (summaryCardsContainer != null) {
+            if (!summaryEnabled) {
+                summaryCardsContainer.setVisibility(View.GONE);
+            } else {
+                // Re-apply the in-page toggle state
+                applySavedSummaryVisibility();
+            }
+        }
+
+        // Pie Chart section: hide the entire included layout
+        boolean pieChartEnabled = prefs.getBoolean(KEY_SETTINGS_SHOW_PIE_CHART, true);
+        if (pieChartBinding != null && pieChartBinding.getRoot() != null) {
+            pieChartBinding.getRoot().setVisibility(pieChartEnabled ? View.VISIBLE : View.GONE);
+        }
+    }
 
     private void applySavedChartVisibility() {
-        boolean show = getSharedPreferences(PREFS_NAME, MODE_PRIVATE).getBoolean(KEY_SHOW_CHART, true);
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        // If settings-level disabled, don't show at all
+        if (!prefs.getBoolean(KEY_SETTINGS_SHOW_PIE_CHART, true)) return;
+        boolean show = prefs.getBoolean(KEY_SHOW_CHART, true);
         setChartVisibility(show);
     }
 
@@ -682,6 +804,80 @@ public class TransactionActivity extends AppCompatActivity {
         View stats = pieChartBinding.getRoot().findViewById(R.id.statsLayout);
         if (stats != null) stats.setVisibility(visibility);
         pieChartBinding.togglePieChartButton.setText(show ? "Hide Pie Chart" : "Show Pie Chart");
+    }
+
+    // --- All/Monthly Toggle Button ---
+
+    private void updateAllTransactionsToggle(boolean showingAll) {
+        if (allTransactionsText == null || allTransactionsIcon == null) return;
+
+        if (showingAll) {
+            // Active state — viewing all time, button offers "Monthly" to switch back
+            allTransactionsText.setText("Monthly");
+            binding.allTransactionsButton.setBackgroundResource(R.drawable.bg_pill_button_active);
+            int white = getResources().getColor(android.R.color.white);
+            allTransactionsText.setTextColor(white);
+            allTransactionsIcon.setImageResource(R.drawable.ic_date_range);
+            allTransactionsIcon.setColorFilter(white);
+        } else {
+            // Default state — viewing monthly, button offers "All Time" to switch
+            allTransactionsText.setText("All Time");
+            binding.allTransactionsButton.setBackgroundResource(R.drawable.bg_pill_button_outline);
+            int textColor = getThemeColor(R.attr.chk_textColorPrimary);
+            allTransactionsText.setTextColor(textColor);
+            allTransactionsIcon.setImageResource(R.drawable.ic_all_inclusive);
+            allTransactionsIcon.setColorFilter(textColor);
+        }
+    }
+
+    // --- Summary Cards Toggle ---
+
+    private void applySavedSummaryVisibility() {
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        // If settings-level disabled, don't show at all
+        if (!prefs.getBoolean(KEY_SETTINGS_SHOW_SUMMARY, true)) return;
+        // Default is hidden (false)
+        boolean show = prefs.getBoolean(KEY_SHOW_SUMMARY, false);
+        setSummaryVisibility(show, false);
+    }
+
+    private void setSummaryVisibility(boolean show, boolean animate) {
+        if (summaryCardsContainer == null || summaryToggleArrow == null) return;
+
+        if (animate) {
+            if (show) {
+                // Expand with slide-down animation
+                summaryCardsContainer.setVisibility(View.VISIBLE);
+                summaryCardsContainer.setAlpha(0f);
+                summaryCardsContainer.setTranslationY(-20f);
+                summaryCardsContainer.animate()
+                        .alpha(1f)
+                        .translationY(0f)
+                        .setDuration(250)
+                        .setInterpolator(new AccelerateDecelerateInterpolator())
+                        .start();
+            } else {
+                // Collapse with slide-up animation
+                summaryCardsContainer.animate()
+                        .alpha(0f)
+                        .translationY(-20f)
+                        .setDuration(200)
+                        .setInterpolator(new AccelerateDecelerateInterpolator())
+                        .withEndAction(() -> summaryCardsContainer.setVisibility(View.GONE))
+                        .start();
+            }
+            // Rotate arrow: 0° = collapsed (down arrow), 180° = expanded (up arrow)
+            float fromRotation = show ? 0f : 180f;
+            float toRotation = show ? 180f : 0f;
+            ValueAnimator arrowAnimator = ValueAnimator.ofFloat(fromRotation, toRotation);
+            arrowAnimator.setDuration(250);
+            arrowAnimator.setInterpolator(new AccelerateDecelerateInterpolator());
+            arrowAnimator.addUpdateListener(a -> summaryToggleArrow.setRotation((float) a.getAnimatedValue()));
+            arrowAnimator.start();
+        } else {
+            summaryCardsContainer.setVisibility(show ? View.VISIBLE : View.GONE);
+            summaryToggleArrow.setRotation(show ? 180f : 0f);
+        }
     }
 
     private void showSnackbar(String msg) {

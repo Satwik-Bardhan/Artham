@@ -38,8 +38,9 @@ import com.skydoves.colorpickerview.sliders.AlphaSlideBar;
 
 import java.util.ArrayList;
 import java.util.List;
+import com.phynix.artham.BaseActivity;
 
-public class CreateCategoryActivity extends AppCompatActivity {
+public class CreateCategoryActivity extends BaseActivity {
 
     private ImageView backButton;
     private TextView titleText;

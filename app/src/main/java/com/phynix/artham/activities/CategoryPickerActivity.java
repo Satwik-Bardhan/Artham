@@ -30,8 +30,9 @@ import com.phynix.artham.utils.ThemeManager;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import com.phynix.artham.BaseActivity;
 
-public class CategoryPickerActivity extends AppCompatActivity {
+public class CategoryPickerActivity extends BaseActivity {
 
     // UI Elements
     private RecyclerView defaultRecyclerView;

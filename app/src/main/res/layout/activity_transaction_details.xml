@@ -8,15 +8,18 @@
     android:fitsSystemWindows="true"
     tools:context=".TransactionDetailsActivity">
 
+    <!-- ═══════════════════════════════════════════════════
+         HEADER — Matching app-wide style
+         ═══════════════════════════════════════════════════ -->
     <androidx.cardview.widget.CardView
         android:id="@+id/headerContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="12dp"
-        android:layout_marginEnd="12dp"
         app:cardBackgroundColor="?attr/chk_headerColor"
+        android:layout_marginEnd="12dp"
+        android:layout_marginStart="12dp"
         app:cardCornerRadius="8dp"
-        app:cardElevation="4dp"
+        app:cardElevation="0dp"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
@@ -24,35 +27,22 @@
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="16dp">
+            android:padding="8dp">
 
             <ImageView
                 android:id="@+id/closeButton"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_alignParentStart="true"
                 android:layout_centerVertical="true"
-                android:background="?attr/selectableItemBackgroundBorderless"
                 android:clickable="true"
-                android:focusable="true"
                 android:contentDescription="Back"
+                android:focusable="true"
+                android:padding="8dp"
                 android:src="@drawable/ic_arrow_left"
                 app:tint="?attr/chk_textColorPrimary" />
 
-            <ImageView
-                android:id="@+id/menuButton"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:layout_alignParentEnd="true"
-                android:layout_centerVertical="true"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:clickable="true"
-                android:focusable="true"
-                android:contentDescription="Options"
-                android:src="@drawable/ic_more_vert"
-                app:tint="?attr/chk_textColorPrimary" />
-
             <LinearLayout
-                android:id="@+id/titleContainer"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
@@ -60,75 +50,101 @@
                 android:orientation="vertical">
 
                 <TextView
-                    android:id="@+id/headerTitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:fontFamily="@font/app_font"
                     android:text="Entry Details"
                     android:textColor="?attr/chk_textColorPrimary"
-                    android:textSize="18sp"
+                    android:textSize="24sp"
                     android:textStyle="bold" />
 
                 <TextView
-                    android:id="@+id/headerSubtitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:fontFamily="@font/app_font"
-                    android:text="View transaction info"
+                    android:layout_marginTop="4dp"
+                    android:text="Transaction overview"
                     android:textColor="?attr/chk_textColorSecondary"
-                    android:textSize="12sp" />
+                    android:textSize="13sp" />
             </LinearLayout>
+
+            <ImageView
+                android:id="@+id/menuButton"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:clickable="true"
+                android:contentDescription="Options"
+                android:focusable="true"
+                android:padding="8dp"
+                android:src="@drawable/ic_more_vert"
+                app:tint="?attr/chk_textColorPrimary" />
         </RelativeLayout>
     </androidx.cardview.widget.CardView>
 
+    <!-- ═══════════════════════════════════════════════════
+         SCROLLABLE CONTENT
+         ═══════════════════════════════════════════════════ -->
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:clipToPadding="false"
         android:fillViewport="true"
-        app:layout_constraintBottom_toTopOf="@id/footerLayout"
+        android:scrollbars="none"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="@id/headerContainer">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingBottom="24dp">
+            android:paddingBottom="16dp">
 
+            <!-- ─────────────────────────────────────────
+                 HERO: Amount + Type Badge
+                 ───────────────────────────────────────── -->
             <LinearLayout
                 android:id="@+id/cardEntry"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:orientation="vertical"
-                android:paddingHorizontal="12dp"
-                android:paddingVertical="32dp">
+                android:paddingTop="36dp"
+                android:paddingBottom="28dp">
 
-                <ImageView
-                    android:id="@+id/typeIcon"
-                    android:layout_width="64dp"
-                    android:layout_height="64dp"
-                    android:background="@drawable/bg_circle_soft"
-                    android:contentDescription="Type"
-                    android:padding="16dp"
-                    android:src="@drawable/ic_minus"
-                    app:tint="?attr/chk_expenseColor" />
+                <!-- Type icon in a soft circle -->
+                <FrameLayout
+                    android:layout_width="56dp"
+                    android:layout_height="56dp">
 
+                    <ImageView
+                        android:id="@+id/typeIcon"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/bg_circle_soft"
+                        android:contentDescription="Type"
+                        android:padding="14dp"
+                        android:src="@drawable/ic_minus"
+                        app:tint="?attr/chk_expenseColor" />
+                </FrameLayout>
+
+                <!-- Amount -->
                 <TextView
                     android:id="@+id/detailAmount"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
+                    android:layout_marginTop="14dp"
                     android:fontFamily="@font/app_font"
                     android:text="₹ 0.00"
                     android:textColor="?attr/chk_expenseColor"
-                    android:textSize="36sp"
-                    android:textStyle="bold" />
+                    android:textSize="34sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="-0.02" />
 
+                <!-- Type chip + Date -->
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
+                    android:layout_marginTop="10dp"
                     android:gravity="center_vertical"
                     android:orientation="horizontal">
 
@@ -139,54 +155,62 @@
                         android:background="@drawable/bg_rounded_tag"
                         android:fontFamily="@font/app_font"
                         android:paddingHorizontal="10dp"
-                        android:paddingVertical="4dp"
+                        android:paddingVertical="3dp"
                         android:text="OUT"
                         android:textColor="?attr/chk_textColorPrimary"
-                        android:textSize="12sp"
-                        android:textStyle="bold" />
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.06" />
+
+                    <View
+                        android:layout_width="4dp"
+                        android:layout_height="4dp"
+                        android:layout_marginHorizontal="8dp"
+                        android:background="@drawable/circle_shape"
+                        android:backgroundTint="?attr/chk_textColorHint"
+                        android:alpha="0.5" />
 
                     <TextView
                         android:id="@+id/detailDate"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="12dp"
                         android:fontFamily="@font/app_font"
                         android:text="24 Nov 2025, 01:02 PM"
                         android:textColor="?attr/chk_textColorSecondary"
-                        android:textSize="14sp" />
+                        android:textSize="13sp" />
                 </LinearLayout>
             </LinearLayout>
 
-            <com.google.android.material.card.MaterialCardView
+            <!-- ─────────────────────────────────────────
+                 NOTE CARD — Standalone, prominent
+                 ───────────────────────────────────────── -->
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="12dp"
-                android:layout_marginBottom="16dp"
-                app:cardBackgroundColor="?attr/chk_surfaceColor"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="2dp"
-                app:strokeWidth="0dp">
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingHorizontal="16dp"
+                android:paddingVertical="14dp">
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    android:paddingHorizontal="16dp"
-                    android:paddingVertical="16dp">
-
-                    <ImageView
+                    <androidx.cardview.widget.CardView
                         android:layout_width="40dp"
                         android:layout_height="40dp"
-                        android:background="@drawable/bg_circle_soft"
-                        android:padding="10dp"
-                        android:src="@drawable/ic_notes"
-                        app:tint="?attr/chk_primary_blue" />
+                        android:layout_marginEnd="14dp"
+                        app:cardBackgroundColor="#332196F3"
+                        app:cardCornerRadius="8dp"
+                        app:cardElevation="0dp">
+
+                        <ImageView
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:padding="10dp"
+                            android:src="@drawable/ic_notes"
+                            app:tint="?attr/chk_primary_blue" />
+                    </androidx.cardview.widget.CardView>
 
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="16dp"
                         android:layout_weight="1"
                         android:orientation="vertical">
 
@@ -195,8 +219,9 @@
                             android:layout_height="wrap_content"
                             android:fontFamily="@font/app_font"
                             android:text="Note"
-                            android:textColor="?attr/chk_textColorSecondary"
-                            android:textSize="12sp" />
+                            android:textColor="?attr/chk_textColorHint"
+                            android:textSize="11sp"
+                            android:letterSpacing="0.04" />
 
                         <TextView
                             android:id="@+id/detailRemark"
@@ -206,47 +231,48 @@
                             android:fontFamily="@font/app_font"
                             android:text="No details provided"
                             android:textColor="?attr/chk_textColorPrimary"
-                            android:textSize="16sp"
+                            android:textSize="15sp"
                             android:textStyle="bold" />
                     </LinearLayout>
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
+            </LinearLayout>
 
-            <com.google.android.material.card.MaterialCardView
+            <!-- ─────────────────────────────────────────
+                 DETAILS CARD — Grouped rows
+                 ───────────────────────────────────────── -->
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="12dp"
-                app:cardBackgroundColor="?attr/chk_surfaceColor"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="2dp"
-                app:strokeWidth="0dp">
+                android:orientation="vertical"
+                android:paddingVertical="4dp">
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:paddingVertical="8dp">
-
+                    <!-- Category Row -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:gravity="center_vertical"
                         android:orientation="horizontal"
                         android:paddingHorizontal="16dp"
-                        android:paddingVertical="12dp">
+                        android:paddingVertical="13dp">
 
-                        <ImageView
+                        <androidx.cardview.widget.CardView
                             android:layout_width="40dp"
                             android:layout_height="40dp"
-                            android:background="@drawable/bg_circle_soft"
-                            android:padding="10dp"
-                            android:src="@drawable/ic_category"
-                            app:tint="?attr/chk_primary_blue" />
+                            android:layout_marginEnd="14dp"
+                            app:cardBackgroundColor="#33E91E63"
+                            app:cardCornerRadius="8dp"
+                            app:cardElevation="0dp">
+
+                            <ImageView
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:padding="10dp"
+                                android:src="@drawable/ic_category"
+                                app:tint="?attr/chk_primary_blue" />
+                        </androidx.cardview.widget.CardView>
 
                         <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:layout_marginStart="16dp"
                             android:layout_weight="1"
                             android:orientation="vertical">
 
@@ -255,8 +281,9 @@
                                 android:layout_height="wrap_content"
                                 android:fontFamily="@font/app_font"
                                 android:text="Category"
-                                android:textColor="?attr/chk_textColorSecondary"
-                                android:textSize="12sp" />
+                                android:textColor="?attr/chk_textColorHint"
+                                android:textSize="11sp"
+                                android:letterSpacing="0.04" />
 
                             <TextView
                                 android:id="@+id/detailCategory"
@@ -266,37 +293,39 @@
                                 android:fontFamily="@font/app_font"
                                 android:text="General"
                                 android:textColor="?attr/chk_textColorPrimary"
-                                android:textSize="16sp"
+                                android:textSize="15sp"
                                 android:textStyle="bold" />
                         </LinearLayout>
                     </LinearLayout>
 
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:layout_marginStart="72dp"
-                        android:background="?attr/chk_dividerHorizontal" />
-
+                    <!-- Payment Mode Row -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:gravity="center_vertical"
                         android:orientation="horizontal"
                         android:paddingHorizontal="16dp"
-                        android:paddingVertical="12dp">
+                        android:paddingVertical="13dp">
 
-                        <ImageView
+                        <androidx.cardview.widget.CardView
                             android:layout_width="40dp"
                             android:layout_height="40dp"
-                            android:background="@drawable/bg_circle_soft"
-                            android:padding="10dp"
-                            android:src="@drawable/ic_payment"
-                            app:tint="?attr/chk_primary_blue" />
+                            android:layout_marginEnd="14dp"
+                            app:cardBackgroundColor="#33FF9800"
+                            app:cardCornerRadius="8dp"
+                            app:cardElevation="0dp">
+
+                            <ImageView
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:padding="10dp"
+                                android:src="@drawable/ic_payment"
+                                app:tint="?attr/chk_primary_blue" />
+                        </androidx.cardview.widget.CardView>
 
                         <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:layout_marginStart="16dp"
                             android:layout_weight="1"
                             android:orientation="vertical">
 
@@ -305,8 +334,9 @@
                                 android:layout_height="wrap_content"
                                 android:fontFamily="@font/app_font"
                                 android:text="Payment Mode"
-                                android:textColor="?attr/chk_textColorSecondary"
-                                android:textSize="12sp" />
+                                android:textColor="?attr/chk_textColorHint"
+                                android:textSize="11sp"
+                                android:letterSpacing="0.04" />
 
                             <TextView
                                 android:id="@+id/detailPaymentMode"
@@ -316,11 +346,12 @@
                                 android:fontFamily="@font/app_font"
                                 android:text="Cash"
                                 android:textColor="?attr/chk_textColorPrimary"
-                                android:textSize="16sp"
+                                android:textSize="15sp"
                                 android:textStyle="bold" />
                         </LinearLayout>
                     </LinearLayout>
 
+                    <!-- Party Row (conditionally visible) -->
                     <LinearLayout
                         android:id="@+id/partySection"
                         android:layout_width="match_parent"
@@ -331,7 +362,7 @@
                         <View
                             android:layout_width="match_parent"
                             android:layout_height="1dp"
-                            android:layout_marginStart="72dp"
+                            android:layout_marginStart="68dp"
                             android:background="?attr/chk_dividerHorizontal" />
 
                         <LinearLayout
@@ -340,20 +371,27 @@
                             android:gravity="center_vertical"
                             android:orientation="horizontal"
                             android:paddingHorizontal="16dp"
-                            android:paddingVertical="12dp">
+                            android:paddingVertical="13dp">
 
-                            <ImageView
+                            <androidx.cardview.widget.CardView
                                 android:layout_width="40dp"
                                 android:layout_height="40dp"
-                                android:background="@drawable/bg_circle_soft"
-                                android:padding="10dp"
-                                android:src="@drawable/ic_person"
-                                app:tint="?attr/chk_primary_blue" />
+                                android:layout_marginEnd="14dp"
+                                app:cardBackgroundColor="#33673AB7"
+                                app:cardCornerRadius="8dp"
+                                app:cardElevation="0dp">
+
+                                <ImageView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:padding="10dp"
+                                    android:src="@drawable/ic_person"
+                                    app:tint="?attr/chk_primary_blue" />
+                            </androidx.cardview.widget.CardView>
 
                             <LinearLayout
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
-                                android:layout_marginStart="16dp"
                                 android:layout_weight="1"
                                 android:orientation="vertical">
 
@@ -362,8 +400,9 @@
                                     android:layout_height="wrap_content"
                                     android:fontFamily="@font/app_font"
                                     android:text="Party"
-                                    android:textColor="?attr/chk_textColorSecondary"
-                                    android:textSize="12sp" />
+                                    android:textColor="?attr/chk_textColorHint"
+                                    android:textSize="11sp"
+                                    android:letterSpacing="0.04" />
 
                                 <TextView
                                     android:id="@+id/detailParty"
@@ -373,12 +412,13 @@
                                     android:fontFamily="@font/app_font"
                                     android:text="John Doe"
                                     android:textColor="?attr/chk_textColorPrimary"
-                                    android:textSize="16sp"
+                                    android:textSize="15sp"
                                     android:textStyle="bold" />
                             </LinearLayout>
                         </LinearLayout>
                     </LinearLayout>
 
+                    <!-- Tags Row (conditionally visible) -->
                     <LinearLayout
                         android:id="@+id/tagsSection"
                         android:layout_width="match_parent"
@@ -389,7 +429,7 @@
                         <View
                             android:layout_width="match_parent"
                             android:layout_height="1dp"
-                            android:layout_marginStart="72dp"
+                            android:layout_marginStart="68dp"
                             android:background="?attr/chk_dividerHorizontal" />
 
                         <LinearLayout
@@ -398,20 +438,27 @@
                             android:gravity="center_vertical"
                             android:orientation="horizontal"
                             android:paddingHorizontal="16dp"
-                            android:paddingVertical="12dp">
+                            android:paddingVertical="13dp">
 
-                            <ImageView
+                            <androidx.cardview.widget.CardView
                                 android:layout_width="40dp"
                                 android:layout_height="40dp"
-                                android:background="@drawable/bg_circle_soft"
-                                android:padding="10dp"
-                                android:src="@drawable/ic_label"
-                                app:tint="?attr/chk_primary_blue" />
+                                android:layout_marginEnd="14dp"
+                                app:cardBackgroundColor="#334CAF50"
+                                app:cardCornerRadius="8dp"
+                                app:cardElevation="0dp">
+
+                                <ImageView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:padding="10dp"
+                                    android:src="@drawable/ic_label"
+                                    app:tint="?attr/chk_primary_blue" />
+                            </androidx.cardview.widget.CardView>
 
                             <LinearLayout
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
-                                android:layout_marginStart="16dp"
                                 android:layout_weight="1"
                                 android:orientation="vertical">
 
@@ -420,8 +467,9 @@
                                     android:layout_height="wrap_content"
                                     android:fontFamily="@font/app_font"
                                     android:text="Tags"
-                                    android:textColor="?attr/chk_textColorSecondary"
-                                    android:textSize="12sp" />
+                                    android:textColor="?attr/chk_textColorHint"
+                                    android:textSize="11sp"
+                                    android:letterSpacing="0.04" />
 
                                 <TextView
                                     android:id="@+id/detailTags"
@@ -431,49 +479,47 @@
                                     android:fontFamily="@font/app_font"
                                     android:text="Personal"
                                     android:textColor="?attr/chk_textColorPrimary"
-                                    android:textSize="16sp"
+                                    android:textSize="15sp"
                                     android:textStyle="bold" />
                             </LinearLayout>
                         </LinearLayout>
                     </LinearLayout>
 
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
+            </LinearLayout>
 
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="12dp"
-                android:layout_marginTop="16dp"
-                app:cardBackgroundColor="?attr/chk_surfaceColor"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="2dp"
-                app:strokeWidth="0dp">
-
-                <LinearLayout
+            <!-- ─────────────────────────────────────────
+                 RUNNING BALANCE — Expandable row
+                 ───────────────────────────────────────── -->
+            <LinearLayout
                     android:id="@+id/btnViewRunningBalance"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="?attr/selectableItemBackground"
                     android:clickable="true"
                     android:focusable="true"
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
                     android:paddingHorizontal="16dp"
-                    android:paddingVertical="16dp">
+                    android:paddingVertical="14dp">
 
-                    <ImageView
+                    <androidx.cardview.widget.CardView
                         android:layout_width="40dp"
                         android:layout_height="40dp"
-                        android:background="@drawable/bg_circle_soft"
-                        android:padding="10dp"
-                        android:src="@drawable/ic_account_balance_wallet"
-                        app:tint="?attr/chk_primary_blue" />
+                        android:layout_marginEnd="14dp"
+                        app:cardBackgroundColor="#33009688"
+                        app:cardCornerRadius="8dp"
+                        app:cardElevation="0dp">
+
+                        <ImageView
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:padding="10dp"
+                            android:src="@drawable/ic_account_balance_wallet"
+                            app:tint="?attr/chk_primary_blue" />
+                    </androidx.cardview.widget.CardView>
 
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="16dp"
                         android:layout_weight="1"
                         android:orientation="vertical">
 
@@ -483,7 +529,7 @@
                             android:fontFamily="@font/app_font"
                             android:text="Running Balance"
                             android:textColor="?attr/chk_textColorPrimary"
-                            android:textSize="16sp"
+                            android:textSize="15sp"
                             android:textStyle="bold" />
 
                         <TextView
@@ -493,48 +539,50 @@
                             android:layout_marginTop="2dp"
                             android:fontFamily="@font/app_font"
                             android:text="Tap to view balance impact"
-                            android:textColor="?attr/chk_textColorSecondary"
-                            android:textSize="12sp" />
+                            android:textColor="?attr/chk_textColorHint"
+                            android:textSize="11sp" />
 
                         <TextView
                             android:id="@+id/runningBalanceAmount"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
+                            android:layout_marginTop="6dp"
                             android:fontFamily="@font/app_font"
                             android:text="₹ 0.00"
                             android:textColor="?attr/chk_textColorPrimary"
-                            android:textSize="22sp"
+                            android:textSize="20sp"
                             android:textStyle="bold"
                             android:visibility="gone" />
                     </LinearLayout>
 
                     <ImageView
                         android:id="@+id/runningBalanceActionIcon"
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
                         android:src="@drawable/ic_expand_more"
-                        app:tint="?attr/chk_textColorSecondary" />
-                </LinearLayout>
+                        app:tint="?attr/chk_textColorHint" />
+            </LinearLayout>
 
-            </com.google.android.material.card.MaterialCardView>
+            <!-- ─────────────────────────────────────────
+                 TRUST BADGES — Cloud sync + security
+                 ───────────────────────────────────────── -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="32dp"
-                android:alpha="0.8"
+                android:layout_marginTop="20dp"
+                android:alpha="0.7"
                 android:gravity="center"
                 android:orientation="vertical">
 
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:gravity="center"
+                    android:gravity="center_vertical"
                     android:orientation="horizontal">
 
                     <ImageView
-                        android:layout_width="16dp"
-                        android:layout_height="16dp"
+                        android:layout_width="14dp"
+                        android:layout_height="14dp"
                         android:src="@drawable/ic_cloud_check"
                         app:tint="?attr/chk_incomeColor" />
 
@@ -544,20 +592,20 @@
                         android:layout_marginStart="6dp"
                         android:fontFamily="@font/app_font"
                         android:text="Entry is backed up"
-                        android:textColor="?attr/chk_textColorPrimary"
-                        android:textSize="12sp" />
+                        android:textColor="?attr/chk_textColorSecondary"
+                        android:textSize="11sp" />
                 </LinearLayout>
 
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
-                    android:gravity="center"
+                    android:layout_marginTop="4dp"
+                    android:gravity="center_vertical"
                     android:orientation="horizontal">
 
                     <ImageView
-                        android:layout_width="14dp"
-                        android:layout_height="14dp"
+                        android:layout_width="13dp"
+                        android:layout_height="13dp"
                         android:src="@drawable/ic_security"
                         app:tint="?attr/chk_incomeColor" />
 
@@ -568,41 +616,42 @@
                         android:fontFamily="@font/app_font"
                         android:text="100% Safe &amp; Secure"
                         android:textColor="?attr/chk_incomeColor"
-                        android:textSize="11sp"
-                        android:textStyle="bold" />
+                        android:textSize="10sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.04" />
                 </LinearLayout>
+            </LinearLayout>
+
+            <!-- ─────────────────────────────────────────
+                 EDIT BUTTON — Inline at end of content
+                 ───────────────────────────────────────── -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingHorizontal="16dp"
+                android:layout_marginTop="24dp"
+                android:paddingBottom="24dp">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnEditTransaction"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:backgroundTint="?attr/chk_primary_blue"
+                    android:fontFamily="@font/app_font"
+                    android:stateListAnimator="@null"
+                    android:text="Edit Entry"
+                    android:textColor="@android:color/white"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.02"
+                    app:cornerRadius="12dp"
+                    app:elevation="0dp"
+                    app:icon="@drawable/ic_edit"
+                    app:iconGravity="textStart"
+                    app:iconTint="@android:color/white" />
             </LinearLayout>
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
-
-    <LinearLayout
-        android:id="@+id/footerLayout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="?attr/chk_surfaceColor"
-        android:elevation="8dp"
-        android:padding="16dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnEditTransaction"
-            android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:backgroundTint="?attr/chk_primary_blue"
-            android:fontFamily="@font/app_font"
-            android:stateListAnimator="@null"
-            android:text="Edit Entry"
-            android:textColor="@android:color/white"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            app:cornerRadius="12dp"
-            app:elevation="0dp"
-            app:icon="@drawable/ic_edit"
-            app:iconGravity="textStart"
-            app:iconTint="@android:color/white" />
-    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

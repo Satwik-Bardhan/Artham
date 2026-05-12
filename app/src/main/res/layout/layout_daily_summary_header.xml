@@ -5,12 +5,11 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginTop="12dp"
-    app:cardBackgroundColor="?attr/chk_surfaceColor"
-    app:cardCornerRadius="16dp"
+    android:layout_marginTop="6dp"
+    app:cardBackgroundColor="@android:color/transparent"
+    app:cardCornerRadius="0dp"
     app:cardElevation="0dp"
-    app:strokeWidth="1dp"
-    app:strokeColor="?attr/chk_dividerHorizontal">
+    app:strokeWidth="0dp">
 
     <LinearLayout
         android:id="@+id/dailySummaryHeader"

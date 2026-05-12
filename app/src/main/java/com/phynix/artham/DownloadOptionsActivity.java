@@ -19,7 +19,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
 
-public class DownloadOptionsActivity extends AppCompatActivity {
+public class DownloadOptionsActivity extends BaseActivity {
 
     // UI Elements
     private TextView startDateText, endDateText;

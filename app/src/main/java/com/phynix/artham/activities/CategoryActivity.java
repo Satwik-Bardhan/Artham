@@ -41,8 +41,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import com.phynix.artham.BaseActivity;
 
-public class CategoryActivity extends AppCompatActivity {
+public class CategoryActivity extends BaseActivity {
 
     private RecyclerView categoriesRecyclerView;
     private CategoryAdapter categoryAdapter;

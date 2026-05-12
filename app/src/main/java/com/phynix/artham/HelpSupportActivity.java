@@ -19,7 +19,7 @@ import com.phynix.artham.activities.CategoryActivity;
  * Artham Help & Support Activity
  * Handles support emails and quick actions like reporting bugs or viewing creator info.
  */
-public class HelpSupportActivity extends AppCompatActivity {
+public class HelpSupportActivity extends BaseActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

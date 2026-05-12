@@ -14,7 +14,7 @@ import androidx.core.app.TaskStackBuilder;
 
 import com.phynix.artham.utils.ThemeManager;
 
-public class ThemeSelectionActivity extends AppCompatActivity {
+public class ThemeSelectionActivity extends BaseActivity {
 
     private CardView cardSystem, cardLight, cardDark, cardPurple, cardEmerald, cardRose;
     private RadioButton radioSystem, radioLight, radioDark, radioPurple, radioEmerald, radioRose;

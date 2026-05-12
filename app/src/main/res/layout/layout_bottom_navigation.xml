@@ -13,164 +13,213 @@
         android:layout_height="1dp"
         android:background="?attr/chk_dividerHorizontal" />
 
-    <LinearLayout
+    <!-- Main container: FrameLayout so the sliding pill can be absolute-positioned -->
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:paddingVertical="8dp"
-        android:baselineAligned="false">
+        android:paddingVertical="8dp">
 
-        <FrameLayout
-            android:id="@+id/btnCashbookSwitch"
-            android:layout_width="0dp"
+        <!-- Row of tab buttons -->
+        <LinearLayout
+            android:id="@+id/navButtonsRow"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:clickable="true"
-            android:focusable="true">
+            android:orientation="horizontal"
+            android:baselineAligned="false">
 
-            <LinearLayout
-                android:layout_width="match_parent"
+            <!-- ═══════ Cashbooks ═══════ -->
+            <FrameLayout
+                android:id="@+id/btnCashbookSwitch"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:padding="6dp">
+                android:layout_weight="1"
+                android:clickable="true"
+                android:focusable="true">
 
-                <ImageView
-                    android:id="@+id/iconCashbookSwitch"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:src="@drawable/ic_book"
-                    app:tint="@color/bottom_nav_item_color_selector"
-                    android:duplicateParentState="true"
-                    android:contentDescription="Cashbooks" />
-
-                <TextView
-                    android:id="@+id/textCashbookSwitch"
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:text="Cashbooks"
-                    android:fontFamily="@font/app_font"
-                    android:textColor="@color/bottom_nav_item_color_selector"
-                    android:textSize="11sp"
-                    android:duplicateParentState="true" />
-            </LinearLayout>
-        </FrameLayout>
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:padding="4dp">
 
-        <FrameLayout
-            android:id="@+id/btnHome"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:clickable="true"
-            android:focusable="true">
+                    <FrameLayout
+                        android:id="@+id/pillContainerCashbook"
+                        android:layout_width="56dp"
+                        android:layout_height="32dp"
+                        android:layout_gravity="center">
 
-            <LinearLayout
-                android:layout_width="match_parent"
+                        <ImageView
+                            android:id="@+id/iconCashbookSwitch"
+                            android:layout_width="22dp"
+                            android:layout_height="22dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_book"
+                            app:tint="@color/bottom_nav_item_color_selector"
+                            android:duplicateParentState="true"
+                            android:contentDescription="Cashbooks" />
+                    </FrameLayout>
+
+                    <TextView
+                        android:id="@+id/textCashbookSwitch"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="Cashbooks"
+                        android:fontFamily="@font/app_font"
+                        android:textColor="@color/bottom_nav_item_color_selector"
+                        android:textSize="11sp"
+                        android:duplicateParentState="true" />
+                </LinearLayout>
+            </FrameLayout>
+
+            <!-- ═══════ Home ═══════ -->
+            <FrameLayout
+                android:id="@+id/btnHome"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:padding="6dp">
+                android:layout_weight="1"
+                android:clickable="true"
+                android:focusable="true">
 
-                <ImageView
-                    android:id="@+id/iconHome"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:src="@drawable/ic_home"
-                    app:tint="@color/bottom_nav_item_color_selector"
-                    android:duplicateParentState="true"
-                    android:contentDescription="Home" />
-
-                <TextView
-                    android:id="@+id/textHome"
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:text="Home"
-                    android:fontFamily="@font/app_font"
-                    android:textColor="@color/bottom_nav_item_color_selector"
-                    android:textSize="11sp"
-                    android:duplicateParentState="true" />
-            </LinearLayout>
-        </FrameLayout>
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:padding="4dp">
 
-        <FrameLayout
-            android:id="@+id/btnTransactions"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:clickable="true"
-            android:focusable="true">
+                    <FrameLayout
+                        android:id="@+id/pillContainerHome"
+                        android:layout_width="56dp"
+                        android:layout_height="32dp"
+                        android:layout_gravity="center">
 
-            <LinearLayout
-                android:layout_width="match_parent"
+                        <ImageView
+                            android:id="@+id/iconHome"
+                            android:layout_width="22dp"
+                            android:layout_height="22dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_home"
+                            app:tint="@color/bottom_nav_item_color_selector"
+                            android:duplicateParentState="true"
+                            android:contentDescription="Home" />
+                    </FrameLayout>
+
+                    <TextView
+                        android:id="@+id/textHome"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="Home"
+                        android:fontFamily="@font/app_font"
+                        android:textColor="@color/bottom_nav_item_color_selector"
+                        android:textSize="11sp"
+                        android:duplicateParentState="true" />
+                </LinearLayout>
+            </FrameLayout>
+
+            <!-- ═══════ Transactions ═══════ -->
+            <FrameLayout
+                android:id="@+id/btnTransactions"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:padding="6dp">
+                android:layout_weight="1"
+                android:clickable="true"
+                android:focusable="true">
 
-                <ImageView
-                    android:id="@+id/iconTransactions"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:src="@drawable/ic_receipt_long"
-                    app:tint="@color/bottom_nav_item_color_selector"
-                    android:duplicateParentState="true"
-                    android:contentDescription="Transactions" />
-
-                <TextView
-                    android:id="@+id/textTransactions"
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:text="Transactions"
-                    android:fontFamily="@font/app_font"
-                    android:textColor="@color/bottom_nav_item_color_selector"
-                    android:textSize="11sp"
-                    android:duplicateParentState="true" />
-            </LinearLayout>
-        </FrameLayout>
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:padding="4dp">
 
-        <FrameLayout
-            android:id="@+id/btnSettings"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:clickable="true"
-            android:focusable="true">
+                    <FrameLayout
+                        android:id="@+id/pillContainerTransactions"
+                        android:layout_width="56dp"
+                        android:layout_height="32dp"
+                        android:layout_gravity="center">
 
-            <LinearLayout
-                android:layout_width="match_parent"
+                        <ImageView
+                            android:id="@+id/iconTransactions"
+                            android:layout_width="22dp"
+                            android:layout_height="22dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_transaction_report"
+                            app:tint="@color/bottom_nav_item_color_selector"
+                            android:duplicateParentState="true"
+                            android:contentDescription="Transactions" />
+                    </FrameLayout>
+
+                    <TextView
+                        android:id="@+id/textTransactions"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="Transactions"
+                        android:fontFamily="@font/app_font"
+                        android:textColor="@color/bottom_nav_item_color_selector"
+                        android:textSize="11sp"
+                        android:duplicateParentState="true" />
+                </LinearLayout>
+            </FrameLayout>
+
+            <!-- ═══════ Settings ═══════ -->
+            <FrameLayout
+                android:id="@+id/btnSettings"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:padding="6dp">
+                android:layout_weight="1"
+                android:clickable="true"
+                android:focusable="true">
 
-                <ImageView
-                    android:id="@+id/iconSettings"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:src="@drawable/ic_settings"
-                    app:tint="@color/bottom_nav_item_color_selector"
-                    android:duplicateParentState="true"
-                    android:contentDescription="Settings" />
-
-                <TextView
-                    android:id="@+id/textSettings"
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:text="Settings"
-                    android:fontFamily="@font/app_font"
-                    android:textColor="@color/bottom_nav_item_color_selector"
-                    android:textSize="11sp"
-                    android:duplicateParentState="true" />
-            </LinearLayout>
-        </FrameLayout>
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:padding="4dp">
 
-    </LinearLayout>
+                    <FrameLayout
+                        android:id="@+id/pillContainerSettings"
+                        android:layout_width="56dp"
+                        android:layout_height="32dp"
+                        android:layout_gravity="center">
+
+                        <ImageView
+                            android:id="@+id/iconSettings"
+                            android:layout_width="22dp"
+                            android:layout_height="22dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_settings"
+                            app:tint="@color/bottom_nav_item_color_selector"
+                            android:duplicateParentState="true"
+                            android:contentDescription="Settings" />
+                    </FrameLayout>
+
+                    <TextView
+                        android:id="@+id/textSettings"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="Settings"
+                        android:fontFamily="@font/app_font"
+                        android:textColor="@color/bottom_nav_item_color_selector"
+                        android:textSize="11sp"
+                        android:duplicateParentState="true" />
+                </LinearLayout>
+            </FrameLayout>
+
+        </LinearLayout>
+
+        <!-- Sliding Pill Indicator (positioned absolutely over the tabs) -->
+        <View
+            android:id="@+id/slidingPillIndicator"
+            android:layout_width="56dp"
+            android:layout_height="32dp"
+            android:background="@drawable/bg_nav_selected_pill"
+            android:visibility="invisible" />
+
+    </FrameLayout>
 </LinearLayout>

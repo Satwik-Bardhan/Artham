@@ -48,7 +48,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
-public class EditProfileActivity extends AppCompatActivity {
+public class EditProfileActivity extends BaseActivity {
 
     private static final String TAG = "EditProfileActivity";
 

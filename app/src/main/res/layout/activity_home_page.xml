@@ -85,7 +85,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:paddingTop="4dp"
-                android:paddingBottom="24dp"
+                android:paddingBottom="16dp"
                 android:visibility="gone"
                 tools:visibility="visible">
 
@@ -97,10 +97,9 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     app:cardBackgroundColor="?attr/chk_headerColor"
-                    app:cardCornerRadius="16dp"
-                    app:cardElevation="1dp"
-                    app:strokeWidth="1dp"
-                    app:strokeColor="?attr/chk_dividerHorizontal">
+                    app:cardCornerRadius="14dp"
+                    app:cardElevation="0dp"
+                    app:strokeWidth="0dp">
 
                     <LinearLayout
                         android:id="@+id/userBox"
@@ -109,15 +108,15 @@
                         android:gravity="center_vertical"
                         android:orientation="horizontal"
                         android:paddingHorizontal="16dp"
-                        android:paddingVertical="14dp"
+                        android:paddingVertical="16dp"
                         android:clickable="true"
                         android:focusable="true"
                         android:background="?attr/selectableItemBackground">
 
                         <!-- Icon with tinted background chip -->
                         <FrameLayout
-                            android:layout_width="42dp"
-                            android:layout_height="42dp"
+                            android:layout_width="44dp"
+                            android:layout_height="44dp"
                             android:layout_marginEnd="14dp">
 
                             <View
@@ -146,7 +145,7 @@
                                 android:fontFamily="@font/app_font"
                                 android:text="Current Book"
                                 android:textColor="?attr/chk_textColorPrimary"
-                                android:textSize="17sp"
+                                android:textSize="16sp"
                                 android:textStyle="bold"
                                 android:maxLines="1"
                                 android:ellipsize="end" />
@@ -155,10 +154,10 @@
                                 android:id="@+id/lastOpenedText"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_marginTop="2dp"
+                                android:layout_marginTop="3dp"
                                 android:fontFamily="@font/app_font"
                                 android:text="Last opened: Just now"
-                                android:textColor="?attr/chk_textColorSecondary"
+                                android:textColor="?attr/chk_textColorHint"
                                 android:textSize="12sp" />
                         </LinearLayout>
 
@@ -188,14 +187,17 @@
                     layout="@layout/component_balance_card"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp" />
+                    android:layout_marginTop="10dp" />
 
                 <!-- ─────────────────────────────────────────────────
                      SECTION 3: Cash In / Cash Out Buttons
                      ───────────────────────────────────────────────── -->
                 <include
                     android:id="@+id/originalButtons"
-                    layout="@layout/layout_home_action_buttons" />
+                    layout="@layout/layout_home_action_buttons"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp" />
 
                 <!-- ─────────────────────────────────────────────────
                      SECTION 4: Daily Summary Header
@@ -205,7 +207,7 @@
                     layout="@layout/layout_daily_summary_header"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="12dp" />
+                    android:layout_marginBottom="2dp" />
 
                 <!-- ─────────────────────────────────────────────────
                      SECTION 5: Today's Transactions Card
@@ -214,11 +216,10 @@
                     android:id="@+id/transactionListCard"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:cardBackgroundColor="?attr/chk_surfaceColor"
-                    app:cardCornerRadius="16dp"
-                    app:cardElevation="1dp"
-                    app:strokeWidth="1dp"
-                    app:strokeColor="?attr/chk_dividerHorizontal">
+                    app:cardBackgroundColor="@android:color/transparent"
+                    app:cardCornerRadius="0dp"
+                    app:cardElevation="0dp"
+                    app:strokeWidth="0dp">
 
                     <LinearLayout
                         android:id="@+id/transaction_section"
@@ -231,7 +232,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:orientation="horizontal"
-                            android:background="?attr/chk_surfaceColor"
+
                             android:paddingHorizontal="16dp"
                             android:paddingVertical="14dp"
                             android:gravity="center_vertical">

@@ -39,6 +39,7 @@
             android:orientation="vertical">
 
             <com.google.android.material.card.MaterialCardView
+                android:id="@+id/skelSummaryCards"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="12dp"
@@ -81,6 +82,7 @@
             </com.google.android.material.card.MaterialCardView>
 
             <androidx.cardview.widget.CardView
+                android:id="@+id/skelPieChart"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="12dp"

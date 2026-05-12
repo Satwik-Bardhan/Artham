@@ -19,7 +19,7 @@ import com.google.firebase.appdistribution.InterruptionLevel;
  * This activity determines whether to navigate to SigninActivity or HomePage
  * based on the user's authentication status.
  */
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends BaseActivity {
 
     private static final String TAG = "MainActivity";
 

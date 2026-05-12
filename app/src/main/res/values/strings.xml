@@ -247,4 +247,7 @@
     <string name="no_cashbooks_title">No Cashbooks Found</string>
     <string name="no_cashbooks_message">You haven\'t created any cashbooks yet.</string>
 
+    <string name="widget_description">Quick Cash In / Cash Out entry buttons</string>
+    <string name="widget_label">Artham Quick Entry</string>
+
 </resources>

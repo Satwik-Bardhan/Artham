@@ -31,7 +31,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-public class TransactionDetailsActivity extends AppCompatActivity {
+public class TransactionDetailsActivity extends BaseActivity {
 
     public static final String EXTRA_TRANSACTION = "extra_transaction";
     private TransactionModel transaction;

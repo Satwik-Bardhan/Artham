@@ -58,7 +58,9 @@ import com.phynix.artham.utils.Constants;
 import com.phynix.artham.utils.AmountFormatter;
 import com.phynix.artham.utils.DateTimeUtils;
 import com.phynix.artham.utils.SnackbarHelper;
+import com.phynix.artham.utils.SessionCache;
 import com.phynix.artham.utils.SwipeListener;
+import com.phynix.artham.utils.NavPillAnimator;
 import com.phynix.artham.utils.ThemeManager;
 import com.phynix.artham.viewmodels.HomePageViewModel;
 
@@ -71,7 +73,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
 
-public class HomePage extends AppCompatActivity {
+public class HomePage extends BaseActivity {
 
     private static final String TAG = "HomePage";
     private static final int PERMISSION_REQUEST_CODE_NOTIFICATIONS = 101;
@@ -412,24 +414,30 @@ public class HomePage extends AppCompatActivity {
         // Handle Skeleton Loading State Toggle
         viewModel.getIsLoading().observe(this, isLoading -> {
             if (isLoading) {
-                // Show Skeleton with Shimmer Animation, Hide Real Data
-                if (binding.homeShimmerLayout != null) {
-                    binding.homeShimmerLayout.setVisibility(View.VISIBLE);
-                    binding.homeShimmerLayout.startShimmer();
-                }
-                if (binding.homeContentLayout != null) {
-                    binding.homeContentLayout.setVisibility(View.GONE);
-                }
-                if (binding.stickyActionButtonsContainer != null) {
-                    binding.stickyActionButtonsContainer.setVisibility(View.GONE);
-                }
+                // Delay skeleton show by 150ms — if data arrives from cache, skeleton never flashes
+                skeletonTimeoutHandler.postDelayed(() -> {
+                    if (binding == null) return;
+                    // Only show skeleton if still loading (data hasn't arrived yet)
+                    if (Boolean.TRUE.equals(viewModel.getIsLoading().getValue())) {
+                        if (binding.homeShimmerLayout != null) {
+                            binding.homeShimmerLayout.setVisibility(View.VISIBLE);
+                            binding.homeShimmerLayout.startShimmer();
+                        }
+                        if (binding.homeContentLayout != null) {
+                            binding.homeContentLayout.setVisibility(View.GONE);
+                        }
+                        if (binding.stickyActionButtonsContainer != null) {
+                            binding.stickyActionButtonsContainer.setVisibility(View.GONE);
+                        }
+                    }
+                }, 150);
 
                 // Schedule a 1-second timeout to force-show home content when offline
                 skeletonTimeoutHandler.removeCallbacks(skeletonTimeoutRunnable);
                 skeletonTimeoutHandler.postDelayed(skeletonTimeoutRunnable, 1000);
             } else {
-                // Data loaded successfully — cancel any pending timeout
-                skeletonTimeoutHandler.removeCallbacks(skeletonTimeoutRunnable);
+                // Data loaded successfully — cancel any pending timeout and skeleton show
+                skeletonTimeoutHandler.removeCallbacksAndMessages(null);
 
                 // Hide Skeleton, Stop Shimmer, Show Real Data
                 if (binding.homeShimmerLayout != null) {
@@ -586,7 +594,15 @@ public class HomePage extends AppCompatActivity {
         FirebaseUser fbUser = FirebaseAuth.getInstance().getCurrentUser();
         if (fbUser == null)
             return;
-        updateUserUI(null);
+
+        // Instantly populate from session cache if available (prevents flicker on tab switch)
+        SessionCache cache = SessionCache.getInstance();
+        if (cache.hasUserProfile()) {
+            updateUserUI(cache.getCachedUserProfile());
+        } else {
+            updateUserUI(null);
+        }
+
         userRef = FirebaseDatabase.getInstance().getReference("users").child(fbUser.getUid());
         userListener = new ValueEventListener() {
             @Override
@@ -594,6 +610,8 @@ public class HomePage extends AppCompatActivity {
                 if (isDestroyed() || isFinishing())
                     return;
                 Users user = snapshot.getValue(Users.class);
+                // Cache for other activities
+                SessionCache.getInstance().cacheUserProfile(user);
                 updateUserUI(user);
             }
 
@@ -707,28 +725,43 @@ public class HomePage extends AppCompatActivity {
     }
 
     private void setupBottomNavigation() {
-        // Updated to use the viewbinding mapped object for bottom navigation
-        binding.bottomNavCard.getRoot().findViewById(R.id.btnHome).setSelected(true);
-        binding.bottomNavCard.getRoot().findViewById(R.id.btnTransactions).setOnClickListener(v -> {
+        View navRoot = binding.bottomNavCard.getRoot();
+        View pill = navRoot.findViewById(R.id.slidingPillIndicator);
+        View targetContainer = NavPillAnimator.getPillContainerForTab(navRoot, NavPillAnimator.TAB_HOME);
+
+        // Determine previous tab for slide animation
+        int previousTab = getIntent().getIntExtra(NavPillAnimator.EXTRA_PREVIOUS_TAB, -1);
+        navRoot.findViewById(R.id.btnHome).setSelected(true);
+
+        if (previousTab >= 0 && previousTab != NavPillAnimator.TAB_HOME) {
+            View fromContainer = NavPillAnimator.getPillContainerForTab(navRoot, previousTab);
+            NavPillAnimator.slideFromTo(pill, fromContainer, targetContainer);
+        } else {
+            NavPillAnimator.positionAt(pill, targetContainer);
+        }
+
+        navRoot.findViewById(R.id.btnTransactions).setOnClickListener(v -> {
             String idToUse = (currentCashbookId != null) ? currentCashbookId : viewModel.getCurrentCashbookId();
             if (idToUse != null) {
                 Intent intent = new Intent(this, TransactionActivity.class);
                 intent.putExtra(Constants.EXTRA_CASHBOOK_ID, idToUse);
+                intent.putExtra(NavPillAnimator.EXTRA_PREVIOUS_TAB, NavPillAnimator.TAB_HOME);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 startActivity(intent);
-                overridePendingTransition(0, 0);
+                overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
             } else {
                 showSnackbar("Please select a cashbook first");
             }
         });
-        binding.bottomNavCard.getRoot().findViewById(R.id.btnCashbookSwitch)
+        navRoot.findViewById(R.id.btnCashbookSwitch)
                 .setOnClickListener(v -> openCashbookSwitcher());
-        binding.bottomNavCard.getRoot().findViewById(R.id.btnSettings).setOnClickListener(v -> {
+        navRoot.findViewById(R.id.btnSettings).setOnClickListener(v -> {
             Intent intent = new Intent(this, SettingsActivity.class);
             intent.putExtra("cashbook_id", currentCashbookId);
+            intent.putExtra(NavPillAnimator.EXTRA_PREVIOUS_TAB, NavPillAnimator.TAB_HOME);
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
             startActivity(intent);
-            overridePendingTransition(0, 0);
+            overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
             finish();
         });
     }
@@ -820,6 +853,7 @@ public class HomePage extends AppCompatActivity {
     }
 
     private void signOutUser() {
+        SessionCache.getInstance().clear();
         FirebaseAuth.getInstance().signOut();
         startActivity(new Intent(this, SigninActivity.class));
         finish();

@@ -60,7 +60,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Locale;
 
-public class CashInOutActivity extends AppCompatActivity {
+public class CashInOutActivity extends BaseActivity {
 
     private static final String TAG = "CashInOutActivity";
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1001;

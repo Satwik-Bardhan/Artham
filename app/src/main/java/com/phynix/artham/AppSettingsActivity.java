@@ -19,13 +19,17 @@ import com.phynix.artham.utils.ThemeManager;
 // [FIX] Import the CategoryActivity from its new sub-package
 import com.phynix.artham.activities.CategoryActivity;
 
-public class AppSettingsActivity extends AppCompatActivity {
+public class AppSettingsActivity extends BaseActivity {
 
     private static final String PREFS_NAME = "AppSettingsPrefs";
+    private static final String PREFS_APP = "AppPrefs";
     private static final String KEY_CALCULATOR = "calculator_enabled";
+    private static final String KEY_HAPTIC = "haptic_feedback_enabled";
+    private static final String KEY_SETTINGS_SHOW_SUMMARY = "settings_show_summary";
+    private static final String KEY_SETTINGS_SHOW_PIE_CHART = "settings_show_pie_chart";
 
     // UI Elements
-    private SwitchMaterial calculatorSwitch;
+    private SwitchMaterial calculatorSwitch, hapticSwitch, summarySwitch, pieChartSwitch;
     private LinearLayout dataBackupLayout, languageLayout, themeLayout, manageCategoriesLayout;
     private TextView currentLanguageTextView, currentThemeTextView;
 
@@ -68,6 +72,9 @@ public class AppSettingsActivity extends AppCompatActivity {
     private void initializeUI() {
         dataBackupLayout = findViewById(R.id.dataBackupLayout);
         calculatorSwitch = findViewById(R.id.calculatorSwitch);
+        hapticSwitch = findViewById(R.id.hapticSwitch);
+        summarySwitch = findViewById(R.id.summarySwitch);
+        pieChartSwitch = findViewById(R.id.pieChartSwitch);
         languageLayout = findViewById(R.id.languageLayout);
         currentLanguageTextView = findViewById(R.id.currentLanguage);
 
@@ -83,6 +90,19 @@ public class AppSettingsActivity extends AppCompatActivity {
         if (calculatorSwitch != null) {
             calculatorSwitch.setChecked(prefs.getBoolean(KEY_CALCULATOR, true));
         }
+        if (hapticSwitch != null) {
+            hapticSwitch.setChecked(prefs.getBoolean(KEY_HAPTIC, true));
+        }
+
+        // Load transaction view settings from AppPrefs
+        SharedPreferences appPrefs = getSharedPreferences(PREFS_APP, MODE_PRIVATE);
+        if (summarySwitch != null) {
+            summarySwitch.setChecked(appPrefs.getBoolean(KEY_SETTINGS_SHOW_SUMMARY, true));
+        }
+        if (pieChartSwitch != null) {
+            pieChartSwitch.setChecked(appPrefs.getBoolean(KEY_SETTINGS_SHOW_PIE_CHART, true));
+        }
+
         updateThemeLabel();
     }
 
@@ -114,6 +134,35 @@ public class AppSettingsActivity extends AppCompatActivity {
                 saveBooleanSetting(KEY_CALCULATOR, isChecked);
                 String status = isChecked ? "Calculator enabled" : "Calculator disabled";
                 Toast.makeText(this, status, Toast.LENGTH_SHORT).show();
+            });
+        }
+
+        if (hapticSwitch != null) {
+            hapticSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                saveBooleanSetting(KEY_HAPTIC, isChecked);
+                String status = isChecked ? "Haptic feedback enabled" : "Haptic feedback disabled";
+                Toast.makeText(this, status, Toast.LENGTH_SHORT).show();
+            });
+        }
+
+        // Transaction View toggles — write to AppPrefs so TransactionActivity picks them up
+        if (summarySwitch != null) {
+            summarySwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                getSharedPreferences(PREFS_APP, MODE_PRIVATE).edit()
+                        .putBoolean(KEY_SETTINGS_SHOW_SUMMARY, isChecked).apply();
+                Toast.makeText(this,
+                        isChecked ? "Summary cards enabled" : "Summary cards hidden",
+                        Toast.LENGTH_SHORT).show();
+            });
+        }
+
+        if (pieChartSwitch != null) {
+            pieChartSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                getSharedPreferences(PREFS_APP, MODE_PRIVATE).edit()
+                        .putBoolean(KEY_SETTINGS_SHOW_PIE_CHART, isChecked).apply();
+                Toast.makeText(this,
+                        isChecked ? "Pie chart enabled" : "Pie chart hidden",
+                        Toast.LENGTH_SHORT).show();
             });
         }
 

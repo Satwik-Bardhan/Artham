@@ -47,8 +47,8 @@
         <item name="chk_bottomNavSelectedColor">@color/bottom_nav_selected</item>
         <item name="chk_bottomNavBorderColor">@color/bottom_nav_item_unselected_border</item>
 
-        <item name="chk_card_start">#1E2A4A</item>
-        <item name="chk_card_end">#2D3F6A</item>
+        <item name="chk_card_start">#0F1A36</item>
+        <item name="chk_card_end">#2A4580</item>
         <item name="chk_splash_wave">@color/splash_wave_color</item>
         <item name="chk_headerColor">@color/header_color</item>
 
@@ -85,8 +85,8 @@
         <item name="chk_bottomNavSelectedColor">@color/dark_primary</item>
         <item name="chk_bottomNavBorderColor">@color/dark_divider</item>
 
-        <item name="chk_card_start">#050A14</item>
-        <item name="chk_card_end">#0F1926</item>
+        <item name="chk_card_start">#050E1A</item>
+        <item name="chk_card_end">#1A3355</item>
         <item name="chk_splash_wave">@color/splash_wave_dark</item>
         <item name="chk_headerColor">@color/dark_header</item>
 
@@ -123,8 +123,8 @@
         <item name="chk_bottomNavSelectedColor">@color/purple_primary</item>
         <item name="chk_bottomNavBorderColor">@color/purple_divider</item>
 
-        <item name="chk_card_start">#2D1065</item>
-        <item name="chk_card_end">#1C1828</item>
+        <item name="chk_card_start">#1A0845</item>
+        <item name="chk_card_end">#4A1A8A</item>
         <item name="chk_splash_wave">@color/splash_wave_purple</item>
         <item name="chk_headerColor">@color/purple_header</item>
 
@@ -161,8 +161,8 @@
         <item name="chk_bottomNavSelectedColor">@color/emerald_primary</item>
         <item name="chk_bottomNavBorderColor">@color/emerald_divider</item>
 
-        <item name="chk_card_start">#0A3322</item>
-        <item name="chk_card_end">#165234</item>
+        <item name="chk_card_start">#061F14</item>
+        <item name="chk_card_end">#1A6B45</item>
         <item name="chk_splash_wave">@color/splash_wave_emerald</item>
         <item name="chk_headerColor">@color/emerald_header</item>
 
@@ -199,8 +199,8 @@
         <item name="chk_bottomNavSelectedColor">@color/rose_primary</item>
         <item name="chk_bottomNavBorderColor">@color/rose_divider</item>
 
-        <item name="chk_card_start">#3D0A22</item>
-        <item name="chk_card_end">#5C1535</item>
+        <item name="chk_card_start">#250818</item>
+        <item name="chk_card_end">#6E1A42</item>
         <item name="chk_splash_wave">@color/splash_wave_rose</item>
         <item name="chk_headerColor">@color/rose_header</item>
 

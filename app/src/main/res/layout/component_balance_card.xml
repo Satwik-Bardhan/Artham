@@ -41,6 +41,7 @@
                 android:text="UID User Unique Id"
                 android:textColor="#BBBBBB"
                 android:textSize="11sp"
+                android:textAllCaps="true"
                 android:letterSpacing="0.04"
                 android:ellipsize="end"
                 android:maxLines="1"

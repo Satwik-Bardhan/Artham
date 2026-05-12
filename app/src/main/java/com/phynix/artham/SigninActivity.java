@@ -25,7 +25,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.phynix.artham.utils.ThemeManager; // Import ThemeManager
 import com.phynix.artham.viewmodels.SigninViewModel;
 
-public class SigninActivity extends AppCompatActivity {
+public class SigninActivity extends BaseActivity {
 
     private static final String TAG = "SigninActivity";
 

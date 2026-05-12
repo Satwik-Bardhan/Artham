@@ -58,7 +58,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
-public class EditTransactionActivity extends AppCompatActivity {
+public class EditTransactionActivity extends BaseActivity {
 
     private static final String TAG = "EditTransactionActivity";
     private static final String PREFS_NAME = "AppSettingsPrefs";

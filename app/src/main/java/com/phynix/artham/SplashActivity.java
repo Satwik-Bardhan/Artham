@@ -13,7 +13,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.phynix.artham.utils.ThemeManager;
 
-public class SplashActivity extends AppCompatActivity {
+public class SplashActivity extends BaseActivity {
 
     // Changed from 3000 to 2000 for a 2-second delay
     private static final int SPLASH_DELAY = 2000;

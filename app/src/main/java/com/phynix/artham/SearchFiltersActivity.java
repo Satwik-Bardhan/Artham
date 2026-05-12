@@ -33,7 +33,7 @@ import java.util.Set;
 /**
  * FiltersActivity - Advanced transaction filtering
  */
-public class SearchFiltersActivity extends AppCompatActivity {
+public class SearchFiltersActivity extends BaseActivity {
 
     private static final String TAG = "FiltersActivity";
 
