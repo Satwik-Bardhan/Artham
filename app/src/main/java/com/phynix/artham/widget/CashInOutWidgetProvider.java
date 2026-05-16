@@ -39,6 +39,15 @@ public class CashInOutWidgetProvider extends AppWidgetProvider {
     private void updateWidget(Context context, AppWidgetManager appWidgetManager, int appWidgetId) {
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget_cash_in_out);
 
+        // Display current cashbook name in widget header
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_APP, Context.MODE_PRIVATE);
+        String cashbookName = prefs.getString("last_selected_cashbook_name", null);
+        if (cashbookName != null && !cashbookName.isEmpty()) {
+            views.setTextViewText(R.id.widget_cashbook_name, "📖 " + cashbookName);
+        } else {
+            views.setTextViewText(R.id.widget_cashbook_name, "Quick Entry");
+        }
+
         // Cash In button → opens CashInOutActivity with type=IN
         PendingIntent cashInPending = buildTransactionIntent(context, Constants.TRANSACTION_TYPE_IN, appWidgetId * 10);
         views.setOnClickPendingIntent(R.id.widget_btn_cash_in, cashInPending);

@@ -33,11 +33,14 @@
             android:textStyle="bold" />
 
         <TextView
+            android:id="@+id/widget_cashbook_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Quick Entry"
             android:textColor="#80FFFFFF"
-            android:textSize="11sp" />
+            android:textSize="11sp"
+            android:maxLines="1"
+            android:ellipsize="end" />
     </LinearLayout>
 
     <!-- Buttons Row -->
