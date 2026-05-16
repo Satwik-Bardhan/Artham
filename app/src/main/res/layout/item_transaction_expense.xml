@@ -31,53 +31,21 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:layout_gravity="center_vertical"
             android:orientation="vertical"
             android:padding="12dp">
 
-            <LinearLayout
+            <TextView
+                android:id="@+id/categoryTextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginBottom="4dp">
-
-                <TextView
-                    android:id="@+id/categoryTextView"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    tools:text="Food &amp; Dining"
-                    android:textSize="16sp"
-                    android:textStyle="bold"
-                    android:textColor="?attr/chk_textColorPrimary"
-                    android:ellipsize="end"
-                    android:maxLines="1"/>
-
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:gravity="end">
-
-                    <TextView
-                        android:id="@+id/amountTextView"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        tools:text="- ₹1,500"
-                        android:textSize="16sp"
-                        android:textStyle="bold"
-                        android:textColor="?attr/chk_expenseColor"/>
-
-                    <TextView
-                        android:id="@+id/balanceTextView"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        tools:text="Bal: ₹1,460.10"
-                        android:textSize="11sp"
-                        android:textColor="?attr/chk_textColorHint"
-                        android:layout_marginTop="2dp"/>
-                </LinearLayout>
-            </LinearLayout>
+                tools:text="Food &amp; Dining"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="?attr/chk_textColorPrimary"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:layout_marginBottom="4dp"/>
 
             <TextView
                 android:id="@+id/remarkTextView"
@@ -157,6 +125,35 @@
                     android:textSize="12sp"/>
             </LinearLayout>
 
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:orientation="vertical"
+            android:gravity="end"
+            android:paddingVertical="12dp"
+            android:paddingEnd="0dp"
+            android:paddingStart="4dp">
+
+            <TextView
+                android:id="@+id/amountTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:text="- ₹1,500"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="?attr/chk_expenseColor"/>
+
+            <TextView
+                android:id="@+id/balanceTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:text="Bal: ₹1,460.10"
+                android:textSize="11sp"
+                android:textColor="?attr/chk_textColorHint"
+                android:layout_marginTop="2dp"/>
         </LinearLayout>
 
         <ImageView
