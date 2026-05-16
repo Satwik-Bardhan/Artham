@@ -75,6 +75,9 @@ public class ThemeManager {
             theme = resolveRandomTheme();
         }
 
+        // Ensure night mode is set correctly on every activity start (including cold starts)
+        applyTheme(theme);
+
         switch (theme) {
             case THEME_SYSTEM:
                 // Follow device setting: dark system → Dark theme, light system → Light theme
@@ -83,6 +86,9 @@ public class ThemeManager {
                 } else {
                     activity.setTheme(R.style.Theme_Artham);
                 }
+                break;
+            case THEME_LIGHT:
+                activity.setTheme(R.style.Theme_Artham);
                 break;
             case THEME_DARK:
                 activity.setTheme(R.style.Theme_Artham_Dark);
