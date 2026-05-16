@@ -133,7 +133,7 @@
                     android:focusable="true"
                     android:foreground="?android:attr/selectableItemBackground"
                     app:cardBackgroundColor="?attr/chk_surfaceColor"
-                    app:cardCornerRadius="12dp"
+                    app:cardCornerRadius="8dp"
                     app:cardElevation="2dp">
 
                     <LinearLayout
@@ -169,12 +169,11 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:layout_marginStart="4dp"
-                    android:layout_marginEnd="4dp"
                     android:clickable="true"
                     android:focusable="true"
                     android:foreground="?android:attr/selectableItemBackground"
                     app:cardBackgroundColor="?attr/chk_surfaceColor"
-                    app:cardCornerRadius="12dp"
+                    app:cardCornerRadius="8dp"
                     app:cardElevation="2dp">
 
                     <LinearLayout
@@ -195,46 +194,6 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Report Bug"
-                            android:textSize="12sp"
-                            android:fontFamily="@font/app_font"
-                            android:textColor="?attr/chk_textColorPrimary"
-                            android:textStyle="bold"
-                            android:gravity="center"/>
-                    </LinearLayout>
-                </androidx.cardview.widget.CardView>
-
-                <!-- Creator / About Action -->
-                <androidx.cardview.widget.CardView
-                    android:id="@+id/btnAboutDev"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginStart="4dp"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:foreground="?android:attr/selectableItemBackground"
-                    app:cardBackgroundColor="?attr/chk_surfaceColor"
-                    app:cardCornerRadius="12dp"
-                    app:cardElevation="2dp">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:padding="12dp"
-                        android:gravity="center">
-
-                        <ImageView
-                            android:layout_width="28dp"
-                            android:layout_height="28dp"
-                            android:src="@drawable/ic_person"
-                            app:tint="?attr/chk_textColorSecondary"
-                            android:layout_marginBottom="6dp"/>
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Creator"
                             android:textSize="12sp"
                             android:fontFamily="@font/app_font"
                             android:textColor="?attr/chk_textColorPrimary"

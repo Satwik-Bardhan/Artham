@@ -36,6 +36,7 @@ public class HelpSupportActivity extends BaseActivity {
         setupHeader();
         setupQuickActions();
         setupFaqListeners();
+        setupSupportCreator();
     }
 
     private void setupHeader() {
@@ -52,7 +53,6 @@ public class HelpSupportActivity extends BaseActivity {
     private void setupQuickActions() {
         View btnContactUs = findViewById(R.id.btnContactUs);
         View btnReportBug = findViewById(R.id.btnReportBug);
-        View btnCreator = findViewById(R.id.btnAboutDev);
 
         // Contact Us
         if (btnContactUs != null) {
@@ -62,14 +62,6 @@ public class HelpSupportActivity extends BaseActivity {
         // Report Bug
         if (btnReportBug != null) {
             btnReportBug.setOnClickListener(v -> sendEmail("bugs@artham.com", "Bug Report: Artham App"));
-        }
-
-        // Creator Profile
-        if (btnCreator != null) {
-            btnCreator.setOnClickListener(v -> {
-                Intent intent = new Intent(HelpSupportActivity.this, AboutActivity.class);
-                startActivity(intent);
-            });
         }
     }
 
@@ -90,6 +82,10 @@ public class HelpSupportActivity extends BaseActivity {
         setRedirect(R.id.faqThemeSelection, ThemeSelectionActivity.class);
         setRedirect(R.id.faqThemeSync, AppSettingsActivity.class);
         setRedirect(R.id.faqAboutDev, AboutActivity.class);
+        setRedirect(R.id.faqRecurringTransactions, CashInOutActivity.class);
+        setRedirect(R.id.faqEditTransaction, TransactionActivity.class);
+        setRedirect(R.id.faqOfflineMode, SettingsActivity.class);
+        setRedirect(R.id.faqHomeWidget, SettingsActivity.class);
     }
 
     private void setRedirect(int viewId, Class<?> destinationClass) {
@@ -126,6 +122,113 @@ public class HelpSupportActivity extends BaseActivity {
             startActivity(Intent.createChooser(intent, "Send Email via..."));
         } catch (android.content.ActivityNotFoundException ex) {
             Toast.makeText(this, "No email clients installed.", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    /**
+     * Sets up the "Enjoying Artham?" support card at the bottom of the FAQ section.
+     */
+    private void setupSupportCreator() {
+        android.view.View btnSupport = findViewById(R.id.btnSupportCreatorFaq);
+        if (btnSupport != null) {
+            btnSupport.setOnClickListener(v -> showSupportDialog());
+        }
+    }
+
+    /**
+     * Shows the "Buy Me a Coffee" center dialog with UPI payment tiers.
+     */
+    private void showSupportDialog() {
+        final String[] chaiMessages = {
+                "Here's a chai for building something I love ☕",
+                "Keep going! This chai is on me 💛",
+                "A small chai for the genius behind Artham 🫖",
+                "You deserve a chai break — thank you! ☕",
+                "Artham makes my life easier, enjoy this chai 💛",
+                "One chai to say thanks for everything ☕🙏",
+                "Cheers to you with a warm cutting chai 🫖",
+                "Artham is amazing — grab a chai on me! ☕",
+                "Just a chai to show some love for your work 💛",
+                "Thanks for Artham! Hope this chai makes your day ☕"
+        };
+        final String[] coffeeMessages = {
+                "Grab a coffee, you've earned it! ☕",
+                "Your hard work deserves a good coffee 💛",
+                "Coffee for the late nights you put into Artham 🌙",
+                "Thanks for making finance easy — coffee's on me ☕",
+                "Keep shipping updates, keep sipping coffee 💛",
+                "A coffee to fuel your next great feature ☕✨",
+                "You built something special — enjoy this coffee 🍵",
+                "Artham saved me time, this coffee saves your energy 💛",
+                "Cheers to the dev who made money tracking fun ☕",
+                "One coffee for one amazing developer — thank you! 💛"
+        };
+        final String[] bobaMessages = {
+                "You deserve a boba tea for this amazing app 🧋🔥",
+                "Boba tea for the legend behind Artham 💛",
+                "Take a break and sip some boba — you've earned it! 🧋",
+                "Artham is top-tier, just like this boba tea 🏆",
+                "A boba tea to say thank you for everything 🧋💛",
+                "Best app deserves the best drink — enjoy! 🧋",
+                "You made my finances stress-free, boba's on me 💛",
+                "Hats off to you — grab a boba, champ 🧋👑",
+                "Artham is a masterpiece, this boba is my applause 🧋",
+                "Here's a boba tea because you're truly awesome 💛🔥"
+        };
+
+        java.util.Random random = new java.util.Random();
+
+        android.app.Dialog dialog = new android.app.Dialog(this);
+        dialog.requestWindowFeature(android.view.Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.dialog_support_creator);
+
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+            dialog.getWindow().setLayout(
+                    android.view.WindowManager.LayoutParams.MATCH_PARENT,
+                    android.view.WindowManager.LayoutParams.WRAP_CONTENT
+            );
+            dialog.getWindow().setGravity(android.view.Gravity.CENTER);
+        }
+
+        com.phynix.artham.utils.DialogUtils.applyBlurEffect(dialog, this);
+
+        String upiId = "satwikbardhan67-2@oksbi";
+        String upiName = "PHYNIX LABS";
+
+        dialog.findViewById(R.id.optionChai).setOnClickListener(v -> {
+            dialog.dismiss();
+            launchUpiPayment(upiId, upiName, "19", chaiMessages[random.nextInt(chaiMessages.length)]);
+        });
+
+        dialog.findViewById(R.id.optionCoffee).setOnClickListener(v -> {
+            dialog.dismiss();
+            launchUpiPayment(upiId, upiName, "49", coffeeMessages[random.nextInt(coffeeMessages.length)]);
+        });
+
+        dialog.findViewById(R.id.optionBoba).setOnClickListener(v -> {
+            dialog.dismiss();
+            launchUpiPayment(upiId, upiName, "199", bobaMessages[random.nextInt(bobaMessages.length)]);
+        });
+
+        dialog.show();
+    }
+
+    private void launchUpiPayment(String upiId, String name, String amount, String note) {
+        Uri uri = Uri.parse("upi://pay")
+                .buildUpon()
+                .appendQueryParameter("pa", upiId)
+                .appendQueryParameter("pn", name)
+                .appendQueryParameter("tn", note)
+                .appendQueryParameter("am", amount)
+                .appendQueryParameter("cu", "INR")
+                .build();
+
+        Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+        try {
+            startActivity(Intent.createChooser(intent, "Pay with..."));
+        } catch (Exception e) {
+            Toast.makeText(this, "No UPI app found on this device.", Toast.LENGTH_SHORT).show();
         }
     }
 }

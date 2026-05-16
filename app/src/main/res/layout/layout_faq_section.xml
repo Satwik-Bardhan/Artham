@@ -36,7 +36,7 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
         app:cardBackgroundColor="?attr/chk_surfaceColor"
-        app:cardCornerRadius="12dp"
+        app:cardCornerRadius="8dp"
         app:cardElevation="0dp"
         app:strokeWidth="1dp"
         app:strokeColor="?attr/chk_dividerHorizontal">
@@ -67,7 +67,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Where is my full transaction history?"
+                        android:text="Where can I view all my past transactions?"
                         android:fontFamily="@font/app_font"
                         android:textColor="?attr/chk_textColorPrimary"
                         android:textSize="15sp"
@@ -75,7 +75,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="View all entries in the Transaction list."
+                        android:text="Tap to open the full Transaction list with dates, amounts, and categories."
                         android:fontFamily="@font/app_font"
                         android:textColor="?attr/chk_textColorSecondary"
                         android:textSize="13sp"/>
@@ -112,7 +112,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="How do I see my spending charts?"
+                        android:text="How do I track my spending patterns?"
                         android:fontFamily="@font/app_font"
                         android:textColor="?attr/chk_textColorPrimary"
                         android:textSize="15sp"
@@ -120,7 +120,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Open the Analytics dashboard for visual reports."
+                        android:text="Open Analytics to see pie charts, bar graphs, and monthly breakdowns of your spending."
                         android:fontFamily="@font/app_font"
                         android:textColor="?attr/chk_textColorSecondary"
                         android:textSize="13sp"/>
@@ -157,7 +157,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Can I search for specific payments?"
+                        android:text="How do I find a specific transaction?"
                         android:fontFamily="@font/app_font"
                         android:textColor="?attr/chk_textColorPrimary"
                         android:textSize="15sp"
@@ -165,7 +165,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Use advanced filters to find specific records."
+                        android:text="Use filters to search by date range, category, amount, or payment mode."
                         android:fontFamily="@font/app_font"
                         android:textColor="?attr/chk_textColorSecondary"
                         android:textSize="13sp"/>
@@ -202,7 +202,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="How do I add a new transaction?"
+                        android:text="How do I record a new income or expense?"
                         android:fontFamily="@font/app_font"
                         android:textColor="?attr/chk_textColorPrimary"
                         android:textSize="15sp"
@@ -210,7 +210,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Record your income or expense entries quickly."
+                        android:text="Tap the + button on the home screen or use the widget for quick entry."
                         android:fontFamily="@font/app_font"
                         android:textColor="?attr/chk_textColorSecondary"
                         android:textSize="13sp"/>
@@ -247,7 +247,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="How can I export or download reports?"
+                        android:text="Can I download my transaction data as PDF or Excel?"
                         android:fontFamily="@font/app_font"
                         android:textColor="?attr/chk_textColorPrimary"
                         android:textSize="15sp"
@@ -255,7 +255,97 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Export your data as PDF or other formats."
+                        android:text="Export statements as PDF, Excel, or CSV from the Download section."
+                        android:fontFamily="@font/app_font"
+                        android:textColor="?attr/chk_textColorSecondary"
+                        android:textSize="13sp"/>
+                </LinearLayout>
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_marginStart="8dp"
+                    android:src="@drawable/ic_chevron_right"
+                    app:tint="?attr/chk_textColorSecondary"
+                    android:contentDescription="Go" />
+            </LinearLayout>
+
+            <View android:layout_width="match_parent" android:layout_height="1dp" android:background="?attr/chk_dividerHorizontal" android:layout_marginVertical="12dp"/>
+
+            <!-- FAQ: Recurring Transactions -->
+            <LinearLayout
+                android:id="@+id/faqRecurringTransactions"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:clickable="true"
+                android:focusable="true"
+                android:paddingVertical="4dp"
+                android:background="?attr/selectableItemBackground">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Can I set up automatic recurring entries?"
+                        android:fontFamily="@font/app_font"
+                        android:textColor="?attr/chk_textColorPrimary"
+                        android:textSize="15sp"
+                        android:textStyle="bold"/>
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Yes! Use the Auto button when adding a transaction to repeat it daily, weekly, or monthly."
+                        android:fontFamily="@font/app_font"
+                        android:textColor="?attr/chk_textColorSecondary"
+                        android:textSize="13sp"/>
+                </LinearLayout>
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_marginStart="8dp"
+                    android:src="@drawable/ic_chevron_right"
+                    app:tint="?attr/chk_textColorSecondary"
+                    android:contentDescription="Go" />
+            </LinearLayout>
+
+            <View android:layout_width="match_parent" android:layout_height="1dp" android:background="?attr/chk_dividerHorizontal" android:layout_marginVertical="12dp"/>
+
+            <!-- FAQ: Edit/Delete Transaction -->
+            <LinearLayout
+                android:id="@+id/faqEditTransaction"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:clickable="true"
+                android:focusable="true"
+                android:paddingVertical="4dp"
+                android:background="?attr/selectableItemBackground">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="How do I edit or delete an existing entry?"
+                        android:fontFamily="@font/app_font"
+                        android:textColor="?attr/chk_textColorPrimary"
+                        android:textSize="15sp"
+                        android:textStyle="bold"/>
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Tap any transaction to view details, then use the Edit button to modify or delete it."
                         android:fontFamily="@font/app_font"
                         android:textColor="?attr/chk_textColorSecondary"
                         android:textSize="13sp"/>
@@ -320,7 +410,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="How do I add a new category?"
+                        android:text="How do I create or edit spending categories?"
                         android:fontFamily="@font/app_font"
                         android:textColor="?attr/chk_textColorPrimary"
                         android:textSize="15sp"
@@ -328,7 +418,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Manage your expense and income categories here."
+                        android:text="Add, rename, or delete custom categories for both income and expenses."
                         android:fontFamily="@font/app_font"
                         android:textColor="?attr/chk_textColorSecondary"
                         android:textSize="13sp"/>
@@ -365,7 +455,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="How to switch between different books?"
+                        android:text="Can I maintain separate books for different purposes?"
                         android:fontFamily="@font/app_font"
                         android:textColor="?attr/chk_textColorPrimary"
                         android:textSize="15sp"
@@ -373,7 +463,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Quickly switch or create a new cashbook."
+                        android:text="Create multiple cashbooks for personal, business, or family use and switch between them."
                         android:fontFamily="@font/app_font"
                         android:textColor="?attr/chk_textColorSecondary"
                         android:textSize="13sp"/>
@@ -438,7 +528,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="How to update my name or photo?"
+                        android:text="How do I update my profile details?"
                         android:fontFamily="@font/app_font"
                         android:textColor="?attr/chk_textColorPrimary"
                         android:textSize="15sp"
@@ -446,7 +536,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Customize your profile details."
+                        android:text="Change your display name, profile photo, and account information."
                         android:fontFamily="@font/app_font"
                         android:textColor="?attr/chk_textColorSecondary"
                         android:textSize="13sp"/>
@@ -483,7 +573,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Is my account secure?"
+                        android:text="How is my financial data protected?"
                         android:fontFamily="@font/app_font"
                         android:textColor="?attr/chk_textColorPrimary"
                         android:textSize="15sp"
@@ -491,7 +581,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Manage account security and privacy settings."
+                        android:text="Your data is encrypted and stored securely. Manage PIN lock and privacy settings here."
                         android:fontFamily="@font/app_font"
                         android:textColor="?attr/chk_textColorSecondary"
                         android:textSize="13sp"/>
@@ -528,7 +618,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="How do I delete all my data?"
+                        android:text="How do I erase all my data permanently?"
                         android:fontFamily="@font/app_font"
                         android:textColor="?attr/chk_expenseColor"
                         android:textSize="15sp"
@@ -536,7 +626,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Permanent account or data deletion is found in the profile settings."
+                        android:text="Go to Settings to permanently delete all transactions and account data. This cannot be undone."
                         android:fontFamily="@font/app_font"
                         android:textColor="?attr/chk_textColorSecondary"
                         android:textSize="13sp"/>
@@ -548,6 +638,51 @@
                     android:layout_marginStart="8dp"
                     android:src="@drawable/ic_chevron_right"
                     app:tint="?attr/chk_expenseColor"
+                    android:contentDescription="Go" />
+            </LinearLayout>
+
+            <View android:layout_width="match_parent" android:layout_height="1dp" android:background="?attr/chk_dividerHorizontal" android:layout_marginVertical="12dp"/>
+
+            <!-- FAQ: Offline Mode -->
+            <LinearLayout
+                android:id="@+id/faqOfflineMode"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:clickable="true"
+                android:focusable="true"
+                android:paddingVertical="4dp"
+                android:background="?attr/selectableItemBackground">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Can I use Artham without internet?"
+                        android:fontFamily="@font/app_font"
+                        android:textColor="?attr/chk_textColorPrimary"
+                        android:textSize="15sp"
+                        android:textStyle="bold"/>
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Yes! Entries are saved offline and synced automatically when you reconnect."
+                        android:fontFamily="@font/app_font"
+                        android:textColor="?attr/chk_textColorSecondary"
+                        android:textSize="13sp"/>
+                </LinearLayout>
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_marginStart="8dp"
+                    android:src="@drawable/ic_chevron_right"
+                    app:tint="?attr/chk_textColorSecondary"
                     android:contentDescription="Go" />
             </LinearLayout>
         </LinearLayout>
@@ -601,7 +736,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="How do I change the app theme?"
+                        android:text="Can I customize the look and feel of the app?"
                         android:fontFamily="@font/app_font"
                         android:textColor="?attr/chk_textColorPrimary"
                         android:textSize="15sp"
@@ -609,7 +744,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Choose from available themes to personalize your app."
+                        android:text="Pick from multiple color themes to match your style and preference."
                         android:fontFamily="@font/app_font"
                         android:textColor="?attr/chk_textColorSecondary"
                         android:textSize="13sp"/>
@@ -646,7 +781,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Dark mode and cloud sync status?"
+                        android:text="Where are dark mode and cloud backup settings?"
                         android:fontFamily="@font/app_font"
                         android:textColor="?attr/chk_textColorPrimary"
                         android:textSize="15sp"
@@ -654,7 +789,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Adjust themes and view sync data in App Settings."
+                        android:text="Toggle dark mode, check cloud sync status, and manage backups in App Settings."
                         android:fontFamily="@font/app_font"
                         android:textColor="?attr/chk_textColorSecondary"
                         android:textSize="13sp"/>
@@ -691,7 +826,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Who created Artham?"
+                        android:text="Who built Artham and where can I learn more?"
                         android:fontFamily="@font/app_font"
                         android:textColor="?attr/chk_textColorPrimary"
                         android:textSize="15sp"
@@ -699,7 +834,52 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Learn more about the developers and version info."
+                        android:text="View app version, developer credits, and open-source licenses."
+                        android:fontFamily="@font/app_font"
+                        android:textColor="?attr/chk_textColorSecondary"
+                        android:textSize="13sp"/>
+                </LinearLayout>
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_marginStart="8dp"
+                    android:src="@drawable/ic_chevron_right"
+                    app:tint="?attr/chk_textColorSecondary"
+                    android:contentDescription="Go" />
+            </LinearLayout>
+
+            <View android:layout_width="match_parent" android:layout_height="1dp" android:background="?attr/chk_dividerHorizontal" android:layout_marginVertical="12dp"/>
+
+            <!-- FAQ: Home Widget -->
+            <LinearLayout
+                android:id="@+id/faqHomeWidget"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:clickable="true"
+                android:focusable="true"
+                android:paddingVertical="4dp"
+                android:background="?attr/selectableItemBackground">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Is there a home screen widget for quick entry?"
+                        android:fontFamily="@font/app_font"
+                        android:textColor="?attr/chk_textColorPrimary"
+                        android:textSize="15sp"
+                        android:textStyle="bold"/>
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Add the Artham widget to your home screen for one-tap Cash In or Cash Out entry."
                         android:fontFamily="@font/app_font"
                         android:textColor="?attr/chk_textColorSecondary"
                         android:textSize="13sp"/>
@@ -715,5 +895,65 @@
             </LinearLayout>
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
+
+    <!-- Support the Creator (subtle) -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/btnSupportCreatorFaq"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:foreground="?android:attr/selectableItemBackground"
+        app:cardBackgroundColor="?attr/chk_surfaceColor"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="0dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:padding="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="☕"
+                android:textSize="22sp" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/app_font"
+                    android:text="Enjoying Artham?"
+                    android:textColor="?attr/chk_textColorPrimary"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:fontFamily="@font/app_font"
+                    android:text="Support the creator with a small gesture"
+                    android:textColor="?attr/chk_textColorSecondary"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@drawable/ic_chevron_right"
+                app:tint="?attr/chk_textColorSecondary" />
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
 
 </LinearLayout>

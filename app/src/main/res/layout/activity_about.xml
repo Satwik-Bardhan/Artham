@@ -187,13 +187,104 @@
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
-            <TextView
+            <!-- Support the Creator -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/btnSupportCreator"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?android:attr/selectableItemBackground"
+                app:cardBackgroundColor="?attr/chk_surfaceColor"
+                app:cardCornerRadius="8dp"
+                app:cardElevation="2dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="☕"
+                        android:textSize="28sp" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="14dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/app_font"
+                            android:text="Support the Creator"
+                            android:textColor="?attr/chk_textColorPrimary"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:fontFamily="@font/app_font"
+                            android:text="Buy me a chai, coffee, or boba tea!"
+                            android:textColor="?attr/chk_textColorSecondary"
+                            android:textSize="13sp" />
+                    </LinearLayout>
+
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:src="@drawable/ic_chevron_right"
+                        app:tint="?attr/chk_textColorSecondary" />
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- Creator Credit -->
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="32dp"
-                android:text="© 2025 Artham Inc. All rights reserved."
-                android:textColor="?attr/chk_textColorHint"
-                android:textSize="12sp" />
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Designed &amp; Developed by"
+                    android:textColor="?attr/chk_textColorSecondary"
+                    android:textSize="13sp" />
+
+                <TextView
+                    android:id="@+id/developerName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:background="?android:attr/selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:padding="4dp"
+                    android:text="Satwik Bardhan"
+                    android:textColor="?attr/chk_textColorPrimary"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="© 2026 PHYNIX LABS. All rights reserved."
+                    android:textColor="?attr/chk_textColorHint"
+                    android:textSize="12sp" />
+
+            </LinearLayout>
 
         </LinearLayout>
     </ScrollView>
