@@ -54,15 +54,32 @@
                     android:ellipsize="end"
                     android:maxLines="1"/>
 
-                <TextView
-                    android:id="@+id/amountTextView"
+                <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    tools:text="- ₹1,500"
-                    android:textSize="16sp"
-                    android:textStyle="bold"
-                    android:fontFamily="@font/app_font"
-                    android:textColor="?attr/chk_expenseColor"/>
+                    android:orientation="vertical"
+                    android:gravity="end">
+
+                    <TextView
+                        android:id="@+id/amountTextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        tools:text="- ₹1,500"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:fontFamily="@font/app_font"
+                        android:textColor="?attr/chk_expenseColor"/>
+
+                    <TextView
+                        android:id="@+id/balanceTextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        tools:text="Bal: ₹1,460.10"
+                        android:textSize="11sp"
+                        android:fontFamily="@font/app_font"
+                        android:textColor="?attr/chk_textColorHint"
+                        android:layout_marginTop="2dp"/>
+                </LinearLayout>
             </LinearLayout>
 
             <TextView

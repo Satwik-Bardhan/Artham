@@ -193,7 +193,12 @@ public class CashbookAdapter extends RecyclerView.Adapter<CashbookAdapter.Cashbo
         private void setupLastModified(CashbookModel cashbook) {
             if (lastModifiedText == null) return;
 
-            if (cashbook.getLastModified() > 0) {
+            long openedAt = cashbook.getLastOpenedAt();
+            if (openedAt > 0) {
+                String relativeTime = DateTimeUtils.getRelativeTimeSpan(openedAt);
+                lastModifiedText.setText("Last opened " + relativeTime);
+                lastModifiedText.setVisibility(View.VISIBLE);
+            } else if (cashbook.getLastModified() > 0) {
                 String relativeTime = DateTimeUtils.getRelativeTimeSpan(cashbook.getLastModified());
                 lastModifiedText.setText("Updated " + relativeTime);
                 lastModifiedText.setVisibility(View.VISIBLE);
@@ -273,7 +278,8 @@ public class CashbookAdapter extends RecyclerView.Adapter<CashbookAdapter.Cashbo
                     oldItem.isActive() == newItem.isActive() &&
                     oldItem.isCurrent() == newItem.isCurrent() &&
                     oldItem.isFavorite() == newItem.isFavorite() &&
-                    oldItem.getLastModified() == newItem.getLastModified();
+                    oldItem.getLastModified() == newItem.getLastModified() &&
+                    oldItem.getLastOpenedAt() == newItem.getLastOpenedAt();
         }
     }
 }

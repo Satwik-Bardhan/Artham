@@ -18,6 +18,9 @@ public class TransactionModel implements Serializable {
     private String attachmentUri;
     private String autoFrequency; // null = off, "Daily", "Weekly", "Monthly"
 
+    // Transient field for running balance display (not persisted to Firebase)
+    private transient double runningBalance;
+
     public TransactionModel() {
         // Default constructor required for Firebase
     }
@@ -60,4 +63,8 @@ public class TransactionModel implements Serializable {
 
     public String getAutoFrequency() { return autoFrequency; }
     public void setAutoFrequency(String autoFrequency) { this.autoFrequency = autoFrequency; }
+
+    // Transient running balance (not persisted)
+    public double getRunningBalance() { return runningBalance; }
+    public void setRunningBalance(double runningBalance) { this.runningBalance = runningBalance; }
 }

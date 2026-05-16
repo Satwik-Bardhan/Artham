@@ -15,6 +15,7 @@ public class CashbookModel implements Serializable {
     private int transactionCount;
     private long createdDate;
     private long lastModified;
+    private long lastOpenedAt;
     private boolean isActive;
     private boolean isCurrent;
     private boolean isFavorite;
@@ -151,6 +152,14 @@ public class CashbookModel implements Serializable {
 
     public void setLastModified(long lastModified) {
         this.lastModified = lastModified;
+    }
+
+    public long getLastOpenedAt() {
+        return lastOpenedAt;
+    }
+
+    public void setLastOpenedAt(long lastOpenedAt) {
+        this.lastOpenedAt = lastOpenedAt;
     }
 
     // --- Status Flags ---

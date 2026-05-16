@@ -9,6 +9,8 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.appwidget.AppWidgetManager;
+import android.content.ComponentName;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.Uri;
@@ -165,6 +167,13 @@ public class HomePage extends BaseActivity {
                         if (newName != null) {
                             binding.userNameTop.setText(newName);
                             binding.currentCashbookText.setText(newName);
+
+                            // Save name for widget display & refresh widget
+                            getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
+                                    .edit()
+                                    .putString("last_selected_cashbook_name", newName)
+                                    .apply();
+                            refreshWidget();
                         }
 
                         showSnackbar("Switched to: " + (newName != null ? newName : "New Cashbook"));
@@ -478,14 +487,29 @@ public class HomePage extends BaseActivity {
 
                 currentCashbookId = cashbook.getCashbookId();
 
+                // Save cashbook name for widget display & refresh widget
+                if (cashbook.getName() != null) {
+                    getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
+                            .edit()
+                            .putString("last_selected_cashbook_name", cashbook.getName())
+                            .apply();
+                    refreshWidget();
+                }
+
                 if (currentActiveBookId == null || !currentActiveBookId.equals(cashbook.getCashbookId())) {
                     currentActiveBookId = cashbook.getCashbookId();
                     isTimestampUpdatedForCurrentBook = false;
 
                     // Set Exact Date and Time BEFORE we push the new update to Firebase
-                    if (binding.lastOpenedText != null)
-                        binding.lastOpenedText
-                                .setText("Last opened: " + formatExactDateTimeIST(cashbook.getLastModified()));
+                    if (binding.lastOpenedText != null) {
+                        long lastOpened = cashbook.getLastOpenedAt();
+                        if (lastOpened > 0) {
+                            binding.lastOpenedText
+                                    .setText("Last opened: " + formatExactDateTimeIST(lastOpened));
+                        } else {
+                            binding.lastOpenedText.setText("Last opened: Just now");
+                        }
+                    }
                 }
 
                 if (!isTimestampUpdatedForCurrentBook) {
@@ -575,12 +599,13 @@ public class HomePage extends BaseActivity {
             return;
 
         DatabaseReference bookRef = FirebaseDatabase.getInstance()
-                .getReference("cashbooks")
+                .getReference("users")
                 .child(fbUser.getUid())
+                .child("cashbooks")
                 .child(cashbookId);
 
         Map<String, Object> updates = new HashMap<>();
-        updates.put("lastModified", ServerValue.TIMESTAMP);
+        updates.put("lastOpenedAt", ServerValue.TIMESTAMP);
 
         bookRef.updateChildren(updates).addOnFailureListener(e -> {
             Log.e(TAG, "Failed to update last opened time", e);
@@ -857,6 +882,24 @@ public class HomePage extends BaseActivity {
         FirebaseAuth.getInstance().signOut();
         startActivity(new Intent(this, SigninActivity.class));
         finish();
+    }
+
+    private void refreshWidget() {
+        try {
+            AppWidgetManager widgetManager = AppWidgetManager.getInstance(this);
+            ComponentName widgetComponent = new ComponentName(this,
+                    com.phynix.artham.widget.CashInOutWidgetProvider.class);
+            int[] widgetIds = widgetManager.getAppWidgetIds(widgetComponent);
+            if (widgetIds != null && widgetIds.length > 0) {
+                Intent updateIntent = new Intent(this,
+                        com.phynix.artham.widget.CashInOutWidgetProvider.class);
+                updateIntent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
+                updateIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, widgetIds);
+                sendBroadcast(updateIntent);
+            }
+        } catch (Exception e) {
+            Log.w(TAG, "Widget refresh failed", e);
+        }
     }
 
     @Override

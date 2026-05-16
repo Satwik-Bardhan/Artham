@@ -114,7 +114,21 @@ public class TransactionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
     private List<Object> groupTransactionsByDate(List<TransactionModel> transactions) {
         if (transactions == null || transactions.isEmpty()) return new ArrayList<>();
 
-        // Sort descending (Newest first)
+        // First, compute running balances by sorting ascending (oldest first)
+        List<TransactionModel> chronological = new ArrayList<>(transactions);
+        Collections.sort(chronological, (t1, t2) -> Long.compare(t1.getTimestamp(), t2.getTimestamp()));
+
+        double balance = 0.0;
+        for (TransactionModel t : chronological) {
+            if ("IN".equalsIgnoreCase(t.getType())) {
+                balance += t.getAmount();
+            } else {
+                balance -= t.getAmount();
+            }
+            t.setRunningBalance(balance);
+        }
+
+        // Sort descending (Newest first) for display
         List<TransactionModel> sortedList = new ArrayList<>(transactions);
         Collections.sort(sortedList, (t1, t2) -> Long.compare(t2.getTimestamp(), t1.getTimestamp()));
 
@@ -147,7 +161,7 @@ public class TransactionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
     }
 
     class TransactionViewHolder extends RecyclerView.ViewHolder {
-        TextView categoryTextView, amountTextView, dateTextView, paymentModeTextView, remarkTextView, autoFrequencyText;
+        TextView categoryTextView, amountTextView, dateTextView, paymentModeTextView, remarkTextView, autoFrequencyText, balanceTextView;
         View transactionTypeIndicator, iconContainer, autoRepeatBadge;
         ImageView menuButton, categoryIcon;
 
@@ -155,6 +169,7 @@ public class TransactionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
             super(itemView);
             categoryTextView = itemView.findViewById(R.id.categoryTextView);
             amountTextView = itemView.findViewById(R.id.amountTextView);
+            balanceTextView = itemView.findViewById(R.id.balanceTextView);
             remarkTextView = itemView.findViewById(R.id.remarkTextView);
             dateTextView = itemView.findViewById(R.id.dateTextView);
             paymentModeTextView = itemView.findViewById(R.id.paymentModeTextView);
@@ -204,6 +219,16 @@ public class TransactionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
             amountTextView.setText(android.text.TextUtils.concat(prefix, amountSpan));
             amountTextView.setTextColor(color);
             if (transactionTypeIndicator != null) transactionTypeIndicator.setBackgroundColor(color);
+
+            // Running balance display
+            if (balanceTextView != null) {
+                double bal = transaction.getRunningBalance();
+                CharSequence balSpan = AmountFormatter.formatCompactSpannable(Math.abs(bal));
+                balanceTextView.setText(android.text.TextUtils.concat("Balance: ", bal < 0 ? "- " : "", balSpan));
+                balanceTextView.setTextColor(bal >= 0
+                        ? ThemeUtil.getThemeAttrColor(context, R.attr.chk_incomeColor)
+                        : ThemeUtil.getThemeAttrColor(context, R.attr.chk_expenseColor));
+            }
 
             dateTextView.setText(new SimpleDateFormat("hh:mm a", Locale.US).format(new Date(transaction.getTimestamp())));
 
