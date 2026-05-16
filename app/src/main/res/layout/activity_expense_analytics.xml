@@ -49,7 +49,6 @@
                     android:id="@+id/title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:fontFamily="@font/app_font"
                     android:text="Expense Analytics"
                     android:textColor="?attr/chk_textColorPrimary"
                     android:textSize="18sp"
@@ -59,7 +58,6 @@
                     android:id="@+id/headerSubtitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:fontFamily="@font/app_font"
                     android:text="Track your spending"
                     android:textColor="?attr/chk_textColorSecondary"
                     android:textSize="12sp" />
@@ -87,7 +85,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:fontFamily="@font/app_font"
             android:text="No expense data found"
             android:textColor="?attr/chk_textColorSecondary"
             android:visibility="gone" />
@@ -143,7 +140,6 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:fontFamily="@font/app_font"
                             android:text="Total Monthly Expense"
                             android:textColor="?attr/chk_textColorSecondary"
                             android:textSize="12sp" />
@@ -152,7 +148,6 @@
                             android:id="@+id/totalExpenseValue"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:fontFamily="@font/app_font"
                             android:text="₹0.00"
                             android:textColor="?attr/chk_textColorPrimary"
                             android:textSize="24sp"
@@ -187,7 +182,6 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="8dp"
-                        android:fontFamily="@font/app_font"
                         android:paddingHorizontal="12dp"
                         android:text="Category Breakdown"
                         android:textColor="?attr/chk_textColorPrimary"

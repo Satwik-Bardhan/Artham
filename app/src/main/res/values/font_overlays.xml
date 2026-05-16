@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+        Font overlay styles applied dynamically via getTheme().applyStyle().
+        These override android:fontFamily at the THEME level, so ALL views
+        inflated after this (including RecyclerView items, dialogs, etc.)
+        automatically inherit the selected font.
+
+        Using parent="" to prevent implicit parent lookup from dot notation.
+    -->
+
+    <!-- No fontFamily set = system default font -->
+    <style name="FontOverlay.SystemDefault" parent="" />
+
+    <style name="FontOverlay.Inter" parent="">
+        <item name="android:fontFamily">@font/app_font</item>
+        <item name="fontFamily">@font/app_font</item>
+    </style>
+
+    <style name="FontOverlay.Poppins" parent="">
+        <item name="android:fontFamily">@font/poppins_family</item>
+        <item name="fontFamily">@font/poppins_family</item>
+    </style>
+
+    <style name="FontOverlay.Spartan" parent="">
+        <item name="android:fontFamily">@font/spartan_family</item>
+        <item name="fontFamily">@font/spartan_family</item>
+    </style>
+
+    <style name="FontOverlay.Khand" parent="">
+        <item name="android:fontFamily">@font/khand_family</item>
+        <item name="fontFamily">@font/khand_family</item>
+    </style>
+
+    <style name="FontOverlay.Tinos" parent="">
+        <item name="android:fontFamily">@font/tinos_family</item>
+        <item name="fontFamily">@font/tinos_family</item>
+    </style>
+</resources>

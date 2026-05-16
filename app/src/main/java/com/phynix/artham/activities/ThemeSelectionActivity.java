@@ -19,8 +19,8 @@ import com.phynix.artham.utils.ThemeManager;
 
 public class ThemeSelectionActivity extends BaseActivity {
 
-    private CardView cardSystem, cardLight, cardDark, cardPurple, cardEmerald, cardRose;
-    private RadioButton radioSystem, radioLight, radioDark, radioPurple, radioEmerald, radioRose;
+    private CardView cardSystem, cardLight, cardDark, cardPurple, cardEmerald, cardRose, cardRandom;
+    private RadioButton radioSystem, radioLight, radioDark, radioPurple, radioEmerald, radioRose, radioRandom;
     private ImageView backButton;
 
     @Override
@@ -46,12 +46,14 @@ public class ThemeSelectionActivity extends BaseActivity {
         cardPurple = findViewById(R.id.cardPurple);
         cardEmerald = findViewById(R.id.cardEmerald);
         cardRose = findViewById(R.id.cardRose);
+        cardRandom = findViewById(R.id.cardRandom);
         radioSystem = findViewById(R.id.radioSystem);
         radioLight = findViewById(R.id.radioLight);
         radioDark = findViewById(R.id.radioDark);
         radioPurple = findViewById(R.id.radioPurple);
         radioEmerald = findViewById(R.id.radioEmerald);
         radioRose = findViewById(R.id.radioRose);
+        radioRandom = findViewById(R.id.radioRandom);
     }
 
     private void setupCurrentState() {
@@ -62,6 +64,7 @@ public class ThemeSelectionActivity extends BaseActivity {
         radioPurple.setChecked(false);
         radioEmerald.setChecked(false);
         radioRose.setChecked(false);
+        radioRandom.setChecked(false);
 
         switch (currentTheme) {
             case ThemeManager.THEME_LIGHT:
@@ -79,6 +82,9 @@ public class ThemeSelectionActivity extends BaseActivity {
             case ThemeManager.THEME_ROSE:
                 radioRose.setChecked(true);
                 break;
+            case ThemeManager.THEME_RANDOM:
+                radioRandom.setChecked(true);
+                break;
             default:
                 radioSystem.setChecked(true);
                 break;
@@ -93,6 +99,7 @@ public class ThemeSelectionActivity extends BaseActivity {
         cardPurple.setOnClickListener(v -> handleThemeChange(ThemeManager.THEME_PURPLE));
         cardEmerald.setOnClickListener(v -> handleThemeChange(ThemeManager.THEME_EMERALD));
         cardRose.setOnClickListener(v -> handleThemeChange(ThemeManager.THEME_ROSE));
+        cardRandom.setOnClickListener(v -> handleThemeChange(ThemeManager.THEME_RANDOM));
     }
 
     private void handleThemeChange(String newTheme) {
@@ -110,6 +117,7 @@ public class ThemeSelectionActivity extends BaseActivity {
             radioPurple.setChecked(ThemeManager.THEME_PURPLE.equals(newTheme));
             radioEmerald.setChecked(ThemeManager.THEME_EMERALD.equals(newTheme));
             radioRose.setChecked(ThemeManager.THEME_ROSE.equals(newTheme));
+            radioRandom.setChecked(ThemeManager.THEME_RANDOM.equals(newTheme));
 
             // 3. Restart App to apply to ALL pages
             ThemeManager.restartApp(this);

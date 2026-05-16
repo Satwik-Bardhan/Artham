@@ -12,7 +12,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
-        android:fontFamily="@font/app_font"
         android:text="Filter Categories"
         android:textColor="?attr/chk_textColorPrimary"
         android:textSize="18sp"
@@ -27,7 +26,6 @@
         android:drawableStart="@drawable/ic_search"
         android:drawablePadding="10dp"
         android:drawableTint="?attr/chk_textColorSecondary"
-        android:fontFamily="@font/app_font"
         android:hint="Search Categories"
         android:inputType="text"
         android:maxLines="1"
@@ -66,7 +64,6 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:fontFamily="@font/app_font"
             android:text="No categories found"
             android:textColor="?attr/chk_textColorSecondary" />
     </LinearLayout>

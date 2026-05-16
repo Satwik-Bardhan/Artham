@@ -57,7 +57,6 @@
                     android:text="Filters"
                     android:textColor="?attr/chk_textColorPrimary"
                     android:textSize="20sp"
-                    android:fontFamily="@font/app_font"
                     android:textStyle="bold"
                     android:maxLines="1"
                     android:ellipsize="end" />
@@ -68,7 +67,6 @@
                     android:layout_height="wrap_content"
                     android:text="Refine your search"
                     android:textColor="?attr/chk_textColorSecondary"
-                    android:fontFamily="@font/app_font"
                     android:textSize="12sp"
                     android:layout_marginTop="2dp" />
             </LinearLayout>
@@ -133,7 +131,6 @@
                         android:textColor="?attr/chk_textColorPrimary"
                         android:textColorHint="?attr/chk_textColorHint"
                         android:background="@null"
-                        android:fontFamily="@font/app_font"
                         android:textSize="15sp"
                         android:inputType="text" />
                 </LinearLayout>
@@ -159,7 +156,6 @@
                         android:text="Date Range"
                         android:textColor="?attr/chk_textColorPrimary"
                         android:textSize="15sp"
-                        android:fontFamily="@font/app_font"
                         android:textStyle="bold"
                         android:layout_marginBottom="12dp" />
 
@@ -179,7 +175,6 @@
                             app:backgroundTint="@null"
                             android:textSize="12sp"
                             android:textAllCaps="false"
-                            android:fontFamily="@font/app_font"
                             android:background="@drawable/quick_option_button"
                             android:layout_marginEnd="6dp" />
 
@@ -193,7 +188,6 @@
                             app:backgroundTint="@null"
                             android:textSize="12sp"
                             android:textAllCaps="false"
-                            android:fontFamily="@font/app_font"
                             android:background="@drawable/quick_option_button"
                             android:layout_marginEnd="6dp" />
 
@@ -207,7 +201,6 @@
                             app:backgroundTint="@null"
                             android:textSize="12sp"
                             android:textAllCaps="false"
-                            android:fontFamily="@font/app_font"
                             android:background="@drawable/quick_option_button" />
                     </LinearLayout>
 
@@ -235,7 +228,6 @@
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
                                 android:text="Start Date"
-                                android:fontFamily="@font/app_font"
                                 android:textColor="?attr/chk_textColorPrimary"
                                 android:textSize="14sp" />
 
@@ -265,7 +257,6 @@
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
                                 android:text="End Date"
-                                android:fontFamily="@font/app_font"
                                 android:textColor="?attr/chk_textColorPrimary"
                                 android:textSize="14sp" />
 
@@ -336,7 +327,6 @@
                         android:text="Tags"
                         android:textColor="?attr/chk_textColorPrimary"
                         android:textSize="15sp"
-                        android:fontFamily="@font/app_font"
                         android:textStyle="bold"
                         android:layout_marginBottom="10dp" />
 
@@ -349,7 +339,6 @@
                         android:textColorHint="?attr/chk_textColorHint"
                         android:background="@drawable/rounded_input_background"
                         android:padding="12dp"
-                        android:fontFamily="@font/app_font"
                         android:textSize="15sp" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
@@ -397,7 +386,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Active Filters"
-                    android:fontFamily="@font/app_font"
                     android:textColor="?attr/chk_textColorSecondary"
                     android:textSize="14sp" />
             </LinearLayout>
@@ -417,7 +405,6 @@
                 android:textSize="14sp"
                 app:backgroundTint="@null"
                 android:textStyle="bold"
-                android:fontFamily="@font/app_font"
                 android:background="@drawable/button_cancel_outline"
                 android:paddingHorizontal="20dp"
                 android:layout_marginEnd="10dp" />
@@ -431,7 +418,6 @@
                 android:textSize="14sp"
                 app:backgroundTint="@null"
                 android:textStyle="bold"
-                android:fontFamily="@font/app_font"
                 android:background="@drawable/button_primary"
                 android:paddingHorizontal="24dp" />
         </LinearLayout>

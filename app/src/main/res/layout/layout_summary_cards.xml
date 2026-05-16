@@ -44,7 +44,6 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Total Balance"
-                android:fontFamily="@font/app_font"
                 android:textColor="@android:color/white"
                 android:textSize="14sp"
                 android:textStyle="bold" />
@@ -54,7 +53,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 tools:text="₹24,500"
-                android:fontFamily="@font/app_font"
                 android:textColor="@android:color/white"
                 android:textSize="16sp"
                 android:textStyle="bold" />
@@ -86,7 +84,6 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Income"
-                android:fontFamily="@font/app_font"
                 android:textColor="@android:color/white"
                 android:textSize="14sp"
                 android:textStyle="bold" />
@@ -96,7 +93,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 tools:text="₹45,000"
-                android:fontFamily="@font/app_font"
                 android:textColor="@android:color/white"
                 android:textSize="16sp"
                 android:textStyle="bold" />
@@ -127,7 +123,6 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Expense"
-                android:fontFamily="@font/app_font"
                 android:textColor="@android:color/white"
                 android:textSize="14sp"
                 android:textStyle="bold" />
@@ -137,7 +132,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 tools:text="₹12,000"
-                android:fontFamily="@font/app_font"
                 android:textColor="@android:color/white"
                 android:textSize="16sp"
                 android:textStyle="bold" />

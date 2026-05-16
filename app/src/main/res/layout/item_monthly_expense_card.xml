@@ -33,7 +33,6 @@
             android:layout_height="wrap_content"
             tools:text="JANUARY"
             android:textSize="14sp"
-            android:fontFamily="@font/app_font"
             android:textStyle="bold"
             android:letterSpacing="0.05"
             android:textAllCaps="true"
@@ -55,7 +54,6 @@
                 android:layout_height="wrap_content"
                 tools:text="2025"
                 android:textSize="11sp"
-                android:fontFamily="@font/app_font"
                 android:paddingHorizontal="8dp"
                 android:paddingVertical="2dp"
                 android:textColor="?attr/chk_textColorSecondary"/>

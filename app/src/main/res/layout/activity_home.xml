@@ -142,7 +142,6 @@
                                 android:id="@+id/userNameTop"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:fontFamily="@font/app_font"
                                 android:text="Current Book"
                                 android:textColor="?attr/chk_textColorPrimary"
                                 android:textSize="16sp"
@@ -155,7 +154,6 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="3dp"
-                                android:fontFamily="@font/app_font"
                                 android:text="Last opened: Just now"
                                 android:textColor="?attr/chk_textColorHint"
                                 android:textSize="12sp" />
@@ -242,7 +240,6 @@
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="2"
-                                android:fontFamily="@font/app_font"
                                 android:gravity="start"
                                 android:text="Today's Transactions"
                                 android:textColor="?attr/chk_balanceColor"
@@ -253,7 +250,6 @@
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
-                                android:fontFamily="@font/app_font"
                                 android:gravity="center"
                                 android:text="MODE"
                                 android:textColor="?attr/chk_textColorHint"
@@ -265,7 +261,6 @@
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
-                                android:fontFamily="@font/app_font"
                                 android:gravity="center"
                                 android:text="IN"
                                 android:textColor="?attr/chk_incomeColor"
@@ -277,7 +272,6 @@
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
-                                android:fontFamily="@font/app_font"
                                 android:gravity="center"
                                 android:text="OUT"
                                 android:textColor="?attr/chk_expenseColor"
@@ -329,7 +323,6 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:text="No entries for today"
-                                    android:fontFamily="@font/app_font"
                                     android:textColor="?attr/chk_textColorPrimary"
                                     android:textSize="16sp"
                                     android:textStyle="bold" />
@@ -339,7 +332,6 @@
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="4dp"
                                     android:text="Start tracking by adding your first entry"
-                                    android:fontFamily="@font/app_font"
                                     android:textColor="?attr/chk_textColorHint"
                                     android:textSize="13sp" />
 
@@ -376,7 +368,6 @@
                                         android:layout_height="wrap_content"
                                         android:layout_weight="1"
                                         android:text="Tap 'Cash In' or 'Cash Out' above to add your first transaction for today."
-                                        android:fontFamily="@font/app_font"
                                         android:textColor="?attr/chk_textColorSecondary"
                                         android:textSize="13sp"
                                         android:lineSpacingExtra="3dp" />

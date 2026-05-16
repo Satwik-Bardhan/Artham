@@ -69,7 +69,6 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:fontFamily="@font/app_font"
                             android:text="Settings"
                             android:textColor="?attr/chk_textColorPrimary"
                             android:textSize="22sp"
@@ -79,7 +78,6 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="2dp"
-                            android:fontFamily="@font/app_font"
                             android:text="Manage your preferences"
                             android:textColor="?attr/chk_textColorSecondary"
                             android:textSize="12sp" />
@@ -131,7 +129,6 @@
                 android:layout_marginTop="12dp"
                 android:layout_marginBottom="8dp"
                 android:drawablePadding="8dp"
-                android:fontFamily="@font/app_font"
                 android:text="Account Actions"
                 android:textColor="?attr/chk_textColorPrimary"
                 android:textSize="16sp"
@@ -164,7 +161,6 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:fontFamily="@font/app_font"
                         android:text="Logout"
                         android:textColor="?attr/chk_expenseColor"
                         android:textSize="16sp"
@@ -174,7 +170,6 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
-                        android:fontFamily="@font/app_font"
                         android:text="Sign out from your account"
                         android:textColor="?attr/chk_textColorSecondary"
                         android:textSize="12sp" />
@@ -193,7 +188,6 @@
                 android:layout_marginHorizontal="2dp"
                 android:layout_marginBottom="8dp"
                 android:drawablePadding="8dp"
-                android:fontFamily="@font/app_font"
                 android:text="Our Promise"
                 android:textColor="?attr/chk_textColorPrimary"
                 android:textSize="16sp"
@@ -225,7 +219,6 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:fontFamily="@font/app_font"
                         android:gravity="center"
                         android:text="100% Safe"
                         android:textColor="?attr/chk_textColorPrimary"
@@ -235,7 +228,6 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:fontFamily="@font/app_font"
                         android:gravity="center"
                         android:text="&amp; Secure"
                         android:textColor="?attr/chk_textColorSecondary"
@@ -261,7 +253,6 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:fontFamily="@font/app_font"
                         android:gravity="center"
                         android:text="Auto Backup"
                         android:textColor="?attr/chk_textColorPrimary"
@@ -271,7 +262,6 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:fontFamily="@font/app_font"
                         android:gravity="center"
                         android:text="Enabled"
                         android:textColor="?attr/chk_textColorSecondary"
@@ -290,7 +280,6 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:fontFamily="@font/app_font"
                     android:text="ARTHAM"
                     android:textColor="?attr/chk_textColorPrimary"
                     android:textSize="14sp"
@@ -306,7 +295,6 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:fontFamily="@font/app_font"
                     android:text="Version 1.0.11"
                     android:textColor="?attr/chk_textColorSecondary"
                     android:textSize="14sp" />

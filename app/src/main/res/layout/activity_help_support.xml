@@ -45,7 +45,6 @@
                     android:id="@+id/headerTitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:fontFamily="@font/app_font"
                     android:text="Help &amp; Support"
                     android:textColor="?attr/chk_textColorPrimary"
                     android:textSize="18sp"
@@ -55,7 +54,6 @@
                     android:id="@+id/headerSubtitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:fontFamily="@font/app_font"
                     android:text="Get assistance"
                     android:textColor="?attr/chk_textColorSecondary"
                     android:textSize="12sp" />
@@ -99,7 +97,6 @@
                     android:layout_marginStart="12dp"
                     android:background="@null"
                     android:hint="Search for help..."
-                    android:fontFamily="@font/app_font"
                     android:textColor="?attr/chk_textColorPrimary"
                     android:textColorHint="?attr/chk_textColorHint"
                     android:inputType="text" />
@@ -110,7 +107,6 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="12dp"
                 android:text="Quick Actions"
-                android:fontFamily="@font/app_font"
                 android:textColor="?attr/chk_textColorPrimary"
                 android:textSize="16sp"
                 android:textStyle="bold" />
@@ -155,7 +151,6 @@
                             android:layout_height="wrap_content"
                             android:text="Contact Us"
                             android:textSize="12sp"
-                            android:fontFamily="@font/app_font"
                             android:textColor="?attr/chk_textColorPrimary"
                             android:textStyle="bold"
                             android:gravity="center"/>
@@ -195,7 +190,6 @@
                             android:layout_height="wrap_content"
                             android:text="Report Bug"
                             android:textSize="12sp"
-                            android:fontFamily="@font/app_font"
                             android:textColor="?attr/chk_textColorPrimary"
                             android:textStyle="bold"
                             android:gravity="center"/>

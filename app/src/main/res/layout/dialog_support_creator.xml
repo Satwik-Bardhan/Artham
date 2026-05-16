@@ -25,7 +25,6 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="12dp"
             android:layout_weight="1"
-            android:fontFamily="@font/app_font"
             android:text="Support the Creator"
             android:textColor="?attr/chk_textColorPrimary"
             android:textSize="18sp"
@@ -37,7 +36,6 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
         android:layout_marginBottom="20dp"
-        android:fontFamily="@font/app_font"
         android:text="If Artham helps you manage your finances, consider showing some love!"
         android:textColor="?attr/chk_textColorSecondary"
         android:textSize="13sp" />
@@ -66,7 +64,6 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:fontFamily="@font/app_font"
                 android:text="☕"
                 android:textSize="28sp" />
 
@@ -74,7 +71,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
-                android:fontFamily="@font/app_font"
                 android:text="Chai"
                 android:textColor="?attr/chk_textColorPrimary"
                 android:textSize="13sp"
@@ -84,7 +80,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
-                android:fontFamily="@font/app_font"
                 android:text="₹19"
                 android:textColor="?attr/chk_incomeColor"
                 android:textSize="14sp"
@@ -109,7 +104,6 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:fontFamily="@font/app_font"
                 android:text="🍵"
                 android:textSize="28sp" />
 
@@ -117,7 +111,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
-                android:fontFamily="@font/app_font"
                 android:text="Coffee"
                 android:textColor="?attr/chk_textColorPrimary"
                 android:textSize="13sp"
@@ -127,7 +120,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
-                android:fontFamily="@font/app_font"
                 android:text="₹49"
                 android:textColor="?attr/chk_incomeColor"
                 android:textSize="14sp"
@@ -151,7 +143,6 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:fontFamily="@font/app_font"
                 android:text="🧋"
                 android:textSize="28sp" />
 
@@ -159,7 +150,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
-                android:fontFamily="@font/app_font"
                 android:text="Boba Tea"
                 android:textColor="?attr/chk_textColorPrimary"
                 android:textSize="13sp"
@@ -169,7 +159,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
-                android:fontFamily="@font/app_font"
                 android:text="₹199"
                 android:textColor="?attr/chk_incomeColor"
                 android:textSize="14sp"
@@ -182,7 +171,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:fontFamily="@font/app_font"
         android:gravity="center"
         android:text="Every small gesture means the world 💛"
         android:textColor="?attr/chk_textColorHint"

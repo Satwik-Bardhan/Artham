@@ -13,7 +13,6 @@
         android:id="@+id/dateHeaderTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:fontFamily="@font/app_font"
         android:text="Feb 02, 2024"
         android:textColor="?attr/chk_textColorSecondary"
         android:textSize="13sp"

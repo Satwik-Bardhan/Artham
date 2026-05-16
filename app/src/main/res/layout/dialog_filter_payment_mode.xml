@@ -28,7 +28,6 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Payment Modes"
-            android:fontFamily="@font/app_font"
             android:textColor="?attr/chk_textColorPrimary"
             android:textSize="20sp"
             android:textStyle="bold" />
@@ -80,7 +79,6 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="No Payment Mode"
-                            android:fontFamily="@font/app_font"
                             android:textColor="?attr/chk_textColorPrimary"
                             android:textSize="16sp"
                             android:textStyle="bold"/>
@@ -89,7 +87,6 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Unspecified transactions"
-                            android:fontFamily="@font/app_font"
                             android:textColor="?attr/chk_textColorSecondary"
                             android:textSize="12sp"/>
                     </LinearLayout>
@@ -139,7 +136,6 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Cash"
-                            android:fontFamily="@font/app_font"
                             android:textColor="?attr/chk_incomeColor"
                             android:textSize="16sp"
                             android:textStyle="bold"/>
@@ -148,7 +144,6 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Physical currency"
-                            android:fontFamily="@font/app_font"
                             android:textColor="?attr/chk_textColorSecondary"
                             android:textSize="12sp"/>
                     </LinearLayout>
@@ -199,7 +194,6 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Card"
-                            android:fontFamily="@font/app_font"
                             android:textColor="?attr/chk_primary_blue"
                             android:textSize="16sp"
                             android:textStyle="bold"/>
@@ -208,7 +202,6 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Credit or Debit Card"
-                            android:fontFamily="@font/app_font"
                             android:textColor="?attr/chk_textColorSecondary"
                             android:textSize="12sp"/>
                     </LinearLayout>
@@ -259,7 +252,6 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Online"
-                            android:fontFamily="@font/app_font"
                             android:textColor="?attr/chk_balanceColor"
                             android:textSize="16sp"
                             android:textStyle="bold"/>
@@ -268,7 +260,6 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Netbanking / UPI"
-                            android:fontFamily="@font/app_font"
                             android:textColor="?attr/chk_textColorSecondary"
                             android:textSize="12sp"/>
                     </LinearLayout>
@@ -309,7 +300,6 @@
             android:layout_height="wrap_content"
             android:text="Cancel"
             android:textColor="?attr/chk_textColorSecondary"
-            android:fontFamily="@font/app_font"
             android:textStyle="bold"
             android:layout_marginEnd="8dp"/>
 
@@ -320,7 +310,6 @@
             android:text="Apply"
             android:backgroundTint="?attr/chk_primary_blue"
             android:textColor="#FFFFFF"
-            android:fontFamily="@font/app_font"
             android:textStyle="bold"
             app:cornerRadius="8dp"/>
     </LinearLayout>

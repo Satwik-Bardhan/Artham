@@ -8,6 +8,8 @@ import android.content.res.Configuration;
 import android.os.Handler;
 import android.os.Looper;
 
+import java.util.Random;
+
 import androidx.appcompat.app.AppCompatDelegate;
 
 import com.phynix.artham.activities.HomeActivity;
@@ -20,6 +22,15 @@ public class ThemeManager {
     public static final String THEME_PURPLE = "purple";
     public static final String THEME_EMERALD = "emerald";
     public static final String THEME_ROSE = "rose";
+    public static final String THEME_RANDOM = "random";
+
+    /**
+     * Pool of themes that the random option can pick from.
+     * Excludes THEME_SYSTEM and THEME_RANDOM itself.
+     */
+    private static final String[] RANDOMIZABLE_THEMES = {
+            THEME_LIGHT, THEME_DARK, THEME_PURPLE, THEME_EMERALD, THEME_ROSE
+    };
 
     private static final String PREF_NAME = "app_theme";
     private static final String KEY_THEME = "selected_theme";
@@ -29,7 +40,10 @@ public class ThemeManager {
      * This handles Night/Light mode switching.
      */
     public static void applyTheme(String theme) {
-        switch (theme) {
+        // For random, resolve to an actual theme first
+        String resolved = THEME_RANDOM.equals(theme) ? resolveRandomTheme() : theme;
+
+        switch (resolved) {
             case THEME_SYSTEM:
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
                 break;
@@ -56,6 +70,11 @@ public class ThemeManager {
         SharedPreferences prefs = activity.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         String theme = prefs.getString(KEY_THEME, THEME_SYSTEM);
 
+        // If user chose "Random", resolve to an actual theme for this session
+        if (THEME_RANDOM.equals(theme)) {
+            theme = resolveRandomTheme();
+        }
+
         switch (theme) {
             case THEME_SYSTEM:
                 // Follow device setting: dark system → Dark theme, light system → Light theme
@@ -81,6 +100,11 @@ public class ThemeManager {
                 activity.setTheme(R.style.Theme_Artham);
                 break;
         }
+
+        // Apply the user's font preference as a theme overlay.
+        // This MUST happen after setTheme() and BEFORE super.onCreate()/setContentView()
+        // so all inflated views (including RecyclerView items, dialogs) inherit the font.
+        FontManager.applyFontOverlay(activity);
     }
 
     /**
@@ -101,6 +125,14 @@ public class ThemeManager {
     public static String getTheme(Context context) {
         SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         return prefs.getString(KEY_THEME, THEME_SYSTEM);
+    }
+
+    /**
+     * Returns a randomly selected theme from the pool.
+     * Called once per app cold-start when user has "Random" selected.
+     */
+    private static String resolveRandomTheme() {
+        return RANDOMIZABLE_THEMES[new Random().nextInt(RANDOMIZABLE_THEMES.length)];
     }
 
     public static void restartApp(Activity activity) {

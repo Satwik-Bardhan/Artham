@@ -47,7 +47,6 @@
                     android:id="@+id/backUserName"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:fontFamily="@font/app_font"
                     android:text="User Name"
                     android:textColor="#FFFFFF"
                     android:textSize="18sp"
@@ -59,7 +58,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:fontFamily="@font/app_font"
                     android:text="Artham Member"
                     android:textColor="#AAAAAA"
                     android:textSize="12sp"
@@ -154,7 +152,6 @@
             android:text="Made in india 🇮🇳 with ❤️"
             android:textColor="#777777"
             android:textSize="10sp"
-            android:fontFamily="@font/app_font"
             android:letterSpacing="0.02"/>
 
         <!-- Bottom Right: Tap to flip -->
@@ -166,7 +163,6 @@
             android:text="Tap to flip"
             android:textColor="#666666"
             android:textSize="10sp"
-            android:fontFamily="@font/app_font"
             android:textStyle="italic" />
 
     </RelativeLayout>

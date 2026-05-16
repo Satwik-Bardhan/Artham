@@ -6,7 +6,6 @@
     android:paddingHorizontal="12dp"
     android:paddingTop="24dp"
     android:paddingBottom="8dp"
-    android:fontFamily="@font/app_font"
     android:textColor="?attr/chk_textColorPrimary"
     android:textSize="18sp"
     android:textStyle="bold" />

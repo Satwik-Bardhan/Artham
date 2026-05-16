@@ -27,9 +27,6 @@ public class FontSelectionActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_font_selection);
 
-        // Apply the current font to this activity's views
-        FontManager.applyFontToActivity(this);
-
         if (getSupportActionBar() != null) {
             getSupportActionBar().hide();
         }

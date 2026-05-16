@@ -60,7 +60,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="4dp"
-                    android:fontFamily="@font/app_font"
                     android:text="Auto"
                     android:textColor="?attr/chk_textColorSecondary"
                     android:textSize="12sp"
@@ -78,7 +77,6 @@
                     android:id="@+id/headerTitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:fontFamily="@font/app_font"
                     android:text="Edit Transaction"
                     android:textColor="?attr/chk_textColorPrimary"
                     android:textSize="18sp"
@@ -88,7 +86,6 @@
                     android:id="@+id/headerSubtitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:fontFamily="@font/app_font"
                     android:text="Update details"
                     android:textColor="?attr/chk_textColorSecondary"
                     android:textSize="12sp" />
@@ -138,7 +135,6 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="10dp"
-                        android:fontFamily="@font/app_font"
                         android:text="Select Date"
                         android:textColor="?attr/chk_textColorPrimary"
                         android:textSize="14sp" />
@@ -168,7 +164,6 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="10dp"
-                        android:fontFamily="@font/app_font"
                         android:text="Select Time"
                         android:textColor="?attr/chk_textColorPrimary"
                         android:textSize="14sp" />
@@ -196,7 +191,6 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
                 android:layout_marginBottom="12dp"
-                android:fontFamily="@font/app_font"
                 android:text="History"
                 android:textColor="?attr/chk_textColorPrimary"
                 android:textSize="16sp"
@@ -237,7 +231,6 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:fontFamily="@font/app_font"
                                 android:text="Created"
                                 android:textColor="?attr/chk_textColorPrimary"
                                 android:textSize="14sp"
@@ -248,7 +241,6 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="2dp"
-                                android:fontFamily="@font/app_font"
                                 android:text="Loading..."
                                 android:textColor="?attr/chk_textColorSecondary"
                                 android:textSize="12sp" />
@@ -285,7 +277,6 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:fontFamily="@font/app_font"
                                 android:text="Last Updated"
                                 android:textColor="?attr/chk_textColorPrimary"
                                 android:textSize="14sp"
@@ -296,7 +287,6 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="2dp"
-                                android:fontFamily="@font/app_font"
                                 android:text="Loading..."
                                 android:textColor="?attr/chk_textColorSecondary"
                                 android:textSize="12sp" />
@@ -328,7 +318,6 @@
             android:layout_marginEnd="8dp"
             android:layout_weight="1"
             android:background="@drawable/button_cancel_outline"
-            android:fontFamily="@font/app_font"
             android:text="Cancel"
             android:textAllCaps="false"
             android:textColor="?attr/chk_expenseColor"
@@ -341,7 +330,6 @@
             android:layout_marginStart="8dp"
             android:layout_weight="1"
             android:background="@drawable/button_primary"
-            android:fontFamily="@font/app_font"
             android:text="Save Changes"
             android:textAllCaps="false"
             android:textColor="@android:color/white"

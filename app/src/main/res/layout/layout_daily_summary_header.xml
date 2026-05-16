@@ -61,7 +61,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     tools:text="DD MM YYYY"
-                    android:fontFamily="@font/app_font"
                     android:textColor="?attr/chk_textColorPrimary"
                     android:textSize="14sp"
                     android:textStyle="bold" />
@@ -71,7 +70,6 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
                     android:text="Daily Summary"
-                    android:fontFamily="@font/app_font"
                     android:textColor="?attr/chk_textColorHint"
                     android:textSize="11sp"
                     android:letterSpacing="0.02" />
@@ -123,7 +121,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     tools:text="₹00.00"
-                    android:fontFamily="@font/app_font"
                     android:textColor="?attr/chk_incomeColor"
                     android:textSize="14sp"
                     android:textStyle="bold" />
@@ -133,7 +130,6 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
                     android:text="Net Balance"
-                    android:fontFamily="@font/app_font"
                     android:textColor="?attr/chk_textColorHint"
                     android:textSize="11sp"
                     android:letterSpacing="0.02" />

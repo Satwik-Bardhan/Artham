@@ -43,7 +43,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="No Transactions Yet"
-            android:fontFamily="@font/app_font"
             android:textColor="?attr/chk_textColorPrimary"
             android:textSize="20sp"
             android:textStyle="bold"
@@ -55,7 +54,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Start tracking by adding your first income or expense."
-            android:fontFamily="@font/app_font"
             android:textColor="?attr/chk_textColorSecondary"
             android:textSize="15sp"
             android:gravity="center"
@@ -69,7 +67,6 @@
             android:text="Add Transaction"
             android:textSize="14sp"
             android:textStyle="bold"
-            android:fontFamily="@font/app_font"
             android:textColor="#FFFFFF"
             app:icon="@drawable/ic_add"
             app:iconTint="#FFFFFF"
@@ -103,7 +100,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Loading..."
-            android:fontFamily="@font/app_font"
             android:textColor="?attr/chk_textColorSecondary"
             android:textSize="14sp" />
     </LinearLayout>

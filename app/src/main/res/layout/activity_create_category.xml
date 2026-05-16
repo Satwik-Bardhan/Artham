@@ -45,7 +45,6 @@
                     android:id="@+id/headerTitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:fontFamily="@font/app_font"
                     android:text="New Category"
                     android:textColor="?attr/chk_textColorPrimary"
                     android:textSize="18sp"
@@ -55,7 +54,6 @@
                     android:id="@+id/headerSubtitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:fontFamily="@font/app_font"
                     android:text="Create a new category"
                     android:textColor="?attr/chk_textColorSecondary"
                     android:textSize="12sp" />
@@ -70,7 +68,6 @@
         android:layout_alignParentBottom="true"
         android:layout_marginHorizontal="12dp"
         android:layout_marginBottom="16dp"
-        android:fontFamily="@font/app_font"
         android:text="Save Category"
         android:textAllCaps="false"
         android:textSize="16sp"
@@ -94,7 +91,6 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:fontFamily="@font/app_font"
                 android:text="Category Name"
                 android:textColor="?attr/chk_textColorSecondary"
                 android:textSize="14sp" />
@@ -115,7 +111,6 @@
                     android:id="@+id/categoryNameInput"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:fontFamily="@font/app_font"
                     android:hint="e.g. Coffee, Gym, Side Project"
                     android:inputType="textCapSentences"
                     android:textColor="?attr/chk_textColorPrimary"
@@ -126,7 +121,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
-                android:fontFamily="@font/app_font"
                 android:text="Customize Color"
                 android:textColor="?attr/chk_textColorSecondary"
                 android:textSize="14sp" />
@@ -152,7 +146,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="20dp"
-                    android:fontFamily="@font/app_font"
                     android:text="Adjust Opacity"
                     android:textColor="?attr/chk_textColorSecondary"
                     android:textSize="12sp" />
@@ -194,7 +187,6 @@
                                 android:id="@+id/colorHexText"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:fontFamily="@font/app_font"
                                 android:text="#FFFFFFFF"
                                 android:textColor="?attr/chk_textColorPrimary"
                                 android:textSize="16sp"
@@ -217,7 +209,6 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:fontFamily="@font/app_font"
                             android:text="Selected Color Hex"
                             android:textColor="?attr/chk_textColorSecondary"
                             android:textSize="10sp" />
@@ -229,7 +220,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
-                android:fontFamily="@font/app_font"
                 android:text="Select Icon"
                 android:textColor="?attr/chk_textColorSecondary"
                 android:textSize="14sp" />

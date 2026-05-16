@@ -41,7 +41,6 @@
                 android:textColor="?attr/chk_textColorPrimary"
                 android:textSize="14sp"
                 android:textStyle="bold"
-                android:fontFamily="@font/app_font"
                 android:maxLines="1"
                 android:ellipsize="end" />
 
@@ -52,8 +51,7 @@
                 tools:text="₹12,400"
                 android:textColor="?attr/chk_textColorPrimary"
                 android:textSize="14sp"
-                android:textStyle="bold"
-                android:fontFamily="@font/app_font"/>
+                android:textStyle="bold"/>
         </LinearLayout>
 
         <LinearLayout
@@ -80,7 +78,6 @@
                 tools:text="45%"
                 android:textColor="?attr/chk_textColorSecondary"
                 android:textSize="12sp"
-                android:fontFamily="@font/app_font"
                 android:minWidth="30dp"
                 android:gravity="end"/>
         </LinearLayout>

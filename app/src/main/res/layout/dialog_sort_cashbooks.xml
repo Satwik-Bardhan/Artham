@@ -27,7 +27,6 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:fontFamily="@font/app_font"
                 android:text="Sort Cashbooks"
                 android:textColor="?attr/chk_textColorPrimary"
                 android:textSize="18sp"
@@ -69,7 +68,6 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:fontFamily="@font/app_font"
                     android:text="Name (A to Z)"
                     android:textColor="?attr/chk_textColorPrimary"
                     android:textSize="16sp" />
@@ -101,7 +99,6 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:fontFamily="@font/app_font"
                     android:text="Name (Z to A)"
                     android:textColor="?attr/chk_textColorPrimary"
                     android:textSize="16sp" />
@@ -133,7 +130,6 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:fontFamily="@font/app_font"
                     android:text="Date Created (Newest)"
                     android:textColor="?attr/chk_textColorPrimary"
                     android:textSize="16sp" />
@@ -165,7 +161,6 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:fontFamily="@font/app_font"
                     android:text="Date Created (Oldest)"
                     android:textColor="?attr/chk_textColorPrimary"
                     android:textSize="16sp" />
@@ -197,7 +192,6 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:fontFamily="@font/app_font"
                     android:text="Balance (High to Low)"
                     android:textColor="?attr/chk_textColorPrimary"
                     android:textSize="16sp" />
@@ -229,7 +223,6 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:fontFamily="@font/app_font"
                     android:text="Balance (Low to High)"
                     android:textColor="?attr/chk_textColorPrimary"
                     android:textSize="16sp" />

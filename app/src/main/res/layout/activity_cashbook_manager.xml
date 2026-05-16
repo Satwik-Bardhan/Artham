@@ -56,7 +56,6 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:fontFamily="@font/app_font"
                         android:text="@string/cashbook_manager_title"
                         android:textColor="?attr/chk_textColorPrimary"
                         android:textSize="20sp"
@@ -65,7 +64,6 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:fontFamily="@font/app_font"
                         android:text="@string/switch_create_subtitle"
                         android:textColor="?attr/chk_textColorSecondary"
                         android:textSize="12sp" />
@@ -140,7 +138,6 @@
                             android:layout_height="match_parent"
                             android:layout_weight="1"
                             android:background="@null"
-                            android:fontFamily="@font/app_font"
                             android:hint="@string/search_cashbooks_hint"
                             android:inputType="text"
                             android:textColor="?attr/chk_textColorPrimary"
@@ -173,7 +170,6 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:fontFamily="@font/app_font"
                             android:text="@string/your_cashbooks_title"
                             android:textColor="?attr/chk_balanceColor"
                             android:textSize="15sp"
@@ -185,7 +181,6 @@
                             android:layout_height="wrap_content"
                             android:layout_marginStart="6dp"
                             android:text="(0)"
-                            android:fontFamily="@font/app_font"
                             android:textColor="?attr/chk_textColorSecondary"
                             android:textSize="14sp" />
                     </LinearLayout>
@@ -210,7 +205,6 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="4dp"
-                            android:fontFamily="@font/app_font"
                             android:text="@string/sort_button"
                             android:textColor="?attr/chk_textColorSecondary"
                             android:textSize="13sp" />
@@ -281,7 +275,6 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:fontFamily="@font/app_font"
                         android:text="@string/no_cashbooks_title"
                         android:textColor="?attr/chk_textColorPrimary"
                         android:textSize="18sp"
@@ -292,7 +285,6 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
                         android:layout_marginBottom="32dp"
-                        android:fontFamily="@font/app_font"
                         android:gravity="center"
                         android:text="@string/no_cashbooks_message"
                         android:textColor="?attr/chk_textColorSecondary"
@@ -303,7 +295,6 @@
                         android:layout_width="wrap_content"
                         android:layout_height="56dp"
                         android:background="@drawable/button_primary"
-                        android:fontFamily="@font/app_font"
                         android:paddingStart="24dp"
                         android:paddingEnd="24dp"
                         android:text="@string/create_first_cashbook"

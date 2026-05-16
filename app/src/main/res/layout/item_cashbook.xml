@@ -57,7 +57,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/sample_cashbook_name"
-                    android:fontFamily="@font/app_font"
                     android:textColor="?attr/chk_textColorPrimary"
                     android:textSize="16sp"
                     android:textStyle="bold"
@@ -71,7 +70,6 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
                     android:text="Active"
-                    android:fontFamily="@font/app_font"
                     android:textColor="?attr/chk_primary_blue"
                     android:textSize="14sp"
                     android:textStyle="bold"
@@ -116,7 +114,6 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
             android:text="@string/sample_last_modified"
-            android:fontFamily="@font/app_font"
             android:textColor="?attr/chk_textColorSecondary"
             android:textSize="12sp"
             android:drawableStart="@drawable/ic_schedule"
@@ -143,7 +140,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/balance_label"
-                    android:fontFamily="@font/app_font"
                     android:textColor="?attr/chk_textColorSecondary"
                     android:textSize="10sp" />
 
@@ -153,7 +149,6 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
                     android:text="@string/sample_balance"
-                    android:fontFamily="@font/app_font"
                     android:textColor="?attr/chk_incomeColor"
                     android:textSize="14sp"
                     android:textStyle="bold"
@@ -177,7 +172,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/transactions_label"
-                    android:fontFamily="@font/app_font"
                     android:textColor="?attr/chk_textColorSecondary"
                     android:textSize="10sp" />
 
@@ -187,7 +181,6 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
                     android:text="@string/sample_transaction_count"
-                    android:fontFamily="@font/app_font"
                     android:textColor="?attr/chk_textColorPrimary"
                     android:textSize="14sp"
                     android:textStyle="bold"
@@ -211,7 +204,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/created_label"
-                    android:fontFamily="@font/app_font"
                     android:textColor="?attr/chk_textColorSecondary"
                     android:textSize="10sp" />
 
@@ -221,7 +213,6 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
                     android:text="@string/sample_created_date"
-                    android:fontFamily="@font/app_font"
                     android:textColor="?attr/chk_textColorPrimary"
                     android:textSize="14sp"
                     android:textStyle="bold"

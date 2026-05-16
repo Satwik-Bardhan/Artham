@@ -45,7 +45,6 @@
                     android:id="@+id/headerTitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:fontFamily="@font/app_font"
                     android:text="Manage Categories"
                     android:textColor="?attr/chk_textColorPrimary"
                     android:textSize="18sp"
@@ -55,7 +54,6 @@
                     android:id="@+id/headerSubtitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:fontFamily="@font/app_font"
                     android:text="Add or edit categories"
                     android:textColor="?attr/chk_textColorSecondary"
                     android:textSize="12sp" />

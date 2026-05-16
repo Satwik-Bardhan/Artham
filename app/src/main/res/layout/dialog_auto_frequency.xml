@@ -25,7 +25,6 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="12dp"
             android:layout_weight="1"
-            android:fontFamily="@font/app_font"
             android:text="Auto Repeat"
             android:textColor="?attr/chk_textColorPrimary"
             android:textSize="18sp"
@@ -37,7 +36,6 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
         android:layout_marginBottom="20dp"
-        android:fontFamily="@font/app_font"
         android:text="Automatically add this entry at the selected frequency"
         android:textColor="?attr/chk_textColorSecondary"
         android:textSize="13sp" />
@@ -66,7 +64,6 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:fontFamily="@font/app_font"
                 android:text="📅"
                 android:textSize="24sp" />
 
@@ -75,7 +72,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
-                android:fontFamily="@font/app_font"
                 android:text="Daily"
                 android:textColor="?attr/chk_textColorPrimary"
                 android:textSize="13sp"
@@ -100,7 +96,6 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:fontFamily="@font/app_font"
                 android:text="🗓️"
                 android:textSize="24sp" />
 
@@ -109,7 +104,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
-                android:fontFamily="@font/app_font"
                 android:text="Weekly"
                 android:textColor="?attr/chk_textColorPrimary"
                 android:textSize="13sp"
@@ -133,7 +127,6 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:fontFamily="@font/app_font"
                 android:text="📆"
                 android:textSize="24sp" />
 
@@ -142,7 +135,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
-                android:fontFamily="@font/app_font"
                 android:text="Monthly"
                 android:textColor="?attr/chk_textColorPrimary"
                 android:textSize="13sp"
@@ -156,7 +148,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:fontFamily="@font/app_font"
         android:gravity="center"
         android:padding="12dp"
         android:text="Disable Auto"

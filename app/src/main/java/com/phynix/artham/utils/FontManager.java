@@ -4,9 +4,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Typeface;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.TextView;
 
 import androidx.core.content.res.ResourcesCompat;
 
@@ -15,9 +12,10 @@ import com.phynix.artham.R;
 /**
  * Manages the user's font preference across the entire app.
  *
- * Approach: Since Android's theme-level fontFamily is baked at inflation time
- * and can't be swapped dynamically without recreating, we apply fonts
- * programmatically via a view-tree walk after setContentView().
+ * Approach: Uses Android theme overlays — the selected font is applied to the
+ * Activity's theme BEFORE views are inflated (via applyFontOverlay), so ALL views
+ * including RecyclerView items, dialogs, and dynamically inflated layouts
+ * automatically inherit the correct font. No view-tree walking needed.
  *
  * This mirrors the ThemeManager pattern (SharedPreferences-based).
  */
@@ -73,8 +71,46 @@ public class FontManager {
     }
 
     /**
-     * Returns the Typeface for the given font key.
-     * Returns null for FONT_SYSTEM (which means Android default).
+     * Returns the R.style resource for the font overlay corresponding to the given key.
+     * Returns 0 for FONT_SYSTEM (no overlay needed — system default).
+     */
+    public static int getFontOverlayStyle(String fontKey) {
+        switch (fontKey) {
+            case FONT_INTER:
+                return R.style.FontOverlay_Inter;
+            case FONT_POPPINS:
+                return R.style.FontOverlay_Poppins;
+            case FONT_SPARTAN:
+                return R.style.FontOverlay_Spartan;
+            case FONT_KHAND:
+                return R.style.FontOverlay_Khand;
+            case FONT_TINOS:
+                return R.style.FontOverlay_Tinos;
+            case FONT_SYSTEM:
+            default:
+                return 0;
+        }
+    }
+
+    /**
+     * Applies the user's selected font as a theme overlay on the Activity.
+     * Must be called BEFORE super.onCreate() / setContentView() so that all
+     * inflated views (including RecyclerView items) inherit the font.
+     *
+     * Call this right after ThemeManager.applyActivityTheme().
+     */
+    public static void applyFontOverlay(Activity activity) {
+        String fontKey = getFont(activity);
+        int overlayStyle = getFontOverlayStyle(fontKey);
+        if (overlayStyle != 0) {
+            activity.getTheme().applyStyle(overlayStyle, true);
+        }
+        // If FONT_SYSTEM (overlayStyle == 0), no overlay is applied.
+        // The theme has no fontFamily set, so Android uses the system default.
+    }
+
+    /**
+     * Returns the Typeface for the given font key (for programmatic use).
      */
     public static Typeface getTypeface(Context context, String fontKey) {
         try {
@@ -95,65 +131,6 @@ public class FontManager {
             }
         } catch (Exception e) {
             return Typeface.DEFAULT;
-        }
-    }
-
-    /**
-     * Returns the bold variant Typeface for the given font key.
-     */
-    public static Typeface getBoldTypeface(Context context, String fontKey) {
-        try {
-            switch (fontKey) {
-                case FONT_INTER:
-                    return ResourcesCompat.getFont(context, R.font.inter_bold);
-                case FONT_POPPINS:
-                    return ResourcesCompat.getFont(context, R.font.poppins_bold);
-                case FONT_SPARTAN:
-                    return ResourcesCompat.getFont(context, R.font.spartan_bold);
-                case FONT_KHAND:
-                    return ResourcesCompat.getFont(context, R.font.khand_medium);
-                case FONT_TINOS:
-                    return ResourcesCompat.getFont(context, R.font.tinos_bold);
-                case FONT_SYSTEM:
-                default:
-                    return Typeface.DEFAULT_BOLD;
-            }
-        } catch (Exception e) {
-            return Typeface.DEFAULT_BOLD;
-        }
-    }
-
-    /**
-     * Applies the user's selected font to ALL TextViews in the given Activity's
-     * view hierarchy. Call this AFTER setContentView().
-     */
-    public static void applyFontToActivity(Activity activity) {
-        String fontKey = getFont(activity);
-        Typeface regular = getTypeface(activity, fontKey);
-        Typeface bold = getBoldTypeface(activity, fontKey);
-        if (regular == null) return;
-
-        View rootView = activity.getWindow().getDecorView().getRootView();
-        applyFontToViewTree(rootView, regular, bold);
-    }
-
-    /**
-     * Recursively walks the view tree and sets the Typeface on every TextView.
-     * Preserves the original bold/italic style.
-     */
-    private static void applyFontToViewTree(View view, Typeface regular, Typeface bold) {
-        if (view instanceof TextView) {
-            TextView tv = (TextView) view;
-            int style = tv.getTypeface() != null ? tv.getTypeface().getStyle() : Typeface.NORMAL;
-            boolean isBold = (style & Typeface.BOLD) != 0;
-            tv.setTypeface(isBold ? bold : regular, style);
-        }
-
-        if (view instanceof ViewGroup) {
-            ViewGroup group = (ViewGroup) view;
-            for (int i = 0; i < group.getChildCount(); i++) {
-                applyFontToViewTree(group.getChildAt(i), regular, bold);
-            }
         }
     }
 }

@@ -39,7 +39,6 @@
         android:layout_marginStart="8dp"
         android:layout_weight="1"
         android:ellipsize="end"
-        android:fontFamily="@font/app_font"
         android:maxLines="2"
         android:text="Category Name"
         android:textColor="?attr/chk_textColorPrimary"

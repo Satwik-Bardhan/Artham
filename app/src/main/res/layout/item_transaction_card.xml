@@ -51,7 +51,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 tools:text="Groceries"
-                android:fontFamily="@font/app_font"
                 android:textColor="?attr/chk_textColorPrimary"
                 android:textSize="16sp"
                 android:textStyle="bold"
@@ -70,7 +69,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     tools:text="Today, 10:30 AM"
-                    android:fontFamily="@font/app_font"
                     android:textColor="?attr/chk_textColorSecondary"
                     android:textSize="12sp" />
 
@@ -79,7 +77,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     tools:text=" • Amazon"
-                    android:fontFamily="@font/app_font"
                     android:textColor="?attr/chk_textColorSecondary"
                     android:textSize="12sp"
                     android:visibility="gone"
@@ -98,7 +95,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 tools:text="- ₹120.00"
-                android:fontFamily="@font/app_font"
                 android:textColor="?attr/chk_expenseColor"
                 android:textSize="16sp"
                 android:textStyle="bold" />
@@ -127,7 +123,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     tools:text="CARD"
-                    android:fontFamily="@font/app_font"
                     android:textColor="?attr/chk_textColorSecondary"
                     android:textSize="10sp"
                     android:textStyle="bold"

@@ -35,7 +35,6 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:background="@null"
-            android:fontFamily="@font/app_font"
             android:hint="Search transactions..."
             android:paddingHorizontal="12dp"
             android:textColor="?attr/chk_textColorPrimary"

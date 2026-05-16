@@ -48,7 +48,6 @@
                     android:id="@+id/headerTitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:fontFamily="@font/app_font"
                     android:text="Category Details"
                     android:textColor="?attr/chk_textColorPrimary"
                     android:textSize="18sp"
@@ -58,7 +57,6 @@
                     android:id="@+id/headerSubtitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:fontFamily="@font/app_font"
                     tools:text="April 2026"
                     android:textColor="?attr/chk_textColorSecondary"
                     android:textSize="12sp" />
@@ -120,7 +118,6 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         tools:text="Food &amp; Dining"
-                        android:fontFamily="@font/app_font"
                         android:textColor="?attr/chk_textColorPrimary"
                         android:textSize="22sp"
                         android:textStyle="bold"
@@ -132,7 +129,6 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         tools:text="₹12,400.00"
-                        android:fontFamily="@font/app_font"
                         android:textColor="?attr/chk_expenseColor"
                         android:textSize="28sp"
                         android:textStyle="bold"
@@ -167,7 +163,6 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:text="Of Total"
-                                    android:fontFamily="@font/app_font"
                                     android:textColor="?attr/chk_textColorSecondary"
                                     android:textSize="11sp" />
 
@@ -176,7 +171,6 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     tools:text="32.5%"
-                                    android:fontFamily="@font/app_font"
                                     android:textColor="?attr/chk_textColorPrimary"
                                     android:textSize="18sp"
                                     android:textStyle="bold" />
@@ -205,7 +199,6 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:text="Transactions"
-                                    android:fontFamily="@font/app_font"
                                     android:textColor="?attr/chk_textColorSecondary"
                                     android:textSize="11sp" />
 
@@ -214,7 +207,6 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     tools:text="14"
-                                    android:fontFamily="@font/app_font"
                                     android:textColor="?attr/chk_textColorPrimary"
                                     android:textSize="18sp"
                                     android:textStyle="bold" />
@@ -252,7 +244,6 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="Transactions"
-                    android:fontFamily="@font/app_font"
                     android:textColor="?attr/chk_textColorPrimary"
                     android:textSize="16sp"
                     android:textStyle="bold" />
@@ -262,7 +253,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Newest first"
-                    android:fontFamily="@font/app_font"
                     android:textColor="?attr/chk_textColorSecondary"
                     android:textSize="12sp" />
             </LinearLayout>
@@ -274,7 +264,6 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:layout_marginTop="48dp"
-                android:fontFamily="@font/app_font"
                 android:text="No transactions found"
                 android:textColor="?attr/chk_textColorSecondary"
                 android:textSize="14sp"

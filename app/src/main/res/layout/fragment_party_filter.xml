@@ -11,7 +11,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Select Party"
-        android:fontFamily="@font/app_font"
         android:textColor="?attr/chk_textColorPrimary"
         android:textSize="20sp"
         android:textStyle="bold"
@@ -47,7 +46,6 @@
                 android:hint="Search party name..."
                 android:background="@null"
                 android:padding="10dp"
-                android:fontFamily="@font/app_font"
                 android:textColor="?attr/chk_textColorPrimary"
                 android:textColorHint="?attr/chk_textColorHint"
                 android:textSize="14sp" />
@@ -74,7 +72,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="No parties found"
-            android:fontFamily="@font/app_font"
             android:textColor="?attr/chk_textColorSecondary"
             android:textSize="16sp"/>
     </LinearLayout>
@@ -94,7 +91,6 @@
         android:layout_gravity="end|bottom"
         android:layout_margin="16dp"
         android:text="New Party"
-        android:fontFamily="@font/app_font"
         android:textColor="@android:color/white"
         app:icon="@drawable/ic_add"
         app:iconTint="@android:color/white"

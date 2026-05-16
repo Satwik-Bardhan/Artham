@@ -37,7 +37,6 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:fontFamily="@font/app_font"
                 android:text="CASH IN"
                 android:textColor="#FFFFFF"
                 android:textSize="16sp"
@@ -76,7 +75,6 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:fontFamily="@font/app_font"
                 android:text="CASH OUT"
                 android:textColor="#FFFFFF"
                 android:textSize="16sp"

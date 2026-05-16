@@ -29,7 +29,6 @@
             android:id="@+id/remarkEditText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:fontFamily="@font/app_font"
             android:inputType="textMultiLine|textCapSentences"
             android:maxLines="3"
             android:minLines="1"

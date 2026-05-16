@@ -1,37 +1,27 @@
 package com.phynix.artham;
 
 import android.content.SharedPreferences;
-import android.os.Bundle;
 import android.view.HapticFeedbackConstants;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.phynix.artham.utils.FontManager;
-
 /**
- * Base activity that provides global haptic feedback on every clickable element tap
- * and automatically applies the user's selected font to all views.
+ * Base activity that provides global haptic feedback on every clickable element tap.
  * All activities in the app should extend this instead of AppCompatActivity.
  *
+ * Font handling is done via theme overlays in ThemeManager.applyActivityTheme(),
+ * which applies the font to the theme BEFORE views are inflated.
+ *
  * How it works:
- * - Applies the user's font choice in onPostCreate() after views are inflated
  * - Intercepts all touch events via dispatchTouchEvent()
  * - On ACTION_DOWN, checks if the touched view is clickable
  * - If so, triggers a light haptic tick for tactile feedback
  * - Can be disabled by the user via App Settings → Haptic Feedback toggle
  */
 public class BaseActivity extends AppCompatActivity {
-
-    @Override
-    protected void onPostCreate(@Nullable Bundle savedInstanceState) {
-        super.onPostCreate(savedInstanceState);
-        // Apply the user's font preference after the entire view tree is inflated
-        FontManager.applyFontToActivity(this);
-    }
 
     private static final String PREFS_NAME = "AppSettingsPrefs";
     private static final String KEY_HAPTIC = "haptic_feedback_enabled";

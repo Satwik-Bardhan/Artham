@@ -28,7 +28,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@null"
-            android:fontFamily="@font/app_font"
             android:inputType="text"
             android:textColor="?attr/chk_textColorPrimary"
             android:textColorHint="?attr/chk_textColorSecondary" />

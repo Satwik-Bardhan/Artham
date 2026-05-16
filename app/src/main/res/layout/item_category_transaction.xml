@@ -41,7 +41,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 tools:text="Dinner with friends"
-                android:fontFamily="@font/app_font"
                 android:textColor="?attr/chk_textColorPrimary"
                 android:textSize="14sp"
                 android:textStyle="bold"
@@ -61,7 +60,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     tools:text="06 Apr • 08:30 PM"
-                    android:fontFamily="@font/app_font"
                     android:textColor="?attr/chk_textColorSecondary"
                     android:textSize="12sp" />
 
@@ -77,7 +75,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     tools:text="Cash"
-                    android:fontFamily="@font/app_font"
                     android:textColor="?attr/chk_textColorSecondary"
                     android:textSize="12sp" />
             </LinearLayout>
@@ -89,7 +86,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             tools:text="- ₹1,500.00"
-            android:fontFamily="@font/app_font"
             android:textColor="?attr/chk_expenseColor"
             android:textSize="15sp"
             android:textStyle="bold"

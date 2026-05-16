@@ -48,7 +48,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="September 2025"
-                    android:fontFamily="@font/app_font"
                     android:textColor="?attr/chk_textColorPrimary"
                     android:textSize="20sp"
                     android:textStyle="bold" />
@@ -57,7 +56,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Click to view more details"
-                    android:fontFamily="@font/app_font"
                     android:textColor="?attr/colorPrimary"
                     android:textSize="12sp"
                     android:textStyle="normal" />
@@ -91,7 +89,6 @@
             android:focusable="true"
             android:padding="8dp"
             android:text="Hide Pie Chart"
-            android:fontFamily="@font/app_font"
             android:textColor="?attr/colorPrimary"
             android:textSize="14sp"
             android:textStyle="bold" />
@@ -116,7 +113,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Categories"
-                    android:fontFamily="@font/app_font"
                     android:textColor="?attr/chk_textColorSecondary"
                     android:textSize="12sp" />
 
@@ -125,7 +121,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="0"
-                    android:fontFamily="@font/app_font"
                     android:textColor="?attr/chk_textColorPrimary"
                     android:textSize="16sp"
                     android:textStyle="bold" />
@@ -147,7 +142,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Highest Expense"
-                    android:fontFamily="@font/app_font"
                     android:textColor="?attr/chk_textColorSecondary"
                     android:textSize="12sp" />
 
@@ -156,7 +150,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="-"
-                    android:fontFamily="@font/app_font"
                     android:textColor="?attr/chk_textColorPrimary"
                     android:textSize="16sp"
                     android:textStyle="bold" />
