@@ -10,7 +10,7 @@ import android.os.Looper;
 
 import androidx.appcompat.app.AppCompatDelegate;
 
-import com.phynix.artham.activities.HomePage;
+import com.phynix.artham.activities.HomeActivity;
 import com.phynix.artham.R;
 
 public class ThemeManager {
@@ -105,7 +105,7 @@ public class ThemeManager {
 
     public static void restartApp(Activity activity) {
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
-            Intent intent = new Intent(activity, HomePage.class);
+            Intent intent = new Intent(activity, HomeActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             activity.startActivity(intent);
             activity.finish();

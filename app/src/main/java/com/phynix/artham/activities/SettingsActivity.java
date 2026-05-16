@@ -3,7 +3,7 @@ package com.phynix.artham.activities;
 
 import com.phynix.artham.R;
 import com.phynix.artham.BaseActivity;
-import com.phynix.artham.SigninActivity;
+import com.phynix.artham.SignInActivity;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
@@ -172,7 +172,7 @@ public class SettingsActivity extends BaseActivity {
             NavPillAnimator.positionAt(pill, targetContainer);
         }
 
-        binding.bottomNavigation.btnHome.setOnClickListener(v -> navigateToActivity(HomePage.class, NavPillAnimator.TAB_SETTINGS));
+        binding.bottomNavigation.btnHome.setOnClickListener(v -> navigateToActivity(HomeActivity.class, NavPillAnimator.TAB_SETTINGS));
         binding.bottomNavigation.btnTransactions.setOnClickListener(v -> navigateToActivity(TransactionActivity.class, NavPillAnimator.TAB_SETTINGS));
         binding.bottomNavigation.btnCashbookSwitch.setOnClickListener(v -> openCashbookSwitcher());
     }
@@ -389,7 +389,7 @@ public class SettingsActivity extends BaseActivity {
         SessionCache.getInstance().clear();
         mAuth.signOut();
         Toast.makeText(this, "Logged out", Toast.LENGTH_SHORT).show();
-        Intent intent = new Intent(this, SigninActivity.class);
+        Intent intent = new Intent(this, SignInActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         finish();

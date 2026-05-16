@@ -1,7 +1,7 @@
 package com.phynix.artham;
 
 
-import com.phynix.artham.activities.HomePage;
+import com.phynix.artham.activities.HomeActivity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -18,7 +18,7 @@ import com.google.firebase.appdistribution.InterruptionLevel;
 
 /**
  * MainActivity serves as the application entry point and authentication router.
- * This activity determines whether to navigate to SigninActivity or HomePage
+ * This activity determines whether to navigate to SignInActivity or HomeActivity
  * based on the user's authentication status.
  */
 public class MainActivity extends BaseActivity {
@@ -55,7 +55,7 @@ public class MainActivity extends BaseActivity {
 
     /**
      * Checks the current user's authentication status and navigates to the appropriate activity.
-     * Navigates to HomePage if user is authenticated, SigninActivity otherwise.
+     * Navigates to HomePage if user is authenticated, SignInActivity otherwise.
      */
     private void checkAuthenticationAndNavigate() {
         try {
@@ -65,11 +65,11 @@ public class MainActivity extends BaseActivity {
             if (currentUser == null) {
                 // No user is signed in, navigate to Sign-in
                 Log.d(TAG, getString(R.string.log_no_authenticated_user));
-                navigationIntent = new Intent(this, SigninActivity.class);
+                navigationIntent = new Intent(this, SignInActivity.class);
             } else {
                 // User is signed in, navigate to Home
                 Log.d(TAG, getString(R.string.log_authenticated_user_found, currentUser.getUid()));
-                navigationIntent = new Intent(this, HomePage.class);
+                navigationIntent = new Intent(this, HomeActivity.class);
 
                 try {
                     FirebaseCrashlytics crashlytics = FirebaseCrashlytics.getInstance();
@@ -92,7 +92,7 @@ public class MainActivity extends BaseActivity {
             ErrorHandler.handleAuthError(this, e);
 
             // Fallback to Sign-in on any error
-            Intent fallbackIntent = new Intent(this, SigninActivity.class);
+            Intent fallbackIntent = new Intent(this, SignInActivity.class);
             startActivity(fallbackIntent);
 
         } finally {

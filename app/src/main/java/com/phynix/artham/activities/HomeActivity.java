@@ -3,7 +3,7 @@ package com.phynix.artham.activities;
 
 import com.phynix.artham.R;
 import com.phynix.artham.BaseActivity;
-import com.phynix.artham.SigninActivity;
+import com.phynix.artham.SignInActivity;
 import android.Manifest;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -57,7 +57,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ServerValue;
 import com.google.firebase.database.ValueEventListener;
-import com.phynix.artham.databinding.ActivityHomePageBinding;
+import com.phynix.artham.databinding.ActivityHomeBinding;
 import com.phynix.artham.models.TransactionModel;
 import com.phynix.artham.models.Users;
 import com.phynix.artham.utils.Constants;
@@ -68,7 +68,7 @@ import com.phynix.artham.utils.SessionCache;
 import com.phynix.artham.utils.SwipeListener;
 import com.phynix.artham.utils.NavPillAnimator;
 import com.phynix.artham.utils.ThemeManager;
-import com.phynix.artham.viewmodels.HomePageViewModel;
+import com.phynix.artham.viewmodels.HomeViewModel;
 
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
@@ -80,17 +80,17 @@ import java.util.Map;
 import java.util.TimeZone;
 
 import com.phynix.artham.utils.ThemeUtil;
-public class HomePage extends BaseActivity {
+public class HomeActivity extends BaseActivity {
 
-    private static final String TAG = "HomePage";
+    private static final String TAG = "HomeActivity";
     private static final int PERMISSION_REQUEST_CODE_NOTIFICATIONS = 101;
     private static final String PREFS_NAME = "AppPrefs";
 
     // ViewBinding
-    private ActivityHomePageBinding binding;
+    private ActivityHomeBinding binding;
 
     // ViewModel
-    private HomePageViewModel viewModel;
+    private HomeViewModel viewModel;
 
     // Utils
     private NumberFormat currencyFormat;
@@ -191,7 +191,7 @@ public class HomePage extends BaseActivity {
         ThemeManager.applyActivityTheme(this);
         super.onCreate(savedInstanceState);
 
-        binding = ActivityHomePageBinding.inflate(getLayoutInflater());
+        binding = ActivityHomeBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
         if (getSupportActionBar() != null) {
@@ -199,7 +199,7 @@ public class HomePage extends BaseActivity {
         }
 
         // Initialize ViewModel
-        viewModel = new ViewModelProvider(this).get(HomePageViewModel.class);
+        viewModel = new ViewModelProvider(this).get(HomeViewModel.class);
 
         currencyFormat = NumberFormat.getCurrencyInstance(new Locale("en", "IN"));
 
@@ -299,7 +299,7 @@ public class HomePage extends BaseActivity {
                 // Swipe Left -> Go to Transactions List (if loaded)
                 String idToUse = (currentCashbookId != null) ? currentCashbookId : viewModel.getCurrentCashbookId();
                 if (idToUse != null) {
-                    Intent intent = new Intent(HomePage.this, TransactionActivity.class);
+                    Intent intent = new Intent(HomeActivity.this, TransactionActivity.class);
                     intent.putExtra(Constants.EXTRA_CASHBOOK_ID, idToUse);
                     intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                     startActivity(intent);
@@ -885,7 +885,7 @@ public class HomePage extends BaseActivity {
     private void signOutUser() {
         SessionCache.getInstance().clear();
         FirebaseAuth.getInstance().signOut();
-        startActivity(new Intent(this, SigninActivity.class));
+        startActivity(new Intent(this, SignInActivity.class));
         finish();
     }
 

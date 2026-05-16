@@ -3,7 +3,7 @@ package com.phynix.artham.activities;
 
 import com.phynix.artham.R;
 import com.phynix.artham.BaseActivity;
-import com.phynix.artham.SigninActivity;
+import com.phynix.artham.SignInActivity;
 import android.app.DatePickerDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -375,7 +375,7 @@ public class EditProfileActivity extends BaseActivity {
     private void logoutAndRedirect() {
         mAuth.signOut();
         getSharedPreferences("AppPrefs", Context.MODE_PRIVATE).edit().clear().apply();
-        Intent intent = new Intent(this, SigninActivity.class);
+        Intent intent = new Intent(this, SignInActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         finish();

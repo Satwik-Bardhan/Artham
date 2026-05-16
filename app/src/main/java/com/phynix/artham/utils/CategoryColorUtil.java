@@ -25,7 +25,7 @@ import java.util.Map;
  * 1. Firebase user-created/custom categories (highest priority)
  * 2. Default hardcoded categories (fallback)
  * 
- * Call CategoryColorUtil.initialize(context) once at app startup (e.g. in HomePage or MyApplication)
+ * Call CategoryColorUtil.initialize(context) once at app startup (e.g. in HomeActivity or MyApplication)
  * to preload user categories from Firebase.
  */
 public class CategoryColorUtil {
@@ -38,7 +38,7 @@ public class CategoryColorUtil {
 
     /**
      * Initialize the cache by loading user categories from Firebase.
-     * Should be called early in the app lifecycle (e.g., MyApplication or HomePage).
+     * Should be called early in the app lifecycle (e.g., MyApplication or HomeActivity).
      */
     public static void initialize() {
         String uid = FirebaseAuth.getInstance().getUid();

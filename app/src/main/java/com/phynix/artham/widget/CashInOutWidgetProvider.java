@@ -12,7 +12,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.phynix.artham.activities.CashInOutActivity;
 import com.phynix.artham.R;
-import com.phynix.artham.SigninActivity;
+import com.phynix.artham.SignInActivity;
 import com.phynix.artham.utils.Constants;
 
 /**
@@ -21,7 +21,7 @@ import com.phynix.artham.utils.Constants;
  * Behaviour:
  * - If user is signed in → launches CashInOutActivity with the active cashbook ID
  *   and the correct transaction type (IN or OUT).
- * - If user is NOT signed in → launches SigninActivity so they can authenticate first.
+ * - If user is NOT signed in → launches SignInActivity so they can authenticate first.
  *
  * No periodic updates needed — the widget is purely a launcher shortcut.
  */
@@ -62,7 +62,7 @@ public class CashInOutWidgetProvider extends AppWidgetProvider {
     /**
      * Builds a PendingIntent that either:
      * - Launches CashInOutActivity (if user is authenticated)
-     * - Launches SigninActivity (if not authenticated)
+     * - launches SignInActivity (if not authenticated)
      */
     private PendingIntent buildTransactionIntent(Context context, String transactionType, int requestCode) {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
@@ -79,7 +79,7 @@ public class CashInOutWidgetProvider extends AppWidgetProvider {
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         } else {
             // Not signed in — redirect to sign in
-            intent = new Intent(context, SigninActivity.class);
+            intent = new Intent(context, SignInActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         }
 

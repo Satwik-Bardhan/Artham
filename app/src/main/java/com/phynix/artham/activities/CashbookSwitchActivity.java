@@ -156,7 +156,7 @@ public class CashbookSwitchActivity extends BaseActivity {
         swipeListener = new SwipeListener(this) {
             @Override
             public void onSwipeLeft() {
-                Intent intent = new Intent(CashbookSwitchActivity.this, HomePage.class);
+                Intent intent = new Intent(CashbookSwitchActivity.this, HomeActivity.class);
                 intent.putExtra("cashbook_id", currentCashbookId);
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 startActivity(intent);

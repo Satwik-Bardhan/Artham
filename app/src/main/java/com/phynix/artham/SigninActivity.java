@@ -1,7 +1,7 @@
 package com.phynix.artham;
 
 
-import com.phynix.artham.activities.HomePage;
+import com.phynix.artham.activities.HomeActivity;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -25,17 +25,17 @@ import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.phynix.artham.utils.ThemeManager; // Import ThemeManager
-import com.phynix.artham.viewmodels.SigninViewModel;
+import com.phynix.artham.viewmodels.SignInViewModel;
 
-public class SigninActivity extends BaseActivity {
+public class SignInActivity extends BaseActivity {
 
-    private static final String TAG = "SigninActivity";
+    private static final String TAG = "SignInActivity";
 
     private LinearLayout btnGoogleSignIn;
     private ImageView backButton, helpButton;
     private ProgressBar loadingIndicator;
 
-    private SigninViewModel viewModel;
+    private SignInViewModel viewModel;
     private GoogleSignInClient mGoogleSignInClient;
 
     // Modern Activity Result API to handle Google Sign-In response
@@ -60,14 +60,14 @@ public class SigninActivity extends BaseActivity {
         // Apply theme before super.onCreate to ensure consistent styling
         ThemeManager.applyActivityTheme(this);
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_signin);
+        setContentView(R.layout.activity_sign_in);
 
         // Hide Action Bar for clean UI
         if (getSupportActionBar() != null) {
             getSupportActionBar().hide();
         }
 
-        viewModel = new ViewModelProvider(this).get(SigninViewModel.class);
+        viewModel = new ViewModelProvider(this).get(SignInViewModel.class);
 
         configureGoogleSignIn();
         initializeUI();
@@ -131,7 +131,7 @@ public class SigninActivity extends BaseActivity {
 
     private void navigateToHome() {
         Toast.makeText(this, "Welcome to Artham!", Toast.LENGTH_SHORT).show();
-        Intent intent = new Intent(this, HomePage.class);
+        Intent intent = new Intent(this, HomeActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         finish();

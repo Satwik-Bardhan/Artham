@@ -1,7 +1,7 @@
 package com.phynix.artham;
 
 
-import com.phynix.artham.activities.HomePage;
+import com.phynix.artham.activities.HomeActivity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -40,9 +40,9 @@ public class SplashActivity extends BaseActivity {
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
             FirebaseUser currentUser = mAuth.getCurrentUser();
             if (currentUser != null) {
-                launchActivity(HomePage.class);
+                launchActivity(HomeActivity.class);
             } else {
-                launchActivity(SigninActivity.class);
+                launchActivity(SignInActivity.class);
             }
         }, SPLASH_DELAY);
     }

@@ -219,7 +219,7 @@ public class TransactionActivity extends BaseActivity {
 
             @Override
             public void onSwipeRight() {
-                Intent intent = new Intent(TransactionActivity.this, HomePage.class);
+                Intent intent = new Intent(TransactionActivity.this, HomeActivity.class);
                 intent.putExtra("cashbook_id", currentCashbookId);
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 startActivity(intent);
@@ -662,7 +662,7 @@ public class TransactionActivity extends BaseActivity {
         }
 
         bottomNavBinding.btnHome.setOnClickListener(v -> {
-            Intent intent = new Intent(this, HomePage.class);
+            Intent intent = new Intent(this, HomeActivity.class);
             intent.putExtra("cashbook_id", currentCashbookId);
             intent.putExtra(NavPillAnimator.EXTRA_PREVIOUS_TAB, NavPillAnimator.TAB_TRANSACTIONS);
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);

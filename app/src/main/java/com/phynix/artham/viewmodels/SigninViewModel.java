@@ -20,14 +20,14 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SigninViewModel extends ViewModel {
+public class SignInViewModel extends ViewModel {
 
     private final FirebaseAuth mAuth;
     private final MutableLiveData<FirebaseUser> _user = new MutableLiveData<>();
     private final MutableLiveData<String> _error = new MutableLiveData<>();
     private final MutableLiveData<Boolean> _loading = new MutableLiveData<>(false);
 
-    public SigninViewModel() {
+    public SignInViewModel() {
         mAuth = FirebaseAuth.getInstance();
     }
 

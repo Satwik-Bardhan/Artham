@@ -5,11 +5,11 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
-public class HomePageViewModelFactory implements ViewModelProvider.Factory {
+public class HomeViewModelFactory implements ViewModelProvider.Factory {
 
     private final Application application;
 
-    public HomePageViewModelFactory(Application application) {
+    public HomeViewModelFactory(Application application) {
         this.application = application;
     }
 
@@ -17,8 +17,8 @@ public class HomePageViewModelFactory implements ViewModelProvider.Factory {
     @Override
     @SuppressWarnings("unchecked")
     public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
-        if (modelClass.isAssignableFrom(HomePageViewModel.class)) {
-            return (T) new HomePageViewModel(application);
+        if (modelClass.isAssignableFrom(HomeViewModel.class)) {
+            return (T) new HomeViewModel(application);
         }
         throw new IllegalArgumentException("Unknown ViewModel class: " + modelClass.getName());
     }

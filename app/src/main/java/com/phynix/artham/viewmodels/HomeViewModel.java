@@ -26,9 +26,9 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class HomePageViewModel extends AndroidViewModel {
+public class HomeViewModel extends AndroidViewModel {
 
-    private static final String TAG = "HomePageViewModel";
+    private static final String TAG = "HomeViewModel";
 
     private final DataRepository repository;
     private final ExecutorService executorService;
@@ -61,7 +61,7 @@ public class HomePageViewModel extends AndroidViewModel {
     private ValueEventListener activeTransactionListener;
     private DatabaseReference activeTransactionRef;
 
-    public HomePageViewModel(@NonNull Application application) {
+    public HomeViewModel(@NonNull Application application) {
         super(application);
         repository = DataRepository.getInstance(application);
         executorService = Executors.newSingleThreadExecutor();
