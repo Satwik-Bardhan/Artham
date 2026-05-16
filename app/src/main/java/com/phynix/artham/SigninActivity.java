@@ -1,5 +1,7 @@
 package com.phynix.artham;
 
+
+import com.phynix.artham.activities.HomePage;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;

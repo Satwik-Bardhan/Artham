@@ -1,5 +1,8 @@
-package com.phynix.artham;
+package com.phynix.artham.activities;
 
+
+import com.phynix.artham.R;
+import com.phynix.artham.BaseActivity;
 import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.content.Context;
@@ -30,6 +33,7 @@ import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
 
+import com.phynix.artham.utils.ThemeUtil;
 /**
  * FiltersActivity - Advanced transaction filtering
  */
@@ -379,13 +383,5 @@ public class SearchFiltersActivity extends BaseActivity {
 
         setResult(Activity.RESULT_OK, resultIntent);
         finish();
-    }
-
-    static class ThemeUtil {
-        static int getThemeAttrColor(Context context, int attr) {
-            TypedValue typedValue = new TypedValue();
-            context.getTheme().resolveAttribute(attr, typedValue, true);
-            return typedValue.data;
-        }
     }
 }

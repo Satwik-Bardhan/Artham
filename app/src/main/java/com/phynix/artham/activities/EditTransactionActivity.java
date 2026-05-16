@@ -1,5 +1,8 @@
-package com.phynix.artham;
+package com.phynix.artham.activities;
 
+
+import com.phynix.artham.R;
+import com.phynix.artham.BaseActivity;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;

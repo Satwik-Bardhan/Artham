@@ -1,5 +1,8 @@
-package com.phynix.artham;
+package com.phynix.artham.activities;
 
+
+import com.phynix.artham.R;
+import com.phynix.artham.BaseActivity;
 import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.content.Context;
@@ -19,6 +22,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
 
+import com.phynix.artham.utils.ThemeUtil;
 public class DownloadOptionsActivity extends BaseActivity {
 
     // UI Elements
@@ -245,17 +249,6 @@ public class DownloadOptionsActivity extends BaseActivity {
         super.onDestroy();
         if (currentDatePicker != null && currentDatePicker.isShowing()) {
             currentDatePicker.dismiss();
-        }
-    }
-
-    static class ThemeUtil {
-        static int getThemeAttrColor(Context context, int attr) {
-            TypedValue typedValue = new TypedValue();
-            if(context != null && context.getTheme() != null) {
-                context.getTheme().resolveAttribute(attr, typedValue, true);
-                return typedValue.data;
-            }
-            return 0xFF000000; // Black fallback
         }
     }
 }

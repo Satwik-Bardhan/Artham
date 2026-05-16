@@ -10,7 +10,7 @@ import android.os.Looper;
 
 import androidx.appcompat.app.AppCompatDelegate;
 
-import com.phynix.artham.HomePage;
+import com.phynix.artham.activities.HomePage;
 import com.phynix.artham.R;
 
 public class ThemeManager {

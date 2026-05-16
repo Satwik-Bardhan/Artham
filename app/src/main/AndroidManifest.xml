@@ -79,30 +79,30 @@
             android:windowSoftInputMode="adjustPan" />
 
         <activity
-            android:name=".HomePage"
+            android:name=".activities.HomePage"
             android:exported="false"
             android:screenOrientation="portrait" />
 
         <activity
-            android:name=".TransactionActivity"
+            android:name=".activities.TransactionActivity"
             android:exported="false"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustResize|stateHidden" />
 
         <activity
-            android:name=".CashInOutActivity"
+            android:name=".activities.CashInOutActivity"
             android:exported="false"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustResize" />
 
         <activity
-            android:name=".EditTransactionActivity"
+            android:name=".activities.EditTransactionActivity"
             android:exported="false"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustResize" />
 
         <activity
-            android:name=".TransactionDetailsActivity"
+            android:name=".activities.TransactionDetailsActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
 
@@ -127,58 +127,58 @@
             android:windowSoftInputMode="adjustResize" />
 
         <activity
-            android:name=".SettingsActivity"
+            android:name=".activities.SettingsActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
 
         <activity
-            android:name=".AppSettingsActivity"
+            android:name=".activities.AppSettingsActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
 
         <activity
-            android:name=".EditProfileActivity"
+            android:name=".activities.EditProfileActivity"
             android:exported="false"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustResize|stateHidden" />
 
         <activity
-            android:name=".ThemeSelectionActivity"
+            android:name=".activities.ThemeSelectionActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
 
         <activity
-            android:name=".CashbookSwitchActivity"
+            android:name=".activities.CashbookSwitchActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
 
         <activity
-            android:name=".SearchFiltersActivity"
+            android:name=".activities.SearchFiltersActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
 
         <activity
-            android:name=".DownloadOptionsActivity"
+            android:name=".activities.DownloadOptionsActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
 
         <activity
-            android:name=".ExpenseAnalyticsActivity"
+            android:name=".activities.ExpenseAnalyticsActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
 
         <activity
-            android:name=".CategoryDetailActivity"
+            android:name=".activities.CategoryDetailActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
 
         <activity
-            android:name=".HelpSupportActivity"
+            android:name=".activities.HelpSupportActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
 
         <activity
-            android:name=".AboutActivity"
+            android:name=".activities.AboutActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
 

@@ -1,5 +1,7 @@
-package com.phynix.artham;
+package com.phynix.artham.fragments;
 
+
+import com.phynix.artham.R;
 import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;

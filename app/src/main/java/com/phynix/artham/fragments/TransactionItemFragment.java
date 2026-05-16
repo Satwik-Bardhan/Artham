@@ -1,5 +1,8 @@
-package com.phynix.artham;
+package com.phynix.artham.fragments;
 
+
+import com.phynix.artham.R;
+import com.phynix.artham.activities.CashInOutActivity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;

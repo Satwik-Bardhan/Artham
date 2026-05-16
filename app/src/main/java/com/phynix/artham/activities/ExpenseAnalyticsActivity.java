@@ -1,5 +1,8 @@
-package com.phynix.artham;
+package com.phynix.artham.activities;
 
+
+import com.phynix.artham.R;
+import com.phynix.artham.BaseActivity;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
@@ -55,6 +58,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.phynix.artham.utils.ThemeUtil;
 public class ExpenseAnalyticsActivity extends BaseActivity {
 
     private static final String TAG = "ExpenseAnalytics";
@@ -619,14 +623,6 @@ public class ExpenseAnalyticsActivity extends BaseActivity {
                 amt.setTextColor(ThemeUtil.getThemeAttrColor(ctx, R.attr.chk_textColorPrimary));
                 pct.setTextColor(ThemeUtil.getThemeAttrColor(ctx, R.attr.chk_textColorSecondary));
             }
-        }
-    }
-
-    static class ThemeUtil {
-        static int getThemeAttrColor(Context context, int attr) {
-            TypedValue typedValue = new TypedValue();
-            if(context.getTheme().resolveAttribute(attr, typedValue, true)) return typedValue.data;
-            return Color.BLACK;
         }
     }
 }

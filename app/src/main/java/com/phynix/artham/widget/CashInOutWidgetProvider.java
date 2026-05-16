@@ -10,7 +10,7 @@ import android.widget.RemoteViews;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.phynix.artham.CashInOutActivity;
+import com.phynix.artham.activities.CashInOutActivity;
 import com.phynix.artham.R;
 import com.phynix.artham.SigninActivity;
 import com.phynix.artham.utils.Constants;

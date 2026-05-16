@@ -20,6 +20,7 @@ import com.phynix.artham.R;
 import com.phynix.artham.models.CashbookModel;
 import com.phynix.artham.utils.AmountFormatter;
 import com.phynix.artham.utils.DateTimeUtils;
+import com.phynix.artham.utils.ThemeUtil;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -27,6 +28,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
+import com.phynix.artham.utils.ThemeUtil;
 public class CashbookAdapter extends RecyclerView.Adapter<CashbookAdapter.CashbookViewHolder> {
 
     public interface OnCashbookClickListener {
@@ -230,16 +232,6 @@ public class CashbookAdapter extends RecyclerView.Adapter<CashbookAdapter.Cashbo
             if (cashbook.isCurrent()) return ThemeUtil.getThemeAttrColor(context, R.attr.chk_primary_blue);
             if (cashbook.isActive()) return ThemeUtil.getThemeAttrColor(context, R.attr.chk_incomeColor);
             return ThemeUtil.getThemeAttrColor(context, R.attr.chk_dividerHorizontal);
-        }
-    }
-
-    static class ThemeUtil {
-        static int getThemeAttrColor(Context context, int attr) {
-            TypedValue typedValue = new TypedValue();
-            if (context.getTheme().resolveAttribute(attr, typedValue, true)) {
-                return typedValue.data;
-            }
-            return ContextCompat.getColor(context, android.R.color.darker_gray);
         }
     }
 

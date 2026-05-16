@@ -1,5 +1,9 @@
-package com.phynix.artham;
+package com.phynix.artham.activities;
 
+
+import com.phynix.artham.R;
+import com.phynix.artham.BaseActivity;
+import com.phynix.artham.fragments.TransactionItemFragment;
 import android.Manifest;
 import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;

@@ -1,5 +1,9 @@
-package com.phynix.artham;
+package com.phynix.artham.activities;
 
+
+import com.phynix.artham.R;
+import com.phynix.artham.BaseActivity;
+import com.phynix.artham.SigninActivity;
 import android.Manifest;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -75,6 +79,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
 
+import com.phynix.artham.utils.ThemeUtil;
 public class HomePage extends BaseActivity {
 
     private static final String TAG = "HomePage";
@@ -911,14 +916,5 @@ public class HomePage extends BaseActivity {
             userRef.removeEventListener(userListener);
         }
         binding = null;
-    }
-
-    static class ThemeUtil {
-        static int getThemeAttrColor(Context context, int attr) {
-            TypedValue typedValue = new TypedValue();
-            if (context.getTheme().resolveAttribute(attr, typedValue, true))
-                return typedValue.data;
-            return Color.BLACK;
-        }
     }
 }

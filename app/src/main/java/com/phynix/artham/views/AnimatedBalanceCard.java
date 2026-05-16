@@ -1,5 +1,7 @@
-package com.phynix.artham;
+package com.phynix.artham.views;
 
+
+import com.phynix.artham.R;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;

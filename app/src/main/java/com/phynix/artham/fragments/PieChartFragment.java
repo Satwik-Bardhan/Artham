@@ -1,5 +1,7 @@
-package com.phynix.artham;
+package com.phynix.artham.fragments;
 
+
+import com.phynix.artham.R;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
@@ -31,6 +33,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.phynix.artham.utils.ThemeUtil;
 public class PieChartFragment extends Fragment {
 
     private static final String TAG = "PieChartFragment";
@@ -268,15 +271,6 @@ public class PieChartFragment extends Fragment {
         this.transactions = newTransactions;
         if (pieChart != null && getContext() != null) {
             loadPieChartData();
-        }
-    }
-
-    static class ThemeUtil {
-        static int getThemeAttrColor(Context context, int attr) {
-            if (context == null) return Color.BLACK;
-            TypedValue typedValue = new TypedValue();
-            context.getTheme().resolveAttribute(attr, typedValue, true);
-            return typedValue.data;
         }
     }
 }

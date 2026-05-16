@@ -19,6 +19,7 @@ import com.phynix.artham.R;
 import com.phynix.artham.models.TransactionModel;
 import com.phynix.artham.utils.AmountFormatter;
 import com.phynix.artham.utils.CategoryColorUtil;
+import com.phynix.artham.utils.ThemeUtil;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -28,6 +29,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
+import com.phynix.artham.utils.ThemeUtil;
 /**
  * Artham Transaction Adapter
  * Implements date-wise grouping with separate headers for each day.
@@ -291,14 +293,6 @@ public class TransactionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         @Override
         public boolean areContentsTheSame(int oldPos, int newPos) {
             return Objects.equals(oldList.get(oldPos), newList.get(newPos));
-        }
-    }
-
-    static class ThemeUtil {
-        static int getThemeAttrColor(Context context, int attr) {
-            TypedValue typedValue = new TypedValue();
-            if (context.getTheme().resolveAttribute(attr, typedValue, true)) return typedValue.data;
-            return Color.BLACK;
         }
     }
 }

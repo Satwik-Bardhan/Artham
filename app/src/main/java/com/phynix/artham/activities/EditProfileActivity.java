@@ -1,5 +1,9 @@
-package com.phynix.artham;
+package com.phynix.artham.activities;
 
+
+import com.phynix.artham.R;
+import com.phynix.artham.BaseActivity;
+import com.phynix.artham.SigninActivity;
 import android.app.DatePickerDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
