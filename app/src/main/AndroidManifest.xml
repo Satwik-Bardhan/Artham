@@ -148,6 +148,11 @@
             android:screenOrientation="portrait" />
 
         <activity
+            android:name=".activities.FontSelectionActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+
+        <activity
             android:name=".activities.CashbookSwitchActivity"
             android:exported="false"
             android:screenOrientation="portrait" />

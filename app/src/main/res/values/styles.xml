@@ -9,7 +9,6 @@
         <item name="android:textStyle">bold</item>
         <item name="android:textAllCaps">true</item>
         <item name="android:layout_marginBottom">8dp</item>
-        <item name="android:fontFamily">@font/app_font</item>
     </style>
 
     <style name="SettingsItem">
@@ -22,7 +21,6 @@
         <item name="android:background">?attr/selectableItemBackground</item>
         <item name="android:clickable">true</item>
         <item name="android:focusable">true</item>
-        <item name="android:fontFamily">@font/app_font</item>
     </style>
 
     <style name="SettingsItemContainer">
@@ -38,7 +36,6 @@
         <item name="android:layout_height">wrap_content</item>
         <item name="android:textColor">?attr/chk_textColorPrimary</item>
         <item name="android:padding">12dp</item>
-        <item name="android:fontFamily">@font/app_font</item>
     </style>
 
     <style name="DividerStyle">
@@ -61,7 +58,6 @@
         <item name="android:textSize">10sp</item>
         <item name="android:textColor">?attr/chk_bottomNavIconTextColor</item>
         <item name="android:drawableTint">?attr/chk_bottomNavIconTextColor</item>
-        <item name="android:fontFamily">@font/app_font</item>
     </style>
 
     <style name="CalcButton" parent="Widget.MaterialComponents.Button.TextButton">
@@ -72,7 +68,6 @@
         <item name="android:layout_margin">2dp</item>
         <item name="android:textColor">?attr/chk_textColorPrimary</item>
         <item name="android:textSize">20sp</item>
-        <item name="android:fontFamily">@font/app_font</item>
         <item name="android:textStyle">bold</item>
         <item name="cornerRadius">12dp</item>
         <item name="rippleColor">?attr/chk_dividerColor</item>
@@ -84,7 +79,6 @@
         <item name="android:layout_marginTop">20dp</item>
         <item name="android:textSize">12sp</item>
         <item name="android:textColor">?attr/chk_textColorSecondary</item>
-        <item name="android:fontFamily">@font/app_font</item>
         <item name="android:textStyle">bold</item>
         <item name="android:layout_marginBottom">8dp</item>
     </style>
@@ -109,7 +103,6 @@
         <item name="android:layout_height">wrap_content</item>
         <item name="android:textSize">16sp</item>
         <item name="android:textColor">?attr/chk_textColorPrimary</item>
-        <item name="android:fontFamily">@font/app_font</item>
     </style>
 
     <style name="CircleImageView" parent="ShapeAppearance.Material3.Corner.Full">

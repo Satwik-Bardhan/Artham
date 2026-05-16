@@ -17,6 +17,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.phynix.artham.utils.FontManager;
 import com.phynix.artham.utils.ThemeManager;
 
 // [FIX] Import the CategoryActivity from its new sub-package
@@ -33,11 +34,12 @@ public class AppSettingsActivity extends BaseActivity {
 
     // UI Elements
     private SwitchMaterial calculatorSwitch, hapticSwitch, summarySwitch, pieChartSwitch;
-    private LinearLayout dataBackupLayout, languageLayout, themeLayout, manageCategoriesLayout;
-    private TextView currentLanguageTextView, currentThemeTextView;
+    private LinearLayout dataBackupLayout, languageLayout, themeLayout, fontLayout, manageCategoriesLayout;
+    private TextView currentLanguageTextView, currentThemeTextView, currentFontTextView;
 
-    // To track theme changes upon return
+    // To track theme/font changes upon return
     private String originalTheme;
+    private String originalFont;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,6 +55,7 @@ public class AppSettingsActivity extends BaseActivity {
 
         // Store original theme to check for changes later in onResume
         originalTheme = ThemeManager.getTheme(this);
+        originalFont = FontManager.getFont(this);
 
         initializeUI();
         loadSettings();
@@ -64,11 +67,13 @@ public class AppSettingsActivity extends BaseActivity {
         super.onResume();
         // Check if theme changed while we were in ThemeSelectionActivity
         String currentTheme = ThemeManager.getTheme(this);
-        if (!originalTheme.equals(currentTheme)) {
-            // Theme changed, recreate this activity to apply new colors immediately
+        String currentFont = FontManager.getFont(this);
+        if (!originalTheme.equals(currentTheme) || !originalFont.equals(currentFont)) {
+            // Theme or font changed, recreate this activity to apply immediately
             recreate();
         } else {
             updateThemeLabel();
+            updateFontLabel();
         }
     }
 
@@ -83,6 +88,9 @@ public class AppSettingsActivity extends BaseActivity {
 
         themeLayout = findViewById(R.id.themeLayout);
         currentThemeTextView = findViewById(R.id.currentTheme);
+
+        fontLayout = findViewById(R.id.fontLayout);
+        currentFontTextView = findViewById(R.id.currentFont);
 
         // Bind the Category Management Layout
         manageCategoriesLayout = findViewById(R.id.manageCategoriesLayout);
@@ -107,6 +115,7 @@ public class AppSettingsActivity extends BaseActivity {
         }
 
         updateThemeLabel();
+        updateFontLabel();
     }
 
     private void updateThemeLabel() {
@@ -121,6 +130,13 @@ public class AppSettingsActivity extends BaseActivity {
             }
 
             currentThemeTextView.setText(displayTheme);
+        }
+    }
+
+    private void updateFontLabel() {
+        if (currentFontTextView != null) {
+            String currentFont = FontManager.getFont(this);
+            currentFontTextView.setText(FontManager.getDisplayName(currentFont));
         }
     }
 
@@ -178,6 +194,14 @@ public class AppSettingsActivity extends BaseActivity {
         if (themeLayout != null) {
             themeLayout.setOnClickListener(v -> {
                 Intent intent = new Intent(AppSettingsActivity.this, ThemeSelectionActivity.class);
+                startActivity(intent);
+            });
+        }
+
+        // Open FontSelectionActivity
+        if (fontLayout != null) {
+            fontLayout.setOnClickListener(v -> {
+                Intent intent = new Intent(AppSettingsActivity.this, FontSelectionActivity.class);
                 startActivity(intent);
             });
         }
