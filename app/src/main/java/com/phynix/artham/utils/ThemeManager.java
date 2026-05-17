@@ -75,8 +75,6 @@ public class ThemeManager {
             theme = resolveRandomTheme();
         }
 
-        // Ensure night mode is set correctly on every activity start (including cold starts)
-        applyTheme(theme);
 
         switch (theme) {
             case THEME_SYSTEM:
