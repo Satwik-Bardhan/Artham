@@ -105,7 +105,7 @@ public class TransactionDetailsActivity extends BaseActivity {
 
         ImageView typeIcon = findViewById(R.id.typeIcon);
 
-        detailAmount.setText(AmountFormatter.formatCompactSpannable(transaction.getAmount()));
+        AmountFormatter.setAdaptiveAmount(detailAmount, transaction.getAmount(), 24f, 14f);
 
         if ("IN".equalsIgnoreCase(transaction.getType())) {
             detailType.setText("INCOME");
@@ -171,7 +171,7 @@ public class TransactionDetailsActivity extends BaseActivity {
                 // Expand and Calculate
                 double calculatedRunningBalance = viewModel.getRunningBalanceUpTo(transaction.getTimestamp());
 
-                runningBalanceAmount.setText(AmountFormatter.formatCompactSpannable(calculatedRunningBalance));
+                AmountFormatter.setAdaptiveAmount(runningBalanceAmount, calculatedRunningBalance, 18f, 11f);
                 runningBalanceAmount.setVisibility(View.VISIBLE);
                 runningBalanceLabel.setText("Balance after this entry");
 

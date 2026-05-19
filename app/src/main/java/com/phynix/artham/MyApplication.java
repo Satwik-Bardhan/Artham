@@ -4,6 +4,7 @@ import android.app.Application;
 import com.phynix.artham.utils.NetworkMonitor;
 import com.phynix.artham.utils.OfflineSyncWorker;
 import com.phynix.artham.utils.ThemeManager;
+import com.phynix.artham.utils.MonthlySummaryReceiver;
 
 public class MyApplication extends Application {
 
@@ -22,5 +23,8 @@ public class MyApplication extends Application {
 
         // 4. Attempt to sync any transactions queued from a previous session
         OfflineSyncWorker.syncNow(this);
+
+        // 5. Schedule monthly summary notification (1st of each month at 9 AM)
+        MonthlySummaryReceiver.scheduleMonthlyAlarm(this);
     }
 }

@@ -141,7 +141,7 @@ public class CashbookAdapter extends RecyclerView.Adapter<CashbookAdapter.Cashbo
             setupLastModified(cashbook);
 
             double balance = cashbook.getBalance();
-            balanceText.setText(AmountFormatter.formatCompactSpannable(balance));
+            AmountFormatter.setAdaptiveAmount(balanceText, balance, 16f, 10f);
             balanceText.setTextColor(balance >= 0 ? successColor : expenseColor);
 
             transactionCountText.setText(String.valueOf(cashbook.getTransactionCount()));

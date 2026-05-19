@@ -26,7 +26,6 @@ import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AccelerateDecelerateInterpolator;
@@ -65,16 +64,23 @@ import com.phynix.artham.utils.AmountFormatter;
 import com.phynix.artham.utils.DateTimeUtils;
 import com.phynix.artham.utils.SnackbarHelper;
 import com.phynix.artham.utils.SessionCache;
-import com.phynix.artham.utils.SwipeListener;
+
 import com.phynix.artham.utils.NavPillAnimator;
 import com.phynix.artham.utils.ThemeManager;
+import com.phynix.artham.utils.OnboardingManager;
+
+import com.phynix.artham.utils.OnboardingOverlay;
+import com.phynix.artham.utils.DialogUtils;
 import com.phynix.artham.viewmodels.HomeViewModel;
+
+import android.app.Dialog;
 
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
@@ -94,7 +100,7 @@ public class HomeActivity extends BaseActivity {
 
     // Utils
     private NumberFormat currencyFormat;
-    private SwipeListener swipeListener;
+
 
     // Skeleton loading timeout handler (force-hide after 2 seconds when offline)
     private final Handler skeletonTimeoutHandler = new Handler(Looper.getMainLooper());
@@ -133,6 +139,8 @@ public class HomeActivity extends BaseActivity {
     private ImageView btnYoutube, btnInstagram, btnWebsite, btnGmail, btnFacebook, btnWhatsapp;
 
     private boolean isBackVisible = false;
+
+
 
     // Firebase user listener for cleanup
     private DatabaseReference userRef;
@@ -234,13 +242,14 @@ public class HomeActivity extends BaseActivity {
 
         bindBalanceCardViews();
         setupBalanceCardFlip();
+
         setupBottomNavigation();
         setupClickListeners();
         setupStickyScrollLogic();
         observeViewModel();
         fetchUserDataDirectly();
         checkNotificationPermissionAndShowFeedback();
-        setupSwipeNavigation();
+
     }
 
     // HANDLE RESUMING FROM SETTINGS ACTIVITY
@@ -292,39 +301,7 @@ public class HomeActivity extends BaseActivity {
                 });
     }
 
-    private void setupSwipeNavigation() {
-        swipeListener = new SwipeListener(this) {
-            @Override
-            public void onSwipeLeft() {
-                // Swipe Left -> Go to Transactions List (if loaded)
-                String idToUse = (currentCashbookId != null) ? currentCashbookId : viewModel.getCurrentCashbookId();
-                if (idToUse != null) {
-                    Intent intent = new Intent(HomeActivity.this, TransactionActivity.class);
-                    intent.putExtra(Constants.EXTRA_CASHBOOK_ID, idToUse);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                    startActivity(intent);
-                    overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
-                } else {
-                    showSnackbar("Please wait, loading cashbook...");
-                }
-            }
 
-            @Override
-            public void onSwipeRight() {
-                // Swipe Right -> Open Cashbook Switcher
-                openCashbookSwitcher();
-                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
-            }
-        };
-    }
-
-    @Override
-    public boolean dispatchTouchEvent(MotionEvent event) {
-        if (swipeListener != null) {
-            swipeListener.onTouchEvent(event);
-        }
-        return super.dispatchTouchEvent(event);
-    }
 
     private void setupBalanceCardFlip() {
         balanceCardFront = binding.balanceCardView.getRoot();
@@ -369,6 +346,8 @@ public class HomeActivity extends BaseActivity {
             balanceCardBack.setOnClickListener(v -> flipCard());
         }
     }
+
+
 
     private void openUrl(String url) {
         try {
@@ -461,6 +440,9 @@ public class HomeActivity extends BaseActivity {
                 if (binding.homeContentLayout != null) {
                     binding.homeContentLayout.setVisibility(View.VISIBLE);
                 }
+
+                // ── Onboarding: Check if first launch ──
+                checkAndShowOnboarding();
             }
         });
 
@@ -545,12 +527,12 @@ public class HomeActivity extends BaseActivity {
 
         viewModel.getTotalIncome().observe(this, income -> {
             if (balanceCardMoneyIn != null)
-                balanceCardMoneyIn.setText(AmountFormatter.formatCompactSpannable(income));
+                AmountFormatter.setAdaptiveAmount(balanceCardMoneyIn, income, 14f, 9f);
         });
 
         viewModel.getTotalExpense().observe(this, expense -> {
             if (balanceCardMoneyOut != null)
-                balanceCardMoneyOut.setText(AmountFormatter.formatCompactSpannable(expense));
+                AmountFormatter.setAdaptiveAmount(balanceCardMoneyOut, expense, 14f, 9f);
         });
 
         viewModel.getCurrentBalance().observe(this, balance -> {
@@ -574,14 +556,17 @@ public class HomeActivity extends BaseActivity {
 
             if (dailyBalanceText != null) {
                 String sign = balance >= 0 ? "+ " : "- ";
-                String raw = sign + AmountFormatter.formatCompact(Math.abs(balance));
-                dailyBalanceText.setText(AmountFormatter.buildPaiseSpannable(raw));
+                AmountFormatter.setAdaptiveAmount(dailyBalanceText, Math.abs(balance), 16f, 10f);
+                // Prepend the sign to the adaptive text
+                dailyBalanceText.setText(android.text.TextUtils.concat(sign, dailyBalanceText.getText()));
                 dailyBalanceText.setTextColor(ThemeUtil.getThemeAttrColor(this,
                         balance >= 0 ? R.attr.chk_incomeColor : R.attr.chk_expenseColor));
             }
         });
 
         viewModel.getTodaysTransactions().observe(this, this::updateTransactionTable);
+
+
     }
 
     /**
@@ -742,12 +727,12 @@ public class HomeActivity extends BaseActivity {
         rowOut.setGravity(Gravity.CENTER);
 
         if (Constants.TRANSACTION_TYPE_IN.equalsIgnoreCase(transaction.getType())) {
-            rowIn.setText(AmountFormatter.formatCompactSpannable(transaction.getAmount()));
+            AmountFormatter.setAdaptiveAmount(rowIn, transaction.getAmount(), 13f, 9f);
             rowIn.setTextColor(ThemeUtil.getThemeAttrColor(this, R.attr.chk_incomeColor));
             rowOut.setText("-");
         } else {
             rowIn.setText("-");
-            rowOut.setText(AmountFormatter.formatCompactSpannable(transaction.getAmount()));
+            AmountFormatter.setAdaptiveAmount(rowOut, transaction.getAmount(), 13f, 9f);
             rowOut.setTextColor(ThemeUtil.getThemeAttrColor(this, R.attr.chk_expenseColor));
         }
         rowView.setOnClickListener(v -> openTransactionDetail(transaction));
@@ -907,11 +892,98 @@ public class HomeActivity extends BaseActivity {
         }
     }
 
+    // ═══════════════════════════════════════════════════════════
+    //  ONBOARDING / TUTORIAL
+    // ═══════════════════════════════════════════════════════════
+
+    private boolean onboardingShownThisSession = false;
+
+    private void checkAndShowOnboarding() {
+        if (onboardingShownThisSession) return;
+        onboardingShownThisSession = true;
+
+        OnboardingManager mgr = OnboardingManager.getInstance(this);
+
+        if (mgr.isFirstLaunch()) {
+            // Show welcome dialog first, then home tooltips
+            showWelcomeDialog();
+        } else if (!mgr.isPageTutorialCompleted(OnboardingManager.PAGE_HOME)) {
+            // Welcome already shown (maybe skipped), but home tooltips not done
+            new Handler(Looper.getMainLooper()).postDelayed(this::startHomeTooltips, 600);
+        }
+    }
+
+    private void showWelcomeDialog() {
+        Dialog dialog = new Dialog(this);
+        dialog.setContentView(R.layout.layout_onboarding_welcome);
+        dialog.setCancelable(false);
+
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
+
+        DialogUtils.applyBlurEffect(dialog, this);
+
+        // "Let's Get Started" button
+        View btnStart = dialog.findViewById(R.id.btnGetStarted);
+        if (btnStart != null) {
+            btnStart.setOnClickListener(v -> {
+                OnboardingManager.getInstance(this).markOnboardingCompleted();
+                dialog.dismiss();
+                // Start home page tooltips after a short delay
+                new Handler(Looper.getMainLooper()).postDelayed(this::startHomeTooltips, 500);
+            });
+        }
+
+        // "Skip Tutorial" link
+        View btnSkip = dialog.findViewById(R.id.btnSkipWelcome);
+        if (btnSkip != null) {
+            btnSkip.setOnClickListener(v -> {
+                OnboardingManager mgr = OnboardingManager.getInstance(this);
+                mgr.markOnboardingCompleted();
+                mgr.markPageTutorialCompleted(OnboardingManager.PAGE_HOME);
+                mgr.markPageTutorialCompleted(OnboardingManager.PAGE_TRANSACTIONS);
+                mgr.markPageTutorialCompleted(OnboardingManager.PAGE_SETTINGS);
+                mgr.markPageTutorialCompleted(OnboardingManager.PAGE_CASH_IN_OUT);
+                mgr.markPageTutorialCompleted(OnboardingManager.PAGE_CASHBOOK_SWITCH);
+                dialog.dismiss();
+            });
+        }
+
+        dialog.show();
+    }
+
+    private void startHomeTooltips() {
+        if (isDestroyed() || isFinishing() || binding == null) return;
+
+        OnboardingOverlay.builder(this)
+                .addStep(R.id.userBoxCard,
+                        "Your Cashbook",
+                        "This is your active cashbook. Tap here to switch between different cashbooks.")
+                .addStep(R.id.balanceCardView,
+                        "Balance Card",
+                        "Your total balance at a glance. Tap the card to flip it and see your profile & social links.")
+                .addStep(R.id.btnCashIn,
+                        "Cash In",
+                        "Tap here to record income — salary, freelance payments, gifts, and more.")
+                .addStep(R.id.btnCashOut,
+                        "Cash Out",
+                        "Tap here to record expenses — food, travel, bills, shopping, etc.")
+                .addStep(R.id.transactionListCard,
+                        "Today's Transactions",
+                        "All entries for today appear here. See your daily cash flow at a glance.")
+                .setOnCompleteListener(() ->
+                        OnboardingManager.getInstance(this)
+                                .markPageTutorialCompleted(OnboardingManager.PAGE_HOME))
+                .start();
+    }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
         // Clean up the skeleton timeout to prevent leaks
         skeletonTimeoutHandler.removeCallbacks(skeletonTimeoutRunnable);
+
         if (userRef != null && userListener != null) {
             userRef.removeEventListener(userListener);
         }

@@ -4,12 +4,13 @@ import android.content.SharedPreferences;
 import android.view.HapticFeedbackConstants;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 /**
- * Base activity that provides global haptic feedback on every clickable element tap.
+ * Base activity that provides global haptic feedback on click/tap only.
  * All activities in the app should extend this instead of AppCompatActivity.
  *
  * Font handling is done via theme overlays in ThemeManager.applyActivityTheme(),
@@ -17,8 +18,9 @@ import androidx.appcompat.app.AppCompatActivity;
  *
  * How it works:
  * - Intercepts all touch events via dispatchTouchEvent()
- * - On ACTION_DOWN, checks if the touched view is clickable
- * - If so, triggers a light haptic tick for tactile feedback
+ * - On ACTION_DOWN, records the initial touch position
+ * - On ACTION_UP, checks if the finger stayed within touch slop (genuine click)
+ * - Only then triggers a light haptic tick — scrolls and swipes are ignored
  * - Can be disabled by the user via App Settings → Haptic Feedback toggle
  */
 public class BaseActivity extends AppCompatActivity {
@@ -26,24 +28,41 @@ public class BaseActivity extends AppCompatActivity {
     private static final String PREFS_NAME = "AppSettingsPrefs";
     private static final String KEY_HAPTIC = "haptic_feedback_enabled";
 
+    // Track the initial touch position to distinguish clicks from scrolls/swipes
+    private float downX, downY;
+
     @Override
     public boolean dispatchTouchEvent(MotionEvent event) {
-        if (event.getAction() == MotionEvent.ACTION_DOWN) {
-            // Check user preference — haptic is ON by default
-            SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-            if (prefs.getBoolean(KEY_HAPTIC, true)) {
-                View touchedView = findViewAtPosition(
-                        getWindow().getDecorView(),
-                        (int) event.getRawX(),
-                        (int) event.getRawY()
-                );
-                if (touchedView != null && (touchedView.isClickable() || touchedView.isLongClickable())) {
-                    touchedView.performHapticFeedback(
-                            HapticFeedbackConstants.CLOCK_TICK,
-                            HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING
-                    );
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                // Record where the finger went down
+                downX = event.getRawX();
+                downY = event.getRawY();
+                break;
+
+            case MotionEvent.ACTION_UP:
+                // Only fire haptic if the finger didn't move far (i.e. it was a click, not a scroll/swipe)
+                float dx = Math.abs(event.getRawX() - downX);
+                float dy = Math.abs(event.getRawY() - downY);
+                int touchSlop = ViewConfiguration.get(this).getScaledTouchSlop();
+
+                if (dx <= touchSlop && dy <= touchSlop) {
+                    SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+                    if (prefs.getBoolean(KEY_HAPTIC, true)) {
+                        View touchedView = findViewAtPosition(
+                                getWindow().getDecorView(),
+                                (int) event.getRawX(),
+                                (int) event.getRawY()
+                        );
+                        if (touchedView != null && (touchedView.isClickable() || touchedView.isLongClickable())) {
+                            touchedView.performHapticFeedback(
+                                    HapticFeedbackConstants.CLOCK_TICK,
+                                    HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING
+                            );
+                        }
+                    }
                 }
-            }
+                break;
         }
         return super.dispatchTouchEvent(event);
     }

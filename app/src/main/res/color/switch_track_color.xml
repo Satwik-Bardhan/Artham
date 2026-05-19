@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- ON state: translucent green track -->
+    <item android:color="#664CAF50" android:state_checked="true" />
+    <!-- OFF state: faint grey track -->
+    <item android:color="#429E9E9E" />
+</selector>

@@ -157,4 +157,11 @@ public class TransactionItemFragment extends Fragment {
             transactionRecyclerView.setAdapter(transactionAdapter);
         }
     }
+
+    /**
+     * Returns the fragment's RecyclerView for attaching ItemTouchHelper (swipe actions).
+     */
+    public RecyclerView getRecyclerView() {
+        return transactionRecyclerView;
+    }
 }

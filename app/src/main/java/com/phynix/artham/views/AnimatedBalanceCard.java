@@ -137,7 +137,7 @@ public class AnimatedBalanceCard {
         animator.addUpdateListener(animation -> {
             float progress = animation.getAnimatedFraction();
             double currentValue = oldIncome + (newIncome - oldIncome) * progress;
-            moneyInText.setText(AmountFormatter.formatCompactSpannable(currentValue));
+            AmountFormatter.setAdaptiveAmount(moneyInText, currentValue, 14f, 9f);
         });
 
         animator.start();
@@ -154,7 +154,7 @@ public class AnimatedBalanceCard {
         animator.addUpdateListener(animation -> {
             float progress = animation.getAnimatedFraction();
             double currentValue = oldExpense + (newExpense - oldExpense) * progress;
-            moneyOutText.setText(AmountFormatter.formatCompactSpannable(currentValue));
+            AmountFormatter.setAdaptiveAmount(moneyOutText, currentValue, 14f, 9f);
         });
 
         animator.start();
@@ -233,8 +233,8 @@ public class AnimatedBalanceCard {
         currentExpense = expense;
 
         AmountFormatter.setAdaptiveBalance(balanceText, balance);
-        moneyInText.setText(AmountFormatter.formatCompactSpannable(income));
-        moneyOutText.setText(AmountFormatter.formatCompactSpannable(expense));
+        AmountFormatter.setAdaptiveAmount(moneyInText, income, 14f, 9f);
+        AmountFormatter.setAdaptiveAmount(moneyOutText, expense, 14f, 9f);
     }
 
     public void setOnCardClickListener(View.OnClickListener listener) {

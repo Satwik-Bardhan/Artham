@@ -11,26 +11,28 @@
     app:cardCornerRadius="16dp"
     app:cardElevation="3dp">
 
-    <RelativeLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="230dp"
         android:background="@drawable/cash_card"
-        android:padding="20dp">
+        android:orientation="vertical">
 
-        <!-- Profile Section -->
+        <!-- Profile Section — Full-Width Frosted Bar -->
         <LinearLayout
             android:id="@+id/profileSection"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="@drawable/uid_bg"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:layout_marginTop="16dp"
-            android:layout_marginBottom="14dp">
+            android:layout_marginTop="20dp"
+            android:paddingHorizontal="20dp"
+            android:paddingVertical="12dp">
 
             <com.google.android.material.imageview.ShapeableImageView
                 android:id="@+id/backProfileImage"
-                android:layout_width="56dp"
-                android:layout_height="56dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
                 android:scaleType="centerCrop"
                 android:src="@drawable/ic_person_placeholder"
                 android:background="#22FFFFFF"
@@ -65,105 +67,106 @@
             </LinearLayout>
         </LinearLayout>
 
-        <!-- Divider -->
-        <View
-            android:id="@+id/divider"
+        <!-- Card Content -->
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="#22FFFFFF"
-            android:layout_below="@id/profileSection"
-            android:layout_marginBottom="18dp"/>
+            android:layout_height="match_parent"
+            android:paddingHorizontal="20dp"
+            android:paddingTop="18dp"
+            android:paddingBottom="20dp">
 
-        <!-- Social Media Links -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center"
-            android:layout_below="@id/divider"
-            android:layout_marginBottom="16dp">
+            <!-- Social Media Links -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:layout_alignParentTop="true"
+                android:layout_marginTop="10dp">
 
-            <ImageView
-                android:id="@+id/btnInstagram"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:src="@drawable/instagram"
-                android:contentDescription="Instagram"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:clickable="true"
-                android:focusable="true"
-                android:padding="4dp"
-                android:layout_marginEnd="24dp"/>
+                <ImageView
+                    android:id="@+id/btnInstagram"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:src="@drawable/ic_instagram"
+                    android:contentDescription="Instagram"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:padding="4dp"
+                    android:layout_marginEnd="24dp"/>
 
-            <ImageView
-                android:id="@+id/btnFacebook"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:src="@drawable/facebook"
-                android:contentDescription="Facebook"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:clickable="true"
-                android:focusable="true"
-                android:padding="4dp"
-                android:layout_marginEnd="24dp"/>
+                <ImageView
+                    android:id="@+id/btnFacebook"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:src="@drawable/ic_facebook"
+                    android:contentDescription="Facebook"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:padding="4dp"
+                    android:layout_marginEnd="24dp"/>
 
-            <ImageView
-                android:id="@+id/btnYoutube"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:src="@drawable/youtube"
-                android:contentDescription="YouTube"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:clickable="true"
-                android:focusable="true"
-                android:padding="4dp"
-                android:layout_marginEnd="24dp"/>
+                <ImageView
+                    android:id="@+id/btnYoutube"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:src="@drawable/ic_youtube"
+                    android:contentDescription="YouTube"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:padding="4dp"
+                    android:layout_marginEnd="24dp"/>
 
-            <ImageView
-                android:id="@+id/btnWhatsapp"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:src="@drawable/whatsapp"
-                android:contentDescription="WhatsApp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:clickable="true"
-                android:focusable="true"
-                android:padding="4dp"
-                android:layout_marginEnd="24dp"/>
+                <ImageView
+                    android:id="@+id/btnWhatsapp"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:src="@drawable/ic_whatsapp"
+                    android:contentDescription="WhatsApp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:padding="4dp"
+                    android:layout_marginEnd="24dp"/>
 
-            <ImageView
-                android:id="@+id/btnGmail"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:src="@drawable/gmail"
-                android:contentDescription="Gmail"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:clickable="true"
-                android:focusable="true"
-                android:padding="4dp"/>
-        </LinearLayout>
+                <ImageView
+                    android:id="@+id/btnGmail"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:src="@drawable/gmail"
+                    android:contentDescription="Gmail"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:padding="4dp"/>
+            </LinearLayout>
 
-        <!-- Bottom Left: Made in India -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentStart="true"
-            android:text="Made in india 🇮🇳 with ❤️"
-            android:textColor="#777777"
-            android:textSize="10sp"
-            android:letterSpacing="0.02"/>
+            <!-- Bottom Left: Made in India -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentStart="true"
+                android:text="Made in india 🇮🇳 with ❤️"
+                android:textColor="#777777"
+                android:textSize="10sp"
+                android:letterSpacing="0.02"/>
 
-        <!-- Bottom Right: Tap to flip -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentEnd="true"
-            android:text="Tap to flip"
-            android:textColor="#666666"
-            android:textSize="10sp"
-            android:textStyle="italic" />
+            <!-- Bottom Right: Tap to flip -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentEnd="true"
+                android:text="Tap to flip"
+                android:textColor="#666666"
+                android:textSize="10sp"
+                android:textStyle="italic" />
 
-    </RelativeLayout>
+        </RelativeLayout>
+
+    </LinearLayout>
 </androidx.cardview.widget.CardView>

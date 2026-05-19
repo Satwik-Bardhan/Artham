@@ -2,11 +2,16 @@ package com.phynix.artham.activities;
 
 import com.phynix.artham.R;
 import com.phynix.artham.BaseActivity;
+import android.graphics.Typeface;
 import android.os.Bundle;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.RadioButton;
+import android.widget.TextView;
 
 import androidx.cardview.widget.CardView;
+import androidx.core.content.res.ResourcesCompat;
 
 import com.phynix.artham.utils.FontManager;
 import com.phynix.artham.utils.ThemeManager;
@@ -14,6 +19,9 @@ import com.phynix.artham.utils.ThemeManager;
 /**
  * Allows the user to select the app-wide font family.
  * Mirrors the ThemeSelectionActivity pattern.
+ *
+ * Each font card previews its own typeface so users can see
+ * what each font looks like before selecting it.
  */
 public class FontSelectionActivity extends BaseActivity {
 
@@ -32,8 +40,49 @@ public class FontSelectionActivity extends BaseActivity {
         }
 
         initViews();
+        applyFontPreviews();
         setupCurrentState();
         setupClickListeners();
+    }
+
+    /**
+     * Programmatically applies each font's own Typeface to its card's TextViews.
+     * This overrides the global font theme overlay so each card previews its own font.
+     */
+    private void applyFontPreviews() {
+        // System Default — use device default
+        applyTypefaceToCard(cardSystemDefault, Typeface.DEFAULT);
+
+        // Each font card gets its own typeface
+        Typeface interTf = ResourcesCompat.getFont(this, R.font.inter_regular);
+        Typeface poppinsTf = ResourcesCompat.getFont(this, R.font.poppins_regular);
+        Typeface spartanTf = ResourcesCompat.getFont(this, R.font.spartan_regular);
+        Typeface khandTf = ResourcesCompat.getFont(this, R.font.khand_medium);
+        Typeface tinosTf = ResourcesCompat.getFont(this, R.font.tinos_regular);
+
+        applyTypefaceToCard(cardInter, interTf);
+        applyTypefaceToCard(cardPoppins, poppinsTf);
+        applyTypefaceToCard(cardSpartan, spartanTf);
+        applyTypefaceToCard(cardKhand, khandTf);
+        applyTypefaceToCard(cardTinos, tinosTf);
+    }
+
+    /**
+     * Recursively sets the given Typeface on all TextViews within a card,
+     * except RadioButtons (which should keep their default look).
+     */
+    private void applyTypefaceToCard(View view, Typeface typeface) {
+        if (typeface == null) return;
+        if (view instanceof RadioButton) return; // skip radio buttons
+        if (view instanceof TextView) {
+            ((TextView) view).setTypeface(typeface, ((TextView) view).getTypeface().getStyle());
+        }
+        if (view instanceof ViewGroup) {
+            ViewGroup group = (ViewGroup) view;
+            for (int i = 0; i < group.getChildCount(); i++) {
+                applyTypefaceToCard(group.getChildAt(i), typeface);
+            }
+        }
     }
 
     private void initViews() {

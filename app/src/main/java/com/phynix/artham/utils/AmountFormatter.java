@@ -40,6 +40,19 @@ public class AmountFormatter {
      *  ≥12 digits   → 16sp  (H6)
      */
     public static void setAdaptiveBalance(TextView tv, double amount) {
+        setAdaptiveAmount(tv, amount, 32f, 16f);
+    }
+
+    /**
+     * General-purpose adaptive text sizing for any amount TextView.
+     * Gradually reduces font size from maxSizeSp to minSizeSp as digit count grows.
+     *
+     * @param tv         Target TextView
+     * @param amount     The monetary amount
+     * @param maxSizeSp  Font size for small amounts (≤5 digits)
+     * @param minSizeSp  Minimum font size for very large amounts (≥12 digits)
+     */
+    public static void setAdaptiveAmount(TextView tv, double amount, float maxSizeSp, float minSizeSp) {
         if (tv == null) return;
 
         String formatted = INR_FORMAT.format(amount);
@@ -50,23 +63,20 @@ public class AmountFormatter {
             if (Character.isDigit(c)) digitCount++;
         }
 
-        // Determine the text size tier
-        float baseSizeSp;
-        if (digitCount <= 7) {
-            baseSizeSp = 32f;
-        } else if (digitCount <= 8) {
-            baseSizeSp = 28f;
-        } else if (digitCount <= 9) {
-            baseSizeSp = 24f;
-        } else if (digitCount <= 10) {
-            baseSizeSp = 20f;
-        } else if (digitCount <= 11) {
-            baseSizeSp = 18f;
+        // Gradually scale: starts shrinking after 5 digits
+        // Each additional digit beyond 5 reduces size proportionally
+        float sizeSp;
+        if (digitCount <= 5) {
+            sizeSp = maxSizeSp;
+        } else if (digitCount >= 12) {
+            sizeSp = minSizeSp;
         } else {
-            baseSizeSp = 16f;
+            // Linear interpolation between max and min over 5..12 digit range
+            float ratio = (digitCount - 5f) / 7f;
+            sizeSp = maxSizeSp - (ratio * (maxSizeSp - minSizeSp));
         }
 
-        tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, baseSizeSp);
+        tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, sizeSp);
 
         // Build spannable with smaller paise
         SpannableString spannable = buildPaiseSpannable(formatted);
@@ -101,44 +111,11 @@ public class AmountFormatter {
     // =========================================================================
 
     /**
-     * Formats an amount in compact notation using the Indian numbering system.
-     * Uses ₹ prefix.
-     *
-     * Thresholds:
-     *   < 1,00,000   → full Indian format   (e.g. ₹45,000.00)
-     *   ≥ 1,00,000   → ₹1.00L   (Lakh)
-     *   ≥ 1,00,00,000 → ₹1.00Cr  (Crore)
-     *   ≥ 1,00,00,00,000 → ₹1.00B   (Billion – i.e. 100 Cr)
-     *   ≥ 1,00,00,00,00,000 → ₹1.00T   (Trillion)
+     * Formats an amount using the Indian numbering system.
+     * Always displays full numeric value (e.g. ₹1,23,456.00) — no abbreviations.
      */
     public static String formatCompact(double amount) {
-        boolean negative = amount < 0;
-        double abs = Math.abs(amount);
-        String result;
-
-        if (abs < 1_00_000) {
-            // Below 1 lakh — use normal Indian currency format
-            result = INR_FORMAT.format(amount);
-            return result;
-        } else if (abs < 1_00_00_000) {
-            // Lakhs
-            double val = abs / 1_00_000.0;
-            result = "₹" + formatCompactValue(val) + "L";
-        } else if (abs < 1_00_00_00_000L) {
-            // Crores
-            double val = abs / 1_00_00_000.0;
-            result = "₹" + formatCompactValue(val) + "Cr";
-        } else if (abs < 1_00_00_00_00_000L) {
-            // Billions (100 Cr)
-            double val = abs / 1_00_00_00_000L;
-            result = "₹" + formatCompactValue(val) + "B";
-        } else {
-            // Trillions
-            double val = abs / 1_00_00_00_00_000L;
-            result = "₹" + formatCompactValue(val) + "T";
-        }
-
-        return negative ? "-" + result : result;
+        return INR_FORMAT.format(amount);
     }
 
     /**

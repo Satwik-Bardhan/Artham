@@ -177,6 +177,7 @@
                     android:layout_height="wrap_content"
                     android:visibility="gone" />
 
+
                 <!-- ─────────────────────────────────────────────────
                      SECTION 2: Balance Card (Flippable)
                      ───────────────────────────────────────────────── -->

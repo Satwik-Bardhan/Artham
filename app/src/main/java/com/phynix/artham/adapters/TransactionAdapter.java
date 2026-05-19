@@ -192,6 +192,9 @@ public class TransactionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
             Context context = itemView.getContext();
             String catName = transaction.getTransactionCategory() != null ? transaction.getTransactionCategory() : "Other";
 
+            // Tag for swipe action callback
+            itemView.setTag(R.id.transactionTag, transaction);
+
             categoryTextView.setText(catName);
             paymentModeTextView.setText(transaction.getPaymentMode());
 
@@ -217,16 +220,16 @@ public class TransactionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
             int color = ThemeUtil.getThemeAttrColor(context, colorAttr);
 
             String prefix = isIn ? "" : "- ";
-            CharSequence amountSpan = AmountFormatter.formatCompactSpannable(transaction.getAmount());
-            amountTextView.setText(android.text.TextUtils.concat(prefix, amountSpan));
+            AmountFormatter.setAdaptiveAmount(amountTextView, transaction.getAmount(), 16f, 10f);
+            amountTextView.setText(android.text.TextUtils.concat(prefix, amountTextView.getText()));
             amountTextView.setTextColor(color);
             if (transactionTypeIndicator != null) transactionTypeIndicator.setBackgroundColor(color);
 
             // Running balance display
             if (balanceTextView != null) {
                 double bal = transaction.getRunningBalance();
-                CharSequence balSpan = AmountFormatter.formatCompactSpannable(Math.abs(bal));
-                balanceTextView.setText(android.text.TextUtils.concat("Balance: ", bal < 0 ? "- " : "", balSpan));
+                AmountFormatter.setAdaptiveAmount(balanceTextView, Math.abs(bal), 12f, 8f);
+                balanceTextView.setText(android.text.TextUtils.concat("Balance: ", bal < 0 ? "- " : "", balanceTextView.getText()));
                 balanceTextView.setTextColor(bal >= 0
                         ? ThemeUtil.getThemeAttrColor(context, R.attr.chk_incomeColor)
                         : ThemeUtil.getThemeAttrColor(context, R.attr.chk_expenseColor));

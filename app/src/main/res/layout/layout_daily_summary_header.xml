@@ -19,10 +19,7 @@
         android:gravity="center_vertical"
         android:paddingVertical="14dp"
         android:paddingHorizontal="16dp"
-        android:baselineAligned="false"
-        android:clickable="true"
-        android:focusable="true"
-        android:background="?attr/selectableItemBackground">
+        android:baselineAligned="false">
 
         <!-- Date Section -->
         <LinearLayout
@@ -105,7 +102,7 @@
                     android:layout_width="20dp"
                     android:layout_height="20dp"
                     android:layout_gravity="center"
-                    android:src="@drawable/ic_account_balance_wallet"
+                    android:src="@drawable/ic_coins_outline"
                     app:tint="?attr/chk_balanceColor"
                     android:contentDescription="Balance" />
             </FrameLayout>

@@ -17,7 +17,6 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.TypedValue;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AccelerateDecelerateInterpolator;
@@ -47,12 +46,14 @@ import com.phynix.artham.models.TransactionModel;
 import com.phynix.artham.utils.AmountFormatter;
 import com.phynix.artham.utils.Constants;
 import com.phynix.artham.utils.SnackbarHelper;
-import com.phynix.artham.utils.SwipeListener;
+
 import com.phynix.artham.utils.NavPillAnimator;
 import com.phynix.artham.utils.ThemeManager;
 import com.phynix.artham.viewmodels.TransactionViewModel;
 import com.phynix.artham.viewmodels.TransactionViewModelFactory;
 import com.phynix.artham.utils.PdfReportGenerator;
+import com.phynix.artham.utils.OnboardingManager;
+import com.phynix.artham.utils.OnboardingOverlay;
 import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
@@ -112,7 +113,7 @@ public class TransactionActivity extends BaseActivity {
     private String currentCashbookId;
     private String currentCashbookName = "Artham Cashbook";
     private FirebaseUser currentUser;
-    private SwipeListener swipeListener;
+
 
     private boolean isShowingAllTransactions = false;
 
@@ -167,7 +168,7 @@ public class TransactionActivity extends BaseActivity {
         setupLaunchers();
         observeViewModel();
         applySavedChartVisibility();
-        setupSwipeNavigation();
+
     }
 
     @Override
@@ -205,35 +206,7 @@ public class TransactionActivity extends BaseActivity {
         }
     }
 
-    private void setupSwipeNavigation() {
-        swipeListener = new SwipeListener(this) {
-            @Override
-            public void onSwipeLeft() {
-                Intent intent = new Intent(TransactionActivity.this, SettingsActivity.class);
-                intent.putExtra("cashbook_id", currentCashbookId);
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                startActivity(intent);
-                overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
-                finish();
-            }
 
-            @Override
-            public void onSwipeRight() {
-                Intent intent = new Intent(TransactionActivity.this, HomeActivity.class);
-                intent.putExtra("cashbook_id", currentCashbookId);
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                startActivity(intent);
-                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
-                finish();
-            }
-        };
-    }
-
-    @Override
-    public boolean dispatchTouchEvent(MotionEvent event) {
-        if (swipeListener != null) swipeListener.onTouchEvent(event);
-        return super.dispatchTouchEvent(event);
-    }
 
     private void initializeUI() {
         summaryBinding = LayoutSummaryCardsBinding.bind(binding.summaryCardsLayout.getRoot());
@@ -290,6 +263,9 @@ public class TransactionActivity extends BaseActivity {
             displayDataForCurrentMonth();
             binding.swipeRefreshLayout.setRefreshing(false);
             toggleSkeletonLoading(false); // Data loaded, hide skeleton
+
+            // ── Onboarding: Show tooltips on first visit ──
+            checkAndShowOnboarding();
         });
 
         viewModel.getIsLoading().observe(this, isLoading -> {
@@ -484,9 +460,9 @@ public class TransactionActivity extends BaseActivity {
             if ("IN".equalsIgnoreCase(t.getType())) totalIncome += t.getAmount();
             else totalExpense += t.getAmount();
         }
-        summaryBinding.incomeText.setText(AmountFormatter.formatCompactSpannable(totalIncome));
-        summaryBinding.expenseText.setText(AmountFormatter.formatCompactSpannable(totalExpense));
-        summaryBinding.balanceText.setText(AmountFormatter.formatCompactSpannable(totalIncome - totalExpense));
+        AmountFormatter.setAdaptiveAmount(summaryBinding.incomeText, totalIncome, 16f, 10f);
+        AmountFormatter.setAdaptiveAmount(summaryBinding.expenseText, totalExpense, 16f, 10f);
+        AmountFormatter.setAdaptiveAmount(summaryBinding.balanceText, totalIncome - totalExpense, 16f, 10f);
     }
 
     private void fetchCashbookName() {
@@ -887,5 +863,40 @@ public class TransactionActivity extends BaseActivity {
     private void showSnackbar(String msg) {
         View anchor = (bottomNavBinding != null) ? bottomNavBinding.getRoot() : null;
         SnackbarHelper.show(this, msg, anchor);
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    //  ONBOARDING / TUTORIAL
+    // ═══════════════════════════════════════════════════════════
+
+    private boolean onboardingShownThisSession = false;
+
+    private void checkAndShowOnboarding() {
+        if (onboardingShownThisSession) return;
+        OnboardingManager mgr = OnboardingManager.getInstance(this);
+        if (mgr.isPageTutorialCompleted(OnboardingManager.PAGE_TRANSACTIONS)) return;
+        onboardingShownThisSession = true;
+
+        new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
+            if (isDestroyed() || isFinishing()) return;
+
+            OnboardingOverlay.builder(this)
+                    .addStep(R.id.search_bar_layout,
+                            "Search & Filter",
+                            "Search transactions by name, category, or date. Use the filter icon for advanced filters.")
+                    .addStep(R.id.summaryToggleHeader,
+                            "Summary Cards",
+                            "Toggle to see your monthly income, expense, and balance summary at a glance.")
+                    .addStep(R.id.pie_chart_layout,
+                            "Expense Chart",
+                            "Visual breakdown of your spending by category. Tap the header for detailed analytics.")
+                    .addStep(R.id.downloadReportButton,
+                            "Export Reports",
+                            "Download your transactions as a PDF report to share or print anytime.")
+                    .setOnCompleteListener(() ->
+                            OnboardingManager.getInstance(this)
+                                    .markPageTutorialCompleted(OnboardingManager.PAGE_TRANSACTIONS))
+                    .start();
+        }, 600);
     }
 }

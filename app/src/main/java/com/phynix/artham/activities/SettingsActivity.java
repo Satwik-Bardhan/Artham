@@ -10,7 +10,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.view.MotionEvent;
+
 import android.view.View;
 import android.widget.Toast;
 
@@ -24,9 +24,11 @@ import com.phynix.artham.models.CashbookModel;
 import com.phynix.artham.models.Users;
 import com.phynix.artham.utils.ErrorHandler;
 import com.phynix.artham.utils.SessionCache;
-import com.phynix.artham.utils.SwipeListener;
+
 import com.phynix.artham.utils.NavPillAnimator;
 import com.phynix.artham.utils.ThemeManager;
+import com.phynix.artham.utils.OnboardingManager;
+import com.phynix.artham.utils.OnboardingOverlay;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -62,8 +64,7 @@ public class SettingsActivity extends BaseActivity {
     // Theme Tracking
     private String originalTheme;
 
-    // Swipe
-    private SwipeListener swipeListener;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -101,28 +102,10 @@ public class SettingsActivity extends BaseActivity {
 
         setupClickListeners();
         setupBottomNavigation();
-        setupSwipeNavigation();
+
     }
 
-    private void setupSwipeNavigation() {
-        swipeListener = new SwipeListener(this) {
-            @Override
-            public void onSwipeLeft() {}
 
-            @Override
-            public void onSwipeRight() {
-                navigateToActivity(TransactionActivity.class, NavPillAnimator.TAB_SETTINGS);
-            }
-        };
-    }
-
-    @Override
-    public boolean dispatchTouchEvent(MotionEvent event) {
-        if (swipeListener != null) {
-            swipeListener.onTouchEvent(event);
-        }
-        return super.dispatchTouchEvent(event);
-    }
 
     @Override
     protected void onResume() {
@@ -280,6 +263,9 @@ public class SettingsActivity extends BaseActivity {
         if (binding.profileContentLayout != null) {
             binding.profileContentLayout.setVisibility(View.VISIBLE);
         }
+
+        // ── Onboarding: Show tooltips on first visit ──
+        checkAndShowOnboarding();
     }
 
     private void startListeningForUserProfile() {
@@ -422,5 +408,37 @@ public class SettingsActivity extends BaseActivity {
     private void saveActiveCashbookId(String cashbookId) {
         SharedPreferences prefs = getSharedPreferences("AppPrefs", Context.MODE_PRIVATE);
         prefs.edit().putString("active_cashbook_id_" + currentUser.getUid(), cashbookId).apply();
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    //  ONBOARDING / TUTORIAL
+    // ═══════════════════════════════════════════════════════════
+
+    private boolean onboardingShownThisSession = false;
+
+    private void checkAndShowOnboarding() {
+        if (onboardingShownThisSession) return;
+        OnboardingManager mgr = OnboardingManager.getInstance(this);
+        if (mgr.isPageTutorialCompleted(OnboardingManager.PAGE_SETTINGS)) return;
+        onboardingShownThisSession = true;
+
+        new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
+            if (isDestroyed() || isFinishing()) return;
+
+            OnboardingOverlay.builder(this)
+                    .addStep(R.id.primarySettingsLayout,
+                            "Your Profile",
+                            "Your profile info and active cashbook. Tap 'Edit' to update your details.")
+                    .addStep(R.id.appSettings,
+                            "App Settings",
+                            "Customize themes, fonts, haptic feedback, categories, and more.")
+                    .addStep(R.id.helpSupport,
+                            "Help & Support",
+                            "Find answers, contact support, or support the developer here.")
+                    .setOnCompleteListener(() ->
+                            OnboardingManager.getInstance(this)
+                                    .markPageTutorialCompleted(OnboardingManager.PAGE_SETTINGS))
+                    .start();
+        }, 600);
     }
 }

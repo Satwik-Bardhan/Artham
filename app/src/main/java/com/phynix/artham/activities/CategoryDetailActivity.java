@@ -131,7 +131,7 @@ public class CategoryDetailActivity extends BaseActivity {
 
         // Set texts
         categoryNameTv.setText(categoryName);
-        categoryTotalAmount.setText(AmountFormatter.formatCompactSpannable(amount));
+        AmountFormatter.setAdaptiveAmount(categoryTotalAmount, amount, 18f, 11f);
         categoryPercentage.setText(String.format(Locale.US, "%.1f%%", percentage));
         transactionCount.setText(String.valueOf(txnCount));
 
@@ -237,8 +237,8 @@ public class CategoryDetailActivity extends BaseActivity {
                 }
 
                 // Amount
-                CharSequence amtSpan = com.phynix.artham.utils.AmountFormatter.formatCompactSpannable(txn.getAmount());
-                amountText.setText(android.text.TextUtils.concat("- ", amtSpan));
+                com.phynix.artham.utils.AmountFormatter.setAdaptiveAmount(amountText, txn.getAmount(), 14f, 9f);
+                amountText.setText(android.text.TextUtils.concat("- ", amountText.getText()));
 
                 // Apply theme colors
                 Context ctx = itemView.getContext();

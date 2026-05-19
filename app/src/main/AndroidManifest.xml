@@ -214,6 +214,11 @@
                 android:resource="@xml/cash_in_out_widget_info" />
         </receiver>
 
+        <!-- Monthly Summary Notification -->
+        <receiver
+            android:name=".utils.MonthlySummaryReceiver"
+            android:exported="false" />
+
     </application>
 
 </manifest>

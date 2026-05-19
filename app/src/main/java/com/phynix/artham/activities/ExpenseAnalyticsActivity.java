@@ -309,7 +309,7 @@ public class ExpenseAnalyticsActivity extends BaseActivity {
         }
 
         if (totalExpenseValue != null) {
-            totalExpenseValue.setText(AmountFormatter.formatCompactSpannable(monthlyExpense.getTotalExpense()));
+            AmountFormatter.setAdaptiveAmount(totalExpenseValue, monthlyExpense.getTotalExpense(), 20f, 12f);
         }
 
         Map<String, Double> expenseByCategory;
@@ -427,7 +427,7 @@ public class ExpenseAnalyticsActivity extends BaseActivity {
         noDataTextView.setVisibility(View.VISIBLE);
         contentLayout.setVisibility(View.GONE);
         if (totalExpenseValue != null) {
-            totalExpenseValue.setText(AmountFormatter.formatCompactSpannable(0));
+            AmountFormatter.setAdaptiveAmount(totalExpenseValue, 0, 20f, 12f);
         }
     }
 
@@ -588,7 +588,7 @@ public class ExpenseAnalyticsActivity extends BaseActivity {
             }
             void bind(LegendItem i) {
                 cat.setText(i.category);
-                amt.setText(AmountFormatter.formatCompactSpannable(i.amount));
+                AmountFormatter.setAdaptiveAmount(amt, i.amount, 14f, 9f);
                 pct.setText(String.format(Locale.US, "%.1f%%", i.percentage));
 
                 if (progressBar != null) {

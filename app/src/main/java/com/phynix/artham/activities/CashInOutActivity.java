@@ -56,6 +56,8 @@ import com.phynix.artham.models.TransactionModel;
 import com.phynix.artham.utils.AmountFormatter;
 import com.phynix.artham.utils.Constants;
 import com.phynix.artham.utils.ThemeManager;
+import com.phynix.artham.utils.OnboardingManager;
+import com.phynix.artham.utils.OnboardingOverlay;
 import com.phynix.artham.viewmodels.CashInOutViewModel;
 
 import java.text.SimpleDateFormat;
@@ -146,6 +148,9 @@ public class CashInOutActivity extends BaseActivity {
 
         // Attach amount input validation: max 15 digits before decimal, 2 after
         amountEditText.addTextChangedListener(AmountFormatter.createAmountInputWatcher(amountEditText));
+
+        // ── Onboarding: Show tooltips on first visit ──
+        checkAndShowOnboarding();
     }
 
     private void observeViewModel() {
@@ -609,24 +614,50 @@ public class CashInOutActivity extends BaseActivity {
 
     private String safeEvaluate(String expression) {
         try {
+            // Normalize Unicode operators to standard characters
+            expression = expression.replace("×", "*");
+            expression = expression.replace("÷", "/");
             expression = expression.replace("%", "/100");
 
-            if (expression.contains("+")) {
-                String[] parts = expression.split("\\+");
-                return formatCalcResult(Double.parseDouble(parts[0]) + Double.parseDouble(parts[1]));
-            } else if (expression.contains("-")) {
-                String[] parts = expression.split("-");
-                if (parts.length == 2) {
-                    return formatCalcResult(Double.parseDouble(parts[0]) - Double.parseDouble(parts[1]));
+            // Tokenize the expression into numbers and operators
+            java.util.List<String> tokens = new java.util.ArrayList<>();
+            StringBuilder currentNumber = new StringBuilder();
+
+            for (int i = 0; i < expression.length(); i++) {
+                char c = expression.charAt(i);
+                // Handle negative numbers at the start or after an operator
+                if (c == '-' && (i == 0 || "+-*/".indexOf(expression.charAt(i - 1)) >= 0)) {
+                    currentNumber.append(c);
+                } else if ("+-*/".indexOf(c) >= 0) {
+                    if (currentNumber.length() > 0) {
+                        tokens.add(currentNumber.toString());
+                        currentNumber.setLength(0);
+                    }
+                    tokens.add(String.valueOf(c));
+                } else {
+                    currentNumber.append(c);
                 }
-            } else if (expression.contains("*")) {
-                String[] parts = expression.split("\\*");
-                return formatCalcResult(Double.parseDouble(parts[0]) * Double.parseDouble(parts[1]));
-            } else if (expression.contains("/")) {
-                String[] parts = expression.split("/");
-                return formatCalcResult(Double.parseDouble(parts[0]) / Double.parseDouble(parts[1]));
             }
-            return expression;
+            if (currentNumber.length() > 0) {
+                tokens.add(currentNumber.toString());
+            }
+
+            if (tokens.isEmpty()) return expression;
+
+            // Evaluate left-to-right
+            double result = Double.parseDouble(tokens.get(0));
+            for (int i = 1; i < tokens.size() - 1; i += 2) {
+                String operator = tokens.get(i);
+                double nextNum = Double.parseDouble(tokens.get(i + 1));
+                switch (operator) {
+                    case "+": result += nextNum; break;
+                    case "-": result -= nextNum; break;
+                    case "*": result *= nextNum; break;
+                    case "/": result /= nextNum; break;
+                }
+            }
+
+            return formatCalcResult(result);
         } catch (Exception e) {
             return "Error";
         }
@@ -811,5 +842,36 @@ public class CashInOutActivity extends BaseActivity {
             autoRepeatText.setTextColor(typedValue.data);
             autoRepeatIcon.setColorFilter(typedValue.data);
         }
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    //  ONBOARDING / TUTORIAL
+    // ═══════════════════════════════════════════════════════════
+
+    private void checkAndShowOnboarding() {
+        OnboardingManager mgr = OnboardingManager.getInstance(this);
+        if (mgr.isPageTutorialCompleted(OnboardingManager.PAGE_CASH_IN_OUT)) return;
+
+        new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
+            if (isDestroyed() || isFinishing()) return;
+
+            OnboardingOverlay.builder(this)
+                    .addStep(R.id.amountEditText,
+                            "Enter Amount",
+                            "Type the transaction amount. Use the quick-fill chips or the built-in calculator for convenience.")
+                    .addStep(R.id.categorySelectorCard,
+                            "Select Category",
+                            "Choose a category to organize your transactions — Food, Travel, Bills, and more.")
+                    .addStep(R.id.cashOnlineToggle,
+                            "Payment Mode",
+                            "Select how you paid — Cash, Online, or Card.")
+                    .addStep(R.id.saveEntryButton,
+                            "Save Entry",
+                            "Hit Save to record the entry, or use 'Save & Add New' for bulk entries.")
+                    .setOnCompleteListener(() ->
+                            OnboardingManager.getInstance(this)
+                                    .markPageTutorialCompleted(OnboardingManager.PAGE_CASH_IN_OUT))
+                    .start();
+        }, 600);
     }
 }

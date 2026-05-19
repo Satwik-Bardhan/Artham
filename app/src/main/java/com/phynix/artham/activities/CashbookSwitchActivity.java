@@ -13,7 +13,6 @@ import android.text.TextWatcher;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -50,9 +49,11 @@ import com.phynix.artham.models.CashbookModel;
 import com.phynix.artham.models.TransactionModel;
 import com.phynix.artham.utils.Constants;
 import com.phynix.artham.utils.ErrorHandler;
-import com.phynix.artham.utils.SwipeListener;
+
 import com.phynix.artham.utils.PdfReportGenerator;
 import com.phynix.artham.utils.ThemeManager;
+import com.phynix.artham.utils.OnboardingManager;
+import com.phynix.artham.utils.OnboardingOverlay;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -101,7 +102,7 @@ public class CashbookSwitchActivity extends BaseActivity {
 
     // State
     private boolean isLoading = false;
-    private SwipeListener swipeListener;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -149,34 +150,10 @@ public class CashbookSwitchActivity extends BaseActivity {
         setupSearchListener();
         setupFilterListener();
         loadCashbooks();
-        setupSwipeNavigation();
+
     }
 
-    private void setupSwipeNavigation() {
-        swipeListener = new SwipeListener(this) {
-            @Override
-            public void onSwipeLeft() {
-                Intent intent = new Intent(CashbookSwitchActivity.this, HomeActivity.class);
-                intent.putExtra("cashbook_id", currentCashbookId);
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                startActivity(intent);
-                overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
-                finish();
-            }
 
-            @Override
-            public void onSwipeRight() {
-            }
-        };
-    }
-
-    @Override
-    public boolean dispatchTouchEvent(MotionEvent event) {
-        if (swipeListener != null) {
-            swipeListener.onTouchEvent(event);
-        }
-        return super.dispatchTouchEvent(event);
-    }
 
     private void loadSortPreference() {
         SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
@@ -326,6 +303,9 @@ public class CashbookSwitchActivity extends BaseActivity {
                 applyFiltersAndSort();
                 showLoading(false);
                 if (swipeRefreshLayout != null) swipeRefreshLayout.setRefreshing(false);
+
+                // ── Onboarding: Show tooltips on first visit ──
+                checkAndShowOnboarding();
             }
 
             @Override
@@ -788,5 +768,37 @@ public class CashbookSwitchActivity extends BaseActivity {
         if (cashbooksListener != null && userCashbooksRef != null) {
             userCashbooksRef.removeEventListener(cashbooksListener);
         }
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    //  ONBOARDING / TUTORIAL
+    // ═══════════════════════════════════════════════════════════
+
+    private boolean onboardingShownThisSession = false;
+
+    private void checkAndShowOnboarding() {
+        if (onboardingShownThisSession) return;
+        OnboardingManager mgr = OnboardingManager.getInstance(this);
+        if (mgr.isPageTutorialCompleted(OnboardingManager.PAGE_CASHBOOK_SWITCH)) return;
+        onboardingShownThisSession = true;
+
+        new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
+            if (isDestroyed() || isFinishing()) return;
+
+            OnboardingOverlay.builder(this)
+                    .addStep(R.id.cashbookRecyclerView,
+                            "Your Cashbooks",
+                            "All your cashbooks appear here. Tap any one to switch to it.")
+                    .addStep(R.id.includedFilterLayout,
+                            "Filter Cashbooks",
+                            "Filter by Active, Favorites, Recent, or Inactive cashbooks to find what you need.")
+                    .addStep(R.id.quickAddFab,
+                            "Create New",
+                            "Tap this button to create a new cashbook for a different project, business, or trip.")
+                    .setOnCompleteListener(() ->
+                            OnboardingManager.getInstance(this)
+                                    .markPageTutorialCompleted(OnboardingManager.PAGE_CASHBOOK_SWITCH))
+                    .start();
+        }, 600);
     }
 }

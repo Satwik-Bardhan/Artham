@@ -19,6 +19,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.phynix.artham.utils.FontManager;
 import com.phynix.artham.utils.ThemeManager;
+import com.phynix.artham.utils.OnboardingManager;
 
 // [FIX] Import the CategoryActivity from its new sub-package
 import com.phynix.artham.activities.CategoryActivity;
@@ -33,8 +34,8 @@ public class AppSettingsActivity extends BaseActivity {
     private static final String KEY_SETTINGS_SHOW_PIE_CHART = "settings_show_pie_chart";
 
     // UI Elements
-    private SwitchMaterial calculatorSwitch, hapticSwitch, summarySwitch, pieChartSwitch;
-    private LinearLayout dataBackupLayout, languageLayout, themeLayout, fontLayout, manageCategoriesLayout;
+    private SwitchMaterial calculatorSwitch, hapticSwitch, summarySwitch, pieChartSwitch, monthlySummarySwitch;
+    private LinearLayout dataBackupLayout, languageLayout, themeLayout, fontLayout, manageCategoriesLayout, replayTutorialLayout;
     private TextView currentLanguageTextView, currentThemeTextView, currentFontTextView;
 
     // To track theme/font changes upon return
@@ -83,6 +84,7 @@ public class AppSettingsActivity extends BaseActivity {
         hapticSwitch = findViewById(R.id.hapticSwitch);
         summarySwitch = findViewById(R.id.summarySwitch);
         pieChartSwitch = findViewById(R.id.pieChartSwitch);
+        monthlySummarySwitch = findViewById(R.id.monthlySummarySwitch);
         languageLayout = findViewById(R.id.languageLayout);
         currentLanguageTextView = findViewById(R.id.currentLanguage);
 
@@ -94,6 +96,9 @@ public class AppSettingsActivity extends BaseActivity {
 
         // Bind the Category Management Layout
         manageCategoriesLayout = findViewById(R.id.manageCategoriesLayout);
+
+        // Bind the Replay Tutorial Layout
+        replayTutorialLayout = findViewById(R.id.replayTutorialLayout);
     }
 
     private void loadSettings() {
@@ -185,6 +190,17 @@ public class AppSettingsActivity extends BaseActivity {
             });
         }
 
+        // Monthly Summary Notification toggle
+        if (monthlySummarySwitch != null) {
+            monthlySummarySwitch.setChecked(com.phynix.artham.utils.MonthlySummaryReceiver.isEnabled(this));
+            monthlySummarySwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                com.phynix.artham.utils.MonthlySummaryReceiver.setEnabled(this, isChecked);
+                Toast.makeText(this,
+                        isChecked ? "Monthly summary enabled" : "Monthly summary disabled",
+                        Toast.LENGTH_SHORT).show();
+            });
+        }
+
         if (languageLayout != null) {
             languageLayout.setOnClickListener(v ->
                     Toast.makeText(this, "Language selection coming soon!", Toast.LENGTH_SHORT).show());
@@ -220,6 +236,14 @@ public class AppSettingsActivity extends BaseActivity {
                 }
 
                 startActivity(intent);
+            });
+        }
+
+        // Replay Tutorial button
+        if (replayTutorialLayout != null) {
+            replayTutorialLayout.setOnClickListener(v -> {
+                OnboardingManager.getInstance(this).resetOnboarding();
+                Toast.makeText(this, "Tutorial reset! You'll see the walkthrough on your next visit.", Toast.LENGTH_LONG).show();
             });
         }
     }
