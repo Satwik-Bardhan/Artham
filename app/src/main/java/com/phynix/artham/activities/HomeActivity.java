@@ -66,6 +66,7 @@ import com.phynix.artham.utils.AmountFormatter;
 import com.phynix.artham.utils.DateTimeUtils;
 import com.phynix.artham.utils.SnackbarHelper;
 import com.phynix.artham.utils.SessionCache;
+import com.phynix.artham.db.DataRepository;
 
 import com.phynix.artham.utils.NavPillAnimator;
 import com.phynix.artham.utils.ThemeManager;
@@ -163,7 +164,21 @@ public class HomeActivity extends BaseActivity {
     private final ActivityResultLauncher<Intent> detailsLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
-                // Handle any result from details if needed (e.g., refresh data)
+                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                    String action = result.getData().getStringExtra("action");
+                    if ("delete".equals(action)) {
+                        TransactionModel deletedTx = (TransactionModel) result.getData().getSerializableExtra("transaction");
+                        if (deletedTx != null && currentCashbookId != null) {
+                            View anchor = (binding.bottomNavCard != null) ? binding.bottomNavCard.getRoot() : null;
+                            SnackbarHelper.showWithAction(this, "Transaction deleted", "UNDO", v -> {
+                                DataRepository.getInstance(getApplication())
+                                        .updateTransaction(currentCashbookId, deletedTx, null);
+                            }, anchor);
+                        } else {
+                            showSnackbar("Transaction deleted");
+                        }
+                    }
+                }
             });
 
     // Launcher for Cashbook Switcher
@@ -982,6 +997,9 @@ public class HomeActivity extends BaseActivity {
     }
 
     private void signOutUser() {
+        if (userRef != null && userListener != null) {
+            userRef.removeEventListener(userListener);
+        }
         SessionCache.getInstance().clear();
         FirebaseAuth.getInstance().signOut();
         startActivity(new Intent(this, SignInActivity.class));

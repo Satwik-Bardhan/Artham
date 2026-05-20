@@ -18,6 +18,17 @@ public class ErrorHandler {
     public static void handleFirebaseError(@NonNull Context context, @NonNull DatabaseError error) {
         Log.e(TAG, "Firebase error: " + error.getMessage());
 
+        if (error.getCode() == DatabaseError.PERMISSION_DENIED) {
+            try {
+                if (com.google.firebase.auth.FirebaseAuth.getInstance().getCurrentUser() == null) {
+                    Log.d(TAG, "Permission denied error ignored because user session has ended.");
+                    return;
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "Error checking FirebaseAuth state", e);
+            }
+        }
+
         String userMessage;
         switch (error.getCode()) {
             case DatabaseError.NETWORK_ERROR:

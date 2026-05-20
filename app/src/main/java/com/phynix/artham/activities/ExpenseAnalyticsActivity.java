@@ -153,7 +153,7 @@ public class ExpenseAnalyticsActivity extends BaseActivity {
         fullScreenPieChart.setDrawEntryLabels(true);
         fullScreenPieChart.setEntryLabelTextSize(9f);
         fullScreenPieChart.setEntryLabelColor(ThemeUtil.getThemeAttrColor(this, R.attr.chk_textColorPrimary));
-        fullScreenPieChart.setExtraOffsets(30.f, 10.f, 30.f, 10.f);
+        fullScreenPieChart.setExtraOffsets(24f, 24f, 24f, 36f);
     }
 
     private void setupRecyclerViews() {
@@ -404,8 +404,8 @@ public class ExpenseAnalyticsActivity extends BaseActivity {
         dataSet.setXValuePosition(PieDataSet.ValuePosition.OUTSIDE_SLICE);
         dataSet.setYValuePosition(PieDataSet.ValuePosition.OUTSIDE_SLICE);
         dataSet.setValueLinePart1OffsetPercentage(80.f);
-        dataSet.setValueLinePart1Length(0.4f);
-        dataSet.setValueLinePart2Length(0.5f);
+        dataSet.setValueLinePart1Length(0.3f);
+        dataSet.setValueLinePart2Length(0.4f);
         dataSet.setValueLineColor(ThemeUtil.getThemeAttrColor(this, R.attr.chk_textColorSecondary));
         dataSet.setValueLineWidth(1f);
 
@@ -414,7 +414,13 @@ public class ExpenseAnalyticsActivity extends BaseActivity {
 
         String centerText = "Monthly Total\n" + AmountFormatter.formatCompact(monthlyExpense.getTotalExpense());
         fullScreenPieChart.setCenterText(centerText);
-        fullScreenPieChart.setCenterTextSize(14f);
+        float centerTextSize = 14f;
+        if (centerText.length() > 22) {
+            centerTextSize = 10f;
+        } else if (centerText.length() > 18) {
+            centerTextSize = 12f;
+        }
+        fullScreenPieChart.setCenterTextSize(centerTextSize);
         fullScreenPieChart.setCenterTextColor(ThemeUtil.getThemeAttrColor(this, R.attr.chk_textColorPrimary));
 
         fullScreenPieChart.animateY(1000, Easing.EaseInOutQuad);

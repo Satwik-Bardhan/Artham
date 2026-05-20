@@ -55,20 +55,36 @@ public class PdfReportGenerator {
     private static final BaseColor HEADER_GRAY = new BaseColor(240, 240, 240);
     private static final BaseColor TOTAL_ROW_BG = new BaseColor(230, 230, 230);
 
+    // Greyscale equivalents
+    private static final BaseColor GS_DARK = new BaseColor(50, 50, 50);
+    private static final BaseColor GS_MID = new BaseColor(100, 100, 100);
+    private static final BaseColor GS_LIGHT = new BaseColor(160, 160, 160);
+
     // Fonts
     private static final Font fontTitle = new Font(Font.FontFamily.HELVETICA, 18, Font.BOLD, TEXT_BLACK);
     private static final Font fontBookName = new Font(Font.FontFamily.HELVETICA, 14, Font.BOLD, BaseColor.DARK_GRAY);
     private static final Font fontHeader = new Font(Font.FontFamily.HELVETICA, 10, Font.BOLD, TEXT_BLACK);
     private static final Font fontNormal = new Font(Font.FontFamily.HELVETICA, 10, Font.NORMAL, TEXT_BLACK);
     private static final Font fontMode = new Font(Font.FontFamily.HELVETICA, 8, Font.NORMAL, MODE_TEAL);
+    private static final Font fontModeGS = new Font(Font.FontFamily.HELVETICA, 8, Font.NORMAL, GS_MID);
     private static final Font fontFooter = new Font(Font.FontFamily.HELVETICA, 8, Font.NORMAL, TEXT_GRAY);
     private static final Font fontTotal = new Font(Font.FontFamily.HELVETICA, 10, Font.BOLD, TEXT_BLACK);
 
-    public static void generateReport(Context context, List<TransactionModel> transactions, String cashbookName, long startDate, long endDate) {
+    // Backward-compatible overload (used by CashbookSwitchActivity etc.)
+    public static Uri generateReport(Context context, List<TransactionModel> transactions, String cashbookName, long startDate, long endDate) {
+        return generateReport(context, transactions, cashbookName, startDate, endDate, false);
+    }
+
+    public static Uri generateReport(Context context, List<TransactionModel> transactions, String cashbookName, long startDate, long endDate, boolean greyscale) {
         Document document = new Document(PageSize.A4, 36, 36, 36, 50);
-        String fileName = "Artham_Report_" + System.currentTimeMillis() + ".pdf";
+        String sanitizedBookName = cashbookName != null ? cashbookName.replaceAll("[\\\\/:*?\"<>|\\s]+", "_") : "Report";
+        if (sanitizedBookName.trim().isEmpty()) {
+            sanitizedBookName = "Report";
+        }
+        String fileName = sanitizedBookName + "_Report_" + System.currentTimeMillis() + ".pdf";
 
         OutputStream outputStream = null;
+        Uri uri = null;
 
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -76,7 +92,7 @@ public class PdfReportGenerator {
                 values.put(MediaStore.MediaColumns.DISPLAY_NAME, fileName);
                 values.put(MediaStore.MediaColumns.MIME_TYPE, "application/pdf");
                 values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS + "/Artham");
-                Uri uri = context.getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
+                uri = context.getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
                 if (uri != null) {
                     outputStream = context.getContentResolver().openOutputStream(uri);
                 }
@@ -85,11 +101,12 @@ public class PdfReportGenerator {
                 if (!dir.exists()) dir.mkdirs();
                 File file = new File(dir, fileName);
                 outputStream = new FileOutputStream(file);
+                uri = androidx.core.content.FileProvider.getUriForFile(context, context.getPackageName() + ".fileprovider", file);
             }
 
             if (outputStream == null) {
                 Toast.makeText(context, "Failed to create file", Toast.LENGTH_SHORT).show();
-                return;
+                return null;
             }
 
             PdfWriter writer = PdfWriter.getInstance(document, outputStream);
@@ -115,12 +132,12 @@ public class PdfReportGenerator {
             document.add(new Paragraph(" "));
 
             // 4. Add Transaction Table
-            addTransactionTable(document, transactions);
+            addTransactionTable(document, transactions, greyscale);
 
             document.add(new Paragraph(" "));
 
             // 5. Add Detached Summary Table
-            addSummaryTable(document, totalIn, totalOut, finalBalance);
+            addSummaryTable(document, totalIn, totalOut, finalBalance, greyscale);
 
             document.add(new Paragraph(" "));
 
@@ -130,10 +147,12 @@ public class PdfReportGenerator {
             document.close();
             outputStream.close();
             Toast.makeText(context, "PDF Saved to Downloads/Artham", Toast.LENGTH_LONG).show();
+            return uri;
 
         } catch (Exception e) {
             Log.e(TAG, "Error creating PDF", e);
             Toast.makeText(context, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            return null;
         }
     }
 
@@ -174,7 +193,7 @@ public class PdfReportGenerator {
         document.add(pDuration);
     }
 
-    private static void addTransactionTable(Document document, List<TransactionModel> transactions) throws Exception {
+    private static void addTransactionTable(Document document, List<TransactionModel> transactions, boolean greyscale) throws Exception {
         PdfPTable table = new PdfPTable(6);
         table.setWidthPercentage(100);
         table.setWidths(new float[]{2, 3, 2, 2, 2, 2});
@@ -190,6 +209,10 @@ public class PdfReportGenerator {
         SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yy", Locale.getDefault());
         double runningBalance = 0;
 
+        BaseColor inColor = greyscale ? GS_DARK : COLOR_GREEN;
+        BaseColor outColor = greyscale ? GS_MID : COLOR_RED;
+        Font modeFont = greyscale ? fontModeGS : fontMode;
+
         for (TransactionModel t : transactions) {
             if ("IN".equalsIgnoreCase(t.getType())) runningBalance += t.getAmount();
             else runningBalance -= t.getAmount();
@@ -199,17 +222,17 @@ public class PdfReportGenerator {
             String remark = (t.getRemark() != null && !t.getRemark().isEmpty()) ? t.getRemark() : t.getTransactionCategory();
             addCell(table, remark, fontNormal, Element.ALIGN_LEFT, BaseColor.WHITE);
 
-            addCell(table, t.getPaymentMode(), fontMode, Element.ALIGN_CENTER, BaseColor.WHITE);
+            addCell(table, t.getPaymentMode(), modeFont, Element.ALIGN_CENTER, BaseColor.WHITE);
 
             if ("IN".equalsIgnoreCase(t.getType())) {
-                addColoredCell(table, formatCurrency(t.getAmount()), COLOR_GREEN, Element.ALIGN_RIGHT, BaseColor.WHITE);
+                addColoredCell(table, formatCurrency(t.getAmount()), inColor, Element.ALIGN_RIGHT, BaseColor.WHITE);
                 addCell(table, "", fontNormal, Element.ALIGN_RIGHT, BaseColor.WHITE);
             } else {
                 addCell(table, "", fontNormal, Element.ALIGN_RIGHT, BaseColor.WHITE);
-                addColoredCell(table, formatCurrency(t.getAmount()), COLOR_RED, Element.ALIGN_RIGHT, BaseColor.WHITE);
+                addColoredCell(table, formatCurrency(t.getAmount()), outColor, Element.ALIGN_RIGHT, BaseColor.WHITE);
             }
 
-            BaseColor balColor = runningBalance >= 0 ? COLOR_GREEN : COLOR_RED;
+            BaseColor balColor = greyscale ? GS_DARK : (runningBalance >= 0 ? COLOR_GREEN : COLOR_RED);
             Font balFont = new Font(Font.FontFamily.HELVETICA, 9, Font.BOLD, balColor);
             PdfPCell balCell = new PdfPCell(new Phrase(formatCurrency(runningBalance), balFont));
             balCell.setPadding(6);
@@ -220,7 +243,7 @@ public class PdfReportGenerator {
         document.add(table);
     }
 
-    private static void addSummaryTable(Document document, double totalIn, double totalOut, double finalBalance) throws Exception {
+    private static void addSummaryTable(Document document, double totalIn, double totalOut, double finalBalance, boolean greyscale) throws Exception {
         // Detached table with same column structure
         PdfPTable summaryTable = new PdfPTable(6);
         summaryTable.setWidthPercentage(100);
@@ -239,7 +262,7 @@ public class PdfReportGenerator {
         addColoredCell(summaryTable, formatCurrency(totalIn), TEXT_BLACK, Element.ALIGN_RIGHT, TOTAL_ROW_BG, true);
         addColoredCell(summaryTable, formatCurrency(totalOut), TEXT_BLACK, Element.ALIGN_RIGHT, TOTAL_ROW_BG, true);
 
-        BaseColor finalBalColor = finalBalance >= 0 ? COLOR_GREEN : COLOR_RED;
+        BaseColor finalBalColor = greyscale ? GS_DARK : (finalBalance >= 0 ? COLOR_GREEN : COLOR_RED);
         Font finalBalFont = new Font(Font.FontFamily.HELVETICA, 10, Font.BOLD, finalBalColor);
         PdfPCell finalBalCell = new PdfPCell(new Phrase(formatCurrency(finalBalance), finalBalFont));
         finalBalCell.setHorizontalAlignment(Element.ALIGN_RIGHT);

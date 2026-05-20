@@ -388,6 +388,7 @@ public class SettingsActivity extends BaseActivity {
     }
 
     private void logoutUser() {
+        removeFirebaseListeners();
         SessionCache.getInstance().clear();
         mAuth.signOut();
         Toast.makeText(this, "Logged out", Toast.LENGTH_SHORT).show();

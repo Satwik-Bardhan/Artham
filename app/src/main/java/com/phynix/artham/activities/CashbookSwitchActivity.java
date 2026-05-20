@@ -551,9 +551,37 @@ public class CashbookSwitchActivity extends BaseActivity {
     }
 
     private void deleteCashbookFromFirebase(CashbookModel cashbook) {
-        userCashbooksRef.child(cashbook.getCashbookId()).removeValue()
-                .addOnSuccessListener(aVoid -> showSnackbar("Cashbook deleted successfully"))
-                .addOnFailureListener(e -> showSnackbar("Failed to delete cashbook"));
+        DatabaseReference cashbookRef = userCashbooksRef.child(cashbook.getCashbookId());
+
+        // Snapshot the entire cashbook node (including transactions) before deleting
+        cashbookRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                Object deletedData = snapshot.getValue();
+
+                cashbookRef.removeValue()
+                        .addOnSuccessListener(aVoid -> {
+                            Snackbar snackbar = Snackbar.make(
+                                    findViewById(android.R.id.content),
+                                    "Cashbook deleted",
+                                    Snackbar.LENGTH_LONG);
+                            snackbar.setAction("UNDO", v -> {
+                                if (deletedData != null) {
+                                    cashbookRef.setValue(deletedData)
+                                            .addOnSuccessListener(a -> showSnackbar("Cashbook restored"))
+                                            .addOnFailureListener(e -> showSnackbar("Failed to restore cashbook"));
+                                }
+                            });
+                            snackbar.show();
+                        })
+                        .addOnFailureListener(e -> showSnackbar("Failed to delete cashbook"));
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                showSnackbar("Failed to delete cashbook");
+            }
+        });
     }
 
     private void showSortOptionsDialog() {

@@ -222,11 +222,11 @@ public class TransactionDetailsActivity extends BaseActivity {
 
     private void deleteTransaction() {
         viewModel.deleteTransaction(transaction.getTransactionId());
-        showSnackbar("Transaction Deleted");
 
         Intent resultIntent = new Intent();
         resultIntent.putExtra("action", "delete");
         resultIntent.putExtra("transaction_id", transaction.getTransactionId());
+        resultIntent.putExtra("transaction", transaction);
         setResult(RESULT_OK, resultIntent);
         finish();
     }

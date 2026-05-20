@@ -101,7 +101,7 @@
                     android:layout_width="20dp"
                     android:layout_height="20dp"
                     android:layout_gravity="center"
-                    android:src="@drawable/ic_coins_outline"
+                    android:src="@drawable/ic_net_balance"
                     app:tint="?attr/chk_balanceColor"
                     android:contentDescription="Balance" />
             </FrameLayout>

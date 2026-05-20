@@ -72,6 +72,7 @@ public class EditProfileActivity extends BaseActivity {
     private String currentPhotoUrl;
 
     private ActivityResultLauncher<Intent> imagePickerLauncher;
+    private ValueEventListener userDatabaseListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -159,7 +160,7 @@ public class EditProfileActivity extends BaseActivity {
         if (currentUser.getEmail() != null) displayEmail.setText(currentUser.getEmail());
         if (currentUser.getUid() != null) displayUid.setText(currentUser.getUid());
 
-        userDatabaseRef.addValueEventListener(new ValueEventListener() {
+        userDatabaseListener = new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 Users user = snapshot.getValue(Users.class);
@@ -195,7 +196,8 @@ public class EditProfileActivity extends BaseActivity {
             public void onCancelled(@NonNull DatabaseError error) {
                 Toast.makeText(EditProfileActivity.this, "Failed to load user data.", Toast.LENGTH_SHORT).show();
             }
-        });
+        };
+        userDatabaseRef.addValueEventListener(userDatabaseListener);
     }
 
     private void saveProfileChanges() {
@@ -373,11 +375,22 @@ public class EditProfileActivity extends BaseActivity {
     }
 
     private void logoutAndRedirect() {
+        if (userDatabaseRef != null && userDatabaseListener != null) {
+            userDatabaseRef.removeEventListener(userDatabaseListener);
+        }
         mAuth.signOut();
         getSharedPreferences("AppPrefs", Context.MODE_PRIVATE).edit().clear().apply();
         Intent intent = new Intent(this, SignInActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         finish();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (userDatabaseRef != null && userDatabaseListener != null) {
+            userDatabaseRef.removeEventListener(userDatabaseListener);
+        }
     }
 }

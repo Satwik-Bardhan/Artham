@@ -163,7 +163,7 @@
             android:screenOrientation="portrait" />
 
         <activity
-            android:name=".activities.DownloadOptionsActivity"
+            android:name=".activities.TransactionExportActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
 

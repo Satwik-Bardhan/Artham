@@ -12,7 +12,7 @@ public class MyApplication extends Application {
     public void onCreate() {
         super.onCreate();
 
-        // 1. Get the saved theme (Default is now Dark)
+        // 1. Get the saved theme (Default is now System Default)
         String savedTheme = ThemeManager.getTheme(this);
 
         // 2. Apply it globally to the app

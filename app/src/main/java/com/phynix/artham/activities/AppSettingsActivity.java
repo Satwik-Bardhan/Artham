@@ -126,12 +126,33 @@ public class AppSettingsActivity extends BaseActivity {
     private void updateThemeLabel() {
         if (currentThemeTextView != null) {
             String currentTheme = ThemeManager.getTheme(this);
-            String displayTheme = "Dark"; // Default
+            String displayTheme;
 
-            if (ThemeManager.THEME_LIGHT.equals(currentTheme)) {
-                displayTheme = "Light";
-            } else if (ThemeManager.THEME_PURPLE.equals(currentTheme)) {
-                displayTheme = "Purple";
+            switch (currentTheme) {
+                case ThemeManager.THEME_SYSTEM:
+                    displayTheme = "System Default";
+                    break;
+                case ThemeManager.THEME_LIGHT:
+                    displayTheme = "Light";
+                    break;
+                case ThemeManager.THEME_DARK:
+                    displayTheme = "Dark";
+                    break;
+                case ThemeManager.THEME_PURPLE:
+                    displayTheme = "Purple";
+                    break;
+                case ThemeManager.THEME_EMERALD:
+                    displayTheme = "Emerald";
+                    break;
+                case ThemeManager.THEME_ROSE:
+                    displayTheme = "Rose Gold";
+                    break;
+                case ThemeManager.THEME_RANDOM:
+                    displayTheme = "Random";
+                    break;
+                default:
+                    displayTheme = "System Default";
+                    break;
             }
 
             currentThemeTextView.setText(displayTheme);

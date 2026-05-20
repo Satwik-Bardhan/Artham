@@ -24,18 +24,20 @@
             android:contentDescription="Artham" />
 
         <TextView
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
             android:text="Artham"
             android:textColor="#FFFFFF"
             android:textSize="16sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:layout_marginEnd="8dp" />
 
         <TextView
             android:id="@+id/widget_cashbook_name"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="end|center_vertical"
             android:text="Quick Entry"
             android:textColor="#80FFFFFF"
             android:textSize="11sp"

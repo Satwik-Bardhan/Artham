@@ -556,6 +556,9 @@ public class CashInOutActivity extends BaseActivity {
         View view = getLayoutInflater().inflate(R.layout.dialog_calculator, null);
         builder.setView(view);
         AlertDialog dialog = builder.create();
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
 
         TextView display = view.findViewById(R.id.calc_display);
         display.setText(amountEditText.getText().toString().isEmpty() ? "0" : amountEditText.getText().toString());

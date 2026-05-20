@@ -92,11 +92,11 @@
 
                     <ImageView
                         android:id="@+id/summaryToggleArrow"
-                        android:layout_width="20dp"
+                        android:layout_width="13dp"
                         android:layout_height="20dp"
+                        android:contentDescription="Toggle Summary"
                         android:src="@drawable/ic_expand_more"
-                        app:tint="?attr/chk_textColorSecondary"
-                        android:contentDescription="Toggle Summary" />
+                        app:tint="?attr/chk_textColorSecondary" />
 
                 </LinearLayout>
 

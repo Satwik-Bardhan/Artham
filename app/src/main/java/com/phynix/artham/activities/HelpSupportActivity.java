@@ -11,12 +11,10 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import com.phynix.artham.utils.ThemeManager;
 
 // [FIX] Import the CategoryActivity from its new sub-package
-import com.phynix.artham.activities.CategoryActivity;
+
 
 /**
  * Artham Help & Support Activity
@@ -76,7 +74,7 @@ public class HelpSupportActivity extends BaseActivity {
         setRedirect(R.id.faqAnalytics, ExpenseAnalyticsActivity.class);
         setRedirect(R.id.faqFilters, SearchFiltersActivity.class);
         setRedirect(R.id.faqAddTransaction, CashInOutActivity.class);
-        setRedirect(R.id.faqDownload, DownloadOptionsActivity.class);
+        setRedirect(R.id.faqDownload, TransactionExportActivity.class);
         setRedirect(R.id.faqManageCategory, CategoryActivity.class);
         setRedirect(R.id.faqSwitchBook, CashbookSwitchActivity.class);
         setRedirect(R.id.faqEditProfile, EditProfileActivity.class);

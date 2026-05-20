@@ -1,81 +1,212 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="?attr/chk_surfaceColor"
-    android:orientation="vertical"
-    android:padding="16dp">
+    app:cardCornerRadius="24dp"
+    app:cardBackgroundColor="?attr/chk_surfaceColor"
+    app:strokeWidth="1dp"
+    app:strokeColor="?attr/chk_dividerColor"
+    app:cardElevation="8dp">
 
-    <TextView
-        android:id="@+id/calc_display"
-        android:layout_width="match_parent"
-        android:layout_height="80dp"
-        android:background="@drawable/bg_calc_display"
-        android:gravity="end|center_vertical"
-        android:padding="16dp"
-        android:text="0"
-        android:textColor="?attr/chk_textColorPrimary"
-        android:textSize="32sp"
-        android:textStyle="bold"
-        android:maxLines="1"
-        android:ellipsize="end" />
-
-    <GridLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:columnCount="4"
-        android:rowCount="5"
-        android:alignmentMode="alignMargins"
-        android:columnOrderPreserved="false"
-        android:useDefaultMargins="false">
+        android:orientation="vertical"
+        android:padding="20dp">
 
-        <Button style="@style/CalcButton" android:text="C" android:id="@+id/btn_clear" android:textColor="?attr/chk_expenseColor"/>
-        <Button style="@style/CalcButton" android:text="÷" android:id="@+id/btn_divide" android:textColor="?attr/chk_balanceColor"/>
-        <Button style="@style/CalcButton" android:text="×" android:id="@+id/btn_multiply" android:textColor="?attr/chk_balanceColor"/>
-        <Button style="@style/CalcButton" android:text="⌫" android:id="@+id/btn_backspace" android:textColor="?attr/chk_textColorSecondary"/>
+        <!-- Elegant Title / Header Area -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="16dp">
 
-        <Button style="@style/CalcButton" android:text="7" android:id="@+id/btn_7"/>
-        <Button style="@style/CalcButton" android:text="8" android:id="@+id/btn_8"/>
-        <Button style="@style/CalcButton" android:text="9" android:id="@+id/btn_9"/>
-        <Button style="@style/CalcButton" android:text="-" android:id="@+id/btn_minus" android:textColor="?attr/chk_balanceColor"/>
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@drawable/ic_calculator"
+                app:tint="?attr/chk_primary_blue"
+                android:layout_marginEnd="8dp" />
 
-        <Button style="@style/CalcButton" android:text="4" android:id="@+id/btn_4"/>
-        <Button style="@style/CalcButton" android:text="5" android:id="@+id/btn_5"/>
-        <Button style="@style/CalcButton" android:text="6" android:id="@+id/btn_6"/>
-        <Button style="@style/CalcButton" android:text="+" android:id="@+id/btn_plus" android:textColor="?attr/chk_balanceColor"/>
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
 
-        <Button style="@style/CalcButton" android:text="1" android:id="@+id/btn_1"/>
-        <Button style="@style/CalcButton" android:text="2" android:id="@+id/btn_2"/>
-        <Button style="@style/CalcButton" android:text="3" android:id="@+id/btn_3"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Calculator"
+                    android:textColor="?attr/chk_textColorPrimary"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
 
-        <Button
-            style="@style/CalcButton"
-            android:text="="
-            android:id="@+id/btn_equals"
-            android:layout_rowSpan="2"
-            android:layout_height="128dp"
-            android:layout_gravity="fill"
-            android:backgroundTint="?attr/chk_primary_blue"
-            android:textColor="#FFFFFF"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Use operations then tap '=' to evaluate"
+                    android:textColor="?attr/chk_textColorSecondary"
+                    android:textSize="11sp" />
+            </LinearLayout>
+        </LinearLayout>
 
-        <Button style="@style/CalcButton" android:text="%" android:id="@+id/btn_percent" android:textColor="?attr/chk_textColorSecondary"/>
-        <Button style="@style/CalcButton" android:text="0" android:id="@+id/btn_0"/>
-        <Button style="@style/CalcButton" android:text="." android:id="@+id/btn_dot"/>
-    </GridLayout>
+        <!-- Beautiful Display Card Box -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="88dp"
+            app:cardCornerRadius="16dp"
+            app:cardBackgroundColor="?attr/chk_backgroundColor"
+            app:strokeWidth="1dp"
+            app:strokeColor="?attr/chk_dividerColor"
+            app:cardElevation="0dp"
+            android:layout_marginBottom="12dp">
 
-    <Button
-        android:id="@+id/btn_done"
-        android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:layout_marginTop="16dp"
-        android:backgroundTint="?attr/chk_balanceColor"
-        android:text="Use Result"
-        android:textAllCaps="false"
-        app:cornerRadius="12dp"
-        android:textColor="@android:color/white"
-        android:textSize="16sp"
-        android:textStyle="bold" />
+            <TextView
+                android:id="@+id/calc_display"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="end|center_vertical"
+                android:paddingHorizontal="20dp"
+                android:text="0"
+                android:textColor="?attr/chk_textColorPrimary"
+                android:textSize="32sp"
+                android:textStyle="bold"
+                android:maxLines="1"
+                android:ellipsize="end" />
+        </com.google.android.material.card.MaterialCardView>
 
-</LinearLayout>
+        <!-- Modern Flat Keypad Grid -->
+        <GridLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:columnCount="4"
+            android:rowCount="5"
+            android:alignmentMode="alignMargins"
+            android:columnOrderPreserved="false"
+            android:useDefaultMargins="false">
+
+            <!-- Row 1 -->
+            <com.google.android.material.button.MaterialButton
+                style="@style/CalcButton.Action"
+                android:text="C"
+                android:id="@+id/btn_clear" />
+
+            <com.google.android.material.button.MaterialButton
+                style="@style/CalcButton.Operator"
+                android:text="÷"
+                android:id="@+id/btn_divide" />
+
+            <com.google.android.material.button.MaterialButton
+                style="@style/CalcButton.Operator"
+                android:text="×"
+                android:id="@+id/btn_multiply" />
+
+            <com.google.android.material.button.MaterialButton
+                style="@style/CalcButton.Action"
+                android:text="⌫"
+                android:id="@+id/btn_backspace" />
+
+            <!-- Row 2 -->
+            <com.google.android.material.button.MaterialButton
+                style="@style/CalcButton.Number"
+                android:text="7"
+                android:id="@+id/btn_7" />
+
+            <com.google.android.material.button.MaterialButton
+                style="@style/CalcButton.Number"
+                android:text="8"
+                android:id="@+id/btn_8" />
+
+            <com.google.android.material.button.MaterialButton
+                style="@style/CalcButton.Number"
+                android:text="9"
+                android:id="@+id/btn_9" />
+
+            <com.google.android.material.button.MaterialButton
+                style="@style/CalcButton.Operator"
+                android:text="-"
+                android:id="@+id/btn_minus" />
+
+            <!-- Row 3 -->
+            <com.google.android.material.button.MaterialButton
+                style="@style/CalcButton.Number"
+                android:text="4"
+                android:id="@+id/btn_4" />
+
+            <com.google.android.material.button.MaterialButton
+                style="@style/CalcButton.Number"
+                android:text="5"
+                android:id="@+id/btn_5" />
+
+            <com.google.android.material.button.MaterialButton
+                style="@style/CalcButton.Number"
+                android:text="6"
+                android:id="@+id/btn_6" />
+
+            <com.google.android.material.button.MaterialButton
+                style="@style/CalcButton.Operator"
+                android:text="+"
+                android:id="@+id/btn_plus" />
+
+            <!-- Row 4 & 5 (with spanned equals button) -->
+            <com.google.android.material.button.MaterialButton
+                style="@style/CalcButton.Number"
+                android:text="1"
+                android:id="@+id/btn_1" />
+
+            <com.google.android.material.button.MaterialButton
+                style="@style/CalcButton.Number"
+                android:text="2"
+                android:id="@+id/btn_2" />
+
+            <com.google.android.material.button.MaterialButton
+                style="@style/CalcButton.Number"
+                android:text="3"
+                android:id="@+id/btn_3" />
+
+            <com.google.android.material.button.MaterialButton
+                style="@style/CalcButton.Equals"
+                android:text="="
+                android:id="@+id/btn_equals"
+                android:layout_rowSpan="2"
+                android:layout_gravity="fill" />
+
+            <com.google.android.material.button.MaterialButton
+                style="@style/CalcButton.Number"
+                android:text="%"
+                android:id="@+id/btn_percent" />
+
+            <com.google.android.material.button.MaterialButton
+                style="@style/CalcButton.Number"
+                android:text="0"
+                android:id="@+id/btn_0" />
+
+            <com.google.android.material.button.MaterialButton
+                style="@style/CalcButton.Number"
+                android:text="."
+                android:id="@+id/btn_dot" />
+
+        </GridLayout>
+
+        <!-- Use Result Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_done"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="16dp"
+            app:backgroundTint="?attr/chk_balanceColor"
+            android:text="Use Result"
+            android:textAllCaps="false"
+            app:cornerRadius="16dp"
+            android:textColor="@android:color/white"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:insetTop="0dp"
+            android:insetBottom="0dp" />
+
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

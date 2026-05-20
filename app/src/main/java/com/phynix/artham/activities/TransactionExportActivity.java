@@ -8,6 +8,7 @@ import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RadioGroup;
@@ -20,14 +21,16 @@ import java.util.Calendar;
 import java.util.Locale;
 
 import com.phynix.artham.utils.ThemeUtil;
-public class DownloadOptionsActivity extends BaseActivity {
+import com.phynix.artham.utils.ThemeManager;
+public class TransactionExportActivity extends BaseActivity {
 
     // UI Elements
     private TextView startDateText, endDateText;
     private LinearLayout startDateLayout, endDateLayout;
-    private Button todayButton, thisWeekButton, thisMonthButton, formatPdfButton, formatExcelButton, downloadActionButton;
+    private Button todayButton, thisWeekButton, thisMonthButton, allEntriesButton, formatPdfButton, formatExcelButton, downloadActionButton;
     private RadioGroup entryTypeRadioGroup, paymentModeRadioGroup;
     private ImageView backButton;
+    private CheckBox greyscaleCheckbox;
 
     // Logic
     private Calendar startCalendar, endCalendar;
@@ -38,6 +41,7 @@ public class DownloadOptionsActivity extends BaseActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        ThemeManager.applyActivityTheme(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_transaction_export);
         if (getSupportActionBar() != null) {
@@ -60,9 +64,12 @@ public class DownloadOptionsActivity extends BaseActivity {
         todayButton = findViewById(R.id.todayButton);
         thisWeekButton = findViewById(R.id.thisWeekButton);
         thisMonthButton = findViewById(R.id.thisMonthButton);
+        allEntriesButton = findViewById(R.id.allEntriesButton);
 
         entryTypeRadioGroup = findViewById(R.id.entryTypeRadioGroup);
         paymentModeRadioGroup = findViewById(R.id.paymentModeRadioGroup);
+
+        greyscaleCheckbox = findViewById(R.id.greyscaleCheckbox);
 
         formatPdfButton = findViewById(R.id.formatPdfButton);
         formatExcelButton = findViewById(R.id.formatExcelButton);
@@ -102,6 +109,7 @@ public class DownloadOptionsActivity extends BaseActivity {
         if (todayButton != null) todayButton.setOnClickListener(v -> setDateRangeToToday());
         if (thisWeekButton != null) thisWeekButton.setOnClickListener(v -> setDateRangeToThisWeek());
         if (thisMonthButton != null) thisMonthButton.setOnClickListener(v -> setDateRangeToThisMonth());
+        if (allEntriesButton != null) allEntriesButton.setOnClickListener(v -> setDateRangeToAllEntries());
 
         // Format Selection
         if (formatPdfButton != null) formatPdfButton.setOnClickListener(v -> updateFormatSelection(formatPdfButton));
@@ -195,6 +203,17 @@ public class DownloadOptionsActivity extends BaseActivity {
         updateDateTextViews();
     }
 
+    private void setDateRangeToAllEntries() {
+        // Set start to epoch (Jan 1, 2000) and end to far future to capture all entries
+        startCalendar = Calendar.getInstance();
+        startCalendar.set(2000, Calendar.JANUARY, 1, 0, 0, 0);
+
+        endCalendar = Calendar.getInstance();
+        endCalendar.set(2099, Calendar.DECEMBER, 31, 23, 59, 59);
+
+        updateDateTextViews();
+    }
+
     private void updateFormatSelection(Button selectedButton) {
         if (selectedButton.getId() == R.id.formatPdfButton) {
             selectedFormat = "PDF";
@@ -235,6 +254,7 @@ public class DownloadOptionsActivity extends BaseActivity {
         resultIntent.putExtra("entryType", entryType);
         resultIntent.putExtra("paymentMode", paymentMode);
         resultIntent.putExtra("format", selectedFormat);
+        resultIntent.putExtra("greyscale", greyscaleCheckbox != null && greyscaleCheckbox.isChecked());
 
         setResult(Activity.RESULT_OK, resultIntent);
         finish();

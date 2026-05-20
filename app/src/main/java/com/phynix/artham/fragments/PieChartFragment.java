@@ -121,7 +121,7 @@ public class PieChartFragment extends Fragment {
         pieChart.setCenterTextColor(textColor);
         pieChart.getDescription().setEnabled(false);
         pieChart.setDrawEntryLabels(true);
-        pieChart.setExtraOffsets(30.f, 10.f, 30.f, 10.f);
+        pieChart.setExtraOffsets(24f, 24f, 24f, 36f);
         pieChart.setDragDecelerationFrictionCoef(0.95f);
         pieChart.getLegend().setEnabled(false);
     }
@@ -212,7 +212,7 @@ public class PieChartFragment extends Fragment {
             dataSet.setXValuePosition(PieDataSet.ValuePosition.OUTSIDE_SLICE);
             dataSet.setYValuePosition(PieDataSet.ValuePosition.OUTSIDE_SLICE);
             dataSet.setValueLinePart1OffsetPercentage(80.f);
-            dataSet.setValueLinePart1Length(0.5f);
+            dataSet.setValueLinePart1Length(0.3f);
             dataSet.setValueLinePart2Length(0.4f);
             dataSet.setValueLineColor(secondaryTextColor);
             dataSet.setValueLineWidth(1.5f);

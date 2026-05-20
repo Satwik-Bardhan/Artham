@@ -13,12 +13,12 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Build;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.TypedValue;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -28,7 +28,6 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
@@ -46,6 +45,7 @@ import com.phynix.artham.models.TransactionModel;
 import com.phynix.artham.utils.AmountFormatter;
 import com.phynix.artham.utils.Constants;
 import com.phynix.artham.utils.SnackbarHelper;
+import com.phynix.artham.utils.ExcelReportGenerator;
 
 import com.phynix.artham.utils.NavPillAnimator;
 import com.phynix.artham.utils.ThemeManager;
@@ -127,9 +127,14 @@ public class TransactionActivity extends BaseActivity {
                 if (result.getResultCode() == RESULT_OK && result.getData() != null) {
                     String action = result.getData().getStringExtra("action");
                     if ("delete".equals(action)) {
-                        String txId = result.getData().getStringExtra("transaction_id");
-                        if (txId != null && viewModel != null) {
-                            viewModel.deleteTransaction(txId);
+                        // Transaction already deleted by TransactionDetailsActivity
+                        TransactionModel deletedTx = (TransactionModel) result.getData().getSerializableExtra("transaction");
+                        if (deletedTx != null && viewModel != null) {
+                            View anchor = (bottomNavBinding != null) ? bottomNavBinding.getRoot() : null;
+                            SnackbarHelper.showWithAction(this, "Transaction deleted", "UNDO", v -> {
+                                viewModel.updateTransaction(deletedTx);
+                            }, anchor);
+                        } else {
                             showSnackbar("Transaction deleted");
                         }
                     } else if ("duplicate".equals(action)) {
@@ -244,7 +249,7 @@ public class TransactionActivity extends BaseActivity {
         pieChartBinding.pieChart.getDescription().setEnabled(false);
         pieChartBinding.pieChart.getLegend().setEnabled(false);
         pieChartBinding.pieChart.setDrawEntryLabels(true);
-        pieChartBinding.pieChart.setExtraOffsets(30.f, 10.f, 30.f, 10.f);
+        pieChartBinding.pieChart.setExtraOffsets(24f, 24f, 24f, 36f);
         pieChartBinding.pieChart.setDragDecelerationFrictionCoef(0.95f);
         pieChartBinding.pieChart.setDrawHoleEnabled(true);
         pieChartBinding.pieChart.setHoleColor(Color.TRANSPARENT);
@@ -437,8 +442,8 @@ public class TransactionActivity extends BaseActivity {
         dataSet.setXValuePosition(PieDataSet.ValuePosition.OUTSIDE_SLICE);
         dataSet.setYValuePosition(PieDataSet.ValuePosition.OUTSIDE_SLICE);
         dataSet.setValueLinePart1OffsetPercentage(80.f);
-        dataSet.setValueLinePart1Length(0.4f);
-        dataSet.setValueLinePart2Length(0.5f);
+        dataSet.setValueLinePart1Length(0.3f);
+        dataSet.setValueLinePart2Length(0.4f);
         dataSet.setValueLineColor(textColor);
         dataSet.setValueTextColor(textColor);
         dataSet.setValueTextSize(10f);
@@ -451,8 +456,15 @@ public class TransactionActivity extends BaseActivity {
 
         PieData data = new PieData(dataSet);
         pieChartBinding.pieChart.setData(data);
-        pieChartBinding.pieChart.setCenterText("Total\n" + AmountFormatter.formatCompact(totalExpense));
-        pieChartBinding.pieChart.setCenterTextSize(16f);
+        String centerText = "Total\n" + AmountFormatter.formatCompact(totalExpense);
+        float centerTextSize = 16f;
+        if (centerText.length() > 15) {
+            centerTextSize = 12f;
+        } else if (centerText.length() > 12) {
+            centerTextSize = 14f;
+        }
+        pieChartBinding.pieChart.setCenterText(centerText);
+        pieChartBinding.pieChart.setCenterTextSize(centerTextSize);
         pieChartBinding.pieChart.setCenterTextColor(textColor);
         pieChartBinding.pieChart.animateY(1000, Easing.EaseInOutQuad);
         pieChartBinding.pieChart.invalidate();
@@ -541,7 +553,9 @@ public class TransactionActivity extends BaseActivity {
                 Intent data = result.getData();
                 if (checkPermissions()) {
                     exportReport(data.getLongExtra("startDate", 0), data.getLongExtra("endDate", 0),
-                            data.getStringExtra("entryType"), data.getStringExtra("paymentMode"));
+                            data.getStringExtra("entryType"), data.getStringExtra("paymentMode"),
+                            data.getBooleanExtra("greyscale", false),
+                            data.getStringExtra("format"));
                 } else {
                     requestPermissions();
                 }
@@ -549,7 +563,7 @@ public class TransactionActivity extends BaseActivity {
         });
     }
 
-    private void exportReport(long startDate, long endDate, String entryType, String paymentMode) {
+    private void exportReport(long startDate, long endDate, String entryType, String paymentMode, boolean greyscale, String format) {
         if (allTransactions.isEmpty()) { showSnackbar("No data"); return; }
         List<TransactionModel> exportList = allTransactions.stream()
                 .filter(t -> t.getTimestamp() >= startDate && t.getTimestamp() <= endDate)
@@ -558,7 +572,38 @@ public class TransactionActivity extends BaseActivity {
                 .collect(Collectors.toList());
 
         if (exportList.isEmpty()) { showSnackbar("No matching transactions"); return; }
-        PdfReportGenerator.generateReport(this, exportList, currentCashbookName, startDate, endDate);
+
+        Uri fileUri;
+        String mimeType;
+        String chooserTitle;
+        if ("Excel".equalsIgnoreCase(format)) {
+            fileUri = ExcelReportGenerator.generateReport(this, exportList, currentCashbookName, startDate, endDate);
+            mimeType = "text/csv";
+            chooserTitle = "Share Excel Report";
+        } else {
+            fileUri = PdfReportGenerator.generateReport(this, exportList, currentCashbookName, startDate, endDate, greyscale);
+            mimeType = "application/pdf";
+            chooserTitle = "Share PDF Report";
+        }
+
+        if (fileUri != null) {
+            showShareDialog(fileUri, mimeType, chooserTitle);
+        }
+    }
+
+    private void showShareDialog(Uri fileUri, String mimeType, String chooserTitle) {
+        new androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("Export Successful")
+                .setMessage("Your report is saved to Downloads/Artham. Would you like to share it now?")
+                .setPositiveButton("Share", (dialog, which) -> {
+                    Intent shareIntent = new Intent(Intent.ACTION_SEND);
+                    shareIntent.setType(mimeType);
+                    shareIntent.putExtra(Intent.EXTRA_STREAM, fileUri);
+                    shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    startActivity(Intent.createChooser(shareIntent, chooserTitle));
+                })
+                .setNegativeButton("Maybe Later", null)
+                .show();
     }
 
     private boolean checkPermissions() {
@@ -612,7 +657,7 @@ public class TransactionActivity extends BaseActivity {
 
         binding.downloadReportButton.setOnClickListener(v -> {
             if(allTransactions.isEmpty()){ showSnackbar("No data"); return; }
-            downloadLauncher.launch(new Intent(this, DownloadOptionsActivity.class));
+            downloadLauncher.launch(new Intent(this, TransactionExportActivity.class));
         });
 
         // Summary Cards Toggle
@@ -713,7 +758,15 @@ public class TransactionActivity extends BaseActivity {
 
     private void showDeleteConfirmation(TransactionModel transaction) {
         new AlertDialog.Builder(this).setTitle("Delete").setMessage("Are you sure?")
-                .setPositiveButton("Delete", (d, w) -> { if(viewModel!=null) viewModel.deleteTransaction(transaction.getTransactionId()); })
+                .setPositiveButton("Delete", (d, w) -> {
+                    if (viewModel != null) {
+                        viewModel.deleteTransaction(transaction.getTransactionId());
+                        View anchor = (bottomNavBinding != null) ? bottomNavBinding.getRoot() : null;
+                        SnackbarHelper.showWithAction(this, "Transaction deleted", "UNDO", v -> {
+                            viewModel.updateTransaction(transaction);
+                        }, anchor);
+                    }
+                })
                 .setNegativeButton("Cancel", null).show();
     }
 
