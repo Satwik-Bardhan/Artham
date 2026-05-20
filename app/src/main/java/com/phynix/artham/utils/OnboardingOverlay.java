@@ -228,7 +228,16 @@ public class OnboardingOverlay extends FrameLayout {
         btnSkip.setTextColor(resolveThemeColor(R.attr.chk_textColorHint));
         btnSkip.setPadding((int) (16 * density), (int) (10 * density),
                 (int) (16 * density), (int) (10 * density));
-        btnSkip.setOnClickListener(v -> dismiss());
+        btnSkip.setOnClickListener(v -> {
+            OnboardingManager mgr = OnboardingManager.getInstance(getContext());
+            mgr.markOnboardingCompleted();
+            mgr.markPageTutorialCompleted(OnboardingManager.PAGE_HOME);
+            mgr.markPageTutorialCompleted(OnboardingManager.PAGE_TRANSACTIONS);
+            mgr.markPageTutorialCompleted(OnboardingManager.PAGE_SETTINGS);
+            mgr.markPageTutorialCompleted(OnboardingManager.PAGE_CASH_IN_OUT);
+            mgr.markPageTutorialCompleted(OnboardingManager.PAGE_CASHBOOK_SWITCH);
+            dismiss();
+        });
 
         // Next / Got it button
         btnNext = new TextView(ctx);

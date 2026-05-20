@@ -5,17 +5,14 @@ import com.phynix.artham.R;
 import com.phynix.artham.BaseActivity;
 import android.app.Activity;
 import android.app.DatePickerDialog;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.TypedValue;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
 import java.text.SimpleDateFormat;
@@ -42,7 +39,7 @@ public class DownloadOptionsActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_download_options);
+        setContentView(R.layout.activity_transaction_export);
         if (getSupportActionBar() != null) {
             getSupportActionBar().hide();
         }

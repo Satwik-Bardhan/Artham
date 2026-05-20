@@ -68,7 +68,6 @@ import java.util.Locale;
 public class CashInOutActivity extends BaseActivity {
 
     private static final String TAG = "CashInOutActivity";
-    private static final int LOCATION_PERMISSION_REQUEST_CODE = 1001;
     private static final int CONTACTS_PERMISSION_REQUEST_CODE = 1002;
     private static final String PREFS_NAME = "AppSettingsPrefs";
     private static final String KEY_CALCULATOR = "calculator_enabled";
@@ -85,7 +84,7 @@ public class CashInOutActivity extends BaseActivity {
     private View selectedIconContainer;
     private RadioGroup inOutToggle, cashOnlineToggle;
     private RadioButton radioIn, radioOut, radioCash, radioOnline, radioCard;
-    private View swapButton, calculatorButton, voiceInputButton, locationButton, contactBookButton;
+    private View swapButton, calculatorButton, voiceInputButton, contactBookButton;
     private CheckBox taxCheckbox;
     private TextInputLayout taxAmountLayout;
     private TextInputEditText taxAmountEditText, remarkEditText, tagsEditText, partyTextView;
@@ -101,7 +100,6 @@ public class CashInOutActivity extends BaseActivity {
     private String selectedCategory = "Other";
     private String selectedColorHex = "#9E9E9E"; // Default Grey
     private String selectedParty = null;
-    private String currentLocation = null;
     private boolean isSaveAndNew = false;
 
     // Timer
@@ -109,7 +107,7 @@ public class CashInOutActivity extends BaseActivity {
     private boolean isManualTimeSet = false;
     private Runnable timeRunnable;
 
-    private FusedLocationProviderClient fusedLocationClient;
+
 
     // Launchers
     private ActivityResultLauncher<Intent> voiceInputLauncher;
@@ -135,7 +133,7 @@ public class CashInOutActivity extends BaseActivity {
             return;
         }
 
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+
 
         initializeUI();
         initializeDateTime();
@@ -233,7 +231,6 @@ public class CashInOutActivity extends BaseActivity {
         contactBookButton = findViewById(R.id.contactBookButton);
 
         tagsEditText = findViewById(R.id.tagsEditText);
-        locationButton = findViewById(R.id.locationButton);
 
         saveEntryButton = findViewById(R.id.saveEntryButton);
         saveAndAddNewButton = findViewById(R.id.saveAndAddNewButton);
@@ -300,7 +297,6 @@ public class CashInOutActivity extends BaseActivity {
 
         partyTextView.setOnClickListener(v -> openPartySelector());
         contactBookButton.setOnClickListener(v -> openContactPicker());
-        locationButton.setOnClickListener(v -> getCurrentLocation());
 
         saveEntryButton.setOnClickListener(v -> saveTransaction(false));
         saveAndAddNewButton.setOnClickListener(v -> saveTransaction(true));
@@ -482,7 +478,6 @@ public class CashInOutActivity extends BaseActivity {
         selectedCategoryIcon.setImageResource(CategoryColorUtil.getCategoryIcon(selectedCategory));
 
         selectedParty = null;
-        currentLocation = null;
 
         clearQuickAmountSelections();
 
@@ -744,26 +739,12 @@ public class CashInOutActivity extends BaseActivity {
         }
     }
 
-    private void getCurrentLocation() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_REQUEST_CODE);
-            return;
-        }
-        fusedLocationClient.getLastLocation().addOnSuccessListener(this, location -> {
-            if (location != null) {
-                currentLocation = location.getLatitude() + ", " + location.getLongitude();
-                Toast.makeText(this, "Location captured", Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(this, "Unable to get location", Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
+
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) getCurrentLocation();
             if (requestCode == CONTACTS_PERMISSION_REQUEST_CODE) launchContactPicker();
         }
     }

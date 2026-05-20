@@ -30,7 +30,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -125,8 +127,7 @@ public class HomeActivity extends BaseActivity {
 
     // Front Card Views
     private View balanceCardFront;
-    private TextView balanceCardUidText;
-    private ImageView balanceCardCopyUidButton;
+    private TextView balanceCardCashbookName;
 
     private TextView balanceCardMoneyIn;
     private TextView balanceCardMoneyOut;
@@ -141,6 +142,16 @@ public class HomeActivity extends BaseActivity {
     private boolean isBackVisible = false;
 
 
+
+    // Insights UI
+    private TextView insightEmoji, insightTitle, insightMessage;
+    private LinearLayout insightDots;
+    private FrameLayout insightContentFrame;
+    private View insightsCardInclude;
+    private List<com.phynix.artham.utils.InsightsEngine.Insight> currentInsights = new ArrayList<>();
+    private int currentInsightIndex = 0;
+    private Handler insightHandler = new Handler(Looper.getMainLooper());
+    private Runnable insightRunnable;
 
     // Firebase user listener for cleanup
     private DatabaseReference userRef;
@@ -177,10 +188,10 @@ public class HomeActivity extends BaseActivity {
 
                         viewModel.switchCashbook(newId);
 
-                        if (newName != null) {
-                            binding.userNameTop.setText(newName);
-                            binding.currentCashbookText.setText(newName);
+                        if (balanceCardCashbookName != null)
+                            balanceCardCashbookName.setText(newName);
 
+                        if (newName != null) {
                             // Save name for widget display & refresh widget
                             getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
                                     .edit()
@@ -240,6 +251,7 @@ public class HomeActivity extends BaseActivity {
             }
         }
 
+        initInsightsUI();
         bindBalanceCardViews();
         setupBalanceCardFlip();
 
@@ -395,11 +407,21 @@ public class HomeActivity extends BaseActivity {
 
     private void bindBalanceCardViews() {
         // Safe access through the included balanceCardView binding
-        balanceCardUidText = binding.balanceCardView.getRoot().findViewById(R.id.uidText);
-        balanceCardCopyUidButton = binding.balanceCardView.getRoot().findViewById(R.id.copyUidButton);
+        balanceCardCashbookName = binding.balanceCardView.getRoot().findViewById(R.id.balanceCardCashbookName);
 
         balanceCardMoneyIn = binding.balanceCardView.getRoot().findViewById(R.id.moneyIn);
         balanceCardMoneyOut = binding.balanceCardView.getRoot().findViewById(R.id.moneyOut);
+    }
+
+    private void initInsightsUI() {
+        insightsCardInclude = binding.getRoot().findViewById(R.id.insightsCardInclude);
+        if (insightsCardInclude != null) {
+            insightEmoji = insightsCardInclude.findViewById(R.id.insightEmoji);
+            insightTitle = insightsCardInclude.findViewById(R.id.insightTitle);
+            insightMessage = insightsCardInclude.findViewById(R.id.insightMessage);
+            insightDots = insightsCardInclude.findViewById(R.id.insightDots);
+            insightContentFrame = insightsCardInclude.findViewById(R.id.insightContentFrame);
+        }
     }
 
     private void observeViewModel() {
@@ -451,15 +473,15 @@ public class HomeActivity extends BaseActivity {
                 showSnackbar(error);
         });
 
+        viewModel.getTransactions().observe(this, this::updateInsights);
+
         viewModel.getUserProfile().observe(this, this::updateUserUI);
 
         viewModel.getActiveCashbook().observe(this, cashbook -> {
             if (cashbook != null) {
                 // NORMAL STATE: Data exists
-                if (binding.userNameTop != null)
-                    binding.userNameTop.setText(cashbook.getName());
-                if (binding.currentCashbookText != null)
-                    binding.currentCashbookText.setText(cashbook.getName());
+                if (balanceCardCashbookName != null)
+                    balanceCardCashbookName.setText(cashbook.getName());
 
                 if (backCashbookIdText != null)
                     backCashbookIdText.setText(cashbook.getCashbookId());
@@ -487,16 +509,6 @@ public class HomeActivity extends BaseActivity {
                     currentActiveBookId = cashbook.getCashbookId();
                     isTimestampUpdatedForCurrentBook = false;
 
-                    // Set Exact Date and Time BEFORE we push the new update to Firebase
-                    if (binding.lastOpenedText != null) {
-                        long lastOpened = cashbook.getLastOpenedAt();
-                        if (lastOpened > 0) {
-                            binding.lastOpenedText
-                                    .setText("Last opened: " + formatExactDateTimeIST(lastOpened));
-                        } else {
-                            binding.lastOpenedText.setText("Last opened: Just now");
-                        }
-                    }
                 }
 
                 if (!isTimestampUpdatedForCurrentBook) {
@@ -506,12 +518,10 @@ public class HomeActivity extends BaseActivity {
 
             } else {
                 // EMPTY STATE: No Cashbook found
-                if (binding.userNameTop != null)
-                    binding.userNameTop.setText("Welcome!");
-                if (binding.currentCashbookText != null)
-                    binding.currentCashbookText.setText("No Cashbook Selected");
-                if (binding.lastOpenedText != null)
-                    binding.lastOpenedText.setText("Create a new cashbook to start");
+                // Removed userNameTop and currentCashbookText assignments
+                if (balanceCardCashbookName != null)
+                    balanceCardCashbookName.setText("No Cashbook Selected");
+                // Removed lastOpenedText assignment
 
                 // Visibility management
                 if (binding.transactionSection != null)
@@ -659,18 +669,12 @@ public class HomeActivity extends BaseActivity {
             photoUrl = fbUser.getPhotoUrl().toString();
         }
 
-        if (balanceCardUidText != null)
-            balanceCardUidText.setText("UID: " + uid);
         if (backUserName != null)
             backUserName.setText(name);
         if (backProfileImage != null && !isDestroyed() && !isFinishing()) {
             backProfileImage.clearColorFilter();
             Glide.with(this).load(photoUrl).placeholder(R.drawable.ic_person_placeholder).circleCrop()
                     .into(backProfileImage);
-        }
-        if (balanceCardCopyUidButton != null && !uid.isEmpty()) {
-            final String uidToCopy = uid;
-            balanceCardCopyUidButton.setOnClickListener(v -> copyToClipboard("UID", uidToCopy));
         }
     }
 
@@ -708,6 +712,118 @@ public class HomeActivity extends BaseActivity {
 
             for (TransactionModel t : transactions)
                 addTransactionRow(t, binding.transactionTable);
+        }
+    }
+
+    private void updateInsights(List<TransactionModel> transactions) {
+        if (insightsCardInclude == null || insightEmoji == null || insightTitle == null) return;
+        
+        // Cancel any pending animations
+        insightHandler.removeCallbacksAndMessages(null);
+
+        // Generate insights using the local engine
+        currentInsights = com.phynix.artham.utils.InsightsEngine.generate(transactions);
+        currentInsightIndex = 0;
+        
+        if (currentInsights.isEmpty()) {
+            insightsCardInclude.setVisibility(View.GONE);
+            return;
+        }
+        
+        insightsCardInclude.setVisibility(View.VISIBLE);
+        setupInsightDots();
+        displayCurrentInsight(false); // First one without crossfade
+
+        // Set up the carousel runnable (cycles every 5 seconds)
+        if (currentInsights.size() > 1) {
+            insightRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    currentInsightIndex = (currentInsightIndex + 1) % currentInsights.size();
+                    displayCurrentInsight(true);
+                    updateInsightDots();
+                    insightHandler.postDelayed(this, 5000);
+                }
+            };
+            insightHandler.postDelayed(insightRunnable, 5000);
+            
+            // Allow manual click to skip to the next insight
+            insightsCardInclude.setOnClickListener(v -> {
+                // Cancel pending auto-advance
+                insightHandler.removeCallbacks(insightRunnable);
+                
+                // Go to next insight
+                currentInsightIndex = (currentInsightIndex + 1) % currentInsights.size();
+                displayCurrentInsight(true);
+                updateInsightDots();
+                
+                // Restart timer
+                insightHandler.postDelayed(insightRunnable, 5000);
+            });
+        } else {
+            insightsCardInclude.setOnClickListener(null);
+            insightsCardInclude.setClickable(false);
+        }
+    }
+
+    private void setupInsightDots() {
+        if (insightDots == null) return;
+        insightDots.removeAllViews();
+        
+        if (currentInsights.size() <= 1) return; // No dots needed for single insight
+        
+        int dotSize = (int) (6 * getResources().getDisplayMetrics().density);
+        int margin = (int) (3 * getResources().getDisplayMetrics().density);
+        
+        for (int i = 0; i < currentInsights.size(); i++) {
+            View dot = new View(this);
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(dotSize, dotSize);
+            params.setMargins(margin, 0, margin, 0);
+            dot.setLayoutParams(params);
+            dot.setBackgroundResource(R.drawable.bg_dot_indicator);
+            // Default inactive state
+            dot.setAlpha(0.3f);
+            insightDots.addView(dot);
+        }
+    }
+
+    private void updateInsightDots() {
+        if (insightDots == null || insightDots.getChildCount() == 0) return;
+        
+        for (int i = 0; i < insightDots.getChildCount(); i++) {
+            View dot = insightDots.getChildAt(i);
+            if (i == currentInsightIndex) {
+                dot.animate().alpha(1.0f).setDuration(200).start();
+            } else {
+                dot.animate().alpha(0.3f).setDuration(200).start();
+            }
+        }
+    }
+
+    private void displayCurrentInsight(boolean animate) {
+        if (currentInsights == null || currentInsights.isEmpty() || insightEmoji == null) return;
+        
+        com.phynix.artham.utils.InsightsEngine.Insight insight = currentInsights.get(currentInsightIndex);
+        
+        if (animate && insightContentFrame != null) {
+            // Crossfade animation
+            insightContentFrame.animate()
+                    .alpha(0f)
+                    .setDuration(150)
+                    .withEndAction(() -> {
+                        insightEmoji.setText(insight.emoji);
+                        insightTitle.setText(insight.title);
+                        insightMessage.setText(insight.message);
+                        insightContentFrame.animate().alpha(1f).setDuration(250).start();
+                    })
+                    .start();
+        } else {
+            insightEmoji.setText(insight.emoji);
+            insightTitle.setText(insight.title);
+            insightMessage.setText(insight.message);
+            if (insightContentFrame != null) {
+                insightContentFrame.setAlpha(1f);
+            }
         }
     }
 
@@ -782,9 +898,7 @@ public class HomeActivity extends BaseActivity {
     }
 
     private void setupClickListeners() {
-        if (binding.userBox != null) {
-            binding.userBox.setOnClickListener(v -> openCashbookSwitcher());
-        }
+        // Removed userBox click listener
 
         // Setup original buttons utilizing ViewBinding's include handling
         if (binding.originalButtons != null) {
@@ -957,9 +1071,9 @@ public class HomeActivity extends BaseActivity {
         if (isDestroyed() || isFinishing() || binding == null) return;
 
         OnboardingOverlay.builder(this)
-                .addStep(R.id.userBoxCard,
-                        "Your Cashbook",
-                        "This is your active cashbook. Tap here to switch between different cashbooks.")
+                .addStep(R.id.insightsCardInclude,
+                        "Smart Insights",
+                        "Get AI-driven tips and daily summaries of your spending habits right here.")
                 .addStep(R.id.balanceCardView,
                         "Balance Card",
                         "Your total balance at a glance. Tap the card to flip it and see your profile & social links.")
@@ -983,6 +1097,9 @@ public class HomeActivity extends BaseActivity {
         super.onDestroy();
         // Clean up the skeleton timeout to prevent leaks
         skeletonTimeoutHandler.removeCallbacks(skeletonTimeoutRunnable);
+        if (insightHandler != null) {
+            insightHandler.removeCallbacksAndMessages(null);
+        }
 
         if (userRef != null && userListener != null) {
             userRef.removeEventListener(userListener);

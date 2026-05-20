@@ -73,6 +73,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 public class TransactionActivity extends BaseActivity {
@@ -233,6 +234,10 @@ public class TransactionActivity extends BaseActivity {
 
         // Apply settings-level visibility (hides entire sections if disabled)
         applySettingsVisibility();
+
+        // Set a random search hint
+        String[] hints = getResources().getStringArray(R.array.search_hints);
+        searchBinding.searchEditText.setHint(hints[new Random().nextInt(hints.length)]);
 
         // Pie Chart Configuration
         pieChartBinding.pieChart.setUsePercentValues(true);

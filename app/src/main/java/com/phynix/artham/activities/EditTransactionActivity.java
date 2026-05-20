@@ -70,7 +70,7 @@ public class EditTransactionActivity extends BaseActivity {
 
     // UI Components
     private ImageView backButton, timePickerIcon, swapButton;
-    private View calculatorButton, voiceInputButton, locationButton;
+    private View calculatorButton, voiceInputButton;
     private View autoRepeatButton;
     private ImageView autoRepeatIcon;
     private TextView autoRepeatText;
@@ -246,7 +246,6 @@ public class EditTransactionActivity extends BaseActivity {
         voiceInputButton = findViewById(R.id.voiceInputButton);
 
         tagsEditText = findViewById(R.id.tagsEditText);
-        locationButton = findViewById(R.id.locationButton);
 
         taxCheckbox = findViewById(R.id.taxCheckbox);
         taxAmountLayout = findViewById(R.id.taxAmountLayout);

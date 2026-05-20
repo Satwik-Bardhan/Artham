@@ -33,17 +33,5 @@
             android:textColorHint="?attr/chk_textColorSecondary" />
     </com.google.android.material.textfield.TextInputLayout>
 
-    <ImageView
-        android:id="@+id/locationButton"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_marginStart="8dp"
-        android:padding="12dp"
-        android:background="@drawable/rounded_input_background"
-        android:src="@drawable/ic_location"
-        app:tint="?attr/chk_balanceColor"
-        android:clickable="true"
-        android:focusable="true"
-        android:contentDescription="Add Location"/>
 
 </LinearLayout>

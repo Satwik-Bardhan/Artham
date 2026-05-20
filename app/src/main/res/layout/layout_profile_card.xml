@@ -96,15 +96,35 @@
             android:paddingTop="8dp"
             android:paddingBottom="20dp">
 
-            <!-- UID -->
-            <TextView
-                android:id="@+id/uidText"
+            <!-- UID and Copy Button -->
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                tools:text="UID: SWWD6ZP6XXXXXXXXXX"
-                android:textColor="?attr/chk_textColorSecondary"
-                android:textSize="10sp"
-                android:textStyle="bold" />
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+                
+                <TextView
+                    android:id="@+id/uidText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    tools:text="UID: SWWD6ZP6XXXXXXXXXX"
+                    android:textColor="?attr/chk_textColorSecondary"
+                    android:textSize="10sp"
+                    android:textStyle="bold" />
+
+                <ImageView
+                    android:id="@+id/copyUidButton"
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:layout_marginStart="6dp"
+                    android:src="@drawable/ic_copy"
+                    app:tint="?attr/chk_textColorSecondary"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:padding="2dp"
+                    android:contentDescription="Copy UID" />
+            </LinearLayout>
 
             <!-- Created Date (below UID) -->
             <TextView

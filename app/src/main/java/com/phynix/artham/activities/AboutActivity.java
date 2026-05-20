@@ -18,7 +18,7 @@ import java.util.Random;
 
 public class AboutActivity extends BaseActivity {
 
-    private static final String UPI_ID = "satwikbardhan67-2@oksbi";
+    private static final String UPI_ID = "9777122601@okbizaxis";
     private static final String UPI_NAME = "PHYNIX LABS";
     private static final Random random = new Random();
 

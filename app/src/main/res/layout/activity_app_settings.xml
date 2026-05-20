@@ -86,7 +86,7 @@
                 android:textSize="18sp"
                 android:textStyle="bold"
                 android:drawablePadding="8dp"
-                app:drawableTint="#2196F3" />
+                app:drawableTint="?attr/chk_primary_blue" />
 
             <!-- Features & Tools — no card background -->
             <LinearLayout
@@ -107,7 +107,7 @@
                         android:layout_width="40dp"
                         android:layout_height="40dp"
                         android:layout_marginEnd="16dp"
-                        app:cardBackgroundColor="#332196F3"
+                        app:cardBackgroundColor="?attr/chk_selectedItemColor"
                         app:cardCornerRadius="8dp"
                         app:cardElevation="0dp">
 
@@ -116,7 +116,7 @@
                             android:layout_height="match_parent"
                             android:padding="10dp"
                             android:src="@drawable/ic_calculator"
-                            app:tint="#2196F3" />
+                            app:tint="?attr/chk_primary_blue" />
                     </androidx.cardview.widget.CardView>
 
                     <LinearLayout
@@ -147,8 +147,8 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:checked="true"
-                        app:thumbTint="@color/switch_thumb_color"
-                        app:trackTint="@color/switch_track_color" />
+
+ />
                 </LinearLayout>
 
                 <!-- Haptic Feedback Toggle -->
@@ -164,7 +164,7 @@
                         android:layout_width="40dp"
                         android:layout_height="40dp"
                         android:layout_marginEnd="16dp"
-                        app:cardBackgroundColor="#3300BCD4"
+                        app:cardBackgroundColor="?attr/chk_selectedItemColor"
                         app:cardCornerRadius="8dp"
                         app:cardElevation="0dp">
 
@@ -173,7 +173,7 @@
                             android:layout_height="match_parent"
                             android:padding="10dp"
                             android:src="@drawable/ic_vibration"
-                            app:tint="#00BCD4" />
+                            app:tint="?attr/chk_primary_blue" />
                     </androidx.cardview.widget.CardView>
 
                     <LinearLayout
@@ -204,8 +204,8 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:checked="true"
-                        app:thumbTint="@color/switch_thumb_color"
-                        app:trackTint="@color/switch_track_color" />
+
+ />
                 </LinearLayout>
 
 
@@ -213,6 +213,7 @@
                     android:id="@+id/manageCategoriesLayout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:background="?android:attr/selectableItemBackground"
                     android:clickable="true"
                     android:focusable="true"
                     android:gravity="center_vertical"
@@ -224,7 +225,7 @@
                         android:layout_width="40dp"
                         android:layout_height="40dp"
                         android:layout_marginEnd="16dp"
-                        app:cardBackgroundColor="#33E91E63"
+                        app:cardBackgroundColor="?attr/chk_selectedItemColor"
                         app:cardCornerRadius="8dp"
                         app:cardElevation="0dp">
 
@@ -233,7 +234,7 @@
                             android:layout_height="match_parent"
                             android:padding="10dp"
                             android:src="@drawable/ic_category"
-                            app:tint="#E91E63" />
+                            app:tint="?attr/chk_primary_blue" />
                     </androidx.cardview.widget.CardView>
 
                     <LinearLayout
@@ -271,6 +272,7 @@
                     android:id="@+id/replayTutorialLayout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:background="?android:attr/selectableItemBackground"
                     android:clickable="true"
                     android:focusable="true"
                     android:gravity="center_vertical"
@@ -282,7 +284,7 @@
                         android:layout_width="40dp"
                         android:layout_height="40dp"
                         android:layout_marginEnd="16dp"
-                        app:cardBackgroundColor="#33009688"
+                        app:cardBackgroundColor="?attr/chk_selectedItemColor"
                         app:cardCornerRadius="8dp"
                         app:cardElevation="0dp">
 
@@ -291,7 +293,7 @@
                             android:layout_height="match_parent"
                             android:padding="10dp"
                             android:src="@drawable/ic_info"
-                            app:tint="#009688" />
+                            app:tint="?attr/chk_primary_blue" />
                     </androidx.cardview.widget.CardView>
 
                     <LinearLayout
@@ -335,7 +337,7 @@
                 android:textSize="18sp"
                 android:textStyle="bold"
                 android:drawablePadding="8dp"
-                app:drawableTint="#009688" />
+                app:drawableTint="?attr/chk_primary_blue" />
 
             <!-- Transaction View — no card background -->
             <LinearLayout
@@ -356,7 +358,7 @@
                         android:layout_width="40dp"
                         android:layout_height="40dp"
                         android:layout_marginEnd="16dp"
-                        app:cardBackgroundColor="#33009688"
+                        app:cardBackgroundColor="?attr/chk_selectedItemColor"
                         app:cardCornerRadius="8dp"
                         app:cardElevation="0dp">
 
@@ -365,7 +367,7 @@
                             android:layout_height="match_parent"
                             android:padding="10dp"
                             android:src="@drawable/ic_account_balance_wallet"
-                            app:tint="#009688" />
+                            app:tint="?attr/chk_primary_blue" />
                     </androidx.cardview.widget.CardView>
 
                     <LinearLayout
@@ -396,8 +398,8 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:checked="true"
-                        app:thumbTint="@color/switch_thumb_color"
-                        app:trackTint="@color/switch_track_color" />
+
+ />
                 </LinearLayout>
 
 
@@ -413,7 +415,7 @@
                         android:layout_width="40dp"
                         android:layout_height="40dp"
                         android:layout_marginEnd="16dp"
-                        app:cardBackgroundColor="#33FF5722"
+                        app:cardBackgroundColor="?attr/chk_selectedItemColor"
                         app:cardCornerRadius="8dp"
                         app:cardElevation="0dp">
 
@@ -422,7 +424,7 @@
                             android:layout_height="match_parent"
                             android:padding="10dp"
                             android:src="@drawable/ic_pie_chart"
-                            app:tint="#FF5722" />
+                            app:tint="?attr/chk_primary_blue" />
                     </androidx.cardview.widget.CardView>
 
                     <LinearLayout
@@ -453,8 +455,8 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:checked="true"
-                        app:thumbTint="@color/switch_thumb_color"
-                        app:trackTint="@color/switch_track_color" />
+
+ />
                 </LinearLayout>
 
             </LinearLayout>
@@ -468,7 +470,7 @@
                 android:textSize="18sp"
                 android:textStyle="bold"
                 android:drawablePadding="8dp"
-                app:drawableTint="#FF9800" />
+                app:drawableTint="?attr/chk_primary_blue" />
 
             <!-- Notifications — no card background -->
             <LinearLayout
@@ -489,7 +491,7 @@
                         android:layout_width="40dp"
                         android:layout_height="40dp"
                         android:layout_marginEnd="16dp"
-                        app:cardBackgroundColor="#33FF9800"
+                        app:cardBackgroundColor="?attr/chk_selectedItemColor"
                         app:cardCornerRadius="8dp"
                         app:cardElevation="0dp">
 
@@ -498,7 +500,7 @@
                             android:layout_height="match_parent"
                             android:padding="10dp"
                             android:src="@drawable/ic_notifications"
-                            app:tint="#FF9800" />
+                            app:tint="?attr/chk_primary_blue" />
                     </androidx.cardview.widget.CardView>
 
                     <LinearLayout
@@ -529,8 +531,8 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:checked="true"
-                        app:thumbTint="@color/switch_thumb_color"
-                        app:trackTint="@color/switch_track_color" />
+
+ />
                 </LinearLayout>
 
             </LinearLayout>
@@ -544,7 +546,7 @@
                 android:textSize="18sp"
                 android:textStyle="bold"
                 android:drawablePadding="8dp"
-                app:drawableTint="#FF9800" />
+                app:drawableTint="?attr/chk_primary_blue" />
 
             <!-- Appearance & Language — no card background -->
             <LinearLayout
@@ -557,6 +559,7 @@
                     android:id="@+id/themeLayout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:background="?android:attr/selectableItemBackground"
                     android:clickable="true"
                     android:focusable="true"
                     android:gravity="center_vertical"
@@ -568,7 +571,7 @@
                         android:layout_width="40dp"
                         android:layout_height="40dp"
                         android:layout_marginEnd="16dp"
-                        app:cardBackgroundColor="#33673AB7"
+                        app:cardBackgroundColor="?attr/chk_selectedItemColor"
                         app:cardCornerRadius="8dp"
                         app:cardElevation="0dp">
 
@@ -577,7 +580,7 @@
                             android:layout_height="match_parent"
                             android:padding="10dp"
                             android:src="@drawable/ic_theme"
-                            app:tint="#673AB7" />
+                            app:tint="?attr/chk_primary_blue" />
                     </androidx.cardview.widget.CardView>
 
                     <LinearLayout
@@ -616,6 +619,7 @@
                     android:id="@+id/fontLayout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:background="?android:attr/selectableItemBackground"
                     android:clickable="true"
                     android:focusable="true"
                     android:gravity="center_vertical"
@@ -627,7 +631,7 @@
                         android:layout_width="40dp"
                         android:layout_height="40dp"
                         android:layout_marginEnd="16dp"
-                        app:cardBackgroundColor="#33E91E63"
+                        app:cardBackgroundColor="?attr/chk_selectedItemColor"
                         app:cardCornerRadius="8dp"
                         app:cardElevation="0dp">
 
@@ -636,7 +640,7 @@
                             android:layout_height="match_parent"
                             android:padding="10dp"
                             android:src="@drawable/ic_text_format"
-                            app:tint="#E91E63" />
+                            app:tint="?attr/chk_primary_blue" />
                     </androidx.cardview.widget.CardView>
 
                     <LinearLayout
@@ -674,6 +678,7 @@
                     android:id="@+id/languageLayout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:background="?android:attr/selectableItemBackground"
                     android:clickable="true"
                     android:focusable="true"
                     android:gravity="center_vertical"
@@ -685,7 +690,7 @@
                         android:layout_width="40dp"
                         android:layout_height="40dp"
                         android:layout_marginEnd="16dp"
-                        app:cardBackgroundColor="#33FF9800"
+                        app:cardBackgroundColor="?attr/chk_selectedItemColor"
                         app:cardCornerRadius="8dp"
                         app:cardElevation="0dp">
 
@@ -694,7 +699,7 @@
                             android:layout_height="match_parent"
                             android:padding="10dp"
                             android:src="@drawable/ic_language"
-                            app:tint="#FF9800" />
+                            app:tint="?attr/chk_primary_blue" />
                     </androidx.cardview.widget.CardView>
 
                     <LinearLayout
@@ -738,7 +743,7 @@
                 android:textSize="18sp"
                 android:textStyle="bold"
                 android:drawablePadding="8dp"
-                app:drawableTint="#4CAF50" />
+                app:drawableTint="?attr/chk_primary_blue" />
 
             <!-- Security & Privacy — no card background -->
             <LinearLayout
@@ -751,6 +756,7 @@
                     android:id="@+id/dataBackupLayout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:background="?android:attr/selectableItemBackground"
                     android:clickable="true"
                     android:focusable="true"
                     android:gravity="center_vertical"
@@ -762,7 +768,7 @@
                         android:layout_width="40dp"
                         android:layout_height="40dp"
                         android:layout_marginEnd="16dp"
-                        app:cardBackgroundColor="#334CAF50"
+                        app:cardBackgroundColor="?attr/chk_selectedItemColor"
                         app:cardCornerRadius="8dp"
                         app:cardElevation="0dp">
 
@@ -771,7 +777,7 @@
                             android:layout_height="match_parent"
                             android:padding="10dp"
                             android:src="@drawable/ic_cloud_sync"
-                            app:tint="#4CAF50" />
+                            app:tint="?attr/chk_primary_blue" />
                     </androidx.cardview.widget.CardView>
 
                     <LinearLayout

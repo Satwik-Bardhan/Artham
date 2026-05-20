@@ -337,12 +337,28 @@ public class SettingsActivity extends BaseActivity {
             binding.primarySettingsLayout.profileImg.setImageResource(R.drawable.ic_person_placeholder);
         }
 
-        binding.primarySettingsLayout.uidText.setText("UID: " + currentUser.getUid().toUpperCase());
+        String uidString = currentUser.getUid().toUpperCase();
+        binding.primarySettingsLayout.uidText.setText("UID: " + uidString);
+
+        if (binding.primarySettingsLayout.copyUidButton != null) {
+            binding.primarySettingsLayout.copyUidButton.setOnClickListener(v -> {
+                copyToClipboard("User ID", uidString);
+            });
+        }
 
         if (currentUser.getMetadata() != null) {
             SimpleDateFormat sdf = new SimpleDateFormat("dd MMM, yyyy", Locale.getDefault());
             String creationDate = sdf.format(new Date(currentUser.getMetadata().getCreationTimestamp()));
             binding.primarySettingsLayout.createdDate.setText("Created on " + creationDate);
+        }
+    }
+
+    private void copyToClipboard(String label, String text) {
+        android.content.ClipboardManager clipboard = (android.content.ClipboardManager) getSystemService(android.content.Context.CLIPBOARD_SERVICE);
+        android.content.ClipData clip = android.content.ClipData.newPlainText(label, text);
+        if (clipboard != null) {
+            clipboard.setPrimaryClip(clip);
+            android.widget.Toast.makeText(this, "Copied UID to clipboard", android.widget.Toast.LENGTH_SHORT).show();
         }
     }
 

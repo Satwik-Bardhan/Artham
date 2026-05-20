@@ -8,19 +8,20 @@
     android:paddingVertical="6dp">
 
     <!-- CASH IN BUTTON -->
-    <androidx.cardview.widget.CardView
+    <com.google.android.material.card.MaterialCardView
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginEnd="6dp"
         android:layout_weight="1"
+        app:cardBackgroundColor="?attr/chk_incomeColor"
         app:cardCornerRadius="14dp"
-        app:cardElevation="3dp">
+        app:cardElevation="3dp"
+        app:strokeWidth="0dp">
 
         <LinearLayout
             android:id="@+id/btnCashIn"
             android:layout_width="match_parent"
             android:layout_height="56dp"
-            android:background="@drawable/button_cashin"
             android:clickable="true"
             android:focusable="true"
             android:foreground="?android:attr/selectableItemBackground"
@@ -43,22 +44,23 @@
                 android:textStyle="bold"
                 android:letterSpacing="0.04" />
         </LinearLayout>
-    </androidx.cardview.widget.CardView>
+    </com.google.android.material.card.MaterialCardView>
 
     <!-- CASH OUT BUTTON -->
-    <androidx.cardview.widget.CardView
+    <com.google.android.material.card.MaterialCardView
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="6dp"
         android:layout_weight="1"
+        app:cardBackgroundColor="?attr/chk_expenseColor"
         app:cardCornerRadius="14dp"
-        app:cardElevation="3dp">
+        app:cardElevation="3dp"
+        app:strokeWidth="0dp">
 
         <LinearLayout
             android:id="@+id/btnCashOut"
             android:layout_width="match_parent"
             android:layout_height="56dp"
-            android:background="@drawable/button_cashout"
             android:clickable="true"
             android:focusable="true"
             android:foreground="?android:attr/selectableItemBackground"
@@ -81,5 +83,5 @@
                 android:textStyle="bold"
                 android:letterSpacing="0.04" />
         </LinearLayout>
-    </androidx.cardview.widget.CardView>
+    </com.google.android.material.card.MaterialCardView>
 </LinearLayout>

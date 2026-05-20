@@ -90,92 +90,13 @@
                 tools:visibility="visible">
 
                 <!-- ─────────────────────────────────────────────────
-                     SECTION 1: Current Cashbook Header
+                     SECTION 1: Smart Insights
                      ───────────────────────────────────────────────── -->
-                <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/userBoxCard"
+                <include
+                    android:id="@+id/insightsCardInclude"
+                    layout="@layout/layout_insights_card"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    app:cardBackgroundColor="?attr/chk_headerColor"
-                    app:cardCornerRadius="14dp"
-                    app:cardElevation="0dp"
-                    app:strokeWidth="0dp">
-
-                    <LinearLayout
-                        android:id="@+id/userBox"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal"
-                        android:paddingHorizontal="16dp"
-                        android:paddingVertical="16dp"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:background="?attr/selectableItemBackground">
-
-                        <!-- Icon with tinted background chip -->
-                        <FrameLayout
-                            android:layout_width="44dp"
-                            android:layout_height="44dp"
-                            android:layout_marginEnd="14dp">
-
-                            <View
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:background="@drawable/bg_icon_chip" />
-
-                            <ImageView
-                                android:layout_width="22dp"
-                                android:layout_height="22dp"
-                                android:layout_gravity="center"
-                                android:src="@drawable/ic_book"
-                                app:tint="?attr/chk_balanceColor" />
-                        </FrameLayout>
-
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical">
-
-                            <TextView
-                                android:id="@+id/userNameTop"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Current Book"
-                                android:textColor="?attr/chk_textColorPrimary"
-                                android:textSize="16sp"
-                                android:textStyle="bold"
-                                android:maxLines="1"
-                                android:ellipsize="end" />
-
-                            <TextView
-                                android:id="@+id/lastOpenedText"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="3dp"
-                                android:text="Last opened: Just now"
-                                android:textColor="?attr/chk_textColorHint"
-                                android:textSize="12sp" />
-                        </LinearLayout>
-
-                        <!-- Chevron arrow for visual affordance -->
-                        <ImageView
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
-                            android:layout_marginStart="8dp"
-                            android:src="@drawable/ic_chevron_right"
-                            app:tint="?attr/chk_textColorHint"
-                            android:contentDescription="Switch cashbook" />
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
-
-                <!-- Hidden cashbook name holder (used by ViewModel) -->
-                <TextView
-                    android:id="@+id/currentCashbookText"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:visibility="gone" />
+                    android:layout_height="wrap_content" />
 
 
                 <!-- ─────────────────────────────────────────────────

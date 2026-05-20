@@ -250,4 +250,22 @@
     <string name="widget_description">Quick Cash In / Cash Out entry buttons</string>
     <string name="widget_label">Artham Quick Entry</string>
 
+    <string-array name="search_hints">
+        <item>Search by party name…</item>
+        <item>Try searching "Rent"…</item>
+        <item>Find a transaction by remark…</item>
+        <item>Search by category, e.g. Food…</item>
+        <item>Look up a payment mode…</item>
+        <item>Search "Salary" to find income…</item>
+        <item>Type an amount to find entries…</item>
+        <item>Search by tag or label…</item>
+        <item>Try "Shopping" or "Transport"…</item>
+        <item>Find entries by party or note…</item>
+        <item>Search for "UPI" payments…</item>
+        <item>Look up "Cash" transactions…</item>
+        <item>Find your recent expenses…</item>
+        <item>Search "Freelance" income…</item>
+        <item>Type a keyword to filter…</item>
+    </string-array>
+
 </resources>
