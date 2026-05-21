@@ -72,10 +72,14 @@ public class PdfReportGenerator {
 
     // Backward-compatible overload (used by CashbookSwitchActivity etc.)
     public static Uri generateReport(Context context, List<TransactionModel> transactions, String cashbookName, long startDate, long endDate) {
-        return generateReport(context, transactions, cashbookName, startDate, endDate, false);
+        return generateReport(context, transactions, cashbookName, startDate, endDate, false, false);
     }
 
     public static Uri generateReport(Context context, List<TransactionModel> transactions, String cashbookName, long startDate, long endDate, boolean greyscale) {
+        return generateReport(context, transactions, cashbookName, startDate, endDate, greyscale, false);
+    }
+
+    public static Uri generateReport(Context context, List<TransactionModel> transactions, String cashbookName, long startDate, long endDate, boolean greyscale, boolean categoryReport) {
         Document document = new Document(PageSize.A4, 36, 36, 36, 50);
         String sanitizedBookName = cashbookName != null ? cashbookName.replaceAll("[\\\\/:*?\"<>|\\s]+", "_") : "Report";
         if (sanitizedBookName.trim().isEmpty()) {
@@ -143,6 +147,11 @@ public class PdfReportGenerator {
 
             // 6. Add Total Count at the very bottom
             addTotalCount(document, transactions.size());
+
+            if (categoryReport) {
+                document.add(new Paragraph(" "));
+                addCategoryReportTable(document, transactions, greyscale);
+            }
 
             document.close();
             outputStream.close();
@@ -306,6 +315,70 @@ public class PdfReportGenerator {
 
     private static String formatCurrency(double amount) {
         return String.format(Locale.getDefault(), "%.0f", amount);
+    }
+
+    private static void addCategoryReportTable(Document document, List<TransactionModel> transactions, boolean greyscale) throws Exception {
+        java.util.Map<String, CategorySummary> map = new java.util.TreeMap<>();
+        for (TransactionModel t : transactions) {
+            String category = t.getTransactionCategory();
+            if (category == null || category.trim().isEmpty()) {
+                category = "Uncategorized";
+            }
+            CategorySummary summary = map.get(category);
+            if (summary == null) {
+                summary = new CategorySummary();
+                map.put(category, summary);
+            }
+            if ("IN".equalsIgnoreCase(t.getType())) {
+                summary.totalIn += t.getAmount();
+            } else {
+                summary.totalOut += t.getAmount();
+            }
+        }
+
+        Paragraph pTitle = new Paragraph("Category-Wise Summary", fontBookName);
+        pTitle.setAlignment(Element.ALIGN_CENTER);
+        pTitle.setSpacingBefore(15);
+        pTitle.setSpacingAfter(8);
+        document.add(pTitle);
+        document.add(new Paragraph(" "));
+
+        PdfPTable table = new PdfPTable(4);
+        table.setWidthPercentage(100);
+        table.setWidths(new float[]{4, 2, 2, 2});
+        table.setHeaderRows(1);
+
+        String[] headers = {"Category", "Total Cash In", "Total Cash Out", "Net Balance"};
+        for (String h : headers) {
+            int align = (h.equals("Category")) ? Element.ALIGN_LEFT : Element.ALIGN_RIGHT;
+            addCell(table, h, fontHeader, align, HEADER_GRAY);
+        }
+
+        BaseColor inColor = greyscale ? GS_DARK : COLOR_GREEN;
+        BaseColor outColor = greyscale ? GS_MID : COLOR_RED;
+
+        for (java.util.Map.Entry<String, CategorySummary> entry : map.entrySet()) {
+            CategorySummary sum = entry.getValue();
+            double net = sum.totalIn - sum.totalOut;
+
+            addCell(table, entry.getKey(), fontNormal, Element.ALIGN_LEFT, BaseColor.WHITE);
+
+            String inStr = sum.totalIn > 0 ? formatCurrency(sum.totalIn) : "-";
+            addColoredCell(table, inStr, TEXT_BLACK, Element.ALIGN_RIGHT, BaseColor.WHITE);
+
+            String outStr = sum.totalOut > 0 ? formatCurrency(sum.totalOut) : "-";
+            addColoredCell(table, outStr, TEXT_BLACK, Element.ALIGN_RIGHT, BaseColor.WHITE);
+
+            BaseColor netColor = greyscale ? GS_DARK : (net >= 0 ? COLOR_GREEN : COLOR_RED);
+            addColoredCell(table, formatCurrency(net), netColor, Element.ALIGN_RIGHT, BaseColor.WHITE, true);
+        }
+
+        document.add(table);
+    }
+
+    private static class CategorySummary {
+        double totalIn = 0;
+        double totalOut = 0;
     }
 
     static class FooterEvent extends PdfPageEventHelper {

@@ -30,7 +30,7 @@ public class TransactionExportActivity extends BaseActivity {
     private Button todayButton, thisWeekButton, thisMonthButton, allEntriesButton, formatPdfButton, formatExcelButton, downloadActionButton;
     private RadioGroup entryTypeRadioGroup, paymentModeRadioGroup;
     private ImageView backButton;
-    private CheckBox greyscaleCheckbox;
+    private CheckBox greyscaleCheckbox, categoryReportCheckbox;
 
     // Logic
     private Calendar startCalendar, endCalendar;
@@ -70,6 +70,7 @@ public class TransactionExportActivity extends BaseActivity {
         paymentModeRadioGroup = findViewById(R.id.paymentModeRadioGroup);
 
         greyscaleCheckbox = findViewById(R.id.greyscaleCheckbox);
+        categoryReportCheckbox = findViewById(R.id.categoryReportCheckbox);
 
         formatPdfButton = findViewById(R.id.formatPdfButton);
         formatExcelButton = findViewById(R.id.formatExcelButton);
@@ -204,12 +205,31 @@ public class TransactionExportActivity extends BaseActivity {
     }
 
     private void setDateRangeToAllEntries() {
-        // Set start to epoch (Jan 1, 2000) and end to far future to capture all entries
-        startCalendar = Calendar.getInstance();
-        startCalendar.set(2000, Calendar.JANUARY, 1, 0, 0, 0);
+        long minTimestamp = getIntent().getLongExtra("min_timestamp", -1);
+        long maxTimestamp = getIntent().getLongExtra("max_timestamp", -1);
 
-        endCalendar = Calendar.getInstance();
-        endCalendar.set(2099, Calendar.DECEMBER, 31, 23, 59, 59);
+        if (minTimestamp != -1 && maxTimestamp != -1 && minTimestamp <= maxTimestamp) {
+            startCalendar = Calendar.getInstance();
+            startCalendar.setTimeInMillis(minTimestamp);
+            startCalendar.set(Calendar.HOUR_OF_DAY, 0);
+            startCalendar.set(Calendar.MINUTE, 0);
+            startCalendar.set(Calendar.SECOND, 0);
+            startCalendar.set(Calendar.MILLISECOND, 0);
+
+            endCalendar = Calendar.getInstance();
+            endCalendar.setTimeInMillis(maxTimestamp);
+            endCalendar.set(Calendar.HOUR_OF_DAY, 23);
+            endCalendar.set(Calendar.MINUTE, 59);
+            endCalendar.set(Calendar.SECOND, 59);
+            endCalendar.set(Calendar.MILLISECOND, 999);
+        } else {
+            // Set start to epoch (Jan 1, 2000) and end to far future to capture all entries
+            startCalendar = Calendar.getInstance();
+            startCalendar.set(2000, Calendar.JANUARY, 1, 0, 0, 0);
+
+            endCalendar = Calendar.getInstance();
+            endCalendar.set(2099, Calendar.DECEMBER, 31, 23, 59, 59);
+        }
 
         updateDateTextViews();
     }
@@ -255,6 +275,7 @@ public class TransactionExportActivity extends BaseActivity {
         resultIntent.putExtra("paymentMode", paymentMode);
         resultIntent.putExtra("format", selectedFormat);
         resultIntent.putExtra("greyscale", greyscaleCheckbox != null && greyscaleCheckbox.isChecked());
+        resultIntent.putExtra("categoryReport", categoryReportCheckbox != null && categoryReportCheckbox.isChecked());
 
         setResult(Activity.RESULT_OK, resultIntent);
         finish();

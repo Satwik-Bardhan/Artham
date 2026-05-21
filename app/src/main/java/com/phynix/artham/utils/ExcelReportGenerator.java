@@ -29,6 +29,11 @@ public class ExcelReportGenerator {
 
     public static Uri generateReport(Context context, List<TransactionModel> transactions,
                                       String cashbookName, long startDate, long endDate) {
+        return generateReport(context, transactions, cashbookName, startDate, endDate, false);
+    }
+
+    public static Uri generateReport(Context context, List<TransactionModel> transactions,
+                                      String cashbookName, long startDate, long endDate, boolean categoryReport) {
         String sanitizedBookName = cashbookName != null ? cashbookName.replaceAll("[\\\\/:*?\"<>|\\s]+", "_") : "Report";
         if (sanitizedBookName.trim().isEmpty()) {
             sanitizedBookName = "Report";
@@ -128,6 +133,41 @@ public class ExcelReportGenerator {
                     formatAmount(totalIn - totalOut));
             writer.println();
             writer.println("Total No. of entries:," + transactions.size());
+
+            if (categoryReport) {
+                writer.println();
+                writer.println("Category-Wise Summary");
+                writer.println("Category,Total Cash In,Total Cash Out,Net Balance");
+
+                java.util.Map<String, double[]> categoryMap = new java.util.TreeMap<>();
+                for (TransactionModel t : transactions) {
+                    String cat = t.getTransactionCategory();
+                    if (cat == null || cat.trim().isEmpty()) {
+                        cat = "Uncategorized";
+                    }
+                    double[] vals = categoryMap.get(cat);
+                    if (vals == null) {
+                        vals = new double[2];
+                        categoryMap.put(cat, vals);
+                    }
+                    if ("IN".equalsIgnoreCase(t.getType())) {
+                        vals[0] += t.getAmount();
+                    } else {
+                        vals[1] += t.getAmount();
+                    }
+                }
+
+                for (java.util.Map.Entry<String, double[]> entry : categoryMap.entrySet()) {
+                    double[] vals = entry.getValue();
+                    double net = vals[0] - vals[1];
+                    writer.println(
+                            escapeCsv(entry.getKey()) + "," +
+                            formatAmount(vals[0]) + "," +
+                            formatAmount(vals[1]) + "," +
+                            formatAmount(net)
+                    );
+                }
+            }
 
             writer.flush();
             writer.close();

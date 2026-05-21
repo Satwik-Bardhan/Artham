@@ -555,6 +555,7 @@ public class TransactionActivity extends BaseActivity {
                     exportReport(data.getLongExtra("startDate", 0), data.getLongExtra("endDate", 0),
                             data.getStringExtra("entryType"), data.getStringExtra("paymentMode"),
                             data.getBooleanExtra("greyscale", false),
+                            data.getBooleanExtra("categoryReport", false),
                             data.getStringExtra("format"));
                 } else {
                     requestPermissions();
@@ -563,7 +564,7 @@ public class TransactionActivity extends BaseActivity {
         });
     }
 
-    private void exportReport(long startDate, long endDate, String entryType, String paymentMode, boolean greyscale, String format) {
+    private void exportReport(long startDate, long endDate, String entryType, String paymentMode, boolean greyscale, boolean categoryReport, String format) {
         if (allTransactions.isEmpty()) { showSnackbar("No data"); return; }
         List<TransactionModel> exportList = allTransactions.stream()
                 .filter(t -> t.getTimestamp() >= startDate && t.getTimestamp() <= endDate)
@@ -575,32 +576,33 @@ public class TransactionActivity extends BaseActivity {
 
         Uri fileUri;
         String mimeType;
-        String chooserTitle;
         if ("Excel".equalsIgnoreCase(format)) {
-            fileUri = ExcelReportGenerator.generateReport(this, exportList, currentCashbookName, startDate, endDate);
+            fileUri = ExcelReportGenerator.generateReport(this, exportList, currentCashbookName, startDate, endDate, categoryReport);
             mimeType = "text/csv";
-            chooserTitle = "Share Excel Report";
         } else {
-            fileUri = PdfReportGenerator.generateReport(this, exportList, currentCashbookName, startDate, endDate, greyscale);
+            fileUri = PdfReportGenerator.generateReport(this, exportList, currentCashbookName, startDate, endDate, greyscale, categoryReport);
             mimeType = "application/pdf";
-            chooserTitle = "Share PDF Report";
         }
 
         if (fileUri != null) {
-            showShareDialog(fileUri, mimeType, chooserTitle);
+            showOpenDialog(fileUri, mimeType);
         }
     }
 
-    private void showShareDialog(Uri fileUri, String mimeType, String chooserTitle) {
+    private void showOpenDialog(Uri fileUri, String mimeType) {
         new androidx.appcompat.app.AlertDialog.Builder(this)
                 .setTitle("Export Successful")
-                .setMessage("Your report is saved to Downloads/Artham. Would you like to share it now?")
-                .setPositiveButton("Share", (dialog, which) -> {
-                    Intent shareIntent = new Intent(Intent.ACTION_SEND);
-                    shareIntent.setType(mimeType);
-                    shareIntent.putExtra(Intent.EXTRA_STREAM, fileUri);
-                    shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                    startActivity(Intent.createChooser(shareIntent, chooserTitle));
+                .setMessage("Your report is saved to Downloads/Artham. Would you like to open it now?")
+                .setPositiveButton("Open", (dialog, which) -> {
+                    try {
+                        Intent openIntent = new Intent(Intent.ACTION_VIEW);
+                        openIntent.setDataAndType(fileUri, mimeType);
+                        openIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                        openIntent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+                        startActivity(openIntent);
+                    } catch (android.content.ActivityNotFoundException e) {
+                        showSnackbar("No application found to open this file format");
+                    }
                 })
                 .setNegativeButton("Maybe Later", null)
                 .show();
@@ -657,7 +659,17 @@ public class TransactionActivity extends BaseActivity {
 
         binding.downloadReportButton.setOnClickListener(v -> {
             if(allTransactions.isEmpty()){ showSnackbar("No data"); return; }
-            downloadLauncher.launch(new Intent(this, TransactionExportActivity.class));
+            Intent intent = new Intent(this, TransactionExportActivity.class);
+            long minTimestamp = Long.MAX_VALUE;
+            long maxTimestamp = Long.MIN_VALUE;
+            for (TransactionModel t : allTransactions) {
+                long ts = t.getTimestamp();
+                if (ts < minTimestamp) minTimestamp = ts;
+                if (ts > maxTimestamp) maxTimestamp = ts;
+            }
+            intent.putExtra("min_timestamp", minTimestamp);
+            intent.putExtra("max_timestamp", maxTimestamp);
+            downloadLauncher.launch(intent);
         });
 
         // Summary Cards Toggle
