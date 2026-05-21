@@ -63,8 +63,9 @@
         <!-- Main Balance -->
         <LinearLayout
             android:id="@+id/balanceSection"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginHorizontal="24dp"
             android:gravity="center_horizontal"
             android:orientation="vertical"
             app:layout_constraintTop_toBottomOf="@id/balanceCardCashbookSection"
@@ -84,9 +85,15 @@
 
             <TextView
                 android:id="@+id/balanceText"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
+                android:gravity="center"
+                android:maxLines="1"
+                app:autoSizeTextType="uniform"
+                app:autoSizeMinTextSize="18sp"
+                app:autoSizeMaxTextSize="40sp"
+                app:autoSizeStepGranularity="1sp"
                 android:contentDescription="Current balance amount"
                 android:text="₹0.00"
                 android:textColor="#FFFFFF"

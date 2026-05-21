@@ -95,8 +95,10 @@ public class CashbookAdapter extends RecyclerView.Adapter<CashbookAdapter.Cashbo
         private ImageView menuButton;
 
         private TextView cashbookNameText;
+        private TextView cashbookDescriptionText;
         private TextView statusBadge;
         private TextView lastModifiedText;
+        private TextView categoryBadge;
         private TextView balanceText;
         private TextView transactionCountText;
         private TextView createdDateText;
@@ -107,11 +109,13 @@ public class CashbookAdapter extends RecyclerView.Adapter<CashbookAdapter.Cashbo
             iconCard = itemView.findViewById(R.id.iconCard);
             bookIcon = itemView.findViewById(R.id.cashbookIcon);
             cashbookNameText = itemView.findViewById(R.id.cashbookName);
+            cashbookDescriptionText = itemView.findViewById(R.id.cashbookDescription);
             statusBadge = itemView.findViewById(R.id.activeStatus);
             favoriteButton = itemView.findViewById(R.id.favoriteButton);
             menuButton = itemView.findViewById(R.id.menuButton);
             lastModifiedText = itemView.findViewById(R.id.lastModifiedText);
             balanceText = itemView.findViewById(R.id.balanceAmount);
+            categoryBadge = itemView.findViewById(R.id.categoryBadge);
             transactionCountText = itemView.findViewById(R.id.transactionCountText);
             createdDateText = itemView.findViewById(R.id.createdDateText);
         }
@@ -120,6 +124,15 @@ public class CashbookAdapter extends RecyclerView.Adapter<CashbookAdapter.Cashbo
             if (cashbook == null) return;
 
             cashbookNameText.setText(cashbook.getName() != null ? cashbook.getName() : "Unnamed");
+
+            if (cashbookDescriptionText != null) {
+                if (cashbook.getDescription() != null && !cashbook.getDescription().trim().isEmpty()) {
+                    cashbookDescriptionText.setText(cashbook.getDescription());
+                    cashbookDescriptionText.setVisibility(View.VISIBLE);
+                } else {
+                    cashbookDescriptionText.setVisibility(View.GONE);
+                }
+            }
 
             // Handles assigning "Current" badge dynamically based on the passed ID
             setupStatusBadge(cashbook);
@@ -159,7 +172,46 @@ public class CashbookAdapter extends RecyclerView.Adapter<CashbookAdapter.Cashbo
                 }
             }
 
+            if (categoryBadge != null) {
+                String cat = cashbook.getCategory();
+                if (cat != null && !cat.trim().isEmpty()) {
+                    categoryBadge.setText(cat);
+                    categoryBadge.setVisibility(View.VISIBLE);
+                    int catColor = getCategoryColor(cat);
+
+                    // Create dynamic outline border drawable
+                    android.graphics.drawable.GradientDrawable gd = new android.graphics.drawable.GradientDrawable();
+                    gd.setShape(android.graphics.drawable.GradientDrawable.RECTANGLE);
+                    
+                    float density = categoryBadge.getResources().getDisplayMetrics().density;
+                    gd.setCornerRadius(6 * density); // 6dp corner radius for premium pill badge
+                    gd.setStroke((int)(1 * density), catColor); // 1dp stroke width of dynamic label color
+                    
+                    // Set background transparent
+                    gd.setColor(android.graphics.Color.TRANSPARENT);
+                    
+                    categoryBadge.setBackground(gd);
+                    categoryBadge.setTextColor(catColor); // Set text color to solid dynamic label color
+                } else {
+                    categoryBadge.setVisibility(View.GONE);
+                }
+            }
+
             setupListeners(cashbook);
+        }
+
+        private int getCategoryColor(String category) {
+            if (category == null || category.trim().isEmpty()) {
+                return Color.GRAY;
+            }
+            int hash = category.hashCode();
+            String[] colors = {
+                "#3F51B5", "#009688", "#FF9800", "#E91E63", 
+                "#9C27B0", "#03A9F4", "#4CAF50", "#FF5722",
+                "#607D8B", "#8BC34A", "#00BCD4"
+            };
+            int index = Math.abs(hash) % colors.length;
+            return Color.parseColor(colors[index]);
         }
 
         private void setupStatusBadge(CashbookModel cashbook) {
@@ -265,6 +317,8 @@ public class CashbookAdapter extends RecyclerView.Adapter<CashbookAdapter.Cashbo
             CashbookModel newItem = newList.get(newItemPosition);
 
             return Objects.equals(oldItem.getName(), newItem.getName()) &&
+                    Objects.equals(oldItem.getDescription(), newItem.getDescription()) &&
+                    Objects.equals(oldItem.getCategory(), newItem.getCategory()) &&
                     Math.abs(oldItem.getBalance() - newItem.getBalance()) < 0.01 &&
                     oldItem.getTransactionCount() == newItem.getTransactionCount() &&
                     oldItem.isActive() == newItem.isActive() &&

@@ -136,17 +136,36 @@ public class TransactionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
         List<Object> grouped = new ArrayList<>();
         String lastDate = "";
-        SimpleDateFormat headerFormat = new SimpleDateFormat("dd MMM yyyy", Locale.US);
 
         for (TransactionModel t : sortedList) {
-            String currentDate = headerFormat.format(new Date(t.getTimestamp()));
+            String currentDate = getRelativeDateString(t.getTimestamp());
             if (!currentDate.equals(lastDate)) {
-                grouped.add(currentDate); // Inject Date Header
+                grouped.add(currentDate); // Inject Relative Date Header
                 lastDate = currentDate;
             }
             grouped.add(t); // Inject Transaction Item
         }
         return grouped;
+    }
+
+    private String getRelativeDateString(long timestamp) {
+        java.util.Calendar today = java.util.Calendar.getInstance();
+        java.util.Calendar yesterday = java.util.Calendar.getInstance();
+        yesterday.add(java.util.Calendar.DATE, -1);
+
+        java.util.Calendar target = java.util.Calendar.getInstance();
+        target.setTimeInMillis(timestamp);
+
+        if (today.get(java.util.Calendar.YEAR) == target.get(java.util.Calendar.YEAR)
+                && today.get(java.util.Calendar.DAY_OF_YEAR) == target.get(java.util.Calendar.DAY_OF_YEAR)) {
+            return "Today";
+        } else if (yesterday.get(java.util.Calendar.YEAR) == target.get(java.util.Calendar.YEAR)
+                && yesterday.get(java.util.Calendar.DAY_OF_YEAR) == target.get(java.util.Calendar.DAY_OF_YEAR)) {
+            return "Yesterday";
+        } else {
+            SimpleDateFormat displayFormat = new SimpleDateFormat("dd MMM yyyy", Locale.US);
+            return displayFormat.format(new Date(timestamp));
+        }
     }
 
     // --- ViewHolders ---

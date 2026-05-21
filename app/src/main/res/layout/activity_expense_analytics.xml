@@ -27,8 +27,9 @@
 
             <ImageButton
                 android:id="@+id/closeButton"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:padding="8dp"
                 android:layout_centerVertical="true"
                 android:layout_alignParentEnd="true"
                 android:background="?attr/selectableItemBackgroundBorderless"
@@ -80,14 +81,40 @@
             android:visibility="visible" />
 
         <!-- STATE B: Empty View -->
-        <TextView
+        <LinearLayout
             android:id="@+id/noDataTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:text="No expense data found"
-            android:textColor="?attr/chk_textColorSecondary"
-            android:visibility="gone" />
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="24dp"
+            android:visibility="gone">
+
+            <ImageView
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:layout_marginBottom="16dp"
+                android:src="@drawable/ic_transaction_report"
+                app:tint="?attr/chk_textColorSecondary" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="No Expense Data Found"
+                android:textColor="?attr/chk_textColorPrimary"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Add expense transactions to see their breakdown here."
+                android:textColor="?attr/chk_textColorSecondary"
+                android:textSize="14sp"
+                android:gravity="center" />
+        </LinearLayout>
 
         <!-- STATE C: Data Content -->
         <LinearLayout

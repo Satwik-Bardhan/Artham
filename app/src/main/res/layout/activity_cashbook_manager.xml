@@ -148,7 +148,7 @@
 
                 <include
                     android:id="@+id/includedFilterLayout"
-                    layout="@layout/layout_cashbook_filters"
+                    layout="@layout/layout_cashbook_labels"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content" />
 

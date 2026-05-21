@@ -67,7 +67,7 @@ public class ExpenseAnalyticsActivity extends BaseActivity {
     private PieChart fullScreenPieChart;
     private RecyclerView monthlyCardsRecyclerView, detailedLegendRecyclerView;
     private ImageButton closeButton;
-    private TextView noDataTextView;
+    private View noDataTextView;
     private TextView totalExpenseValue;
     private ProgressBar loadingProgressBar;
     private LinearLayout contentLayout;

@@ -137,6 +137,11 @@
             android:screenOrientation="portrait" />
 
         <activity
+            android:name=".activities.ManageCashbookLabelsActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+
+        <activity
             android:name=".activities.EditProfileActivity"
             android:exported="false"
             android:screenOrientation="portrait"

@@ -8,11 +8,12 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
         android:layout_marginBottom="8dp"
-        android:layout_marginStart="4dp"
-        android:text="General Settings"
+        android:text="@string/general_settings"
         android:textColor="?attr/chk_textColorPrimary"
-        android:textSize="18sp"
+        android:textSize="16sp"
         android:textStyle="bold"
         android:drawablePadding="8dp" />
 
@@ -50,7 +51,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Help &amp; Support"
+                        android:text="@string/help_and_support"
                         android:textColor="?attr/chk_textColorPrimary"
                         android:textSize="16sp"
                         android:textStyle="bold" />
@@ -58,7 +59,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="FAQ, Contact us"
+                        android:text="@string/faq_contact_us"
                         android:textColor="?attr/chk_textColorSecondary"
                         android:textSize="13sp"
                         android:layout_marginTop="2dp" />
@@ -107,7 +108,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="App Settings"
+                        android:text="@string/app_settings"
                         android:textColor="?attr/chk_textColorPrimary"
                         android:textSize="16sp"
                         android:textStyle="bold" />
@@ -115,7 +116,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Features, Theme, Language, Security"
+                        android:text="@string/features_theme_security"
                         android:textColor="?attr/chk_textColorSecondary"
                         android:textSize="13sp"
                         android:layout_marginTop="2dp" />
@@ -164,7 +165,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Your Profile"
+                        android:text="@string/your_profile"
                         android:textColor="?attr/chk_textColorPrimary"
                         android:textSize="16sp"
                         android:textStyle="bold" />
@@ -172,7 +173,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Name, Mobile, Email"
+                        android:text="@string/profile_details_sub"
                         android:textColor="?attr/chk_textColorSecondary"
                         android:textSize="13sp"
                         android:layout_marginTop="2dp" />
@@ -221,7 +222,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="About Artham"
+                        android:text="@string/about_artham"
                         android:textColor="?attr/chk_textColorPrimary"
                         android:textSize="16sp"
                         android:textStyle="bold" />
@@ -229,7 +230,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Privacy Policy, T&amp;C, Version"
+                        android:text="@string/about_sub"
                         android:textColor="?attr/chk_textColorSecondary"
                         android:textSize="13sp"
                         android:layout_marginTop="2dp" />

@@ -20,6 +20,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 import android.widget.TextView;
+import android.view.WindowManager;
 
 import java.util.Locale;
 
@@ -33,6 +34,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.facebook.shimmer.ShimmerFrameLayout;
 
+import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -103,6 +105,12 @@ public class CashbookSwitchActivity extends BaseActivity {
     // State
     private boolean isLoading = false;
 
+    // Custom Categories State
+    private DatabaseReference userCategoriesRef;
+    private ValueEventListener categoriesListener;
+    private final List<String> customCategories = new ArrayList<>();
+    private final List<com.google.android.material.chip.Chip> dynamicChips = new ArrayList<>();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -144,11 +152,15 @@ public class CashbookSwitchActivity extends BaseActivity {
         userCashbooksRef = FirebaseDatabase.getInstance().getReference()
                 .child("users").child(currentUser.getUid()).child("cashbooks");
 
+        userCategoriesRef = FirebaseDatabase.getInstance().getReference()
+                .child("users").child(currentUser.getUid()).child("cashbookCategories");
+
         initViews();
         setupRecyclerView();
         setupClickListeners();
         setupSearchListener();
         setupFilterListener();
+        setupCategoriesListener();
         loadCashbooks();
 
     }
@@ -180,7 +192,7 @@ public class CashbookSwitchActivity extends BaseActivity {
         closeButton = findViewById(R.id.closeButton);
 
         searchEditText = findViewById(R.id.searchEditText);
-        chipGroup = findViewById(R.id.includedFilterLayout);
+        chipGroup = findViewById(R.id.chipGroup);
         sortButton = findViewById(R.id.sortButton);
         cashbookCountText = findViewById(R.id.cashbookCountText);
         quickAddFab = findViewById(R.id.quickAddFab);
@@ -227,6 +239,10 @@ public class CashbookSwitchActivity extends BaseActivity {
         View.OnClickListener addAction = v -> handleAddNewCashbook();
         if (emptyStateCreateButton != null) emptyStateCreateButton.setOnClickListener(addAction);
         if (quickAddFab != null) quickAddFab.setOnClickListener(addAction);
+        View btnAddCashbookFilter = findViewById(R.id.btnAddCashbookFilter);
+        if (btnAddCashbookFilter != null) {
+            btnAddCashbookFilter.setOnClickListener(v -> showCreateCategoryDialog());
+        }
 
         if (sortButton != null) sortButton.setOnClickListener(v -> showSortOptionsDialog());
     }
@@ -247,6 +263,11 @@ public class CashbookSwitchActivity extends BaseActivity {
                     currentFilter = "favorites";
                 } else if (checkedId == R.id.chipInactive) {
                     currentFilter = "inactive";
+                } else {
+                    com.google.android.material.chip.Chip checkedChip = findViewById(checkedId);
+                    if (checkedChip != null) {
+                        currentFilter = checkedChip.getText().toString();
+                    }
                 }
                 applyFiltersAndSort();
             }
@@ -356,9 +377,14 @@ public class CashbookSwitchActivity extends BaseActivity {
                     .setCancelable(false)
                     .create();
 
+            if (dialog.getWindow() != null) {
+                dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            }
+
             TextView titleView = dialogView.findViewById(R.id.dialogTitle);
             EditText nameInput = dialogView.findViewById(R.id.cashbookNameInput);
             EditText descInput = dialogView.findViewById(R.id.cashbookDescInput);
+            EditText categoryInput = dialogView.findViewById(R.id.cashbookCategoryInput);
             Button btnSave = dialogView.findViewById(R.id.btnSave);
             Button btnCancel = dialogView.findViewById(R.id.btnCancel);
 
@@ -368,6 +394,88 @@ public class CashbookSwitchActivity extends BaseActivity {
             titleView.setText(title);
             btnSave.setText(btnText);
 
+            if (categoryInput != null) {
+                if (cashbookToEdit != null) {
+                    categoryInput.setText(cashbookToEdit.getCategory());
+                } else {
+                    // If creating and currently filtering by a custom category, pre-fill it!
+                    boolean isStandardFilter = "all".equalsIgnoreCase(currentFilter) ||
+                            "active".equalsIgnoreCase(currentFilter) ||
+                            "recent".equalsIgnoreCase(currentFilter) ||
+                            "favorites".equalsIgnoreCase(currentFilter) ||
+                            "inactive".equalsIgnoreCase(currentFilter);
+                    if (!isStandardFilter) {
+                        categoryInput.setText(currentFilter);
+                    }
+                }
+
+                // Setup Suggested Labels Side-by-Side Chips
+                android.widget.HorizontalScrollView suggestedScroll = dialogView.findViewById(R.id.dialogSuggestedLabelsScroll);
+                com.google.android.material.chip.ChipGroup suggestedChipGroup = dialogView.findViewById(R.id.dialogSuggestedChipGroup);
+
+                if (suggestedScroll != null && suggestedChipGroup != null) {
+                    if (customCategories != null && !customCategories.isEmpty()) {
+                        suggestedScroll.setVisibility(android.view.View.VISIBLE);
+                        suggestedChipGroup.removeAllViews();
+
+                        String initialCategory = (cashbookToEdit != null) ? cashbookToEdit.getCategory() : "";
+                        if (initialCategory.isEmpty()) {
+                            boolean isStandardFilter = "all".equalsIgnoreCase(currentFilter) ||
+                                    "active".equalsIgnoreCase(currentFilter) ||
+                                    "recent".equalsIgnoreCase(currentFilter) ||
+                                    "favorites".equalsIgnoreCase(currentFilter) ||
+                                    "inactive".equalsIgnoreCase(currentFilter);
+                            if (!isStandardFilter) {
+                                initialCategory = currentFilter;
+                            }
+                        }
+
+                        for (String category : customCategories) {
+                            com.google.android.material.chip.Chip chip = new com.google.android.material.chip.Chip(this);
+                            chip.setText(category);
+                            chip.setCheckable(true);
+                            chip.setCheckedIconVisible(false);
+                            
+                            styleChipWithCategoryColor(chip, category);
+
+                            if (category.equalsIgnoreCase(initialCategory)) {
+                                chip.setChecked(true);
+                            }
+
+                            chip.setOnClickListener(v -> {
+                                if (chip.isChecked()) {
+                                    categoryInput.setText(category);
+                                } else {
+                                    categoryInput.setText("");
+                                }
+                            });
+
+                            suggestedChipGroup.addView(chip);
+                        }
+
+                        // Listen to text changes to update chip selection state dynamically
+                        categoryInput.addTextChangedListener(new android.text.TextWatcher() {
+                            @Override
+                            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+                            @Override
+                            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+                            @Override
+                            public void afterTextChanged(android.text.Editable s) {
+                                String typed = s.toString().trim();
+                                for (int i = 0; i < suggestedChipGroup.getChildCount(); i++) {
+                                    com.google.android.material.chip.Chip chip = (com.google.android.material.chip.Chip) suggestedChipGroup.getChildAt(i);
+                                    chip.setChecked(chip.getText().toString().equalsIgnoreCase(typed));
+                                }
+                            }
+                        });
+                    } else {
+                        suggestedScroll.setVisibility(android.view.View.GONE);
+                    }
+                }
+            }
+
             if (cashbookToEdit != null) {
                 nameInput.setText(cashbookToEdit.getName());
                 descInput.setText(cashbookToEdit.getDescription());
@@ -376,6 +484,7 @@ public class CashbookSwitchActivity extends BaseActivity {
             btnSave.setOnClickListener(v -> {
                 String name = nameInput.getText().toString().trim();
                 String description = descInput.getText().toString().trim();
+                String category = categoryInput != null ? categoryInput.getText().toString().trim() : "";
 
                 if (name.isEmpty()) {
                     showSnackbar("Please enter a cashbook name");
@@ -383,15 +492,27 @@ public class CashbookSwitchActivity extends BaseActivity {
                 }
 
                 if (cashbookToEdit == null) {
-                    createNewCashbook(name, description);
+                    createNewCashbook(name, description, category);
                 } else {
-                    updateCashbook(cashbookToEdit, name, description);
+                    updateCashbook(cashbookToEdit, name, description, category);
                 }
                 dialog.dismiss();
             });
 
             btnCancel.setOnClickListener(v -> dialog.dismiss());
+
+            if (dialog.getWindow() != null) {
+                dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+            }
+
             dialog.show();
+
+            if (dialog.getWindow() != null) {
+                dialog.getWindow().setLayout(
+                        android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+                        android.view.ViewGroup.LayoutParams.WRAP_CONTENT
+                );
+            }
 
         } catch (Exception e) {
             Log.e(TAG, "Error showing dialog", e);
@@ -399,12 +520,13 @@ public class CashbookSwitchActivity extends BaseActivity {
         }
     }
 
-    private void createNewCashbook(String name, String description) {
+    private void createNewCashbook(String name, String description, String category) {
         String cashbookId = userCashbooksRef.push().getKey();
         if (cashbookId == null) return;
 
         CashbookModel newCashbook = new CashbookModel(cashbookId, name);
         newCashbook.setDescription(description);
+        newCashbook.setCategory(category);
         newCashbook.setUserId(currentUser.getUid());
         newCashbook.setCreatedDate(System.currentTimeMillis());
         newCashbook.setLastModified(System.currentTimeMillis());
@@ -412,20 +534,30 @@ public class CashbookSwitchActivity extends BaseActivity {
 
         userCashbooksRef.child(cashbookId).setValue(newCashbook)
                 .addOnSuccessListener(aVoid -> {
+                    if (!category.isEmpty() && !customCategories.contains(category)) {
+                        saveCustomCategory(category);
+                    }
                     showSnackbar("Cashbook created successfully!");
                     onCashbookSelected(newCashbook);
                 })
                 .addOnFailureListener(e -> showSnackbar("Failed: " + e.getMessage()));
     }
 
-    private void updateCashbook(CashbookModel cashbook, String newName, String newDescription) {
+    private void updateCashbook(CashbookModel cashbook, String newName, String newDescription, String category) {
         cashbook.setName(newName);
         cashbook.setDescription(newDescription);
+        cashbook.setCategory(category);
 
         userCashbooksRef.child(cashbook.getCashbookId()).child("name").setValue(newName);
         userCashbooksRef.child(cashbook.getCashbookId()).child("description").setValue(newDescription);
+        userCashbooksRef.child(cashbook.getCashbookId()).child("category").setValue(category);
         userCashbooksRef.child(cashbook.getCashbookId()).child("lastModified").setValue(System.currentTimeMillis())
-                .addOnSuccessListener(aVoid -> showSnackbar("Cashbook updated"))
+                .addOnSuccessListener(aVoid -> {
+                    if (!category.isEmpty() && !customCategories.contains(category)) {
+                        saveCustomCategory(category);
+                    }
+                    showSnackbar("Cashbook updated");
+                })
                 .addOnFailureListener(e -> showSnackbar("Failed to update"));
     }
 
@@ -462,6 +594,9 @@ public class CashbookSwitchActivity extends BaseActivity {
                 return true;
             } else if (itemId == R.id.menu_export) {
                 exportCashbookAsPdf(cashbook);
+                return true;
+            } else if (itemId == R.id.menu_change_label) {
+                showChangeCategoryDialog(cashbook);
                 return true;
             } else if (itemId == R.id.menu_delete) {
                 showDeleteConfirmation(cashbook);
@@ -676,8 +811,14 @@ public class CashbookSwitchActivity extends BaseActivity {
             case "recent":
                 filteredList = new ArrayList<>(searchResults);
                 break;
-            default:
+            case "all":
                 filteredList = new ArrayList<>(searchResults);
+                break;
+            default:
+                String categoryToMatch = currentFilter;
+                filteredList = searchResults.stream()
+                        .filter(c -> categoryToMatch.equalsIgnoreCase(c.getCategory()))
+                        .collect(Collectors.toList());
                 break;
         }
 
@@ -796,6 +937,210 @@ public class CashbookSwitchActivity extends BaseActivity {
         if (cashbooksListener != null && userCashbooksRef != null) {
             userCashbooksRef.removeEventListener(cashbooksListener);
         }
+        if (categoriesListener != null && userCategoriesRef != null) {
+            userCategoriesRef.removeEventListener(categoriesListener);
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    //  LABEL / CATEGORIES logic
+    // ═══════════════════════════════════════════════════════════
+
+    private void setupCategoriesListener() {
+        if (categoriesListener != null) {
+            userCategoriesRef.removeEventListener(categoriesListener);
+        }
+        categoriesListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                customCategories.clear();
+                for (DataSnapshot snap : snapshot.getChildren()) {
+                    String catName = snap.getKey();
+                    if (catName != null && !catName.trim().isEmpty()) {
+                        customCategories.add(catName);
+                    }
+                }
+                rebuildCategoryChips();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e(TAG, "Failed to load custom categories", error.toException());
+            }
+        };
+        userCategoriesRef.addValueEventListener(categoriesListener);
+    }
+
+    private void rebuildCategoryChips() {
+        if (chipGroup == null) return;
+
+        // Temporarily clear listener to prevent firing while we modify views
+        chipGroup.setOnCheckedStateChangeListener(null);
+
+        // Remove previously added dynamic chips
+        for (com.google.android.material.chip.Chip chip : dynamicChips) {
+            chipGroup.removeView(chip);
+        }
+        dynamicChips.clear();
+
+        // Standard chips checking
+        if ("all".equalsIgnoreCase(currentFilter)) {
+            chipGroup.check(R.id.chipAll);
+        } else if ("active".equalsIgnoreCase(currentFilter)) {
+            chipGroup.check(R.id.chipActive);
+        } else if ("recent".equalsIgnoreCase(currentFilter)) {
+            chipGroup.check(R.id.chipRecent);
+        } else if ("favorites".equalsIgnoreCase(currentFilter)) {
+            chipGroup.check(R.id.chipFavorites);
+        } else if ("inactive".equalsIgnoreCase(currentFilter)) {
+            chipGroup.check(R.id.chipInactive);
+        } else {
+            // Uncheck standard chips since we are selecting a custom category
+            chipGroup.clearCheck();
+        }
+
+        // Create and append dynamic chips
+        for (String category : customCategories) {
+            com.google.android.material.chip.Chip chip = new com.google.android.material.chip.Chip(this);
+            chip.setId(View.generateViewId());
+            chip.setText(category);
+            chip.setCheckable(true);
+            chip.setCheckedIconVisible(false);
+
+            styleChipWithCategoryColor(chip, category);
+
+            chipGroup.addView(chip);
+            dynamicChips.add(chip);
+
+            // If the current filter matches this custom category, check it!
+            if (category.equalsIgnoreCase(currentFilter)) {
+                chip.setChecked(true);
+            }
+        }
+
+        // Restore the listener
+        setupFilterListener();
+    }
+
+    private void showCreateCategoryDialog() {
+        showCreateCategoryDialogAndAssign(null);
+    }
+
+    private void showCreateCategoryDialogAndAssign(@Nullable CashbookModel cashbookToAssign) {
+        try {
+            View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_create_cashbook_category, null);
+
+            AlertDialog dialog = new MaterialAlertDialogBuilder(this)
+                    .setView(dialogView)
+                    .setCancelable(false)
+                    .create();
+
+            if (dialog.getWindow() != null) {
+                dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            }
+
+            EditText nameInput = dialogView.findViewById(R.id.categoryNameInput);
+            Button btnSave = dialogView.findViewById(R.id.btnSave);
+            Button btnCancel = dialogView.findViewById(R.id.btnCancel);
+
+            btnSave.setOnClickListener(v -> {
+                String name = nameInput.getText().toString().trim();
+
+                if (name.isEmpty()) {
+                    showSnackbar("Please enter a category name");
+                    return;
+                }
+
+                saveCustomCategory(name);
+                if (cashbookToAssign != null) {
+                    updateCashbookCategory(cashbookToAssign, name);
+                }
+                dialog.dismiss();
+            });
+
+            btnCancel.setOnClickListener(v -> dialog.dismiss());
+
+            if (dialog.getWindow() != null) {
+                dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+            }
+
+            dialog.show();
+
+            if (dialog.getWindow() != null) {
+                dialog.getWindow().setLayout(
+                        android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+                        android.view.ViewGroup.LayoutParams.WRAP_CONTENT
+                );
+            }
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error showing category dialog", e);
+            showSnackbar("Error opening dialog");
+        }
+    }
+
+    private void showChangeCategoryDialog(CashbookModel cashbook) {
+        if (cashbook == null) return;
+
+        List<String> options = new ArrayList<>();
+        options.add("None (No Category)");
+        options.addAll(customCategories);
+
+        String[] optionsArray = options.toArray(new String[0]);
+
+        int checkedItem = 0; // Default to "None"
+        String currentCat = cashbook.getCategory();
+        if (currentCat != null && !currentCat.trim().isEmpty()) {
+            int index = customCategories.indexOf(currentCat);
+            if (index != -1) {
+                checkedItem = index + 1; // offset by 1 because of "None"
+            }
+        }
+
+        new MaterialAlertDialogBuilder(this)
+                .setTitle("Change Category")
+                .setSingleChoiceItems(optionsArray, checkedItem, (dialog, which) -> {
+                    String selectedCategory = "";
+                    if (which > 0) {
+                        selectedCategory = customCategories.get(which - 1);
+                    }
+                    updateCashbookCategory(cashbook, selectedCategory);
+                    dialog.dismiss();
+                })
+                .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
+                .setNeutralButton("+ New Category", (dialog, which) -> {
+                    dialog.dismiss();
+                    showCreateCategoryDialogAndAssign(cashbook);
+                })
+                .show();
+    }
+
+    private void updateCashbookCategory(CashbookModel cashbook, String category) {
+        cashbook.setCategory(category);
+        userCashbooksRef.child(cashbook.getCashbookId()).child("category").setValue(category);
+        userCashbooksRef.child(cashbook.getCashbookId()).child("lastModified").setValue(System.currentTimeMillis())
+                .addOnSuccessListener(aVoid -> {
+                    if (!category.isEmpty() && !customCategories.contains(category)) {
+                        saveCustomCategory(category);
+                    }
+                    showSnackbar("Category updated successfully");
+                })
+                .addOnFailureListener(e -> showSnackbar("Failed to update category"));
+    }
+
+    private void saveCustomCategory(String name) {
+        if (currentUser == null) return;
+        DatabaseReference catRef = FirebaseDatabase.getInstance().getReference()
+                .child("users").child(currentUser.getUid()).child("cashbookCategories");
+        
+        catRef.child(name).setValue(true)
+                .addOnSuccessListener(aVoid -> {
+                    showSnackbar("Category '" + name + "' created!");
+                    // Select the newly created category as active filter automatically!
+                    currentFilter = name;
+                    applyFiltersAndSort();
+                })
+                .addOnFailureListener(e -> showSnackbar("Failed to create category: " + e.getMessage()));
     }
 
     // ═══════════════════════════════════════════════════════════
@@ -828,5 +1173,52 @@ public class CashbookSwitchActivity extends BaseActivity {
                                     .markPageTutorialCompleted(OnboardingManager.PAGE_CASHBOOK_SWITCH))
                     .start();
         }, 600);
+    }
+
+    private void styleChipWithCategoryColor(Chip chip, String category) {
+        int catColor = getCategoryColor(category);
+
+        int[][] states = new int[][] {
+            new int[] { android.R.attr.state_checked },
+            new int[] {} // Default fallback for unchecked state
+        };
+
+        int[] colorsBg = new int[] {
+            catColor,
+            android.graphics.Color.TRANSPARENT
+        };
+        chip.setChipBackgroundColor(new android.content.res.ColorStateList(states, colorsBg));
+
+        int[] colorsText = new int[] {
+            android.graphics.Color.WHITE,
+            getThemeAttrColor(R.attr.chk_textColorPrimary)
+        };
+        chip.setTextColor(new android.content.res.ColorStateList(states, colorsText));
+
+        int[] colorsStroke = new int[] {
+            catColor,
+            catColor
+        };
+        chip.setChipStrokeColor(new android.content.res.ColorStateList(states, colorsStroke));
+
+        float strokeWidthPx = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1, getResources().getDisplayMetrics());
+        chip.setChipStrokeWidth(strokeWidthPx);
+
+        int rippleColor = androidx.core.graphics.ColorUtils.setAlphaComponent(catColor, 40);
+        chip.setRippleColor(android.content.res.ColorStateList.valueOf(rippleColor));
+    }
+
+    private int getCategoryColor(String category) {
+        if (category == null || category.trim().isEmpty()) {
+            return android.graphics.Color.GRAY;
+        }
+        int hash = category.hashCode();
+        String[] colors = {
+            "#3F51B5", "#009688", "#FF9800", "#E91E63", 
+            "#9C27B0", "#03A9F4", "#4CAF50", "#FF5722",
+            "#607D8B", "#8BC34A", "#00BCD4"
+        };
+        int index = Math.abs(hash) % colors.length;
+        return android.graphics.Color.parseColor(colors[index]);
     }
 }

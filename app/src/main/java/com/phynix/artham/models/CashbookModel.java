@@ -21,6 +21,7 @@ public class CashbookModel implements Serializable {
     private boolean isFavorite;
     private String userId;
     private String currency;
+    private String category;
 
     // Use Map to handle Firebase's JSON structure for lists/objects correctly
     private Map<String, TransactionModel> transactions;
@@ -33,6 +34,7 @@ public class CashbookModel implements Serializable {
         this.isCurrent = false;
         this.totalBalance = 0.0;
         this.transactionCount = 0;
+        this.category = "";
     }
 
     // Constructor for creating a new Cashbook manually
@@ -40,6 +42,7 @@ public class CashbookModel implements Serializable {
         this.cashbookId = cashbookId;
         this.name = name;
         this.description = "";
+        this.category = "";
         this.totalBalance = 0.0;
         this.transactionCount = 0;
         this.createdDate = System.currentTimeMillis();
@@ -204,6 +207,14 @@ public class CashbookModel implements Serializable {
 
     public void setCurrency(String currency) {
         this.currency = currency;
+    }
+
+    public String getCategory() {
+        return category != null ? category : "";
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
     }
 
     // --- Utilities ---

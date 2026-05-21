@@ -126,6 +126,7 @@
     <string name="activate_cashbook">Activate</string>
     <string name="deactivate_cashbook">Deactivate</string>
     <string name="export_cashbook">Export</string>
+    <string name="change_label">Change Category</string>
     <string name="delete_cashbook">Delete</string>
     <string name="show_pie_chart">Show Pie Chart</string>
     <string name="hide_pie_chart">Hide Pie Chart</string>
@@ -258,7 +259,7 @@
         <item>Look up a payment mode…</item>
         <item>Search "Salary" to find income…</item>
         <item>Type an amount to find entries…</item>
-        <item>Search by tag or label…</item>
+        <item>Search by tag or category…</item>
         <item>Try "Shopping" or "Transport"…</item>
         <item>Find entries by party or note…</item>
         <item>Search for "UPI" payments…</item>
@@ -267,5 +268,25 @@
         <item>Search "Freelance" income…</item>
         <item>Type a keyword to filter…</item>
     </string-array>
+
+    <!-- Settings Screen Strings -->
+    <string name="general_settings">General Settings</string>
+    <string name="help_and_support">Help &amp; Support</string>
+    <string name="faq_contact_us">FAQ, Contact us</string>
+    <string name="app_settings">App Settings</string>
+    <string name="features_theme_security">Features, Theme, Language, Security</string>
+    <string name="your_profile">Your Profile</string>
+    <string name="profile_details_sub">Name, Mobile, Email</string>
+    <string name="about_artham">About Artham</string>
+    <string name="about_sub">Privacy Policy, T&amp;C, Version</string>
+    <string name="manage_preferences">Manage your preferences</string>
+    <string name="account_actions">Account Actions</string>
+    <string name="logout">Logout</string>
+    <string name="sign_out_sub">Sign out from your account</string>
+    <string name="our_promise">Our Promise</string>
+    <string name="safe_100">100% Safe</string>
+    <string name="and_secure">&amp; Secure</string>
+    <string name="auto_backup">Auto Backup</string>
+    <string name="enabled">Enabled</string>
 
 </resources>

@@ -36,6 +36,7 @@ import com.phynix.artham.R;
 import com.phynix.artham.adapters.CategoryAdapter;
 import com.phynix.artham.models.CategoryModel;
 import com.phynix.artham.utils.ThemeManager;
+import com.phynix.artham.utils.SnackbarHelper;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -222,7 +223,28 @@ public class CategoryActivity extends BaseActivity {
         new AlertDialog.Builder(this)
                 .setTitle("Delete Category")
                 .setMessage("Are you sure you want to delete " + c.getName() + "?")
-                .setPositiveButton("Delete", (d, w) -> userCategoriesRef.child(c.getId()).removeValue())
+                .setPositiveButton("Delete", (d, w) -> {
+                    final CategoryModel backup = c;
+                    userCategoriesRef.child(c.getId()).removeValue().addOnCompleteListener(task -> {
+                        if (task.isSuccessful()) {
+                            SnackbarHelper.showWithAction(
+                                    CategoryActivity.this,
+                                    "Category deleted",
+                                    "UNDO",
+                                    v -> {
+                                        if (backup.getId() != null) {
+                                            userCategoriesRef.child(backup.getId()).setValue(backup)
+                                                    .addOnSuccessListener(aVoid -> Toast.makeText(CategoryActivity.this, "Category restored", Toast.LENGTH_SHORT).show())
+                                                    .addOnFailureListener(e -> Toast.makeText(CategoryActivity.this, "Failed to restore category", Toast.LENGTH_SHORT).show());
+                                        }
+                                    },
+                                    findViewById(R.id.categoriesRecyclerView)
+                            );
+                        } else {
+                            Toast.makeText(CategoryActivity.this, "Failed to delete category", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                })
                 .setNegativeButton("Cancel", null)
                 .show();
     }

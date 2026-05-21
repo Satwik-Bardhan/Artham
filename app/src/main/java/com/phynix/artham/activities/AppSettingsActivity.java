@@ -12,7 +12,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.firebase.auth.FirebaseAuth;
@@ -22,7 +21,7 @@ import com.phynix.artham.utils.ThemeManager;
 import com.phynix.artham.utils.OnboardingManager;
 
 // [FIX] Import the CategoryActivity from its new sub-package
-import com.phynix.artham.activities.CategoryActivity;
+
 
 public class AppSettingsActivity extends BaseActivity {
 
@@ -35,7 +34,7 @@ public class AppSettingsActivity extends BaseActivity {
 
     // UI Elements
     private SwitchMaterial calculatorSwitch, hapticSwitch, summarySwitch, pieChartSwitch, monthlySummarySwitch;
-    private LinearLayout dataBackupLayout, languageLayout, themeLayout, fontLayout, manageCategoriesLayout, replayTutorialLayout;
+    private LinearLayout dataBackupLayout, languageLayout, themeLayout, fontLayout, manageCategoriesLayout, manageCashbookCategoriesLayout, replayTutorialLayout;
     private TextView currentLanguageTextView, currentThemeTextView, currentFontTextView;
 
     // To track theme/font changes upon return
@@ -96,6 +95,7 @@ public class AppSettingsActivity extends BaseActivity {
 
         // Bind the Category Management Layout
         manageCategoriesLayout = findViewById(R.id.manageCategoriesLayout);
+        manageCashbookCategoriesLayout = findViewById(R.id.manageCashbookCategoriesLayout);
 
         // Bind the Replay Tutorial Layout
         replayTutorialLayout = findViewById(R.id.replayTutorialLayout);
@@ -256,6 +256,13 @@ public class AppSettingsActivity extends BaseActivity {
                     }
                 }
 
+                startActivity(intent);
+            });
+        }
+
+        if (manageCashbookCategoriesLayout != null) {
+            manageCashbookCategoriesLayout.setOnClickListener(v -> {
+                Intent intent = new Intent(AppSettingsActivity.this, ManageCashbookLabelsActivity.class);
                 startActivity(intent);
             });
         }

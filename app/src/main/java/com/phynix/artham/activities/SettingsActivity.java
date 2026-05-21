@@ -349,7 +349,7 @@ public class SettingsActivity extends BaseActivity {
         if (currentUser.getMetadata() != null) {
             SimpleDateFormat sdf = new SimpleDateFormat("dd MMM, yyyy", Locale.getDefault());
             String creationDate = sdf.format(new Date(currentUser.getMetadata().getCreationTimestamp()));
-            binding.primarySettingsLayout.createdDate.setText("Created on " + creationDate);
+            binding.primarySettingsLayout.createdDate.setText("Joined on " + creationDate);
         }
     }
 

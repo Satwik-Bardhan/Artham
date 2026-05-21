@@ -21,6 +21,11 @@
         android:icon="@drawable/ic_export" />
 
     <item
+        android:id="@+id/menu_change_label"
+        android:title="@string/change_label"
+        android:icon="@drawable/ic_label" />
+
+    <item
         android:id="@+id/menu_delete"
         android:title="@string/delete_cashbook"
         android:icon="@drawable/ic_delete" />
