@@ -55,6 +55,7 @@ import com.google.android.material.textfield.TextInputLayout;
 import com.phynix.artham.models.TransactionModel;
 import com.phynix.artham.utils.AmountFormatter;
 import com.phynix.artham.utils.Constants;
+import com.phynix.artham.utils.DialogUtils;
 import com.phynix.artham.utils.ThemeManager;
 import com.phynix.artham.utils.OnboardingManager;
 import com.phynix.artham.utils.OnboardingOverlay;
@@ -86,8 +87,11 @@ public class CashInOutActivity extends BaseActivity {
     private RadioButton radioIn, radioOut, radioCash, radioOnline, radioCard;
     private View swapButton, calculatorButton, voiceInputButton, contactBookButton;
     private CheckBox taxCheckbox;
+    private View taxDetailsContainer;
     private TextInputLayout taxAmountLayout;
     private TextInputEditText taxAmountEditText, remarkEditText, tagsEditText, partyTextView;
+    private RadioGroup taxTypeToggle;
+    private TextView taxBaseAmountTextView, taxCalculatedAmountTextView, taxTotalAmountTextView;
     private EditText amountEditText;
     private Button quickAmount100, quickAmount500, quickAmount1000, quickAmount5000;
     private Button saveEntryButton, saveAndAddNewButton, clearButton;
@@ -208,8 +212,13 @@ public class CashInOutActivity extends BaseActivity {
         radioCard = findViewById(R.id.radioCard);
 
         taxCheckbox = findViewById(R.id.taxCheckbox);
+        taxDetailsContainer = findViewById(R.id.taxDetailsContainer);
         taxAmountLayout = findViewById(R.id.taxAmountLayout);
         taxAmountEditText = findViewById(R.id.taxAmountEditText);
+        taxTypeToggle = findViewById(R.id.taxTypeToggle);
+        taxBaseAmountTextView = findViewById(R.id.taxBaseAmountTextView);
+        taxCalculatedAmountTextView = findViewById(R.id.taxCalculatedAmountTextView);
+        taxTotalAmountTextView = findViewById(R.id.taxTotalAmountTextView);
 
         amountEditText = findViewById(R.id.amountEditText);
         calculatorButton = findViewById(R.id.calculatorButton);
@@ -286,8 +295,27 @@ public class CashInOutActivity extends BaseActivity {
 
         calculatorButton.setOnClickListener(v -> checkAndOpenCalculator());
 
-        taxCheckbox.setOnCheckedChangeListener((bv, isChecked) ->
-                taxAmountLayout.setVisibility(isChecked ? View.VISIBLE : View.GONE));
+        taxCheckbox.setOnCheckedChangeListener((bv, isChecked) -> {
+            taxDetailsContainer.setVisibility(isChecked ? View.VISIBLE : View.GONE);
+            recalculateTax();
+        });
+
+        android.text.TextWatcher taxTextWatcher = new android.text.TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+            @Override
+            public void afterTextChanged(android.text.Editable s) {
+                recalculateTax();
+            }
+        };
+        amountEditText.addTextChangedListener(taxTextWatcher);
+        taxAmountEditText.addTextChangedListener(taxTextWatcher);
+
+        taxTypeToggle.setOnCheckedChangeListener((group, checkedId) -> recalculateTax());
 
         voiceInputButton.setOnClickListener(v -> startVoiceInput());
 
@@ -295,7 +323,6 @@ public class CashInOutActivity extends BaseActivity {
             categorySelectorCard.setOnClickListener(v -> openCategorySelector());
         }
 
-        partyTextView.setOnClickListener(v -> openPartySelector());
         contactBookButton.setOnClickListener(v -> openContactPicker());
 
         saveEntryButton.setOnClickListener(v -> saveTransaction(false));
@@ -440,13 +467,46 @@ public class CashInOutActivity extends BaseActivity {
             return;
         }
 
-        TransactionModel transaction = new TransactionModel();
+        double enteredAmount = 0.0;
         try {
-            transaction.setAmount(Double.parseDouble(amountStr));
+            enteredAmount = Double.parseDouble(amountStr);
         } catch (NumberFormatException e) {
             amountEditText.setError("Invalid number");
             return;
         }
+
+        double taxRate = 0.0;
+        double taxAmount = 0.0;
+        double finalAmount = enteredAmount;
+        boolean isInclusive = true;
+
+        if (taxCheckbox.isChecked()) {
+            String taxRateStr = taxAmountEditText.getText().toString().trim();
+            try {
+                if (!taxRateStr.isEmpty()) {
+                    taxRate = Double.parseDouble(taxRateStr);
+                }
+            } catch (NumberFormatException ignored) {}
+
+            isInclusive = taxTypeToggle.getCheckedRadioButtonId() == R.id.radioTaxInclusive;
+
+            if (taxRate > 0) {
+                if (isInclusive) {
+                    double baseAmount = enteredAmount / (1.0 + (taxRate / 100.0));
+                    taxAmount = enteredAmount - baseAmount;
+                    finalAmount = enteredAmount;
+                } else {
+                    taxAmount = enteredAmount * (taxRate / 100.0);
+                    finalAmount = enteredAmount + taxAmount;
+                }
+            }
+        }
+
+        TransactionModel transaction = new TransactionModel();
+        transaction.setAmount(finalAmount);
+        transaction.setTaxRate(taxRate);
+        transaction.setTaxAmount(taxAmount);
+        transaction.setTaxInclusive(isInclusive);
 
         transaction.setType(radioIn.isChecked() ? Constants.TRANSACTION_TYPE_IN : Constants.TRANSACTION_TYPE_OUT);
         String mode = "Online";
@@ -456,7 +516,17 @@ public class CashInOutActivity extends BaseActivity {
         transaction.setTransactionCategory(selectedCategory);
         transaction.setTimestamp(calendar.getTimeInMillis());
         transaction.setRemark(remarkEditText.getText().toString().trim());
-        if (selectedParty != null) transaction.setPartyName(selectedParty);
+
+        String party = partyTextView.getText().toString().trim();
+        if (!party.isEmpty()) {
+            transaction.setPartyName(party);
+        }
+
+        String tags = tagsEditText.getText().toString().trim();
+        if (!tags.isEmpty()) {
+            transaction.setTags(tags);
+        }
+
         transaction.setAutoFrequency(selectedAutoFrequency);
 
         isSaveAndNew = addNew;
@@ -487,11 +557,69 @@ public class CashInOutActivity extends BaseActivity {
         }
 
         taxCheckbox.setChecked(false);
-        taxAmountLayout.setVisibility(View.GONE);
+        taxAmountEditText.setText("");
+        taxTypeToggle.check(R.id.radioTaxInclusive);
+        taxDetailsContainer.setVisibility(View.GONE);
+        recalculateTax();
 
         isManualTimeSet = false;
         startRealTimeClock();
         amountEditText.requestFocus();
+    }
+
+    private void recalculateTax() {
+        if (taxBaseAmountTextView == null || taxCalculatedAmountTextView == null || taxTotalAmountTextView == null) return;
+
+        if (!taxCheckbox.isChecked()) {
+            taxBaseAmountTextView.setText("₹0.00");
+            taxCalculatedAmountTextView.setText("₹0.00");
+            taxTotalAmountTextView.setText("₹0.00");
+            return;
+        }
+
+        String amountStr = amountEditText.getText().toString().trim();
+        String taxRateStr = taxAmountEditText.getText().toString().trim();
+
+        double enteredAmount = 0.0;
+        double taxRate = 0.0;
+
+        try {
+            if (!amountStr.isEmpty()) {
+                enteredAmount = Double.parseDouble(amountStr);
+            }
+        } catch (NumberFormatException ignored) {}
+
+        try {
+            if (!taxRateStr.isEmpty()) {
+                taxRate = Double.parseDouble(taxRateStr);
+            }
+        } catch (NumberFormatException ignored) {}
+
+        boolean isInclusive = taxTypeToggle.getCheckedRadioButtonId() == R.id.radioTaxInclusive;
+
+        double baseAmount = 0.0;
+        double taxAmount = 0.0;
+        double totalAmount = 0.0;
+
+        if (taxRate <= 0.0) {
+            baseAmount = enteredAmount;
+            taxAmount = 0.0;
+            totalAmount = enteredAmount;
+        } else {
+            if (isInclusive) {
+                totalAmount = enteredAmount;
+                baseAmount = enteredAmount / (1.0 + (taxRate / 100.0));
+                taxAmount = enteredAmount - baseAmount;
+            } else {
+                baseAmount = enteredAmount;
+                taxAmount = enteredAmount * (taxRate / 100.0);
+                totalAmount = enteredAmount + taxAmount;
+            }
+        }
+
+        taxBaseAmountTextView.setText(String.format(Locale.US, "₹%.2f", baseAmount));
+        taxCalculatedAmountTextView.setText(String.format(Locale.US, "₹%.2f", taxAmount));
+        taxTotalAmountTextView.setText(String.format(Locale.US, "₹%.2f", totalAmount));
     }
 
     private void showDatePicker() {
@@ -602,11 +730,18 @@ public class CashInOutActivity extends BaseActivity {
 
         view.findViewById(R.id.btn_done).setOnClickListener(v -> {
             if (!display.getText().toString().equals("Error")) {
-                amountEditText.setText(display.getText().toString());
-                amountEditText.setSelection(amountEditText.getText().length());
+                String evaluated = safeEvaluate(display.getText().toString());
+                if (!evaluated.equals("Error")) {
+                    amountEditText.setText(evaluated);
+                    amountEditText.setSelection(amountEditText.getText().length());
+                } else {
+                    Toast.makeText(this, "Invalid calculation", Toast.LENGTH_SHORT).show();
+                    return;
+                }
             }
             dialog.dismiss();
         });
+        DialogUtils.applyBlurEffect(dialog, this);
         dialog.show();
     }
 
@@ -697,22 +832,7 @@ public class CashInOutActivity extends BaseActivity {
         categoryLauncher.launch(intent);
     }
 
-    private void openPartySelector() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        final EditText input = new EditText(this);
-        input.setHint("Enter party name");
-        builder.setTitle("Select Party")
-                .setView(input)
-                .setPositiveButton("OK", (dialog, which) -> {
-                    String partyName = input.getText().toString().trim();
-                    if (!partyName.isEmpty()) {
-                        selectedParty = partyName;
-                        partyTextView.setText(partyName);
-                    }
-                })
-                .setNegativeButton("Cancel", null)
-                .show();
-    }
+
 
     private void openContactPicker() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
@@ -806,6 +926,7 @@ public class CashInOutActivity extends BaseActivity {
             dialog.dismiss();
         });
 
+        DialogUtils.applyBlurEffect(dialog, this);
         dialog.show();
     }
 
@@ -843,6 +964,9 @@ public class CashInOutActivity extends BaseActivity {
                     .addStep(R.id.amountEditText,
                             "Enter Amount",
                             "Type the transaction amount. Use the quick-fill chips or the built-in calculator for convenience.")
+                    .addStep(R.id.taxCheckbox,
+                            "GST & Taxes",
+                            "Toggle this to calculate and track GST automatically (inclusive or exclusive) in real-time.")
                     .addStep(R.id.categorySelectorCard,
                             "Select Category",
                             "Choose a category to organize your transactions — Food, Travel, Bills, and more.")

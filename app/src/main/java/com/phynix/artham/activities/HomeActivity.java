@@ -58,6 +58,8 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ServerValue;
 import com.google.firebase.database.ValueEventListener;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.phynix.artham.adapters.DailyBalanceAdapter;
 import com.phynix.artham.databinding.ActivityHomeBinding;
 import com.phynix.artham.models.TransactionModel;
 import com.phynix.artham.models.Users;
@@ -89,6 +91,7 @@ import java.util.Map;
 import java.util.TimeZone;
 
 import com.phynix.artham.utils.ThemeUtil;
+import androidx.recyclerview.widget.RecyclerView;
 public class HomeActivity extends BaseActivity {
 
     private static final String TAG = "HomeActivity";
@@ -796,20 +799,37 @@ public class HomeActivity extends BaseActivity {
             };
             insightHandler.postDelayed(insightRunnable, 5000);
             
-            // Allow manual click to skip to the next insight
-            insightsCardInclude.setOnClickListener(v -> {
-                // Cancel pending auto-advance
-                insightHandler.removeCallbacks(insightRunnable);
-                
-                // Go to next insight
-                currentInsightIndex = (currentInsightIndex + 1) % currentInsights.size();
-                displayCurrentInsight(true);
-                updateInsightDots();
-                
-                // Restart timer
-                insightHandler.postDelayed(insightRunnable, 5000);
+            // Allow manual click/touch navigation: left 50% for previous, right 50% for next insight
+            insightsCardInclude.setOnClickListener(v -> {});
+            insightsCardInclude.setOnTouchListener((v, event) -> {
+                if (event.getAction() == android.view.MotionEvent.ACTION_UP) {
+                    float upX = event.getX();
+                    int width = v.getWidth();
+                    
+                    // Cancel pending auto-advance
+                    insightHandler.removeCallbacks(insightRunnable);
+                    
+                    if (upX < width / 2.0f) {
+                        // Left 50% clicked -> Previous insight
+                        currentInsightIndex = (currentInsightIndex - 1 + currentInsights.size()) % currentInsights.size();
+                    } else {
+                        // Right 50% clicked -> Next insight
+                        currentInsightIndex = (currentInsightIndex + 1) % currentInsights.size();
+                    }
+                    
+                    displayCurrentInsight(true);
+                    updateInsightDots();
+                    
+                    // Restart timer
+                    insightHandler.postDelayed(insightRunnable, 5000);
+                    
+                    v.performClick();
+                    return true;
+                }
+                return false;
             });
         } else {
+            insightsCardInclude.setOnTouchListener(null);
             insightsCardInclude.setOnClickListener(null);
             insightsCardInclude.setClickable(false);
         }
@@ -1014,6 +1034,16 @@ public class HomeActivity extends BaseActivity {
                     .setOnClickListener(v -> openCashInOutActivity(Constants.TRANSACTION_TYPE_IN));
             binding.stickyButtons.btnCashOut
                     .setOnClickListener(v -> openCashInOutActivity(Constants.TRANSACTION_TYPE_OUT));
+        }
+
+        if (binding.dailySummaryInclude != null) {
+            binding.dailySummaryInclude.getRoot().setOnClickListener(v -> {
+                if (currentCashbookId != null) {
+                    Intent intent = new Intent(HomeActivity.this, DailySummaryActivity.class);
+                    intent.putExtra(Constants.EXTRA_CASHBOOK_ID, currentCashbookId);
+                    startActivity(intent);
+                }
+            });
         }
     }
 

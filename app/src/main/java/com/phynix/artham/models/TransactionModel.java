@@ -17,6 +17,9 @@ public class TransactionModel implements Serializable {
     private String location;
     private String attachmentUri;
     private String autoFrequency; // null = off, "Daily", "Weekly", "Monthly"
+    private double taxRate;
+    private double taxAmount;
+    private boolean taxInclusive;
 
     // Transient field for running balance display (not persisted to Firebase)
     private transient double runningBalance;
@@ -63,6 +66,15 @@ public class TransactionModel implements Serializable {
 
     public String getAutoFrequency() { return autoFrequency; }
     public void setAutoFrequency(String autoFrequency) { this.autoFrequency = autoFrequency; }
+
+    public double getTaxRate() { return taxRate; }
+    public void setTaxRate(double taxRate) { this.taxRate = taxRate; }
+
+    public double getTaxAmount() { return taxAmount; }
+    public void setTaxAmount(double taxAmount) { this.taxAmount = taxAmount; }
+
+    public boolean isTaxInclusive() { return taxInclusive; }
+    public void setTaxInclusive(boolean taxInclusive) { this.taxInclusive = taxInclusive; }
 
     // Transient running balance (not persisted)
     public double getRunningBalance() { return runningBalance; }

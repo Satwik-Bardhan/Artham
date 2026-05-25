@@ -6,6 +6,9 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginTop="6dp"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?android:attr/selectableItemBackground"
     app:cardBackgroundColor="@android:color/transparent"
     app:cardCornerRadius="0dp"
     app:cardElevation="0dp"
@@ -131,6 +134,17 @@
                     android:letterSpacing="0.02" />
             </LinearLayout>
         </LinearLayout>
+
+        <!-- Chevron indicator to signify clickability -->
+        <ImageView
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="4dp"
+            android:src="@drawable/ic_chevron_right"
+            app:tint="?attr/chk_textColorHint"
+            android:alpha="0.6"
+            android:contentDescription="View History" />
 
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

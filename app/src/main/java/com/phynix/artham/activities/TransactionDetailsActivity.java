@@ -97,6 +97,9 @@ public class TransactionDetailsActivity extends BaseActivity {
         TextView detailRemark = findViewById(R.id.detailRemark);
         TextView detailPaymentMode = findViewById(R.id.detailPaymentMode);
 
+        View taxSection = findViewById(R.id.taxSection);
+        TextView detailTax = findViewById(R.id.detailTax);
+
         View partySection = findViewById(R.id.partySection);
         TextView detailParty = findViewById(R.id.detailParty);
 
@@ -130,6 +133,17 @@ public class TransactionDetailsActivity extends BaseActivity {
 
         detailCategory.setText(transaction.getTransactionCategory());
         if (detailPaymentMode != null) detailPaymentMode.setText(transaction.getPaymentMode());
+
+        if (transaction.getTaxRate() > 0) {
+            if (taxSection != null) taxSection.setVisibility(View.VISIBLE);
+            String taxType = transaction.isTaxInclusive() ? "Inclusive" : "Exclusive";
+            if (detailTax != null) {
+                detailTax.setText(String.format(Locale.US, "%.1f%% (%s) — Tax: ₹%.2f",
+                        transaction.getTaxRate(), taxType, transaction.getTaxAmount()));
+            }
+        } else {
+            if (taxSection != null) taxSection.setVisibility(View.GONE);
+        }
 
         if (TextUtils.isEmpty(transaction.getRemark())) {
             detailRemark.setText("No details provided");

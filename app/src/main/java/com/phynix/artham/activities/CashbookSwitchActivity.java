@@ -51,6 +51,7 @@ import com.phynix.artham.models.CashbookModel;
 import com.phynix.artham.models.TransactionModel;
 import com.phynix.artham.utils.Constants;
 import com.phynix.artham.utils.ErrorHandler;
+import com.phynix.artham.utils.DialogUtils;
 
 import com.phynix.artham.utils.PdfReportGenerator;
 import com.phynix.artham.utils.ThemeManager;
@@ -505,6 +506,7 @@ public class CashbookSwitchActivity extends BaseActivity {
                 dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
             }
 
+            DialogUtils.applyBlurEffect(dialog, this);
             dialog.show();
 
             if (dialog.getWindow() != null) {
@@ -677,12 +679,15 @@ public class CashbookSwitchActivity extends BaseActivity {
             return;
         }
 
-        new MaterialAlertDialogBuilder(this)
+        AlertDialog dialog = new MaterialAlertDialogBuilder(this)
                 .setTitle(getString(R.string.title_delete_cashbook))
                 .setMessage(getString(R.string.msg_delete_cashbook_confirmation, cashbook.getName()))
-                .setPositiveButton(getString(R.string.btn_delete), (dialog, which) -> deleteCashbookFromFirebase(cashbook))
+                .setPositiveButton(getString(R.string.btn_delete), (d, which) -> deleteCashbookFromFirebase(cashbook))
                 .setNegativeButton(getString(R.string.btn_cancel), null)
-                .show();
+                .create();
+
+        DialogUtils.applyBlurEffect(dialog, this);
+        dialog.show();
     }
 
     private void deleteCashbookFromFirebase(CashbookModel cashbook) {
@@ -766,6 +771,7 @@ public class CashbookSwitchActivity extends BaseActivity {
 
         view.findViewById(R.id.btnClose).setOnClickListener(v -> dialog.dismiss());
 
+        DialogUtils.applyBlurEffect(dialog, this);
         dialog.show();
     }
 
@@ -1064,6 +1070,7 @@ public class CashbookSwitchActivity extends BaseActivity {
                 dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
             }
 
+            DialogUtils.applyBlurEffect(dialog, this);
             dialog.show();
 
             if (dialog.getWindow() != null) {
@@ -1097,22 +1104,25 @@ public class CashbookSwitchActivity extends BaseActivity {
             }
         }
 
-        new MaterialAlertDialogBuilder(this)
+        AlertDialog dialog = new MaterialAlertDialogBuilder(this)
                 .setTitle("Change Category")
-                .setSingleChoiceItems(optionsArray, checkedItem, (dialog, which) -> {
+                .setSingleChoiceItems(optionsArray, checkedItem, (d, which) -> {
                     String selectedCategory = "";
                     if (which > 0) {
                         selectedCategory = customCategories.get(which - 1);
                     }
                     updateCashbookCategory(cashbook, selectedCategory);
-                    dialog.dismiss();
+                    d.dismiss();
                 })
-                .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
-                .setNeutralButton("+ New Category", (dialog, which) -> {
-                    dialog.dismiss();
+                .setNegativeButton("Cancel", (d, which) -> d.dismiss())
+                .setNeutralButton("+ New Category", (d, which) -> {
+                    d.dismiss();
                     showCreateCategoryDialogAndAssign(cashbook);
                 })
-                .show();
+                .create();
+
+        DialogUtils.applyBlurEffect(dialog, this);
+        dialog.show();
     }
 
     private void updateCashbookCategory(CashbookModel cashbook, String category) {
