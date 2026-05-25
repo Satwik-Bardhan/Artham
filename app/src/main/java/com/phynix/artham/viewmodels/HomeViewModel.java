@@ -52,6 +52,7 @@ public class HomeViewModel extends AndroidViewModel {
     private final MutableLiveData<Double> todayExpense = new MutableLiveData<>(0.0);
     private final MutableLiveData<Double> todayBalance = new MutableLiveData<>(0.0);
     private final MutableLiveData<List<TransactionModel>> todaysTransactions = new MutableLiveData<>();
+    private final MutableLiveData<List<TransactionModel>> recentTransactions = new MutableLiveData<>();
 
     // --- State ---
     private final MutableLiveData<Boolean> isLoading = new MutableLiveData<>(false);
@@ -102,6 +103,7 @@ public class HomeViewModel extends AndroidViewModel {
     public LiveData<Double> getCurrentBalance() { return currentBalance; }
     public LiveData<Double> getTodayBalance() { return todayBalance; }
     public LiveData<List<TransactionModel>> getTodaysTransactions() { return todaysTransactions; }
+    public LiveData<List<TransactionModel>> getRecentTransactions() { return recentTransactions; }
 
     public String getCurrentCashbookId() { return currentCashbookId; }
 
@@ -182,6 +184,7 @@ public class HomeViewModel extends AndroidViewModel {
             double in = 0, out = 0;
             double tIn = 0, tOut = 0;
             List<TransactionModel> todayList = new ArrayList<>();
+            List<TransactionModel> previousList = new ArrayList<>();
 
             for (TransactionModel t : rawData) {
                 double amount = t.getAmount();
@@ -194,8 +197,15 @@ public class HomeViewModel extends AndroidViewModel {
                     todayList.add(t);
                     if (isIncome) tIn += amount;
                     else tOut += amount;
+                } else {
+                    previousList.add(t);
                 }
             }
+
+            // Sort previous entries by timestamp descending (newest first) and take up to 10
+            previousList.sort((a, b) -> Long.compare(b.getTimestamp(), a.getTimestamp()));
+            List<TransactionModel> latestPrevious = previousList.size() > 10
+                    ? previousList.subList(0, 10) : previousList;
 
             double finalIn = in;
             double finalOut = out;
@@ -211,6 +221,7 @@ public class HomeViewModel extends AndroidViewModel {
             todayExpense.postValue(finalTOut);
             todayBalance.postValue(finalTIn - finalTOut);
             todaysTransactions.postValue(todayList);
+            recentTransactions.postValue(new ArrayList<>(latestPrevious));
 
             isLoading.postValue(false);
         });

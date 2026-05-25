@@ -138,9 +138,12 @@ public class HomeActivity extends BaseActivity {
     private TextView backCashbookIdText;
     private TextView backUserName;
     private ImageView backProfileImage;
-    private ImageView btnYoutube, btnInstagram, btnWebsite, btnGmail, btnFacebook, btnWhatsapp;
+    private ImageView btnInstagram, btnWebsite, btnGmail, btnWhatsapp;
 
     private boolean isBackVisible = false;
+
+    // Cached recent (previous) transactions for backfill display
+    private List<TransactionModel> cachedRecentTransactions = new ArrayList<>();
 
 
 
@@ -350,20 +353,14 @@ public class HomeActivity extends BaseActivity {
 
             backUserName = balanceCardBack.findViewById(R.id.backUserName);
             backProfileImage = balanceCardBack.findViewById(R.id.backProfileImage);
-            btnYoutube = balanceCardBack.findViewById(R.id.btnYoutube);
             btnInstagram = balanceCardBack.findViewById(R.id.btnInstagram);
             btnGmail = balanceCardBack.findViewById(R.id.btnGmail);
-            btnFacebook = balanceCardBack.findViewById(R.id.btnFacebook);
             btnWhatsapp = balanceCardBack.findViewById(R.id.btnWhatsapp);
 
-            if (btnYoutube != null)
-                btnYoutube.setOnClickListener(v -> openUrl("https://www.youtube.com/@ArthamApp"));
             if (btnInstagram != null)
                 btnInstagram.setOnClickListener(v -> openUrl("https://www.instagram.com/artham.in"));
             if (btnWebsite != null)
                 btnWebsite.setOnClickListener(v -> openUrl("https://www.artham.com"));
-            if (btnFacebook != null)
-                btnFacebook.setOnClickListener(v -> openUrl("https://www.facebook.com/arthamapp"));
             if (btnWhatsapp != null)
                 btnWhatsapp.setOnClickListener(v -> openUrl("https://whatsapp.com/channel/0029Vb6sFJv7dmeibXDqc014"));
             if (btnGmail != null)
@@ -591,6 +588,12 @@ public class HomeActivity extends BaseActivity {
 
         viewModel.getTodaysTransactions().observe(this, this::updateTransactionTable);
 
+        viewModel.getRecentTransactions().observe(this, recent -> {
+            cachedRecentTransactions = (recent != null) ? recent : new ArrayList<>();
+            // Re-render the table since backfill data changed
+            List<TransactionModel> todayList = viewModel.getTodaysTransactions().getValue();
+            updateTransactionTable(todayList);
+        });
 
     }
 
@@ -703,30 +706,61 @@ public class HomeActivity extends BaseActivity {
         }
     }
 
-    // --- ENHANCED LOGIC FOR EMPTY STATE & DEMO ROW ---
+    // --- ENHANCED LOGIC: Backfill with previous entries when today is empty ---
     private void updateTransactionTable(List<TransactionModel> transactions) {
         if (binding.transactionTable == null || binding.transactionCount == null || binding.emptyStateView == null)
             return;
 
         binding.transactionTable.removeAllViews();
 
-        if (transactions == null || transactions.isEmpty()) {
+        int todayCount = (transactions != null) ? transactions.size() : 0;
+
+        if (todayCount == 0 && (cachedRecentTransactions == null || cachedRecentTransactions.isEmpty())) {
+            // No today entries AND no previous entries at all
             binding.transactionCount.setText("TODAY (0)");
-
-            // Show our styled empty state banner
             binding.emptyStateView.setVisibility(View.VISIBLE);
-            // Keep the table visible so the user can see the fake demo row
             binding.transactionTable.setVisibility(View.VISIBLE);
-
-        } else {
-            binding.transactionCount.setText("TODAY (" + transactions.size() + ")");
-
-            // Hide the empty state banner as we have real data
+        } else if (todayCount >= 10) {
+            // Enough today entries — show only today's, no backfill
+            binding.transactionCount.setText("TODAY (" + todayCount + ")");
             binding.emptyStateView.setVisibility(View.GONE);
             binding.transactionTable.setVisibility(View.VISIBLE);
 
             for (TransactionModel t : transactions)
                 addTransactionRow(t, binding.transactionTable);
+        } else {
+            // Backfill: show today's entries + fill remaining slots with previous entries
+            binding.emptyStateView.setVisibility(View.GONE);
+            binding.transactionTable.setVisibility(View.VISIBLE);
+
+            if (todayCount > 0) {
+                binding.transactionCount.setText("TODAY (" + todayCount + ")");
+                for (TransactionModel t : transactions)
+                    addTransactionRow(t, binding.transactionTable);
+            } else {
+                binding.transactionCount.setText("RECENT ENTRIES");
+            }
+
+            // Fill remaining slots with previous entries (up to 10 - todayCount)
+            int slotsRemaining = 10 - todayCount;
+            if (cachedRecentTransactions != null && !cachedRecentTransactions.isEmpty()) {
+                // Add a subtle divider between today and previous if today has entries
+                if (todayCount > 0) {
+                    View divider = new View(this);
+                    divider.setLayoutParams(new LinearLayout.LayoutParams(
+                            LinearLayout.LayoutParams.MATCH_PARENT,
+                            (int) (1 * getResources().getDisplayMetrics().density)));
+                    TypedValue tv = new TypedValue();
+                    getTheme().resolveAttribute(R.attr.chk_dividerHorizontal, tv, true);
+                    divider.setBackgroundResource(tv.resourceId);
+                    binding.transactionTable.addView(divider);
+                }
+
+                int count = Math.min(slotsRemaining, cachedRecentTransactions.size());
+                for (int i = 0; i < count; i++) {
+                    addPreviousTransactionRow(cachedRecentTransactions.get(i), binding.transactionTable);
+                }
+            }
         }
     }
 
@@ -844,15 +878,23 @@ public class HomeActivity extends BaseActivity {
 
     private void addTransactionRow(TransactionModel transaction, ViewGroup tableLayout) {
         View rowView = LayoutInflater.from(this).inflate(R.layout.item_transaction_report_row, tableLayout, false);
-        TextView rowCategory = rowView.findViewById(R.id.rowCategory);
+        TextView rowRemark = rowView.findViewById(R.id.rowRemark);
         TextView rowMode = rowView.findViewById(R.id.rowMode);
         TextView rowIn = rowView.findViewById(R.id.rowIn);
         TextView rowOut = rowView.findViewById(R.id.rowOut);
 
-        rowCategory.setText(transaction.getTransactionCategory());
+        // Show remark truncated to ~15 characters in the first column
+        String remark = transaction.getRemark();
+        if (remark != null && !remark.isEmpty()) {
+            if (remark.length() > 15) remark = remark.substring(0, 15) + "…";
+            rowRemark.setText(remark);
+        } else {
+            rowRemark.setText(transaction.getTransactionCategory());
+        }
 
+        // Show payment mode in the second column
         String mode = transaction.getPaymentMode();
-        rowMode.setText(mode != null && !mode.isEmpty() ? mode : "Online");
+        rowMode.setText(mode != null && !mode.isEmpty() ? mode : "-");
 
         rowIn.setGravity(Gravity.CENTER);
         rowOut.setGravity(Gravity.CENTER);
@@ -866,6 +908,49 @@ public class HomeActivity extends BaseActivity {
             AmountFormatter.setAdaptiveAmount(rowOut, transaction.getAmount(), 13f, 9f);
             rowOut.setTextColor(ThemeUtil.getThemeAttrColor(this, R.attr.chk_expenseColor));
         }
+        rowView.setOnClickListener(v -> openTransactionDetail(transaction));
+        tableLayout.addView(rowView);
+    }
+
+    /**
+     * Adds a previous (non-today) transaction row with reduced opacity to visually
+     * distinguish it from today's entries.
+     */
+    private void addPreviousTransactionRow(TransactionModel transaction, ViewGroup tableLayout) {
+        View rowView = LayoutInflater.from(this).inflate(R.layout.item_transaction_report_row, tableLayout, false);
+        TextView rowRemark = rowView.findViewById(R.id.rowRemark);
+        TextView rowMode = rowView.findViewById(R.id.rowMode);
+        TextView rowIn = rowView.findViewById(R.id.rowIn);
+        TextView rowOut = rowView.findViewById(R.id.rowOut);
+
+        // Show remark truncated to ~15 characters in the first column
+        String remark = transaction.getRemark();
+        if (remark != null && !remark.isEmpty()) {
+            if (remark.length() > 15) remark = remark.substring(0, 15) + "…";
+            rowRemark.setText(remark);
+        } else {
+            rowRemark.setText(transaction.getTransactionCategory());
+        }
+
+        // Show date as mode for previous entries so user knows when it was
+        String dateStr = DateTimeUtils.formatDate(transaction.getTimestamp(), "dd MMM");
+        rowMode.setText(dateStr);
+
+        rowIn.setGravity(Gravity.CENTER);
+        rowOut.setGravity(Gravity.CENTER);
+
+        if (Constants.TRANSACTION_TYPE_IN.equalsIgnoreCase(transaction.getType())) {
+            AmountFormatter.setAdaptiveAmount(rowIn, transaction.getAmount(), 13f, 9f);
+            rowIn.setTextColor(ThemeUtil.getThemeAttrColor(this, R.attr.chk_incomeColor));
+            rowOut.setText("-");
+        } else {
+            rowIn.setText("-");
+            AmountFormatter.setAdaptiveAmount(rowOut, transaction.getAmount(), 13f, 9f);
+            rowOut.setTextColor(ThemeUtil.getThemeAttrColor(this, R.attr.chk_expenseColor));
+        }
+
+        // Dim the row to visually distinguish from today's entries
+        rowView.setAlpha(0.5f);
         rowView.setOnClickListener(v -> openTransactionDetail(transaction));
         tableLayout.addView(rowView);
     }

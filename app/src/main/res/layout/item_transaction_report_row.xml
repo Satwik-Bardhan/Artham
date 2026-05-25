@@ -11,11 +11,11 @@
     android:minHeight="52dp">
 
     <TextView
-        android:id="@+id/rowCategory"
+        android:id="@+id/rowRemark"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="2"
-        tools:text="Groceries"
+        tools:text="Grocery shopping"
         android:textColor="?attr/chk_textColorPrimary"
         android:textSize="14sp"
         android:textStyle="bold"
@@ -29,7 +29,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        tools:text="Online"
+        tools:text="Cash"
         android:textColor="?attr/chk_textColorSecondary"
         android:textSize="12sp"
         android:gravity="center"

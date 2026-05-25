@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+<com.phynix.artham.views.AspectRatioCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/balanceCardView"
@@ -15,7 +15,7 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/balanceCard"
         android:layout_width="match_parent"
-        android:layout_height="220dp"
+        android:layout_height="match_parent"
         android:background="@drawable/cash_card">
 
         <LinearLayout
@@ -47,14 +47,15 @@
 
         <!-- Tap to flip text -->
         <TextView
+            android:id="@+id/tapToFlipText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginEnd="20dp"
+            android:layout_marginBottom="10dp"
             android:text="Tap to flip ↺"
             android:textColor="#D9FFFFFF"
-            android:textSize="11sp"
+            android:textSize="10sp"
             android:textStyle="italic"
-            android:layout_marginEnd="20dp"
-            android:layout_marginBottom="12dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             tools:ignore="HardcodedText" />
@@ -183,4 +184,4 @@
         </LinearLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
-</androidx.cardview.widget.CardView>
+</com.phynix.artham.views.AspectRatioCardView>
