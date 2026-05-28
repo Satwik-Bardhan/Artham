@@ -154,9 +154,7 @@ public class CategoryActivity extends BaseActivity {
                     CategoryModel c = s.getValue(CategoryModel.class);
                     if (c != null) {
                         c.setId(s.getKey());
-                        if ("OUT".equalsIgnoreCase(c.getType())) { // Currently showing only expenses
-                            allCategories.add(c);
-                        }
+                        allCategories.add(c);
                     }
                 }
                 applyFilterAndSort();

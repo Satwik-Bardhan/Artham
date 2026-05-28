@@ -15,25 +15,32 @@ public class DefaultCategoryManager {
     public static List<CategoryModel> getAllDefaultCategories() {
         List<CategoryModel> list = new ArrayList<>();
 
-        // --- Expenses (OUT) ---
-        list.add(new CategoryModel("Food & Dining",  "OUT", "#FF7043", R.drawable.ic_food_dining,      false));
-        list.add(new CategoryModel("Groceries",      "OUT", "#8BC34A", R.drawable.ic_groceries,        false));
-        list.add(new CategoryModel("Bills & Utility", "OUT", "#FFDE21", R.drawable.ic_utilities,       false));
-        list.add(new CategoryModel("Subscriptions",  "OUT", "#3F51B5", R.drawable.ic_subscriptions,    false));
-        list.add(new CategoryModel("Transport",      "OUT", "#29B6F6", R.drawable.ic_transportation,   false));
-        list.add(new CategoryModel("Travel",         "OUT", "#03A9F4", R.drawable.ic_flight,           false));
-        list.add(new CategoryModel("Rent",           "OUT", "#FFA726", R.drawable.ic_home,             false));
-        list.add(new CategoryModel("Insurance",      "OUT", "#795548", R.drawable.ic_security,         false));
-        list.add(new CategoryModel("Shopping",       "OUT", "#EC407A", R.drawable.ic_shopping_cart,     false));
-        list.add(new CategoryModel("Entertainment",  "OUT", "#AB47BC", R.drawable.ic_entertainment,    false));
-        list.add(new CategoryModel("Health",         "OUT", "#EF5350", R.drawable.ic_medicine,         false));
-        list.add(new CategoryModel("Education",      "OUT", "#5C6BC0", R.drawable.ic_book,             false));
-
-        // --- Income (IN) ---
-        list.add(new CategoryModel("Salary",         "IN",  "#66BB6A", R.drawable.ic_money,            false));
-        list.add(new CategoryModel("Freelance",      "IN",  "#CDDC39", R.drawable.ic_work,             false));
-        list.add(new CategoryModel("Refunds",        "IN",  "#4DB6AC", R.drawable.ic_assignment_return, false));
-        list.add(new CategoryModel("Investment",     "IN",  "#009688", R.drawable.ic_trending_up,      false));
+        // --- Expenses & Income (All Universal) ---
+        list.add(new CategoryModel("Food & Dining",  "UNIVERSAL", "#FF7043", R.drawable.ic_food_dining,      false));
+        list.add(new CategoryModel("Groceries",      "UNIVERSAL", "#8BC34A", R.drawable.ic_groceries,        false));
+        list.add(new CategoryModel("Bills & Utility", "UNIVERSAL", "#FFDE21", R.drawable.ic_utilities,       false));
+        list.add(new CategoryModel("Subscriptions",  "UNIVERSAL", "#3F51B5", R.drawable.ic_subscriptions,    false));
+        list.add(new CategoryModel("Transport",      "UNIVERSAL", "#29B6F6", R.drawable.ic_transportation,   false));
+        list.add(new CategoryModel("Travel",         "UNIVERSAL", "#03A9F4", R.drawable.ic_flight,           false));
+        list.add(new CategoryModel("Rent",           "UNIVERSAL", "#FFA726", R.drawable.ic_home,             false));
+        list.add(new CategoryModel("Insurance",      "UNIVERSAL", "#795548", R.drawable.ic_security,         false));
+        list.add(new CategoryModel("Shopping",       "UNIVERSAL", "#EC407A", R.drawable.ic_shopping_cart,     false));
+        list.add(new CategoryModel("Entertainment",  "UNIVERSAL", "#AB47BC", R.drawable.ic_entertainment,    false));
+        list.add(new CategoryModel("Health",         "UNIVERSAL", "#EF5350", R.drawable.ic_medicine,         false));
+        list.add(new CategoryModel("Education",      "UNIVERSAL", "#5C6BC0", R.drawable.ic_book,             false));
+        list.add(new CategoryModel("Gifts & Charity", "UNIVERSAL", "#EC407A", R.drawable.ic_card_giftcard,    false));
+        list.add(new CategoryModel("Business",        "UNIVERSAL", "#78909C", R.drawable.ic_work,             false));
+        list.add(new CategoryModel("Taxes",           "UNIVERSAL", "#E53935", R.drawable.ic_receipt_outline,  false));
+        list.add(new CategoryModel("Other Expenses",  "UNIVERSAL", "#9E9E9E", R.drawable.ic_category,         false));
+        list.add(new CategoryModel("Salary",         "UNIVERSAL", "#66BB6A", R.drawable.ic_money,            false));
+        list.add(new CategoryModel("Freelance",      "UNIVERSAL", "#CDDC39", R.drawable.ic_work,             false));
+        list.add(new CategoryModel("Refunds",        "UNIVERSAL", "#4DB6AC", R.drawable.ic_assignment_return, false));
+        list.add(new CategoryModel("Investment",     "UNIVERSAL", "#009688", R.drawable.ic_trending_up,      false));
+        list.add(new CategoryModel("Gifts",           "UNIVERSAL", "#EC407A", R.drawable.ic_card_giftcard,    false));
+        list.add(new CategoryModel("Rental Income",   "UNIVERSAL", "#FFA726", R.drawable.ic_home,             false));
+        list.add(new CategoryModel("Interest & Dividends", "UNIVERSAL", "#00ACC1", R.drawable.ic_coins_outline, false));
+        list.add(new CategoryModel("Business Revenue", "UNIVERSAL", "#3F51B5", R.drawable.ic_work,            false));
+        list.add(new CategoryModel("Other Income",    "UNIVERSAL", "#9E9E9E", R.drawable.ic_category,         false));
 
         return list;
     }

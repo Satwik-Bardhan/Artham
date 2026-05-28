@@ -57,6 +57,7 @@ public class CreateCategoryActivity extends BaseActivity {
     private String categoryId = null; // Null means create new, otherwise edit existing
     private String selectedHexColor = "#FF5252"; // Default fallback
     private int selectedIconResId = R.drawable.ic_category; // Default icon
+    private String categoryType = "UNIVERSAL";
 
     private CategoryIconAdapter iconAdapter;
     private List<Integer> availableIcons;
@@ -75,8 +76,13 @@ public class CreateCategoryActivity extends BaseActivity {
                     .child(userId).child("categories");
         }
 
-        if (getIntent() != null && getIntent().hasExtra("CATEGORY_ID")) {
-            categoryId = getIntent().getStringExtra("CATEGORY_ID");
+        if (getIntent() != null) {
+            if (getIntent().hasExtra("CATEGORY_ID")) {
+                categoryId = getIntent().getStringExtra("CATEGORY_ID");
+            }
+            if (getIntent().hasExtra("type")) {
+                categoryType = getIntent().getStringExtra("type");
+            }
         }
 
         initViews();
@@ -86,6 +92,14 @@ public class CreateCategoryActivity extends BaseActivity {
         if (categoryId != null) {
             titleText.setText("Edit Category");
             loadExistingCategory();
+        } else {
+            String[] randomPalette = {
+                    "#F44336", "#E91E63", "#9C27B0", "#673AB7", "#3F51B5", "#2196F3",
+                    "#03A9F4", "#00BCD4", "#009688", "#4CAF50", "#8BC34A", "#CDDC39",
+                    "#FFC107", "#FF9800", "#FF5722", "#795548"
+            };
+            int randomIndex = new java.util.Random().nextInt(randomPalette.length);
+            selectedHexColor = randomPalette[randomIndex];
         }
 
         setupListeners();
@@ -121,6 +135,11 @@ public class CreateCategoryActivity extends BaseActivity {
                 colorPreview.setBackgroundTintList(ColorStateList.valueOf(envelope.getColor()));
             }
         });
+
+        try {
+            colorPickerView.setInitialColor(Color.parseColor(selectedHexColor));
+        } catch (Exception ignored) {
+        }
     }
 
     private void setupIconRecyclerView() {
@@ -177,11 +196,23 @@ public class CreateCategoryActivity extends BaseActivity {
         availableIcons.add(R.drawable.ic_label);
         availableIcons.add(R.drawable.ic_exit_to_app);
         availableIcons.add(R.drawable.ic_location);
+        availableIcons.add(R.drawable.ic_groceries);
+        availableIcons.add(R.drawable.ic_utilities);
+        availableIcons.add(R.drawable.ic_subscriptions);
+        availableIcons.add(R.drawable.ic_security);
+        availableIcons.add(R.drawable.ic_auto_repeat);
+        availableIcons.add(R.drawable.ic_file_download);
+        availableIcons.add(R.drawable.ic_receipt_long);
+        availableIcons.add(R.drawable.ic_shuffle);
+        availableIcons.add(R.drawable.ic_vibration);
+        availableIcons.add(R.drawable.ic_widget_cash_in);
+        availableIcons.add(R.drawable.ic_widget_cash_out);
+        availableIcons.add(R.drawable.ic_net_balance);
 
         iconAdapter = new CategoryIconAdapter(availableIcons, iconResId -> selectedIconResId = iconResId);
 
-        // Use horizontal GridLayoutManager with 2 rows for left-right scrolling
-        GridLayoutManager gridLayoutManager = new GridLayoutManager(this, 2, GridLayoutManager.HORIZONTAL, false);
+        // Use horizontal GridLayoutManager with 3 rows for left-right scrolling
+        GridLayoutManager gridLayoutManager = new GridLayoutManager(this, 3, GridLayoutManager.HORIZONTAL, false);
         iconsRecyclerView.setLayoutManager(gridLayoutManager);
         iconsRecyclerView.setAdapter(iconAdapter);
     }
@@ -197,10 +228,13 @@ public class CreateCategoryActivity extends BaseActivity {
                     categoryNameInput.setText(model.getName());
                     selectedHexColor = model.getColorHex();
                     selectedIconResId = model.getIconResId();
+                    categoryType = model.getType();
 
                     colorHexText.setText(selectedHexColor);
                     try {
-                        colorPreview.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor(selectedHexColor)));
+                        int parsedColor = Color.parseColor(selectedHexColor);
+                        colorPreview.setBackgroundTintList(ColorStateList.valueOf(parsedColor));
+                        colorPickerView.selectByHsvColor(parsedColor);
                     } catch (Exception ignored) {
                     }
 
@@ -236,10 +270,9 @@ public class CreateCategoryActivity extends BaseActivity {
     private void saveCategoryToFirebase(String name) {
         if (categoryRef == null) return;
 
-        // Note: Defaulting to "OUT" (Expense) for custom categories, or you can add a toggle in UI.
         CategoryModel newCategory = new CategoryModel(
                 name,
-                "OUT",
+                categoryType,
                 selectedHexColor,
                 selectedIconResId,
                 true // Requirement #4: Mark as user-created

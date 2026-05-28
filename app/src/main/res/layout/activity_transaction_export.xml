@@ -192,6 +192,7 @@
                             android:textAllCaps="false"
                             android:background="@drawable/quick_option_button"
                             app:backgroundTint="@null"
+                            android:stateListAnimator="@null"
                             android:layout_marginEnd="6dp" />
 
                         <Button
@@ -205,6 +206,7 @@
                             android:textAllCaps="false"
                             android:background="@drawable/quick_option_button"
                             app:backgroundTint="@null"
+                            android:stateListAnimator="@null"
                             android:layout_marginEnd="6dp" />
 
                         <Button
@@ -217,7 +219,8 @@
                             android:textSize="12sp"
                             android:textAllCaps="false"
                             android:background="@drawable/quick_option_button"
-                            app:backgroundTint="@null"/>
+                            app:backgroundTint="@null"
+                            android:stateListAnimator="@null"/>
                     </LinearLayout>
 
                     <LinearLayout
@@ -235,7 +238,8 @@
                             android:textSize="12sp"
                             android:textAllCaps="false"
                             android:background="@drawable/quick_option_button"
-                            app:backgroundTint="@null" />
+                            app:backgroundTint="@null"
+                            android:stateListAnimator="@null" />
                     </LinearLayout>
                 </LinearLayout>
             </androidx.cardview.widget.CardView>

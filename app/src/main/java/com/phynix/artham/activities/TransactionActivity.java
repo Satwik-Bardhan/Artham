@@ -509,7 +509,10 @@ public class TransactionActivity extends BaseActivity {
         searchBinding.searchEditText.addTextChangedListener(new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
             @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
-                searchBinding.clearSearchButton.setVisibility(s.length() > 0 ? View.VISIBLE : View.GONE);
+                boolean hasText = s.length() > 0;
+                searchBinding.clearSearchButton.setVisibility(hasText ? View.VISIBLE : View.GONE);
+                searchBinding.searchDivider.setVisibility(hasText ? View.GONE : View.VISIBLE);
+                searchBinding.filterButton.setVisibility(hasText ? View.GONE : View.VISIBLE);
                 if(viewModel!=null) viewModel.filter(s.toString(), 0, 0, "All", null, null);
             }
             @Override public void afterTextChanged(Editable s) {}
@@ -519,7 +522,7 @@ public class TransactionActivity extends BaseActivity {
         filterLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
             if (result.getResultCode() == RESULT_OK && result.getData() != null) {
                 Intent data = result.getData();
-                searchBinding.searchEditText.setText(data.getStringExtra("searchQuery"));
+                String searchQuery = searchBinding.searchEditText.getText().toString();
 
                 // Build paymentMode list from filter result
                 String paymentMode = data.getStringExtra("paymentMode");
@@ -530,7 +533,7 @@ public class TransactionActivity extends BaseActivity {
                 }
 
                 if(viewModel!=null) viewModel.filter(
-                        data.getStringExtra("searchQuery"),
+                        searchQuery,
                         data.getLongExtra("startDate", 0),
                         data.getLongExtra("endDate", 0),
                         data.getStringExtra("entryType"),

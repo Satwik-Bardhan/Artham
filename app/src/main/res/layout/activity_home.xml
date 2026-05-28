@@ -152,9 +152,9 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:orientation="horizontal"
-
+                            android:background="?attr/chk_headerColor"
                             android:paddingHorizontal="16dp"
-                            android:paddingVertical="14dp"
+                            android:paddingVertical="10dp"
                             android:gravity="center_vertical">
 
                             <TextView
@@ -164,9 +164,11 @@
                                 android:layout_weight="2"
                                 android:gravity="start"
                                 android:text="Today's Transactions"
-                                android:textColor="?attr/chk_balanceColor"
-                                android:textSize="14sp"
-                                android:textStyle="bold" />
+                                android:textColor="?attr/chk_textColorSecondary"
+                                android:textSize="12sp"
+                                android:textStyle="bold"
+                                android:textAllCaps="true"
+                                android:letterSpacing="0.06" />
 
                             <TextView
                                 android:layout_width="0dp"
@@ -175,9 +177,10 @@
                                 android:gravity="center"
                                 android:text="MODE"
                                 android:textColor="?attr/chk_textColorHint"
-                                android:textSize="11sp"
+                                android:textSize="10sp"
                                 android:textStyle="bold"
-                                android:letterSpacing="0.08" />
+                                android:textAllCaps="true"
+                                android:letterSpacing="0.1" />
 
                             <TextView
                                 android:layout_width="0dp"
@@ -186,9 +189,10 @@
                                 android:gravity="center"
                                 android:text="IN"
                                 android:textColor="?attr/chk_incomeColor"
-                                android:textSize="11sp"
+                                android:textSize="10sp"
                                 android:textStyle="bold"
-                                android:letterSpacing="0.08" />
+                                android:textAllCaps="true"
+                                android:letterSpacing="0.1" />
 
                             <TextView
                                 android:layout_width="0dp"
@@ -197,14 +201,15 @@
                                 android:gravity="center"
                                 android:text="OUT"
                                 android:textColor="?attr/chk_expenseColor"
-                                android:textSize="11sp"
+                                android:textSize="10sp"
                                 android:textStyle="bold"
-                                android:letterSpacing="0.08" />
+                                android:textAllCaps="true"
+                                android:letterSpacing="0.1" />
                         </LinearLayout>
 
                         <View
                             android:layout_width="match_parent"
-                            android:layout_height="1dp"
+                            android:layout_height="1.5dp"
                             android:background="?attr/chk_dividerHorizontal" />
 
                         <!-- Transaction Rows Container -->

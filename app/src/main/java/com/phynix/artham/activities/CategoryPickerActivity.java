@@ -51,6 +51,7 @@ public class CategoryPickerActivity extends BaseActivity {
 
     private DatabaseReference dbRef;
     private String currentCashbookId;
+    private String transactionType;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,6 +60,7 @@ public class CategoryPickerActivity extends BaseActivity {
         setContentView(R.layout.activity_category_picker);
 
         currentCashbookId = getIntent().getStringExtra(Constants.EXTRA_CASHBOOK_ID);
+        transactionType = getIntent().getStringExtra("type");
 
         initViews();
         setupFirebase();
@@ -132,7 +134,6 @@ public class CategoryPickerActivity extends BaseActivity {
                                 hasDefaults = true;
                             }
 
-                            // Removed strict IN/OUT filtering to guarantee they all show up!
                             if (model.isCustom()) {
                                 customFullList.add(model);
                             } else {

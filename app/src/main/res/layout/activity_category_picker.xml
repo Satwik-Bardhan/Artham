@@ -64,7 +64,9 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@id/headerLayout"
-        android:fillViewport="true">
+        android:fillViewport="true"
+        android:clipToPadding="false"
+        android:paddingBottom="110dp">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -72,7 +74,7 @@
             android:orientation="vertical"
             android:paddingHorizontal="12dp"
             android:paddingTop="16dp"
-            android:paddingBottom="80dp">
+            android:paddingBottom="16dp">
 
             <com.google.android.material.textfield.TextInputLayout
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"

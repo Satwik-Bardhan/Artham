@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
-    android:paddingHorizontal="16dp"
+    android:paddingHorizontal="12dp"
     android:paddingVertical="6dp">
 
     <!-- CASH IN BUTTON -->
@@ -14,35 +14,61 @@
         android:layout_marginEnd="6dp"
         android:layout_weight="1"
         app:cardBackgroundColor="?attr/chk_incomeColor"
-        app:cardCornerRadius="14dp"
-        app:cardElevation="3dp"
+        app:cardCornerRadius="10dp"
+        app:cardElevation="0dp"
         app:strokeWidth="0dp">
 
         <LinearLayout
             android:id="@+id/btnCashIn"
             android:layout_width="match_parent"
-            android:layout_height="56dp"
+            android:layout_height="wrap_content"
             android:clickable="true"
             android:focusable="true"
             android:foreground="?android:attr/selectableItemBackground"
             android:gravity="center"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:paddingStart="12dp"
+            android:paddingEnd="20dp"
+            android:paddingVertical="10dp">
 
-            <ImageView
-                android:layout_width="22dp"
-                android:layout_height="22dp"
+            <!-- Icon Circle -->
+            <FrameLayout
+                android:layout_width="36dp"
+                android:layout_height="36dp"
                 android:layout_marginEnd="10dp"
-                android:src="@drawable/ic_plus"
-                app:tint="#FFFFFF" />
+                android:background="@drawable/bg_icon_circle_white">
 
-            <TextView
+                <ImageView
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_plus"
+                    app:tint="#FFFFFF" />
+            </FrameLayout>
+
+            <!-- Text -->
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="CASH IN"
-                android:textColor="#FFFFFF"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:letterSpacing="0.04" />
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="CASH IN"
+                    android:textColor="#FFFFFF"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.04" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Add income"
+                    android:textColor="#B3FFFFFF"
+                    android:textSize="11sp"
+                    android:layout_marginTop="1dp" />
+            </LinearLayout>
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 
@@ -53,35 +79,61 @@
         android:layout_marginStart="6dp"
         android:layout_weight="1"
         app:cardBackgroundColor="?attr/chk_expenseColor"
-        app:cardCornerRadius="14dp"
-        app:cardElevation="3dp"
+        app:cardCornerRadius="10dp"
+        app:cardElevation="0dp"
         app:strokeWidth="0dp">
 
         <LinearLayout
             android:id="@+id/btnCashOut"
             android:layout_width="match_parent"
-            android:layout_height="56dp"
+            android:layout_height="wrap_content"
             android:clickable="true"
             android:focusable="true"
             android:foreground="?android:attr/selectableItemBackground"
             android:gravity="center"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:paddingStart="12dp"
+            android:paddingEnd="20dp"
+            android:paddingVertical="10dp">
 
-            <ImageView
-                android:layout_width="22dp"
-                android:layout_height="22dp"
+            <!-- Icon Circle -->
+            <FrameLayout
+                android:layout_width="36dp"
+                android:layout_height="36dp"
                 android:layout_marginEnd="10dp"
-                android:src="@drawable/ic_minus"
-                app:tint="#FFFFFF" />
+                android:background="@drawable/bg_icon_circle_white">
 
-            <TextView
+                <ImageView
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_minus"
+                    app:tint="#FFFFFF" />
+            </FrameLayout>
+
+            <!-- Text -->
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="CASH OUT"
-                android:textColor="#FFFFFF"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:letterSpacing="0.04" />
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="CASH OUT"
+                    android:textColor="#FFFFFF"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.04" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Add expense"
+                    android:textColor="#B3FFFFFF"
+                    android:textSize="11sp"
+                    android:layout_marginTop="1dp" />
+            </LinearLayout>
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 </LinearLayout>

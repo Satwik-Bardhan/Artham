@@ -104,7 +104,7 @@
         android:layout_below="@id/searchSortLayout"
         android:padding="8dp"
         android:clipToPadding="false"
-        android:paddingBottom="80dp"
+        android:paddingBottom="110dp"
         app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
         app:spanCount="2"
         tools:listitem="@layout/item_category" />

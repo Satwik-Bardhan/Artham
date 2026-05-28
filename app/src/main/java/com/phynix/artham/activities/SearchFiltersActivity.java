@@ -43,11 +43,11 @@ public class SearchFiltersActivity extends BaseActivity {
 
     // UI Elements
     private ImageView backButton, resetButton, swapButton;
-    private Button filterTodayButton, filterWeekButton, filterMonthButton, clearAllButton, applyFiltersButton;
+    private Button filterTodayButton, filterWeekButton, filterMonthButton, filterAllButton, clearAllButton, applyFiltersButton;
     private LinearLayout startDateLayout, endDateLayout;
     private TextView startDateText, endDateText, activeFiltersCount, selectedCategoryTextView;
     private RadioGroup inOutToggle, cashOnlineToggle;
-    private EditText searchTransactionInput, filterTagsInput;
+    private EditText filterTagsInput;
     private View categorySelectorCard;
     private LinearLayout partySelectorLayout;
 
@@ -80,13 +80,12 @@ public class SearchFiltersActivity extends BaseActivity {
         backButton = findViewById(R.id.backButton);
         resetButton = findViewById(R.id.resetButton);
 
-        // Search
-        searchTransactionInput = findViewById(R.id.searchTransactionInput);
 
         // Date Filters
         filterTodayButton = findViewById(R.id.filterTodayButton);
         filterWeekButton = findViewById(R.id.filterWeekButton);
         filterMonthButton = findViewById(R.id.filterMonthButton);
+        filterAllButton = findViewById(R.id.filterAllButton);
         startDateLayout = findViewById(R.id.startDateLayout);
         endDateLayout = findViewById(R.id.endDateLayout);
         startDateText = findViewById(R.id.startDateText);
@@ -171,6 +170,7 @@ public class SearchFiltersActivity extends BaseActivity {
         filterTodayButton.setOnClickListener(v -> setDateRangeToToday());
         filterWeekButton.setOnClickListener(v -> setDateRangeToThisWeek());
         filterMonthButton.setOnClickListener(v -> setDateRangeToThisMonth());
+        filterAllButton.setOnClickListener(v -> setDateRangeToAll());
         startDateLayout.setOnClickListener(v -> showDatePicker(true));
         endDateLayout.setOnClickListener(v -> showDatePicker(false));
 
@@ -294,6 +294,14 @@ public class SearchFiltersActivity extends BaseActivity {
         SnackbarHelper.show(this, "Filter set to This Month", applyFiltersButton);
     }
 
+    private void setDateRangeToAll() {
+        startCalendar.setTimeInMillis(0);
+        endCalendar.setTimeInMillis(0);
+
+        updateUIWithCurrentFilters();
+        SnackbarHelper.show(this, "Showing all transactions", applyFiltersButton);
+    }
+
     private void clearAllFilters() {
         startCalendar.setTimeInMillis(0);
         endCalendar.setTimeInMillis(0);
@@ -301,7 +309,6 @@ public class SearchFiltersActivity extends BaseActivity {
         paymentMode = "All";
         selectedCategories.clear();
 
-        searchTransactionInput.setText("");
         filterTagsInput.setText("");
         inOutToggle.clearCheck();
         cashOnlineToggle.clearCheck();
@@ -359,7 +366,6 @@ public class SearchFiltersActivity extends BaseActivity {
         if (!"All".equals(entryType) && inOutToggle.getCheckedRadioButtonId() != -1) count++;
         if (!"All".equals(paymentMode) && cashOnlineToggle.getCheckedRadioButtonId() != -1) count++;
         if (!selectedCategories.isEmpty()) count++;
-        if (!searchTransactionInput.getText().toString().trim().isEmpty()) count++;
         if (!filterTagsInput.getText().toString().trim().isEmpty()) count++;
 
         if (count > 0) {
@@ -378,7 +384,6 @@ public class SearchFiltersActivity extends BaseActivity {
         resultIntent.putExtra("entryType", entryType);
         resultIntent.putExtra("paymentMode", paymentMode);
         resultIntent.putStringArrayListExtra("categories", new ArrayList<>(selectedCategories));
-        resultIntent.putExtra("searchQuery", searchTransactionInput.getText().toString());
         resultIntent.putExtra("tagsQuery", filterTagsInput.getText().toString());
 
         setResult(Activity.RESULT_OK, resultIntent);

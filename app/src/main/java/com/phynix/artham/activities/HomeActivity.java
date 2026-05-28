@@ -785,6 +785,7 @@ public class HomeActivity extends BaseActivity {
         insightsCardInclude.setVisibility(View.VISIBLE);
         setupInsightDots();
         displayCurrentInsight(false); // First one without crossfade
+        updateInsightDots(); // Highlight first dot initially
 
         // Set up the carousel runnable (cycles every 5 seconds)
         if (currentInsights.size() > 1) {
@@ -799,34 +800,34 @@ public class HomeActivity extends BaseActivity {
             };
             insightHandler.postDelayed(insightRunnable, 5000);
             
-            // Allow manual click/touch navigation: left 50% for previous, right 50% for next insight
-            insightsCardInclude.setOnClickListener(v -> {});
+            // Allow manual click navigation: left 50% for previous, right 50% for next insight
+            final float[] lastTouchX = new float[1];
             insightsCardInclude.setOnTouchListener((v, event) -> {
-                if (event.getAction() == android.view.MotionEvent.ACTION_UP) {
-                    float upX = event.getX();
-                    int width = v.getWidth();
-                    
-                    // Cancel pending auto-advance
-                    insightHandler.removeCallbacks(insightRunnable);
-                    
-                    if (upX < width / 2.0f) {
-                        // Left 50% clicked -> Previous insight
-                        currentInsightIndex = (currentInsightIndex - 1 + currentInsights.size()) % currentInsights.size();
-                    } else {
-                        // Right 50% clicked -> Next insight
-                        currentInsightIndex = (currentInsightIndex + 1) % currentInsights.size();
-                    }
-                    
-                    displayCurrentInsight(true);
-                    updateInsightDots();
-                    
-                    // Restart timer
-                    insightHandler.postDelayed(insightRunnable, 5000);
-                    
-                    v.performClick();
-                    return true;
+                if (event.getAction() == android.view.MotionEvent.ACTION_DOWN) {
+                    lastTouchX[0] = event.getX();
                 }
-                return false;
+                return false; // Return false so the click listener still gets called
+            });
+            insightsCardInclude.setOnClickListener(v -> {
+                // Cancel pending auto-advance
+                insightHandler.removeCallbacks(insightRunnable);
+                
+                float clickX = lastTouchX[0];
+                int width = v.getWidth();
+                
+                if (clickX < width / 2.0f) {
+                    // Left 50% clicked -> Previous insight
+                    currentInsightIndex = (currentInsightIndex - 1 + currentInsights.size()) % currentInsights.size();
+                } else {
+                    // Right 50% clicked -> Next insight
+                    currentInsightIndex = (currentInsightIndex + 1) % currentInsights.size();
+                }
+                
+                displayCurrentInsight(true);
+                updateInsightDots();
+                
+                // Restart timer
+                insightHandler.postDelayed(insightRunnable, 5000);
             });
         } else {
             insightsCardInclude.setOnTouchListener(null);

@@ -58,6 +58,7 @@
             android:contentDescription="Clear Search"/>
 
         <View
+            android:id="@+id/searchDivider"
             android:layout_width="1dp"
             android:layout_height="24dp"
             android:layout_marginHorizontal="12dp"
