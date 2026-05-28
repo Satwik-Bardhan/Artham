@@ -6,11 +6,11 @@
     android:id="@+id/card_root"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:layout_marginEnd="12dp"
+    android:layout_marginEnd="8dp"
     android:layout_marginVertical="4dp"
     android:layout_marginStart="2dp"
-    app:cardCornerRadius="12dp"
-    app:cardElevation="2dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="0dp"
     app:strokeWidth="1dp"
     app:strokeColor="?attr/chk_dividerHorizontal"
     app:cardBackgroundColor="?attr/chk_surfaceColor"
@@ -21,9 +21,9 @@
         android:id="@+id/cardContainer"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:minWidth="100dp"
+        android:minWidth="90dp"
         android:orientation="vertical"
-        android:paddingVertical="12dp"
+        android:paddingVertical="10dp"
         android:paddingHorizontal="16dp"
         android:gravity="center">
 
@@ -32,33 +32,20 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             tools:text="JANUARY"
-            android:textSize="14sp"
+            android:textSize="13sp"
             android:textStyle="bold"
-            android:letterSpacing="0.05"
+            android:letterSpacing="0.02"
             android:textAllCaps="true"
-            android:layout_marginBottom="6dp"
             android:textColor="?attr/chk_textColorPrimary"/>
 
-        <com.google.android.material.card.MaterialCardView
+        <TextView
+            android:id="@+id/yearTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:cardBackgroundColor="@android:color/transparent"
-            app:strokeColor="?attr/chk_dividerHorizontal"
-            app:strokeWidth="1dp"
-            app:cardCornerRadius="4dp"
-            app:cardElevation="0dp">
-
-            <TextView
-                android:id="@+id/yearTextView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                tools:text="2025"
-                android:textSize="11sp"
-                android:paddingHorizontal="8dp"
-                android:paddingVertical="2dp"
-                android:textColor="?attr/chk_textColorSecondary"/>
-
-        </com.google.android.material.card.MaterialCardView>
+            tools:text="2025"
+            android:textSize="10sp"
+            android:textColor="?attr/chk_textColorSecondary"
+            android:layout_marginTop="2dp"/>
 
     </LinearLayout>
 

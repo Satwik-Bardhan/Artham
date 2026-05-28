@@ -43,6 +43,7 @@ import com.phynix.artham.models.CategoryModel;
 import com.phynix.artham.models.TransactionModel;
 import com.phynix.artham.utils.AmountFormatter;
 import com.phynix.artham.utils.DefaultCategoryManager;
+import com.phynix.artham.utils.CategoryColorUtil;
 import com.phynix.artham.utils.ThemeManager;
 
 import java.text.ParseException;
@@ -68,9 +69,11 @@ public class ExpenseAnalyticsActivity extends BaseActivity {
     private RecyclerView monthlyCardsRecyclerView, detailedLegendRecyclerView;
     private ImageButton closeButton;
     private View noDataTextView;
-    private TextView totalExpenseValue;
+    private TextView totalExpenseValue, stickyTotalExpenseValue;
+    private View stickyTotalExpenseCard;
+    private androidx.core.widget.NestedScrollView analyticsScrollView;
     private ProgressBar loadingProgressBar;
-    private LinearLayout contentLayout;
+    private View contentLayout; // FrameLayout is a subclass of View, so View is fine!
     private String currentMonthLabel = "";
 
     // Data
@@ -138,8 +141,28 @@ public class ExpenseAnalyticsActivity extends BaseActivity {
         loadingProgressBar = findViewById(R.id.loadingProgressBar);
         contentLayout = findViewById(R.id.contentLayout);
         totalExpenseValue = findViewById(R.id.totalExpenseValue);
+        stickyTotalExpenseValue = findViewById(R.id.stickyTotalExpenseValue);
+        stickyTotalExpenseCard = findViewById(R.id.stickyTotalExpenseCard);
+        analyticsScrollView = findViewById(R.id.analyticsScrollView);
 
         closeButton.setOnClickListener(v -> finish());
+
+        if (analyticsScrollView != null && stickyTotalExpenseCard != null) {
+            analyticsScrollView.setOnScrollChangeListener(new androidx.core.widget.NestedScrollView.OnScrollChangeListener() {
+                @Override
+                public void onScrollChange(androidx.core.widget.NestedScrollView v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
+                    View inlineCard = findViewById(R.id.totalExpenseCard);
+                    if (inlineCard != null) {
+                        int inlineCardTop = inlineCard.getTop();
+                        if (scrollY >= inlineCardTop) {
+                            stickyTotalExpenseCard.setVisibility(View.VISIBLE);
+                        } else {
+                            stickyTotalExpenseCard.setVisibility(View.GONE);
+                        }
+                    }
+                }
+            });
+        }
     }
 
     private void setupPieChart() {
@@ -311,6 +334,9 @@ public class ExpenseAnalyticsActivity extends BaseActivity {
         if (totalExpenseValue != null) {
             AmountFormatter.setAdaptiveAmount(totalExpenseValue, monthlyExpense.getTotalExpense(), 20f, 12f);
         }
+        if (stickyTotalExpenseValue != null) {
+            AmountFormatter.setAdaptiveAmount(stickyTotalExpenseValue, monthlyExpense.getTotalExpense(), 20f, 12f);
+        }
 
         Map<String, Double> expenseByCategory;
         Map<String, ArrayList<TransactionModel>> transactionsByCategory = new HashMap<>();
@@ -346,33 +372,34 @@ public class ExpenseAnalyticsActivity extends BaseActivity {
             String categoryName = entry.getKey();
             float amount = entry.getValue().floatValue();
 
-            int categoryColor = Color.parseColor("#9E9E9E"); // Ultimate fallback grey
-            int categoryIcon = R.drawable.ic_category; // Ultimate fallback icon
+            // 1. Use centralized CategoryColorUtil for consistent resolution
+            //    (checks Firebase custom category cache → DefaultCategoryManager → hardcoded fallbacks)
+            int categoryColor = CategoryColorUtil.getCategoryColor(ExpenseAnalyticsActivity.this, categoryName);
+            int categoryIcon = CategoryColorUtil.getCategoryIcon(categoryName);
 
-            // [THE FIX]
-            // 1. Fetch from our centralized DefaultCategoryManager!
-            CategoryModel defaultModel = DefaultCategoryManager.getCategoryByName(categoryName);
-
-            if (defaultModel != null) {
-                // Guaranteed right icon and default color for this category
-                categoryIcon = defaultModel.getIconResId();
-                try { categoryColor = Color.parseColor(defaultModel.getColorHex()); } catch (Exception ignored) {}
-            }
-
-            // 2. Check Firebase Map to override Color (and Icon for custom categories only)
+            // 2. Overlay with locally-loaded categoryMap for most accurate result
+            //    This catches categories that might not yet be in CategoryColorUtil's cache
             if (categoryMap.containsKey(categoryName)) {
                 CategoryModel fbModel = categoryMap.get(categoryName);
                 if (fbModel != null) {
-                    // Always allow color override from Firebase
-                    if (fbModel.getColorHex() != null) {
-                        try {
-                            categoryColor = Color.parseColor(fbModel.getColorHex());
-                        } catch (Exception ignored) {}
-                    }
-                    // Only allow icon override for CUSTOM categories
-                    // Default categories use stale iconResId in Firebase — resolve by name instead
-                    if (fbModel.isCustom() && fbModel.getIconResId() != 0) {
-                        categoryIcon = fbModel.getIconResId();
+                    if (fbModel.isCustom()) {
+                        // Custom categories: use stored color and icon from Firebase
+                        if (fbModel.getColorHex() != null) {
+                            try {
+                                categoryColor = Color.parseColor(fbModel.getColorHex());
+                            } catch (Exception ignored) {}
+                        }
+                        if (fbModel.getIconResId() != 0) {
+                            categoryIcon = fbModel.getIconResId();
+                        }
+                    } else {
+                        // Default categories: resolve icon by name (Firebase iconResId is stale)
+                        // but allow color override if user changed it
+                        CategoryModel defaultModel = DefaultCategoryManager.getCategoryByName(categoryName);
+                        if (defaultModel != null) {
+                            categoryIcon = defaultModel.getIconResId();
+                            try { categoryColor = Color.parseColor(defaultModel.getColorHex()); } catch (Exception ignored) {}
+                        }
                     }
                 }
             }
@@ -434,6 +461,9 @@ public class ExpenseAnalyticsActivity extends BaseActivity {
         contentLayout.setVisibility(View.GONE);
         if (totalExpenseValue != null) {
             AmountFormatter.setAdaptiveAmount(totalExpenseValue, 0, 20f, 12f);
+        }
+        if (stickyTotalExpenseValue != null) {
+            AmountFormatter.setAdaptiveAmount(stickyTotalExpenseValue, 0, 20f, 12f);
         }
     }
 
@@ -535,14 +565,20 @@ public class ExpenseAnalyticsActivity extends BaseActivity {
                 int primaryColor = ThemeUtil.getThemeAttrColor(ctx, R.attr.chk_textColorPrimary);
                 int secondaryColor = ThemeUtil.getThemeAttrColor(ctx, R.attr.chk_textColorSecondary);
                 int cardBgColor = ThemeUtil.getThemeAttrColor(ctx, R.attr.chk_surfaceColor);
-                int selectedColor = Color.parseColor("#2196F3");
+                int dividerColor = ThemeUtil.getThemeAttrColor(ctx, R.attr.chk_dividerHorizontal);
+                int selectedColor = ThemeUtil.getThemeAttrColor(ctx, R.attr.chk_primary_blue);
+
+                com.google.android.material.card.MaterialCardView cardRoot = (com.google.android.material.card.MaterialCardView) itemView;
+                cardRoot.setCardBackgroundColor(isSel ? selectedColor : cardBgColor);
+                cardRoot.setStrokeColor(isSel ? selectedColor : dividerColor);
+
+                // Reset the inner layout's background to avoid solid color overriding the card
+                bg.setBackgroundColor(Color.TRANSPARENT);
 
                 if(isSel) {
-                    bg.setBackgroundColor(selectedColor);
                     month.setTextColor(Color.WHITE);
                     year.setTextColor(Color.parseColor("#E0E0E0"));
                 } else {
-                    bg.setBackgroundColor(cardBgColor);
                     month.setTextColor(primaryColor);
                     year.setTextColor(secondaryColor);
                 }
