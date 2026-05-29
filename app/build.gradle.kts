@@ -1,10 +1,10 @@
-import com.google.firebase.appdistribution.gradle.AppDistributionExtension
+
 
 plugins {
     id("com.android.application")
     id("com.google.gms.google-services")
     id("com.google.firebase.crashlytics")
-    id("com.google.firebase.appdistribution")
+
 }
 
 android {
@@ -15,8 +15,8 @@ android {
         applicationId = "com.phynix.artham"
         minSdk = 24
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "1.1"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -43,11 +43,6 @@ android {
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
         debug {
-            configure<AppDistributionExtension> {
-                serviceCredentialsFile = "${project.rootDir}/auth-key.json"
-                testers = "satwikbardhan67@gmail.com"
-                groups = "clg-frnds, family, clg-juniors, ttn-frnds, extras"
-            }
         }
     }
     compileOptions {
@@ -80,7 +75,9 @@ dependencies {
     implementation("com.google.firebase:firebase-storage")
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-crashlytics")
-    implementation("com.google.firebase:firebase-appdistribution:16.0.0-beta14")
+    // --- Google Play In-App Review ---
+    implementation("com.google.android.play:review:2.0.2")
+    implementation("com.google.android.play:review-ktx:2.0.2")
 
     // --- Google Services ---
     implementation("com.google.android.gms:play-services-auth:21.2.0")

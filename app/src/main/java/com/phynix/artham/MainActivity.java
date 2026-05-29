@@ -12,9 +12,7 @@ import com.phynix.artham.utils.ErrorHandler;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
-// [NEW IMPORTS] for App Distribution Feedback
-import com.google.firebase.appdistribution.FirebaseAppDistribution;
-import com.google.firebase.appdistribution.InterruptionLevel;
+
 
 /**
  * MainActivity serves as the application entry point and authentication router.
@@ -39,16 +37,7 @@ public class MainActivity extends BaseActivity {
             Log.d(TAG, getString(R.string.log_crashlytics_unavailable));
         }
 
-        // [NEW] Force the Feedback Notification to appear
-        // This helps confirm the tester is recognized and the SDK is working.
-        try {
-            FirebaseAppDistribution.getInstance().showFeedbackNotification(
-                    "Shake your phone to start feedback!",
-                    InterruptionLevel.HIGH
-            );
-        } catch (Exception e) {
-            Log.e(TAG, "Failed to show App Distribution notification", e);
-        }
+
 
         checkAuthenticationAndNavigate();
     }

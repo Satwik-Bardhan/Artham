@@ -48,8 +48,9 @@ import androidx.lifecycle.ViewModelProvider;
 import com.facebook.shimmer.ShimmerFrameLayout;
 
 import com.bumptech.glide.Glide;
-import com.google.firebase.appdistribution.FirebaseAppDistribution;
-import com.google.firebase.appdistribution.InterruptionLevel;
+import com.google.android.play.core.review.ReviewInfo;
+import com.google.android.play.core.review.ReviewManager;
+import com.google.android.play.core.review.ReviewManagerFactory;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -281,7 +282,8 @@ public class HomeActivity extends BaseActivity {
         setupStickyScrollLogic();
         observeViewModel();
         fetchUserDataDirectly();
-        checkNotificationPermissionAndShowFeedback();
+        requestNotificationPermission();
+        maybeShowInAppReview();
 
     }
 
@@ -1075,7 +1077,7 @@ public class HomeActivity extends BaseActivity {
         cashbookSwitchLauncher.launch(intent);
     }
 
-    private void checkNotificationPermissionAndShowFeedback() {
+    private void requestNotificationPermission() {
         if (Build.VERSION.SDK_INT >= 33) {
             if (ContextCompat.checkSelfPermission(this,
                     Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
@@ -1089,17 +1091,43 @@ public class HomeActivity extends BaseActivity {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
             @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == PERMISSION_REQUEST_CODE_NOTIFICATIONS) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
-                showFeedbackNotification();
-        }
     }
 
-    private void showFeedbackNotification() {
+    /**
+     * Shows the Google Play In-App Review prompt if the user has:
+     * 1. Made at least 5 transactions (engaged user)
+     * 2. Not been prompted in the last 30 days
+     * This avoids annoying users while maximizing genuine Play Store reviews.
+     */
+    private void maybeShowInAppReview() {
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        long lastReviewPrompt = prefs.getLong("last_review_prompt_time", 0);
+        int appOpenCount = prefs.getInt("app_open_count", 0);
+
+        // Increment app open count
+        appOpenCount++;
+        prefs.edit().putInt("app_open_count", appOpenCount).apply();
+
+        // Only show review after 5+ app opens and not within last 30 days
+        long thirtyDaysMs = 30L * 24 * 60 * 60 * 1000;
+        if (appOpenCount < 5 || (System.currentTimeMillis() - lastReviewPrompt) < thirtyDaysMs) {
+            return;
+        }
+
         try {
-            FirebaseAppDistribution.getInstance().showFeedbackNotification("Shake to feedback!",
-                    InterruptionLevel.HIGH);
+            ReviewManager reviewManager = ReviewManagerFactory.create(this);
+            reviewManager.requestReviewFlow().addOnCompleteListener(task -> {
+                if (task.isSuccessful() && task.getResult() != null) {
+                    ReviewInfo reviewInfo = task.getResult();
+                    reviewManager.launchReviewFlow(this, reviewInfo).addOnCompleteListener(flow -> {
+                        // Save the timestamp regardless of whether user actually reviewed
+                        prefs.edit().putLong("last_review_prompt_time", System.currentTimeMillis()).apply();
+                        Log.d(TAG, "In-App Review flow completed");
+                    });
+                }
+            });
         } catch (Exception e) {
+            Log.w(TAG, "In-App Review failed", e);
         }
     }
 

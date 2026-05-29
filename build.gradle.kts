@@ -11,7 +11,6 @@ buildscript {
 
         // This should match the new crashlytics version
         classpath("com.google.firebase:firebase-crashlytics-gradle:3.0.1")
-        classpath("com.google.firebase:firebase-appdistribution-gradle:5.0.0")
     }
 }
 

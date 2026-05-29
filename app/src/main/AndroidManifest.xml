@@ -40,10 +40,6 @@
         android:theme="@style/Theme.Artham"
         tools:targetApi="34">
 
-        <meta-data
-            android:name="firebase_app_distribution_feedback_enabled"
-            android:value="false" />
-
         <activity
             android:name=".SplashActivity"
             android:exported="true"
