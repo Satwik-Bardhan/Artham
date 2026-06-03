@@ -28,6 +28,9 @@ public class FontManager {
     public static final String FONT_SPARTAN = "spartan";
     public static final String FONT_KHAND = "khand";
     public static final String FONT_TINOS = "tinos";
+    public static final String FONT_MONTSERRAT = "montserrat";
+    public static final String FONT_ROBOTO = "roboto";
+    public static final String FONT_ROTIS = "rotis";
 
     private static final String PREF_NAME = "app_font";
     private static final String KEY_FONT = "selected_font";
@@ -64,6 +67,12 @@ public class FontManager {
                 return "Khand";
             case FONT_TINOS:
                 return "Tinos";
+            case FONT_MONTSERRAT:
+                return "Montserrat";
+            case FONT_ROBOTO:
+                return "Roboto";
+            case FONT_ROTIS:
+                return "Rotis";
             case FONT_SYSTEM:
             default:
                 return "System Default";
@@ -86,6 +95,12 @@ public class FontManager {
                 return R.style.FontOverlay_Khand;
             case FONT_TINOS:
                 return R.style.FontOverlay_Tinos;
+            case FONT_MONTSERRAT:
+                return R.style.FontOverlay_Montserrat;
+            case FONT_ROBOTO:
+                return R.style.FontOverlay_Roboto;
+            case FONT_ROTIS:
+                return R.style.FontOverlay_Rotis;
             case FONT_SYSTEM:
             default:
                 return 0;
@@ -125,6 +140,12 @@ public class FontManager {
                     return ResourcesCompat.getFont(context, R.font.khand_medium);
                 case FONT_TINOS:
                     return ResourcesCompat.getFont(context, R.font.tinos_regular);
+                case FONT_MONTSERRAT:
+                    return ResourcesCompat.getFont(context, R.font.montserrat_regular);
+                case FONT_ROBOTO:
+                    return ResourcesCompat.getFont(context, R.font.roboto_regular);
+                case FONT_ROTIS:
+                    return ResourcesCompat.getFont(context, R.font.rotis_sans_serif);
                 case FONT_SYSTEM:
                 default:
                     return Typeface.DEFAULT;

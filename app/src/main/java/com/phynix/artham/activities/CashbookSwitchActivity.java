@@ -23,6 +23,7 @@ import android.widget.TextView;
 import android.view.WindowManager;
 
 import java.util.Locale;
+import java.util.UUID;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -47,6 +48,8 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.phynix.artham.adapters.CashbookAdapter;
+import com.phynix.artham.adapters.ColorSelectionAdapter;
+import com.phynix.artham.adapters.CategoryIconAdapter;
 import com.phynix.artham.models.CashbookModel;
 import com.phynix.artham.models.TransactionModel;
 import com.phynix.artham.utils.Constants;
@@ -102,6 +105,7 @@ public class CashbookSwitchActivity extends BaseActivity {
     private DatabaseReference userCashbooksRef;
     private ValueEventListener cashbooksListener;
     private FirebaseUser currentUser;
+    private com.phynix.artham.db.DataRepository repository;
 
     // State
     private boolean isLoading = false;
@@ -126,6 +130,7 @@ public class CashbookSwitchActivity extends BaseActivity {
 
         mAuth = FirebaseAuth.getInstance();
         currentUser = mAuth.getCurrentUser();
+        repository = com.phynix.artham.db.DataRepository.getInstance(getApplication());
 
         // 4. READ FROM PREFERENCES IF INTENT FAILS
         currentCashbookId = getIntent().getStringExtra("current_cashbook_id");
@@ -142,7 +147,7 @@ public class CashbookSwitchActivity extends BaseActivity {
             currentCashbookId = prefs.getString("last_selected_cashbook_id", null);
         }
 
-        if (currentUser == null) {
+        if (!repository.isLocalMode() && currentUser == null) {
             showSnackbar("Not authenticated. Please log in again.");
             finish();
             return;
@@ -150,11 +155,13 @@ public class CashbookSwitchActivity extends BaseActivity {
 
         loadSortPreference();
 
-        userCashbooksRef = FirebaseDatabase.getInstance().getReference()
-                .child("users").child(currentUser.getUid()).child("cashbooks");
+        if (!repository.isLocalMode() && currentUser != null) {
+            userCashbooksRef = FirebaseDatabase.getInstance().getReference()
+                    .child("users").child(currentUser.getUid()).child("cashbooks");
 
-        userCategoriesRef = FirebaseDatabase.getInstance().getReference()
-                .child("users").child(currentUser.getUid()).child("cashbookCategories");
+            userCategoriesRef = FirebaseDatabase.getInstance().getReference()
+                    .child("users").child(currentUser.getUid()).child("cashbookCategories");
+        }
 
         initViews();
         setupRecyclerView();
@@ -295,7 +302,42 @@ public class CashbookSwitchActivity extends BaseActivity {
 
         showLoading(true);
 
-        if (cashbooksListener != null) {
+        if (repository.isLocalMode()) {
+            repository.getCashbooks(data -> {
+                allCashbooks.clear();
+                for (CashbookModel cb : data) {
+                    boolean isCurrent = currentCashbookId != null && currentCashbookId.equals(cb.getCashbookId());
+                    cb.setCurrent(isCurrent);
+
+                    double totalIncome = 0;
+                    double totalExpense = 0;
+                    int count = 0;
+                    for (TransactionModel t : cb.getTransactionList()) {
+                        count++;
+                        if ("IN".equalsIgnoreCase(t.getType())) {
+                            totalIncome += t.getAmount();
+                        } else {
+                            totalExpense += t.getAmount();
+                        }
+                    }
+                    cb.setTotalBalance(totalIncome - totalExpense);
+                    cb.setTransactionCount(count);
+
+                    allCashbooks.add(cb);
+                }
+                applyFiltersAndSort();
+                showLoading(false);
+                if (swipeRefreshLayout != null) swipeRefreshLayout.setRefreshing(false);
+                checkAndShowOnboarding();
+            }, error -> {
+                showLoading(false);
+                if (swipeRefreshLayout != null) swipeRefreshLayout.setRefreshing(false);
+                showSnackbar(error);
+            });
+            return;
+        }
+
+        if (cashbooksListener != null && userCashbooksRef != null) {
             userCashbooksRef.removeEventListener(cashbooksListener);
         }
 
@@ -395,6 +437,56 @@ public class CashbookSwitchActivity extends BaseActivity {
             titleView.setText(title);
             btnSave.setText(btnText);
 
+            // --- Custom Appearance Selectors Setup ---
+            final String[] selectedColor = { (cashbookToEdit != null && cashbookToEdit.getThemeColor() != null) ? cashbookToEdit.getThemeColor() : "#3F51B5" };
+            final String[] selectedIcon = { (cashbookToEdit != null && cashbookToEdit.getThemeIcon() != null) ? cashbookToEdit.getThemeIcon() : "ic_book" };
+
+            RecyclerView colorRecyclerView = dialogView.findViewById(R.id.colorRecyclerView);
+            RecyclerView iconRecyclerView = dialogView.findViewById(R.id.iconRecyclerView);
+
+            List<String> colors = List.of(
+                    "#3F51B5", "#009688", "#FF9800", "#E91E63", 
+                    "#9C27B0", "#03A9F4", "#4CAF50", "#FF5722",
+                    "#607D8B", "#8BC34A", "#00BCD4"
+            );
+            List<String> iconNames = List.of(
+                    "ic_book", "ic_balance_wallet", "ic_account_balance", "ic_money",
+                    "ic_home", "ic_work", "ic_shopping_cart", "ic_flight",
+                    "ic_credit_card", "ic_receipt_long", "ic_card_giftcard", "ic_entertainment",
+                    "ic_utilities", "ic_food_dining", "ic_groceries", "ic_transportation"
+            );
+            List<Integer> iconResIds = new ArrayList<>();
+            for (String iconName : iconNames) {
+                int resId = getResources().getIdentifier(iconName, "drawable", getPackageName());
+                iconResIds.add(resId != 0 ? resId : R.drawable.ic_category);
+            }
+
+            if (colorRecyclerView != null) {
+                colorRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+                ColorSelectionAdapter colorAdapter = new ColorSelectionAdapter(colors, hexColor -> selectedColor[0] = hexColor);
+                colorRecyclerView.setAdapter(colorAdapter);
+                int initialColorPos = colors.indexOf(selectedColor[0]);
+                if (initialColorPos != -1) {
+                    colorAdapter.setSelectedIndex(initialColorPos);
+                }
+            }
+
+            if (iconRecyclerView != null) {
+                iconRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+                CategoryIconAdapter iconAdapter = new CategoryIconAdapter(iconResIds, iconResId -> {
+                    int index = iconResIds.indexOf(iconResId);
+                    if (index != -1) {
+                        selectedIcon[0] = iconNames.get(index);
+                    }
+                });
+                iconRecyclerView.setAdapter(iconAdapter);
+                int initialIconPos = iconNames.indexOf(selectedIcon[0]);
+                if (initialIconPos != -1) {
+                    iconAdapter.setSelectedIndex(initialIconPos);
+                }
+            }
+            // -----------------------------------------
+
             if (categoryInput != null) {
                 if (cashbookToEdit != null) {
                     categoryInput.setText(cashbookToEdit.getCategory());
@@ -444,11 +536,11 @@ public class CashbookSwitchActivity extends BaseActivity {
                             }
 
                             chip.setOnClickListener(v -> {
-                                if (chip.isChecked()) {
-                                    categoryInput.setText(category);
-                                } else {
-                                    categoryInput.setText("");
-                                }
+                                    if (chip.isChecked()) {
+                                        categoryInput.setText(category);
+                                    } else {
+                                        categoryInput.setText("");
+                                    }
                             });
 
                             suggestedChipGroup.addView(chip);
@@ -492,10 +584,20 @@ public class CashbookSwitchActivity extends BaseActivity {
                     return;
                 }
 
+                // Validate: only allow alphabets, numerics, and spaces
+                if (!name.matches("^[a-zA-Z0-9\\s]+$")) {
+                    new MaterialAlertDialogBuilder(this)
+                            .setTitle("Invalid Name")
+                            .setMessage("Cashbook name can only contain alphabets and numerics.")
+                            .setPositiveButton("OK", null)
+                            .show();
+                    return;
+                }
+
                 if (cashbookToEdit == null) {
-                    createNewCashbook(name, description, category);
+                    createNewCashbook(name, description, category, selectedColor[0], selectedIcon[0]);
                 } else {
-                    updateCashbook(cashbookToEdit, name, description, category);
+                    updateCashbook(cashbookToEdit, name, description, category, selectedColor[0], selectedIcon[0]);
                 }
                 dialog.dismiss();
             });
@@ -522,13 +624,41 @@ public class CashbookSwitchActivity extends BaseActivity {
         }
     }
 
-    private void createNewCashbook(String name, String description, String category) {
+    private void createNewCashbook(String name, String description, String category, String color, String icon) {
+        if (repository.isLocalMode()) {
+            String cashbookId = "local_cb_" + UUID.randomUUID().toString();
+            CashbookModel newCashbook = new CashbookModel(cashbookId, name);
+            newCashbook.setDescription(description);
+            newCashbook.setCategory(category);
+            newCashbook.setThemeColor(color);
+            newCashbook.setThemeIcon(icon);
+            newCashbook.setUserId("local_user");
+            newCashbook.setCreatedDate(System.currentTimeMillis());
+            newCashbook.setLastModified(System.currentTimeMillis());
+            newCashbook.setActive(true);
+
+            com.phynix.artham.db.DataRepository.LocalDataWrapper data = repository.loadLocalData();
+            data.cashbooks.add(newCashbook);
+            repository.saveLocalData(data);
+
+            repository.createDefaultCategories(cashbookId, success -> {
+                if (!category.isEmpty()) {
+                    saveCustomCategory(category);
+                }
+                showSnackbar("Cashbook created successfully!");
+                onCashbookSelected(newCashbook);
+            });
+            return;
+        }
+
         String cashbookId = userCashbooksRef.push().getKey();
         if (cashbookId == null) return;
 
         CashbookModel newCashbook = new CashbookModel(cashbookId, name);
         newCashbook.setDescription(description);
         newCashbook.setCategory(category);
+        newCashbook.setThemeColor(color);
+        newCashbook.setThemeIcon(icon);
         newCashbook.setUserId(currentUser.getUid());
         newCashbook.setCreatedDate(System.currentTimeMillis());
         newCashbook.setLastModified(System.currentTimeMillis());
@@ -545,14 +675,36 @@ public class CashbookSwitchActivity extends BaseActivity {
                 .addOnFailureListener(e -> showSnackbar("Failed: " + e.getMessage()));
     }
 
-    private void updateCashbook(CashbookModel cashbook, String newName, String newDescription, String category) {
+    private void updateCashbook(CashbookModel cashbook, String newName, String newDescription, String category, String color, String icon) {
         cashbook.setName(newName);
         cashbook.setDescription(newDescription);
         cashbook.setCategory(category);
+        cashbook.setThemeColor(color);
+        cashbook.setThemeIcon(icon);
+        cashbook.setLastModified(System.currentTimeMillis());
+
+        if (repository.isLocalMode()) {
+            com.phynix.artham.db.DataRepository.LocalDataWrapper data = repository.loadLocalData();
+            for (int i = 0; i < data.cashbooks.size(); i++) {
+                if (data.cashbooks.get(i).getCashbookId().equals(cashbook.getCashbookId())) {
+                    data.cashbooks.set(i, cashbook);
+                    break;
+                }
+            }
+            repository.saveLocalData(data);
+            if (!category.isEmpty()) {
+                saveCustomCategory(category);
+            }
+            showSnackbar("Cashbook updated");
+            loadCashbooks();
+            return;
+        }
 
         userCashbooksRef.child(cashbook.getCashbookId()).child("name").setValue(newName);
         userCashbooksRef.child(cashbook.getCashbookId()).child("description").setValue(newDescription);
         userCashbooksRef.child(cashbook.getCashbookId()).child("category").setValue(category);
+        userCashbooksRef.child(cashbook.getCashbookId()).child("themeColor").setValue(color);
+        userCashbooksRef.child(cashbook.getCashbookId()).child("themeIcon").setValue(icon);
         userCashbooksRef.child(cashbook.getCashbookId()).child("lastModified").setValue(System.currentTimeMillis())
                 .addOnSuccessListener(aVoid -> {
                     if (!category.isEmpty() && !customCategories.contains(category)) {
@@ -566,6 +718,22 @@ public class CashbookSwitchActivity extends BaseActivity {
     private void handleFavoriteToggle(CashbookModel cashbook) {
         if (cashbook == null) return;
         boolean newFavoriteState = !cashbook.isFavorite();
+        cashbook.setFavorite(newFavoriteState);
+        cashbook.setLastModified(System.currentTimeMillis());
+
+        if (repository.isLocalMode()) {
+            com.phynix.artham.db.DataRepository.LocalDataWrapper data = repository.loadLocalData();
+            for (int i = 0; i < data.cashbooks.size(); i++) {
+                if (data.cashbooks.get(i).getCashbookId().equals(cashbook.getCashbookId())) {
+                    data.cashbooks.set(i, cashbook);
+                    break;
+                }
+            }
+            repository.saveLocalData(data);
+            showSnackbar(newFavoriteState ? "Added to favorites" : "Removed from favorites");
+            loadCashbooks();
+            return;
+        }
 
         userCashbooksRef.child(cashbook.getCashbookId()).child("favorite").setValue(newFavoriteState);
         userCashbooksRef.child(cashbook.getCashbookId()).child("lastModified").setValue(System.currentTimeMillis())
@@ -613,6 +781,29 @@ public class CashbookSwitchActivity extends BaseActivity {
         if (cashbook == null) return;
 
         showSnackbar("Preparing export...");
+
+        if (repository.isLocalMode()) {
+            List<TransactionModel> transactions = cashbook.getTransactionList();
+            if (transactions.isEmpty()) {
+                showSnackbar("No transactions to export in this cashbook");
+                return;
+            }
+            long earliest = Long.MAX_VALUE;
+            long latest = Long.MIN_VALUE;
+            for (TransactionModel txn : transactions) {
+                if (txn.getTimestamp() < earliest) earliest = txn.getTimestamp();
+                if (txn.getTimestamp() > latest) latest = txn.getTimestamp();
+            }
+            String bookName = cashbook.getName() != null ? cashbook.getName() : "Cashbook";
+            PdfReportGenerator.generateReport(
+                    CashbookSwitchActivity.this,
+                    transactions,
+                    bookName,
+                    earliest,
+                    latest
+            );
+            return;
+        }
 
         DatabaseReference txnRef = userCashbooksRef
                 .child(cashbook.getCashbookId())
@@ -663,6 +854,22 @@ public class CashbookSwitchActivity extends BaseActivity {
 
     private void toggleCashbookActive(CashbookModel cashbook) {
         boolean newActiveState = !cashbook.isActive();
+        cashbook.setActive(newActiveState);
+        cashbook.setLastModified(System.currentTimeMillis());
+
+        if (repository.isLocalMode()) {
+            com.phynix.artham.db.DataRepository.LocalDataWrapper data = repository.loadLocalData();
+            for (int i = 0; i < data.cashbooks.size(); i++) {
+                if (data.cashbooks.get(i).getCashbookId().equals(cashbook.getCashbookId())) {
+                    data.cashbooks.set(i, cashbook);
+                    break;
+                }
+            }
+            repository.saveLocalData(data);
+            showSnackbar(newActiveState ? "Cashbook activated" : "Cashbook deactivated");
+            loadCashbooks();
+            return;
+        }
 
         userCashbooksRef.child(cashbook.getCashbookId()).child("active").setValue(newActiveState);
         userCashbooksRef.child(cashbook.getCashbookId()).child("lastModified").setValue(System.currentTimeMillis())
@@ -691,6 +898,16 @@ public class CashbookSwitchActivity extends BaseActivity {
     }
 
     private void deleteCashbookFromFirebase(CashbookModel cashbook) {
+        if (repository.isLocalMode()) {
+            repository.deleteCashbook(cashbook.getCashbookId(), success -> {
+                showSnackbar("Cashbook deleted");
+                loadCashbooks();
+            }, error -> {
+                showSnackbar(error);
+            });
+            return;
+        }
+
         DatabaseReference cashbookRef = userCashbooksRef.child(cashbook.getCashbookId());
 
         // Snapshot the entire cashbook node (including transactions) before deleting
@@ -702,7 +919,7 @@ public class CashbookSwitchActivity extends BaseActivity {
                 cashbookRef.removeValue()
                         .addOnSuccessListener(aVoid -> {
                             Snackbar snackbar = Snackbar.make(
-                                    findViewById(android.R.id.content),
+                                     findViewById(android.R.id.content),
                                     "Cashbook deleted",
                                     Snackbar.LENGTH_LONG);
                             snackbar.setAction("UNDO", v -> {
@@ -953,7 +1170,19 @@ public class CashbookSwitchActivity extends BaseActivity {
     // ═══════════════════════════════════════════════════════════
 
     private void setupCategoriesListener() {
-        if (categoriesListener != null) {
+        if (repository.isLocalMode()) {
+            customCategories.clear();
+            for (CashbookModel cb : allCashbooks) {
+                String cat = cb.getCategory();
+                if (cat != null && !cat.trim().isEmpty() && !customCategories.contains(cat)) {
+                    customCategories.add(cat);
+                }
+            }
+            rebuildCategoryChips();
+            return;
+        }
+
+        if (categoriesListener != null && userCategoriesRef != null) {
             userCategoriesRef.removeEventListener(categoriesListener);
         }
         categoriesListener = new ValueEventListener() {
@@ -1057,6 +1286,11 @@ public class CashbookSwitchActivity extends BaseActivity {
                     return;
                 }
 
+                if (com.phynix.artham.utils.FirebasePathUtils.containsIllegalChars(name)) {
+                    showSnackbar(com.phynix.artham.utils.FirebasePathUtils.getIllegalCharsMessage());
+                    return;
+                }
+
                 saveCustomCategory(name);
                 if (cashbookToAssign != null) {
                     updateCashbookCategory(cashbookToAssign, name);
@@ -1127,6 +1361,25 @@ public class CashbookSwitchActivity extends BaseActivity {
 
     private void updateCashbookCategory(CashbookModel cashbook, String category) {
         cashbook.setCategory(category);
+        cashbook.setLastModified(System.currentTimeMillis());
+
+        if (repository.isLocalMode()) {
+            com.phynix.artham.db.DataRepository.LocalDataWrapper data = repository.loadLocalData();
+            for (int i = 0; i < data.cashbooks.size(); i++) {
+                if (data.cashbooks.get(i).getCashbookId().equals(cashbook.getCashbookId())) {
+                    data.cashbooks.set(i, cashbook);
+                    break;
+                }
+            }
+            repository.saveLocalData(data);
+            if (!category.isEmpty() && !customCategories.contains(category)) {
+                saveCustomCategory(category);
+            }
+            showSnackbar("Category updated successfully");
+            loadCashbooks();
+            return;
+        }
+
         userCashbooksRef.child(cashbook.getCashbookId()).child("category").setValue(category);
         userCashbooksRef.child(cashbook.getCashbookId()).child("lastModified").setValue(System.currentTimeMillis())
                 .addOnSuccessListener(aVoid -> {
@@ -1138,19 +1391,45 @@ public class CashbookSwitchActivity extends BaseActivity {
                 .addOnFailureListener(e -> showSnackbar("Failed to update category"));
     }
 
-    private void saveCustomCategory(String name) {
+    private void saveCustomCategory(String rawName) {
+        if (rawName == null || rawName.trim().isEmpty()) return;
+        final String name = rawName.trim();
+
+        // Validate: reject Firebase-illegal characters
+        if (com.phynix.artham.utils.FirebasePathUtils.containsIllegalChars(name)) {
+            showSnackbar(com.phynix.artham.utils.FirebasePathUtils.getIllegalCharsMessage());
+            return;
+        }
+
+        if (repository.isLocalMode()) {
+            if (!customCategories.contains(name)) {
+                customCategories.add(name);
+                rebuildCategoryChips();
+            }
+            showSnackbar("Category '" + name + "' created!");
+            currentFilter = name;
+            applyFiltersAndSort();
+            return;
+        }
+
         if (currentUser == null) return;
-        DatabaseReference catRef = FirebaseDatabase.getInstance().getReference()
-                .child("users").child(currentUser.getUid()).child("cashbookCategories");
-        
-        catRef.child(name).setValue(true)
-                .addOnSuccessListener(aVoid -> {
-                    showSnackbar("Category '" + name + "' created!");
-                    // Select the newly created category as active filter automatically!
-                    currentFilter = name;
-                    applyFiltersAndSort();
-                })
-                .addOnFailureListener(e -> showSnackbar("Failed to create category: " + e.getMessage()));
+
+        try {
+            DatabaseReference catRef = FirebaseDatabase.getInstance().getReference()
+                    .child("users").child(currentUser.getUid()).child("cashbookCategories");
+
+            catRef.child(name).setValue(true)
+                    .addOnSuccessListener(aVoid -> {
+                        showSnackbar("Category '" + name + "' created!");
+                        // Select the newly created category as active filter automatically!
+                        currentFilter = name;
+                        applyFiltersAndSort();
+                    })
+                    .addOnFailureListener(e -> showSnackbar("Failed to create category: " + e.getMessage()));
+        } catch (Exception e) {
+            Log.e(TAG, "Invalid Firebase path for category: " + name, e);
+            showSnackbar("Invalid category name. " + com.phynix.artham.utils.FirebasePathUtils.getIllegalCharsMessage());
+        }
     }
 
     // ═══════════════════════════════════════════════════════════

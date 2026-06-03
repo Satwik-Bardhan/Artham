@@ -22,6 +22,8 @@ public class ThemeManager {
     public static final String THEME_PURPLE = "purple";
     public static final String THEME_EMERALD = "emerald";
     public static final String THEME_ROSE = "rose";
+    public static final String THEME_SUNSET = "sunset";
+    public static final String THEME_OCEAN = "ocean";
     public static final String THEME_RANDOM = "random";
 
     /**
@@ -29,7 +31,7 @@ public class ThemeManager {
      * Excludes THEME_SYSTEM and THEME_RANDOM itself.
      */
     private static final String[] RANDOMIZABLE_THEMES = {
-            THEME_LIGHT, THEME_DARK, THEME_PURPLE, THEME_EMERALD, THEME_ROSE
+            THEME_LIGHT, THEME_DARK, THEME_PURPLE, THEME_EMERALD, THEME_ROSE, THEME_SUNSET, THEME_OCEAN
     };
 
     private static final String PREF_NAME = "app_theme";
@@ -54,6 +56,8 @@ public class ThemeManager {
             case THEME_PURPLE:
             case THEME_EMERALD:
             case THEME_ROSE:
+            case THEME_SUNSET:
+            case THEME_OCEAN:
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
                 break;
             default:
@@ -99,6 +103,12 @@ public class ThemeManager {
                 break;
             case THEME_ROSE:
                 activity.setTheme(R.style.Theme_Artham_Rose);
+                break;
+            case THEME_SUNSET:
+                activity.setTheme(R.style.Theme_Artham_Sunset);
+                break;
+            case THEME_OCEAN:
+                activity.setTheme(R.style.Theme_Artham_Ocean);
                 break;
             default:
                 activity.setTheme(R.style.Theme_Artham);

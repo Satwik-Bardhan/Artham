@@ -229,6 +229,12 @@ public class ManageCashbookLabelsActivity extends BaseActivity implements Cashbo
                     return;
                 }
 
+                // Validate: reject Firebase-illegal characters
+                if (com.phynix.artham.utils.FirebasePathUtils.containsIllegalChars(name)) {
+                    Toast.makeText(this, com.phynix.artham.utils.FirebasePathUtils.getIllegalCharsMessage(), Toast.LENGTH_LONG).show();
+                    return;
+                }
+
                 // Check for duplicates (case-insensitive)
                 for (String cat : allCategories) {
                     if (cat.equalsIgnoreCase(name)) {
@@ -255,13 +261,22 @@ public class ManageCashbookLabelsActivity extends BaseActivity implements Cashbo
     }
 
     private void saveCategoryToFirebase(String name) {
-        userCategoriesRef.child(name).setValue(true)
-                .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(this, "Label '" + name + "' created!", Toast.LENGTH_SHORT).show();
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(this, "Failed to create label: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                });
+        if (com.phynix.artham.utils.FirebasePathUtils.containsIllegalChars(name)) {
+            Toast.makeText(this, com.phynix.artham.utils.FirebasePathUtils.getIllegalCharsMessage(), Toast.LENGTH_LONG).show();
+            return;
+        }
+        try {
+            userCategoriesRef.child(name).setValue(true)
+                    .addOnSuccessListener(aVoid -> {
+                        Toast.makeText(this, "Label '" + name + "' created!", Toast.LENGTH_SHORT).show();
+                    })
+                    .addOnFailureListener(e -> {
+                        Toast.makeText(this, "Failed to create label: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    });
+        } catch (Exception e) {
+            Log.e(TAG, "Invalid Firebase path for label: " + name, e);
+            Toast.makeText(this, "Invalid label name. " + com.phynix.artham.utils.FirebasePathUtils.getIllegalCharsMessage(), Toast.LENGTH_LONG).show();
+        }
     }
 
     @Override
@@ -311,6 +326,12 @@ public class ManageCashbookLabelsActivity extends BaseActivity implements Cashbo
 
                 if (newName.isEmpty()) {
                     Toast.makeText(this, "Please enter a label name", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                // Validate: reject Firebase-illegal characters
+                if (com.phynix.artham.utils.FirebasePathUtils.containsIllegalChars(newName)) {
+                    Toast.makeText(this, com.phynix.artham.utils.FirebasePathUtils.getIllegalCharsMessage(), Toast.LENGTH_LONG).show();
                     return;
                 }
 

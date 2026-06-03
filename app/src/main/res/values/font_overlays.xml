@@ -36,4 +36,19 @@
         <item name="android:fontFamily">@font/tinos_family</item>
         <item name="fontFamily">@font/tinos_family</item>
     </style>
+
+    <style name="FontOverlay.Montserrat" parent="">
+        <item name="android:fontFamily">@font/montserrat_family</item>
+        <item name="fontFamily">@font/montserrat_family</item>
+    </style>
+
+    <style name="FontOverlay.Roboto" parent="">
+        <item name="android:fontFamily">@font/roboto_family</item>
+        <item name="fontFamily">@font/roboto_family</item>
+    </style>
+
+    <style name="FontOverlay.Rotis" parent="">
+        <item name="android:fontFamily">@font/rotis_family</item>
+        <item name="fontFamily">@font/rotis_family</item>
+    </style>
 </resources>

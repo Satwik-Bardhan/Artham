@@ -83,26 +83,31 @@
 
             <!-- Row of social buttons -->
             <LinearLayout
+                android:id="@+id/socialLinksContainer"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:gravity="center"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:clickable="true"
+                android:focusable="true">
 
                 <!-- Instagram -->
                 <LinearLayout
+                    android:id="@+id/btnInstagram"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginEnd="44dp"
+                    android:layout_marginEnd="20dp"
+                    android:padding="16dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:background="?android:attr/selectableItemBackgroundBorderless"
                     android:gravity="center"
                     android:orientation="vertical">
 
                     <ImageView
-                        android:id="@+id/btnInstagram"
                         android:layout_width="20dp"
                         android:layout_height="20dp"
-                        android:clickable="true"
                         android:contentDescription="Instagram"
-                        android:focusable="true"
                         android:src="@drawable/ic_instagram" />
 
                     <TextView
@@ -118,19 +123,21 @@
 
                 <!-- WhatsApp -->
                 <LinearLayout
+                    android:id="@+id/btnWhatsapp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginEnd="44dp"
+                    android:layout_marginEnd="20dp"
+                    android:padding="16dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:background="?android:attr/selectableItemBackgroundBorderless"
                     android:gravity="center"
                     android:orientation="vertical">
 
                     <ImageView
-                        android:id="@+id/btnWhatsapp"
                         android:layout_width="20dp"
                         android:layout_height="20dp"
-                        android:clickable="true"
                         android:contentDescription="WhatsApp"
-                        android:focusable="true"
                         android:src="@drawable/ic_whatsapp" />
 
                     <TextView
@@ -146,18 +153,20 @@
 
                 <!-- Gmail -->
                 <LinearLayout
+                    android:id="@+id/btnGmail"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:padding="16dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:background="?android:attr/selectableItemBackgroundBorderless"
                     android:gravity="center"
                     android:orientation="vertical">
 
                     <ImageView
-                        android:id="@+id/btnGmail"
                         android:layout_width="20dp"
                         android:layout_height="20dp"
-                        android:clickable="true"
                         android:contentDescription="Gmail"
-                        android:focusable="true"
                         android:src="@drawable/gmail" />
 
                     <TextView

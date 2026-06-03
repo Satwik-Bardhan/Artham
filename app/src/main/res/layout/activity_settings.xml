@@ -280,12 +280,16 @@
                 android:padding="16dp">
 
                 <TextView
+                    android:id="@+id/brand_title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="ARTHAM"
                     android:textColor="?attr/chk_textColorPrimary"
                     android:textSize="14sp"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:padding="4dp" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -295,9 +299,10 @@
                     android:textSize="14sp" />
 
                 <TextView
+                    android:id="@+id/version_text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Version 1.0.11"
+                    android:text="Version 1.2"
                     android:textColor="?attr/chk_textColorSecondary"
                     android:textSize="14sp" />
             </LinearLayout>

@@ -38,8 +38,10 @@ public class SplashActivity extends BaseActivity {
         }
 
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            boolean isLocalMode = getSharedPreferences("AppPrefs", MODE_PRIVATE)
+                    .getBoolean("is_local_mode", false);
             FirebaseUser currentUser = mAuth.getCurrentUser();
-            if (currentUser != null) {
+            if (currentUser != null || isLocalMode) {
                 launchActivity(HomeActivity.class);
             } else {
                 launchActivity(SignInActivity.class);

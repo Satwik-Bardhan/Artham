@@ -57,12 +57,12 @@ public class HelpSupportActivity extends BaseActivity {
 
         // Contact Us
         if (btnContactUs != null) {
-            btnContactUs.setOnClickListener(v -> sendEmail("support@artham.com", "Support Request: Artham App"));
+            btnContactUs.setOnClickListener(v -> sendEmail("arthamhq@gmail.com", "Support Request: Artham App"));
         }
 
         // Report Bug
         if (btnReportBug != null) {
-            btnReportBug.setOnClickListener(v -> sendEmail("bugs@artham.com", "Bug Report: Artham App"));
+            btnReportBug.setOnClickListener(v -> sendEmail("arthamhq@gmail.com", "Bug Report: Artham App"));
         }
     }
 

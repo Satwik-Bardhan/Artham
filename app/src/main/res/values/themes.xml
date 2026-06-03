@@ -201,6 +201,80 @@
         <item name="buttonStyle">@style/ProfessionalButton</item>
     </style>
 
+    <style name="Theme.Artham.Sunset" parent="Theme.MaterialComponents.NoActionBar">
+        <item name="colorPrimary">@color/sunset_primary</item>
+        <item name="colorPrimaryDark">@color/sunset_primary_dark</item>
+        <item name="colorSecondary">@color/sunset_secondary</item>
+        <item name="android:colorBackground">@color/sunset_background</item>
+        <item name="colorSurface">@color/sunset_surface</item>
+        <item name="android:statusBarColor">@color/sunset_background</item>
+        <item name="android:windowLightStatusBar">false</item>
+
+        <item name="chk_backgroundColor">@color/sunset_background</item>
+        <item name="chk_surfaceColor">@color/sunset_surface</item>
+        <item name="chk_dividerHorizontal">@color/sunset_divider</item>
+        <item name="chk_dividerVertical">@color/sunset_divider</item>
+        <item name="chk_dividerColor">@color/sunset_divider</item> <item name="chk_selectedItemColor">@color/sunset_selected_item</item>
+        <item name="chk_textColorPrimary">@color/sunset_text_primary</item>
+        <item name="chk_textColorSecondary">@color/sunset_text_secondary</item>
+        <item name="chk_textColorHint">@color/sunset_text_hint</item>
+        <item name="android:textColorPrimary">@color/sunset_text_primary</item>
+
+        <item name="chk_primary_blue">@color/sunset_accent</item>
+        <item name="chk_secondary_green">@color/sunset_secondary</item>
+        <item name="chk_incomeColor">@color/income_green</item>
+        <item name="chk_expenseColor">@color/expense_red</item>
+        <item name="chk_balanceColor">@color/sunset_balance</item>
+
+        <item name="chk_bottomNavIconTextColor">@color/sunset_text_secondary</item>
+        <item name="chk_bottomNavSelectedColor">@color/sunset_primary</item>
+        <item name="chk_bottomNavBorderColor">@color/sunset_divider</item>
+
+        <item name="chk_card_start">#2D1818</item>
+        <item name="chk_card_end">#7F3232</item>
+        <item name="chk_splash_wave">@color/splash_wave_sunset</item>
+        <item name="chk_headerColor">@color/sunset_header</item>
+
+        <item name="buttonStyle">@style/ProfessionalButton</item>
+    </style>
+
+    <style name="Theme.Artham.Ocean" parent="Theme.MaterialComponents.NoActionBar">
+        <item name="colorPrimary">@color/ocean_primary</item>
+        <item name="colorPrimaryDark">@color/ocean_primary_dark</item>
+        <item name="colorSecondary">@color/ocean_secondary</item>
+        <item name="android:colorBackground">@color/ocean_background</item>
+        <item name="colorSurface">@color/ocean_surface</item>
+        <item name="android:statusBarColor">@color/ocean_background</item>
+        <item name="android:windowLightStatusBar">false</item>
+
+        <item name="chk_backgroundColor">@color/ocean_background</item>
+        <item name="chk_surfaceColor">@color/ocean_surface</item>
+        <item name="chk_dividerHorizontal">@color/ocean_divider</item>
+        <item name="chk_dividerVertical">@color/ocean_divider</item>
+        <item name="chk_dividerColor">@color/ocean_divider</item> <item name="chk_selectedItemColor">@color/ocean_selected_item</item>
+        <item name="chk_textColorPrimary">@color/ocean_text_primary</item>
+        <item name="chk_textColorSecondary">@color/ocean_text_secondary</item>
+        <item name="chk_textColorHint">@color/ocean_text_hint</item>
+        <item name="android:textColorPrimary">@color/ocean_text_primary</item>
+
+        <item name="chk_primary_blue">@color/ocean_accent</item>
+        <item name="chk_secondary_green">@color/ocean_secondary</item>
+        <item name="chk_incomeColor">@color/income_green</item>
+        <item name="chk_expenseColor">@color/expense_red</item>
+        <item name="chk_balanceColor">@color/ocean_balance</item>
+
+        <item name="chk_bottomNavIconTextColor">@color/ocean_text_secondary</item>
+        <item name="chk_bottomNavSelectedColor">@color/ocean_primary</item>
+        <item name="chk_bottomNavBorderColor">@color/ocean_divider</item>
+
+        <item name="chk_card_start">#0A233C</item>
+        <item name="chk_card_end">#006F9E</item>
+        <item name="chk_splash_wave">@color/splash_wave_ocean</item>
+        <item name="chk_headerColor">@color/ocean_header</item>
+
+        <item name="buttonStyle">@style/ProfessionalButton</item>
+    </style>
+
     <style name="Theme.Artham.Dialog" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <item name="android:windowIsFloating">true</item>
         <item name="android:windowIsTranslucent">true</item>

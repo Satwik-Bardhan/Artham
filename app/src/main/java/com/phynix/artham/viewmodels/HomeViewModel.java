@@ -75,7 +75,9 @@ public class HomeViewModel extends AndroidViewModel {
             if (user != null) {
                 // User is authenticated, proceed to load data
                 currentUserId = user.getUid();
-                loadCashbooks();
+                repository.migrateLocalDataToFirebase(success -> {
+                    loadCashbooks();
+                });
             } else {
                 // User is signed out or session invalid
                 errorMessage.setValue("User session expired or not found.");
@@ -83,8 +85,13 @@ public class HomeViewModel extends AndroidViewModel {
             }
         };
 
-        // Attach the listener immediately
-        mAuth.addAuthStateListener(authListener);
+        if (repository.isLocalMode()) {
+            currentUserId = "local_user";
+            loadCashbooks();
+        } else {
+            // Attach the listener immediately
+            mAuth.addAuthStateListener(authListener);
+        }
     }
 
     // ============================================
@@ -163,12 +170,14 @@ public class HomeViewModel extends AndroidViewModel {
 
         isLoading.setValue(true);
 
-        activeTransactionRef = FirebaseDatabase.getInstance().getReference()
-                .child(Constants.NODE_USERS)
-                .child(currentUserId)
-                .child(Constants.NODE_CASHBOOKS)
-                .child(cashbookId)
-                .child(Constants.NODE_TRANSACTIONS);
+        if (!repository.isLocalMode()) {
+            activeTransactionRef = FirebaseDatabase.getInstance().getReference()
+                    .child(Constants.NODE_USERS)
+                    .child(currentUserId)
+                    .child(Constants.NODE_CASHBOOKS)
+                    .child(cashbookId)
+                    .child(Constants.NODE_TRANSACTIONS);
+        }
 
         activeTransactionListener = repository.subscribeToTransactions(cashbookId,
                 this::processTransactions,

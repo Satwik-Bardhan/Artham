@@ -66,18 +66,21 @@ public class DailySummaryActivity extends BaseActivity {
     }
 
     private void subscribeToTransactions() {
+        boolean isLocal = repository.isLocalMode();
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
-        if (currentUser == null || cashbookId == null) {
+        if (cashbookId == null || (!isLocal && currentUser == null)) {
             showEmptyState(true);
             return;
         }
 
-        transactionsRef = FirebaseDatabase.getInstance().getReference()
-                .child(Constants.NODE_USERS)
-                .child(currentUser.getUid())
-                .child(Constants.NODE_CASHBOOKS)
-                .child(cashbookId)
-                .child(Constants.NODE_TRANSACTIONS);
+        if (!isLocal) {
+            transactionsRef = FirebaseDatabase.getInstance().getReference()
+                    .child(Constants.NODE_USERS)
+                    .child(currentUser.getUid())
+                    .child(Constants.NODE_CASHBOOKS)
+                    .child(cashbookId)
+                    .child(Constants.NODE_TRANSACTIONS);
+        }
 
         transactionsListener = repository.subscribeToTransactions(cashbookId, transactions -> {
             processTransactions(transactions);

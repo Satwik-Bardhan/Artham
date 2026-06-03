@@ -217,6 +217,25 @@ public class CashbookModel implements Serializable {
         this.category = category;
     }
 
+    private String themeColor;
+    private String themeIcon;
+
+    public String getThemeColor() {
+        return themeColor;
+    }
+
+    public void setThemeColor(String themeColor) {
+        this.themeColor = themeColor;
+    }
+
+    public String getThemeIcon() {
+        return themeIcon;
+    }
+
+    public void setThemeIcon(String themeIcon) {
+        this.themeIcon = themeIcon;
+    }
+
     // --- Utilities ---
 
     @Override

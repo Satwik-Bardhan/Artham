@@ -29,6 +29,15 @@ public class ColorSelectionAdapter extends RecyclerView.Adapter<ColorSelectionAd
         this.listener = listener;
     }
 
+    public void setSelectedIndex(int index) {
+        if (index >= 0 && index < hexColors.size()) {
+            int previousPosition = selectedPosition;
+            selectedPosition = index;
+            notifyItemChanged(previousPosition);
+            notifyItemChanged(selectedPosition);
+        }
+    }
+
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {

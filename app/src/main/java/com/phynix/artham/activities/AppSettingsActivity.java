@@ -33,9 +33,9 @@ public class AppSettingsActivity extends BaseActivity {
     private static final String KEY_SETTINGS_SHOW_PIE_CHART = "settings_show_pie_chart";
 
     // UI Elements
-    private SwitchMaterial calculatorSwitch, hapticSwitch, summarySwitch, pieChartSwitch, monthlySummarySwitch;
-    private LinearLayout dataBackupLayout, languageLayout, themeLayout, fontLayout, manageCategoriesLayout, manageCashbookCategoriesLayout, replayTutorialLayout;
-    private TextView currentLanguageTextView, currentThemeTextView, currentFontTextView;
+    private SwitchMaterial calculatorSwitch, hapticSwitch, summarySwitch, pieChartSwitch, monthlySummarySwitch, intervalReminderSwitch;
+    private LinearLayout dataBackupLayout, languageLayout, themeLayout, fontLayout, manageCategoriesLayout, manageCashbookCategoriesLayout, replayTutorialLayout, intervalReminderFrequencyLayout;
+    private TextView currentLanguageTextView, currentThemeTextView, currentFontTextView, currentReminderIntervalTextView;
 
     // To track theme/font changes upon return
     private String originalTheme;
@@ -99,6 +99,11 @@ public class AppSettingsActivity extends BaseActivity {
 
         // Bind the Replay Tutorial Layout
         replayTutorialLayout = findViewById(R.id.replayTutorialLayout);
+
+        // Interval Reminder
+        intervalReminderSwitch = findViewById(R.id.intervalReminderSwitch);
+        intervalReminderFrequencyLayout = findViewById(R.id.intervalReminderFrequencyLayout);
+        currentReminderIntervalTextView = findViewById(R.id.currentReminderInterval);
     }
 
     private void loadSettings() {
@@ -121,6 +126,27 @@ public class AppSettingsActivity extends BaseActivity {
 
         updateThemeLabel();
         updateFontLabel();
+
+        // Load interval reminder settings
+        boolean intervalEnabled = appPrefs.getBoolean(
+                com.phynix.artham.utils.IntervalReminderReceiver.KEY_INTERVAL_REMINDER_ENABLED, true);
+        if (intervalReminderSwitch != null) {
+            intervalReminderSwitch.setChecked(intervalEnabled);
+        }
+        if (intervalReminderFrequencyLayout != null) {
+            intervalReminderFrequencyLayout.setVisibility(intervalEnabled ? View.VISIBLE : View.GONE);
+        }
+        int intervalMinutes = appPrefs.getInt(
+                com.phynix.artham.utils.IntervalReminderReceiver.KEY_REMINDER_INTERVAL_MINUTES,
+                com.phynix.artham.utils.IntervalReminderReceiver.DEFAULT_INTERVAL_MINUTES);
+        updateIntervalLabel(intervalMinutes);
+    }
+
+    private void updateIntervalLabel(int minutes) {
+        if (currentReminderIntervalTextView != null) {
+            currentReminderIntervalTextView.setText(
+                    "Every " + com.phynix.artham.utils.IntervalReminderReceiver.getIntervalLabel(minutes));
+        }
     }
 
     private void updateThemeLabel() {
@@ -146,6 +172,12 @@ public class AppSettingsActivity extends BaseActivity {
                     break;
                 case ThemeManager.THEME_ROSE:
                     displayTheme = "Rose Gold";
+                    break;
+                case ThemeManager.THEME_SUNSET:
+                    displayTheme = "Sunset";
+                    break;
+                case ThemeManager.THEME_OCEAN:
+                    displayTheme = "Ocean";
                     break;
                 case ThemeManager.THEME_RANDOM:
                     displayTheme = "Random";
@@ -222,6 +254,57 @@ public class AppSettingsActivity extends BaseActivity {
             });
         }
 
+        // Interval Reminder Switch
+        if (intervalReminderSwitch != null) {
+            intervalReminderSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                SharedPreferences appPrefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+                appPrefs.edit().putBoolean(
+                        com.phynix.artham.utils.IntervalReminderReceiver.KEY_INTERVAL_REMINDER_ENABLED, isChecked).apply();
+
+                if (intervalReminderFrequencyLayout != null) {
+                    intervalReminderFrequencyLayout.setVisibility(isChecked ? View.VISIBLE : View.GONE);
+                }
+
+                if (isChecked) {
+                    com.phynix.artham.utils.IntervalReminderReceiver.scheduleNextAlarm(this);
+                    Toast.makeText(this, "Transaction reminders enabled", Toast.LENGTH_SHORT).show();
+                } else {
+                    com.phynix.artham.utils.IntervalReminderReceiver.cancelAlarm(this);
+                    Toast.makeText(this, "Transaction reminders disabled", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+
+        // Interval Reminder Frequency Selection
+        if (intervalReminderFrequencyLayout != null) {
+            intervalReminderFrequencyLayout.setOnClickListener(v -> {
+                SharedPreferences appPrefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+                int currentInterval = appPrefs.getInt(
+                        com.phynix.artham.utils.IntervalReminderReceiver.KEY_REMINDER_INTERVAL_MINUTES,
+                        com.phynix.artham.utils.IntervalReminderReceiver.DEFAULT_INTERVAL_MINUTES);
+                int selectedIndex = com.phynix.artham.utils.IntervalReminderReceiver.getIntervalIndex(currentInterval);
+                String[] labels = com.phynix.artham.utils.IntervalReminderReceiver.getIntervalLabels();
+
+                new AlertDialog.Builder(this)
+                        .setTitle("Reminder Frequency")
+                        .setSingleChoiceItems(labels, selectedIndex, (dialog, which) -> {
+                            int chosenMinutes = com.phynix.artham.utils.IntervalReminderReceiver.INTERVAL_OPTIONS[which];
+                            appPrefs.edit().putInt(
+                                    com.phynix.artham.utils.IntervalReminderReceiver.KEY_REMINDER_INTERVAL_MINUTES,
+                                    chosenMinutes).apply();
+                            updateIntervalLabel(chosenMinutes);
+                            // Reschedule with new interval
+                            com.phynix.artham.utils.IntervalReminderReceiver.scheduleNextAlarm(this);
+                            Toast.makeText(this, "Reminder set to every " +
+                                    com.phynix.artham.utils.IntervalReminderReceiver.getIntervalLabel(chosenMinutes),
+                                    Toast.LENGTH_SHORT).show();
+                            dialog.dismiss();
+                        })
+                        .setNegativeButton("Cancel", null)
+                        .show();
+            });
+        }
+
         if (languageLayout != null) {
             languageLayout.setOnClickListener(v ->
                     Toast.makeText(this, "Language selection coming soon!", Toast.LENGTH_SHORT).show());
@@ -248,12 +331,11 @@ public class AppSettingsActivity extends BaseActivity {
                 Intent intent = new Intent(AppSettingsActivity.this, CategoryActivity.class);
 
                 FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-                if (user != null) {
-                    SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
-                    String currentCashbookId = prefs.getString("active_cashbook_id_" + user.getUid(), "");
-                    if (!currentCashbookId.isEmpty()) {
-                        intent.putExtra("cashbook_id", currentCashbookId);
-                    }
+                String uid = user != null ? user.getUid() : "local_user";
+                SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+                String currentCashbookId = prefs.getString("active_cashbook_id_" + uid, "");
+                if (!currentCashbookId.isEmpty()) {
+                    intent.putExtra("cashbook_id", currentCashbookId);
                 }
 
                 startActivity(intent);
@@ -262,6 +344,11 @@ public class AppSettingsActivity extends BaseActivity {
 
         if (manageCashbookCategoriesLayout != null) {
             manageCashbookCategoriesLayout.setOnClickListener(v -> {
+                boolean isLocal = com.phynix.artham.db.DataRepository.getInstance(getApplication()).isLocalMode();
+                if (isLocal) {
+                    Toast.makeText(this, "Labels management is not available in Guest Mode.", Toast.LENGTH_SHORT).show();
+                    return;
+                }
                 Intent intent = new Intent(AppSettingsActivity.this, ManageCashbookLabelsActivity.class);
                 startActivity(intent);
             });
@@ -277,6 +364,15 @@ public class AppSettingsActivity extends BaseActivity {
     }
 
     private void showBackupStatusDialog() {
+        boolean isLocal = com.phynix.artham.db.DataRepository.getInstance(getApplication()).isLocalMode();
+        if (isLocal) {
+            new AlertDialog.Builder(this)
+                    .setTitle("Cloud Backup")
+                    .setMessage("Status: Disabled\n\nYou are currently using Artham in Guest Mode. To backup your data and sync across devices, please log in with a Google account.")
+                    .setPositiveButton("OK", null)
+                    .show();
+            return;
+        }
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         String email = (user != null && user.getEmail() != null) ? user.getEmail() : "Unknown Account";
 

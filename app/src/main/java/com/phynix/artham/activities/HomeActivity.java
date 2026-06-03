@@ -142,7 +142,7 @@ public class HomeActivity extends BaseActivity {
     private TextView backCashbookIdText;
     private TextView backUserName;
     private ImageView backProfileImage;
-    private ImageView btnInstagram, btnWebsite, btnGmail, btnWhatsapp;
+    private View btnInstagram, btnWebsite, btnGmail, btnWhatsapp;
 
     private boolean isBackVisible = false;
 
@@ -244,7 +244,8 @@ public class HomeActivity extends BaseActivity {
 
         currencyFormat = NumberFormat.getCurrencyInstance(new Locale("en", "IN"));
 
-        if (FirebaseAuth.getInstance().getCurrentUser() == null) {
+        boolean isLocal = DataRepository.getInstance(getApplication()).isLocalMode();
+        if (!isLocal && FirebaseAuth.getInstance().getCurrentUser() == null) {
             signOutUser();
             return;
         }
@@ -371,6 +372,13 @@ public class HomeActivity extends BaseActivity {
             if (btnGmail != null)
                 btnGmail.setOnClickListener(v -> sendEmail());
 
+            View socialLinksContainer = balanceCardBack.findViewById(R.id.socialLinksContainer);
+            if (socialLinksContainer != null) {
+                socialLinksContainer.setOnClickListener(v -> {
+                    // Consume click to prevent card flip when tapping the social media row
+                });
+            }
+
             balanceCardFront.setOnClickListener(v -> flipCard());
             balanceCardBack.setOnClickListener(v -> flipCard());
         }
@@ -390,7 +398,7 @@ public class HomeActivity extends BaseActivity {
     private void sendEmail() {
         try {
             Intent intent = new Intent(Intent.ACTION_SENDTO);
-            intent.setData(Uri.parse("mailto:support@artham.com"));
+            intent.setData(Uri.parse("mailto:arthamhq@gmail.com"));
             intent.putExtra(Intent.EXTRA_SUBJECT, "Support Request");
             startActivity(intent);
         } catch (Exception e) {
@@ -671,6 +679,17 @@ public class HomeActivity extends BaseActivity {
     }
 
     private void updateUserUI(Users user) {
+        boolean isLocal = DataRepository.getInstance(getApplication()).isLocalMode();
+        if (isLocal) {
+            if (backUserName != null)
+                backUserName.setText("Local User");
+            if (backProfileImage != null && !isDestroyed() && !isFinishing()) {
+                backProfileImage.clearColorFilter();
+                backProfileImage.setImageResource(R.drawable.ic_person_placeholder);
+            }
+            return;
+        }
+
         FirebaseUser fbUser = FirebaseAuth.getInstance().getCurrentUser();
         String name = "User";
         String uid = "";
@@ -725,11 +744,17 @@ public class HomeActivity extends BaseActivity {
             binding.transactionCount.setText("TODAY (0)");
             binding.emptyStateView.setVisibility(View.VISIBLE);
             binding.transactionTable.setVisibility(View.VISIBLE);
+            if (binding.btnViewAll != null) {
+                binding.btnViewAll.setVisibility(View.GONE);
+            }
         } else if (todayCount >= 10) {
             // Enough today entries — show only today's, no backfill
             binding.transactionCount.setText("TODAY (" + todayCount + ")");
             binding.emptyStateView.setVisibility(View.GONE);
             binding.transactionTable.setVisibility(View.VISIBLE);
+            if (binding.btnViewAll != null) {
+                binding.btnViewAll.setVisibility(View.VISIBLE);
+            }
 
             for (TransactionModel t : transactions)
                 addTransactionRow(t, binding.transactionTable);
@@ -737,6 +762,9 @@ public class HomeActivity extends BaseActivity {
             // Backfill: show today's entries + fill remaining slots with previous entries
             binding.emptyStateView.setVisibility(View.GONE);
             binding.transactionTable.setVisibility(View.VISIBLE);
+            if (binding.btnViewAll != null) {
+                binding.btnViewAll.setVisibility(View.VISIBLE);
+            }
 
             if (todayCount > 0) {
                 binding.transactionCount.setText("TODAY (" + todayCount + ")");
@@ -1047,6 +1075,24 @@ public class HomeActivity extends BaseActivity {
                     startActivity(intent);
                 }
             });
+        }
+
+        if (binding.btnViewAll != null) {
+            binding.btnViewAll.setOnClickListener(v -> navigateToTransactions());
+        }
+    }
+
+    private void navigateToTransactions() {
+        String idToUse = (currentCashbookId != null) ? currentCashbookId : viewModel.getCurrentCashbookId();
+        if (idToUse != null) {
+            Intent intent = new Intent(this, TransactionActivity.class);
+            intent.putExtra(Constants.EXTRA_CASHBOOK_ID, idToUse);
+            intent.putExtra(NavPillAnimator.EXTRA_PREVIOUS_TAB, NavPillAnimator.TAB_HOME);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            startActivity(intent);
+            overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+        } else {
+            showSnackbar("Please select a cashbook first");
         }
     }
 

@@ -225,6 +225,16 @@
             android:name=".utils.MonthlySummaryReceiver"
             android:exported="false" />
 
+        <!-- Daily Reminder Notification -->
+        <receiver
+            android:name=".utils.DailyReminderReceiver"
+            android:exported="false" />
+
+        <!-- Interval Reminder Notification -->
+        <receiver
+            android:name=".utils.IntervalReminderReceiver"
+            android:exported="false" />
+
     </application>
 
 </manifest>

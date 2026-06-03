@@ -19,6 +19,15 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.lang.reflect.Type;
+import java.util.UUID;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -36,6 +45,7 @@ public class DataRepository {
 
     private final DatabaseReference rootRef;
     private final FirebaseAuth mAuth;
+    private final Context context;
 
     public interface DataCallback<T> {
         void onCallback(T data);
@@ -45,7 +55,86 @@ public class DataRepository {
         void onError(String error);
     }
 
+    // --- Local Storage Configuration ---
+    public static class LocalDataWrapper {
+        public List<CashbookModel> cashbooks = new ArrayList<>();
+        public Map<String, List<CategoryModel>> categories = new HashMap<>();
+    }
+
+    private static final String LOCAL_FILE_NAME = "local_data.json";
+    private final Gson gson = new Gson();
+    private final Map<String, List<DataCallback<List<TransactionModel>>>> localCallbacks = new HashMap<>();
+
+    public boolean isLocalMode() {
+        return context.getSharedPreferences(Constants.PREF_NAME, Context.MODE_PRIVATE)
+                .getBoolean("is_local_mode", false);
+    }
+
+    public synchronized LocalDataWrapper loadLocalData() {
+        try {
+            File file = new File(context.getFilesDir(), LOCAL_FILE_NAME);
+            if (!file.exists()) {
+                return new LocalDataWrapper();
+            }
+            StringBuilder sb = new StringBuilder();
+            try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    sb.append(line);
+                }
+            }
+            Type type = new TypeToken<LocalDataWrapper>(){}.getType();
+            LocalDataWrapper wrapper = gson.fromJson(sb.toString(), type);
+            return wrapper != null ? wrapper : new LocalDataWrapper();
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to load local data", e);
+            return new LocalDataWrapper();
+        }
+    }
+
+    public synchronized void saveLocalData(LocalDataWrapper wrapper) {
+        try {
+            File file = new File(context.getFilesDir(), LOCAL_FILE_NAME);
+            String json = gson.toJson(wrapper);
+            try (FileWriter writer = new FileWriter(file, false)) {
+                writer.write(json);
+                writer.flush();
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to save local data", e);
+        }
+    }
+
+    private synchronized List<TransactionModel> getLocalTransactions(String cashbookId) {
+        LocalDataWrapper data = loadLocalData();
+        for (CashbookModel cb : data.cashbooks) {
+            if (cb.getCashbookId().equals(cashbookId)) {
+                List<TransactionModel> txs = cb.getTransactionList();
+                txs.sort((t1, t2) -> Long.compare(t2.getTimestamp(), t1.getTimestamp()));
+                return txs;
+            }
+        }
+        return new ArrayList<>();
+    }
+
+    private void notifyLocalCallbacks(String cashbookId) {
+        List<TransactionModel> txs = getLocalTransactions(cashbookId);
+        new android.os.Handler(android.os.Looper.getMainLooper()).post(() -> {
+            List<DataCallback<List<TransactionModel>>> callbacks;
+            synchronized (localCallbacks) {
+                List<DataCallback<List<TransactionModel>>> list = localCallbacks.get(cashbookId);
+                callbacks = list != null ? new ArrayList<>(list) : null;
+            }
+            if (callbacks != null) {
+                for (DataCallback<List<TransactionModel>> cb : callbacks) {
+                    cb.onCallback(txs);
+                }
+            }
+        });
+    }
+
     private DataRepository(Application application) {
+        this.context = application.getApplicationContext();
         mAuth = FirebaseAuth.getInstance();
         rootRef = FirebaseDatabase.getInstance().getReference();
     }
@@ -82,6 +171,18 @@ public class DataRepository {
      * Creates default categories using the centralized list.
      */
     public void createDefaultCategories(String cashbookId, DataCallback<Boolean> callback) {
+        if (isLocalMode()) {
+            LocalDataWrapper data = loadLocalData();
+            List<CategoryModel> defaults = getStandardCategories();
+            for (CategoryModel cat : defaults) {
+                cat.setId(UUID.randomUUID().toString());
+            }
+            data.categories.put(cashbookId, defaults);
+            saveLocalData(data);
+            if (callback != null) callback.onCallback(true);
+            return;
+        }
+
         DatabaseReference userDatabase = getUserDatabaseRef();
         if (userDatabase == null || cashbookId == null) {
             if (callback != null) callback.onCallback(false);
@@ -141,6 +242,23 @@ public class DataRepository {
     }
 
     public void getCategories(String cashbookId, DataCallback<List<CategoryModel>> callback) {
+        if (isLocalMode()) {
+            LocalDataWrapper data = loadLocalData();
+            List<CategoryModel> cats = data.categories.get(cashbookId);
+            if (cats == null || cats.isEmpty()) {
+                List<CategoryModel> defaults = getStandardCategories();
+                for (CategoryModel cat : defaults) {
+                    cat.setId(UUID.randomUUID().toString());
+                }
+                data.categories.put(cashbookId, defaults);
+                saveLocalData(data);
+                callback.onCallback(defaults);
+            } else {
+                callback.onCallback(cats);
+            }
+            return;
+        }
+
         DatabaseReference userDatabase = getUserDatabaseRef();
         if (userDatabase == null || cashbookId == null) {
             if (callback != null) callback.onCallback(new ArrayList<>());
@@ -175,6 +293,20 @@ public class DataRepository {
     }
 
     public void addCategory(String cashbookId, CategoryModel category, DataCallback<Boolean> callback) {
+        if (isLocalMode()) {
+            LocalDataWrapper data = loadLocalData();
+            List<CategoryModel> cats = data.categories.get(cashbookId);
+            if (cats == null) {
+                cats = new ArrayList<>();
+            }
+            category.setId(UUID.randomUUID().toString());
+            cats.add(category);
+            data.categories.put(cashbookId, cats);
+            saveLocalData(data);
+            if (callback != null) callback.onCallback(true);
+            return;
+        }
+
         DatabaseReference userDatabase = getUserDatabaseRef();
         if (userDatabase == null || cashbookId == null) {
             if (callback != null) callback.onCallback(false);
@@ -195,6 +327,20 @@ public class DataRepository {
      * Returns the ValueEventListener so it can be removed by the ViewModel when switching cashbooks.
      */
     public ValueEventListener subscribeToTransactions(String cashbookId, DataCallback<List<TransactionModel>> callback, ErrorCallback errorCallback) {
+        if (isLocalMode()) {
+            synchronized (localCallbacks) {
+                if (!localCallbacks.containsKey(cashbookId)) {
+                    localCallbacks.put(cashbookId, new ArrayList<>());
+                }
+                localCallbacks.get(cashbookId).add(callback);
+            }
+            callback.onCallback(getLocalTransactions(cashbookId));
+            return new ValueEventListener() {
+                @Override public void onDataChange(@NonNull DataSnapshot snapshot) {}
+                @Override public void onCancelled(@NonNull DatabaseError error) {}
+            };
+        }
+
         DatabaseReference userDatabase = getUserDatabaseRef();
         if (userDatabase == null || cashbookId == null) {
             if (errorCallback != null) errorCallback.onError("User not authenticated or cashbook missing.");
@@ -238,6 +384,11 @@ public class DataRepository {
     }
 
     public void getAllTransactions(String cashbookId, DataCallback<List<TransactionModel>> callback, ErrorCallback errorCallback) {
+        if (isLocalMode()) {
+            callback.onCallback(getLocalTransactions(cashbookId));
+            return;
+        }
+
         DatabaseReference userDatabase = getUserDatabaseRef();
         if (userDatabase == null || cashbookId == null) {
             if (errorCallback != null) errorCallback.onError("User not authenticated or cashbook missing.");
@@ -276,6 +427,29 @@ public class DataRepository {
     }
 
     public void addTransaction(String cashbookId, TransactionModel transaction, DataCallback<Boolean> callback) {
+        if (isLocalMode()) {
+            LocalDataWrapper data = loadLocalData();
+            for (CashbookModel cb : data.cashbooks) {
+                if (cb.getCashbookId().equals(cashbookId)) {
+                    String txId = "local_tx_" + UUID.randomUUID().toString();
+                    transaction.setTransactionId(txId);
+                    cb.getTransactions().put(txId, transaction);
+                    cb.setTransactionCount(cb.getTransactions().size());
+                    double in = 0, out = 0;
+                    for (TransactionModel t : cb.getTransactions().values()) {
+                        if ("IN".equalsIgnoreCase(t.getType())) in += t.getAmount();
+                        else out += t.getAmount();
+                    }
+                    cb.setTotalBalance(in - out);
+                    break;
+                }
+            }
+            saveLocalData(data);
+            notifyLocalCallbacks(cashbookId);
+            if (callback != null) callback.onCallback(true);
+            return;
+        }
+
         DatabaseReference userDatabase = getUserDatabaseRef();
         if (userDatabase == null || cashbookId == null) {
             if (callback != null) callback.onCallback(false);
@@ -314,6 +488,11 @@ public class DataRepository {
      */
     public void addTransactionOfflineAware(Context context, String cashbookId, TransactionModel transaction,
                                            DataCallback<Boolean> callback, DataCallback<Boolean> offlineCallback) {
+        if (isLocalMode()) {
+            addTransaction(cashbookId, transaction, callback);
+            return;
+        }
+
         if (cashbookId == null || transaction == null) {
             if (callback != null) callback.onCallback(false);
             return;
@@ -342,6 +521,26 @@ public class DataRepository {
     }
 
     public void updateTransaction(String cashbookId, TransactionModel transaction, DataCallback<Boolean> callback) {
+        if (isLocalMode()) {
+            LocalDataWrapper data = loadLocalData();
+            for (CashbookModel cb : data.cashbooks) {
+                if (cb.getCashbookId().equals(cashbookId)) {
+                    cb.getTransactions().put(transaction.getTransactionId(), transaction);
+                    double in = 0, out = 0;
+                    for (TransactionModel t : cb.getTransactions().values()) {
+                        if ("IN".equalsIgnoreCase(t.getType())) in += t.getAmount();
+                        else out += t.getAmount();
+                    }
+                    cb.setTotalBalance(in - out);
+                    break;
+                }
+            }
+            saveLocalData(data);
+            notifyLocalCallbacks(cashbookId);
+            if (callback != null) callback.onCallback(true);
+            return;
+        }
+
         DatabaseReference userDatabase = getUserDatabaseRef();
         if (userDatabase == null || cashbookId == null || transaction.getTransactionId() == null) {
             if (callback != null) callback.onCallback(false);
@@ -361,6 +560,27 @@ public class DataRepository {
     }
 
     public void deleteTransaction(String cashbookId, String transactionId, DataCallback<Boolean> callback) {
+        if (isLocalMode()) {
+            LocalDataWrapper data = loadLocalData();
+            for (CashbookModel cb : data.cashbooks) {
+                if (cb.getCashbookId().equals(cashbookId)) {
+                    cb.getTransactions().remove(transactionId);
+                    cb.setTransactionCount(cb.getTransactions().size());
+                    double in = 0, out = 0;
+                    for (TransactionModel t : cb.getTransactions().values()) {
+                        if ("IN".equalsIgnoreCase(t.getType())) in += t.getAmount();
+                        else out += t.getAmount();
+                    }
+                    cb.setTotalBalance(in - out);
+                    break;
+                }
+            }
+            saveLocalData(data);
+            notifyLocalCallbacks(cashbookId);
+            if (callback != null) callback.onCallback(true);
+            return;
+        }
+
         DatabaseReference userDatabase = getUserDatabaseRef();
         if (userDatabase == null || cashbookId == null || transactionId == null) {
             if (callback != null) callback.onCallback(false);
@@ -381,6 +601,14 @@ public class DataRepository {
     // --- CASHBOOK METHODS ---
 
     public void getCashbooks(DataCallback<List<CashbookModel>> callback, ErrorCallback errorCallback) {
+        if (isLocalMode()) {
+            LocalDataWrapper data = loadLocalData();
+            if (callback != null) {
+                callback.onCallback(data.cashbooks != null ? data.cashbooks : new ArrayList<>());
+            }
+            return;
+        }
+
         DatabaseReference userDatabase = getUserDatabaseRef();
         if (userDatabase == null) {
             callback.onCallback(new ArrayList<>());
@@ -415,6 +643,22 @@ public class DataRepository {
     }
 
     public void createNewCashbook(String name, DataCallback<String> callback, ErrorCallback errorCallback) {
+        if (isLocalMode()) {
+            LocalDataWrapper data = loadLocalData();
+            String cashbookId = "local_cb_" + UUID.randomUUID().toString();
+            CashbookModel newCashbook = new CashbookModel(cashbookId, name.trim());
+            newCashbook.setUserId("local_user");
+            newCashbook.setCreatedDate(System.currentTimeMillis());
+            newCashbook.setLastModified(System.currentTimeMillis());
+            newCashbook.setActive(true);
+            data.cashbooks.add(newCashbook);
+            saveLocalData(data);
+            createDefaultCategories(cashbookId, success -> {
+                if (callback != null) callback.onCallback(cashbookId);
+            });
+            return;
+        }
+
         DatabaseReference userDatabase = getUserDatabaseRef();
         if (userDatabase == null) {
             if (errorCallback != null) errorCallback.onError("User not authenticated");
@@ -454,6 +698,27 @@ public class DataRepository {
     }
 
     public void deleteCashbook(String cashbookId, DataCallback<Boolean> callback, ErrorCallback errorCallback) {
+        if (isLocalMode()) {
+            LocalDataWrapper data = loadLocalData();
+            CashbookModel toRemove = null;
+            for (CashbookModel cb : data.cashbooks) {
+                if (cb.getCashbookId().equals(cashbookId)) {
+                    toRemove = cb;
+                    break;
+                }
+            }
+            if (toRemove != null) {
+                data.cashbooks.remove(toRemove);
+                data.categories.remove(cashbookId);
+                saveLocalData(data);
+                if (callback != null) callback.onCallback(true);
+            } else {
+                if (errorCallback != null) errorCallback.onError("Cashbook not found");
+                if (callback != null) callback.onCallback(false);
+            }
+            return;
+        }
+
         DatabaseReference userDatabase = getUserDatabaseRef();
         if (userDatabase == null || cashbookId == null) {
             if (errorCallback != null) errorCallback.onError("Invalid request");
@@ -473,6 +738,69 @@ public class DataRepository {
     }
 
     public void duplicateCashbook(String originalCashbookId, String newName, DataCallback<String> callback, ErrorCallback errorCallback) {
+        if (isLocalMode()) {
+            LocalDataWrapper data = loadLocalData();
+            CashbookModel original = null;
+            for (CashbookModel cb : data.cashbooks) {
+                if (cb.getCashbookId().equals(originalCashbookId)) {
+                    original = cb;
+                    break;
+                }
+            }
+            if (original != null) {
+                String newCashbookId = "local_cb_" + UUID.randomUUID().toString();
+                // Copy original attributes
+                CashbookModel copy = new CashbookModel(newCashbookId, newName.trim());
+                copy.setUserId("local_user");
+                copy.setDescription(original.getDescription());
+                copy.setCategory(original.getCategory());
+                copy.setThemeColor(original.getThemeColor());
+                copy.setThemeIcon(original.getThemeIcon());
+                copy.setCurrent(false);
+                copy.setActive(true);
+                copy.setCreatedDate(System.currentTimeMillis());
+                copy.setLastModified(System.currentTimeMillis());
+
+                // Copy transactions
+                for (Map.Entry<String, TransactionModel> entry : original.getTransactions().entrySet()) {
+                    TransactionModel origTx = entry.getValue();
+                    TransactionModel txCopy = new TransactionModel();
+                    txCopy.setTransactionId("local_tx_" + UUID.randomUUID().toString());
+                    txCopy.setAmount(origTx.getAmount());
+                    txCopy.setType(origTx.getType());
+                    txCopy.setTransactionCategory(origTx.getTransactionCategory());
+                    txCopy.setRemark(origTx.getRemark());
+                    txCopy.setPaymentMode(origTx.getPaymentMode());
+                    txCopy.setTimestamp(origTx.getTimestamp());
+                    copy.getTransactions().put(txCopy.getTransactionId(), txCopy);
+                }
+                copy.setTransactionCount(copy.getTransactions().size());
+                copy.setTotalBalance(original.getTotalBalance());
+
+                data.cashbooks.add(copy);
+
+                // Copy categories
+                List<CategoryModel> origCats = data.categories.get(originalCashbookId);
+                if (origCats != null) {
+                    List<CategoryModel> catsCopy = new ArrayList<>();
+                    for (CategoryModel origCat : origCats) {
+                        CategoryModel catCopy = new CategoryModel(origCat.getName(), origCat.getType(), origCat.getColorHex(), origCat.getIconResId(), origCat.isCustom());
+                        catCopy.setId(UUID.randomUUID().toString());
+                        catsCopy.add(catCopy);
+                    }
+                    data.categories.put(newCashbookId, catsCopy);
+                }
+
+                saveLocalData(data);
+
+                if (callback != null) callback.onCallback(newCashbookId);
+            } else {
+                if (errorCallback != null) errorCallback.onError("Original cashbook not found");
+                if (callback != null) callback.onCallback(null);
+            }
+            return;
+        }
+
         DatabaseReference userDatabase = getUserDatabaseRef();
         if (userDatabase == null || originalCashbookId == null || newName == null) {
             if (errorCallback != null) errorCallback.onError("Invalid request");
@@ -508,7 +836,7 @@ public class DataRepository {
                                         });
                             } else {
                                 if (errorCallback != null) errorCallback.onError("Failed to generate new cashbook ID");
-                                if (callback != null) callback.onCallback(null);
+                                  if (callback != null) callback.onCallback(null);
                             }
                         } else {
                             if (errorCallback != null) errorCallback.onError("Original cashbook not found");
@@ -523,6 +851,127 @@ public class DataRepository {
                         if (callback != null) callback.onCallback(null);
                     }
                 });
+    }
+
+    /**
+     * Migrates local guest data to Firebase.
+     */
+    public void migrateLocalDataToFirebase(DataCallback<Boolean> callback) {
+        LocalDataWrapper localData = loadLocalData();
+        if (localData == null || localData.cashbooks == null || localData.cashbooks.isEmpty()) {
+            if (callback != null) callback.onCallback(true);
+            return;
+        }
+
+        DatabaseReference userDatabase = getUserDatabaseRef();
+        if (userDatabase == null) {
+            if (callback != null) callback.onCallback(false);
+            return;
+        }
+
+        DatabaseReference cashbooksRef = userDatabase.child(Constants.NODE_CASHBOOKS);
+        
+        final int totalCashbooks = localData.cashbooks.size();
+        final java.util.concurrent.atomic.AtomicInteger completedCount = new java.util.concurrent.atomic.AtomicInteger(0);
+        final java.util.concurrent.atomic.AtomicBoolean hasError = new java.util.concurrent.atomic.AtomicBoolean(false);
+
+        for (CashbookModel localCb : localData.cashbooks) {
+            String firebaseCashbookId = cashbooksRef.push().getKey();
+            if (firebaseCashbookId == null) {
+                if (completedCount.incrementAndGet() == totalCashbooks) {
+                    finalizeMigration(callback, false);
+                }
+                continue;
+            }
+
+            String oldLocalId = localCb.getCashbookId();
+            
+            CashbookModel migratedCb = new CashbookModel(firebaseCashbookId, localCb.getName());
+            migratedCb.setUserId(userDatabase.getKey());
+            migratedCb.setDescription(localCb.getDescription());
+            migratedCb.setCategory(localCb.getCategory());
+            migratedCb.setThemeColor(localCb.getThemeColor());
+            migratedCb.setThemeIcon(localCb.getThemeIcon());
+            migratedCb.setCreatedDate(localCb.getCreatedDate() > 0 ? localCb.getCreatedDate() : System.currentTimeMillis());
+            migratedCb.setLastModified(System.currentTimeMillis());
+            migratedCb.setActive(localCb.isActive());
+            migratedCb.setFavorite(localCb.isFavorite());
+            migratedCb.setTotalBalance(localCb.getTotalBalance());
+            migratedCb.setTransactionCount(localCb.getTransactionCount());
+
+            Map<String, TransactionModel> transactionsToUpload = new HashMap<>();
+            if (localCb.getTransactions() != null) {
+                for (Map.Entry<String, TransactionModel> entry : localCb.getTransactions().entrySet()) {
+                    TransactionModel localTx = entry.getValue();
+                    String firebaseTxId = cashbooksRef.child(firebaseCashbookId).child(Constants.NODE_TRANSACTIONS).push().getKey();
+                    if (firebaseTxId != null) {
+                        TransactionModel migratedTx = new TransactionModel();
+                        migratedTx.setTransactionId(firebaseTxId);
+                        migratedTx.setAmount(localTx.getAmount());
+                        migratedTx.setType(localTx.getType());
+                        migratedTx.setTransactionCategory(localTx.getTransactionCategory());
+                        migratedTx.setRemark(localTx.getRemark());
+                        migratedTx.setPaymentMode(localTx.getPaymentMode());
+                        migratedTx.setTimestamp(localTx.getTimestamp());
+                        migratedTx.setPartyName(localTx.getPartyName());
+                        migratedTx.setTags(localTx.getTags());
+                        migratedTx.setLocation(localTx.getLocation());
+                        migratedTx.setAttachmentUri(localTx.getAttachmentUri());
+                        migratedTx.setAutoFrequency(localTx.getAutoFrequency());
+                        migratedTx.setTaxRate(localTx.getTaxRate());
+                        migratedTx.setTaxAmount(localTx.getTaxAmount());
+                        migratedTx.setTaxInclusive(localTx.isTaxInclusive());
+                        transactionsToUpload.put(firebaseTxId, migratedTx);
+                    }
+                }
+            }
+            migratedCb.setTransactions(transactionsToUpload);
+
+            cashbooksRef.child(firebaseCashbookId).setValue(migratedCb)
+                    .addOnSuccessListener(aVoid -> {
+                        List<CategoryModel> localCats = localData.categories.get(oldLocalId);
+                        if (localCats != null && !localCats.isEmpty()) {
+                            DatabaseReference categoriesRef = cashbooksRef.child(firebaseCashbookId).child("categories");
+                            Map<String, Object> categoryUpdates = new HashMap<>();
+                            for (CategoryModel cat : localCats) {
+                                String catKey = categoriesRef.push().getKey();
+                                if (catKey != null) {
+                                    CategoryModel migratedCat = new CategoryModel(cat.getName(), cat.getType(), cat.getColorHex(), cat.getIconResId(), cat.isCustom());
+                                    migratedCat.setId(catKey);
+                                    categoryUpdates.put(catKey, migratedCat);
+                                }
+                            }
+                            if (!categoryUpdates.isEmpty()) {
+                                categoriesRef.updateChildren(categoryUpdates);
+                            }
+                        }
+
+                        if (completedCount.incrementAndGet() == totalCashbooks) {
+                            finalizeMigration(callback, !hasError.get());
+                        }
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e(TAG, "Failed to upload cashbook: " + migratedCb.getName(), e);
+                        hasError.set(true);
+                        if (completedCount.incrementAndGet() == totalCashbooks) {
+                            finalizeMigration(callback, false);
+                        }
+                    });
+        }
+    }
+
+    private void finalizeMigration(DataCallback<Boolean> callback, boolean success) {
+        if (success) {
+            saveLocalData(new LocalDataWrapper());
+            context.getSharedPreferences(Constants.PREF_NAME, Context.MODE_PRIVATE)
+                    .edit()
+                    .putBoolean("is_local_mode", false)
+                    .apply();
+            Log.d(TAG, "Migration of local guest data completed successfully.");
+        }
+        if (callback != null) {
+            new android.os.Handler(android.os.Looper.getMainLooper()).post(() -> callback.onCallback(success));
+        }
     }
 
     // --- UTILITY METHODS ---

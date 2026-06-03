@@ -8,6 +8,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 
@@ -21,6 +22,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.bumptech.glide.Glide;
 import com.phynix.artham.databinding.ActivitySettingsBinding;
 import com.phynix.artham.models.CashbookModel;
+import com.phynix.artham.db.DataRepository;
 import com.phynix.artham.models.Users;
 import com.phynix.artham.utils.ErrorHandler;
 import com.phynix.artham.utils.SessionCache;
@@ -82,7 +84,8 @@ public class SettingsActivity extends BaseActivity {
         currentUser = mAuth.getCurrentUser();
         mDatabase = FirebaseDatabase.getInstance().getReference();
 
-        if (currentUser == null) {
+        boolean isLocal = DataRepository.getInstance(getApplication()).isLocalMode();
+        if (!isLocal && currentUser == null) {
             Toast.makeText(this, "Not logged in.", Toast.LENGTH_SHORT).show();
             logoutUser();
             return;
@@ -95,14 +98,27 @@ public class SettingsActivity extends BaseActivity {
         // 2. If the intent missed it (due to fast navigation), pull it instantly from local memory
         if (currentCashbookId == null || currentCashbookId.trim().isEmpty()) {
             SharedPreferences prefs = getSharedPreferences("AppPrefs", Context.MODE_PRIVATE);
-            currentCashbookId = prefs.getString("active_cashbook_id_" + currentUser.getUid(), "");
+            String uid = currentUser != null ? currentUser.getUid() : "local_user";
+            currentCashbookId = prefs.getString("active_cashbook_id_" + uid, "");
         }
 
-        userRef = mDatabase.child("users").child(currentUser.getUid());
+        if (!isLocal && currentUser != null) {
+            userRef = mDatabase.child("users").child(currentUser.getUid());
+        }
 
         setupClickListeners();
         setupBottomNavigation();
 
+        try {
+            String versionName = getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
+            if (binding.versionText != null) {
+                binding.versionText.setText("Version " + versionName);
+            }
+        } catch (Exception e) {
+            if (binding.versionText != null) {
+                binding.versionText.setText("Version 1.2");
+            }
+        }
     }
 
 
@@ -137,6 +153,10 @@ public class SettingsActivity extends BaseActivity {
 
         if (binding.logoutSection != null) {
             binding.logoutSection.setOnClickListener(v -> showLogoutConfirmationDialog());
+        }
+
+        if (binding.brandTitle != null) {
+            binding.brandTitle.setOnClickListener(v -> openPlayStore());
         }
     }
 
@@ -198,7 +218,26 @@ public class SettingsActivity extends BaseActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        if (currentUser != null) {
+        boolean isLocal = DataRepository.getInstance(getApplication()).isLocalMode();
+        if (isLocal) {
+            populateProfileUI(null);
+            hideSkeletonInstant();
+            
+            if (currentCashbookId != null && !currentCashbookId.isEmpty()) {
+                DataRepository.getInstance(getApplication()).getCashbooks(cashbooks -> {
+                    for (CashbookModel cb : cashbooks) {
+                        if (cb.getCashbookId().equals(currentCashbookId)) {
+                            if (binding.primarySettingsLayout != null) {
+                                binding.primarySettingsLayout.activeCashbookName.setText(cb.getName());
+                            }
+                            break;
+                        }
+                    }
+                }, null);
+            } else if (binding.primarySettingsLayout != null) {
+                binding.primarySettingsLayout.activeCashbookName.setText("No Active Cashbook");
+            }
+        } else if (currentUser != null) {
             // Check session cache first — skip skeleton if we already have data
             SessionCache cache = SessionCache.getInstance();
             if (cache.hasUserProfile()) {
@@ -307,6 +346,20 @@ public class SettingsActivity extends BaseActivity {
     private void populateProfileUI(Users userProfile) {
         if (binding.primarySettingsLayout == null) return;
 
+        boolean isLocal = DataRepository.getInstance(getApplication()).isLocalMode();
+        if (isLocal) {
+            binding.primarySettingsLayout.userName.setText("Local User");
+            binding.primarySettingsLayout.profileImg.setImageResource(R.drawable.ic_person_placeholder);
+            binding.primarySettingsLayout.uidText.setText("UID: LOCAL_USER");
+            if (binding.primarySettingsLayout.copyUidButton != null) {
+                binding.primarySettingsLayout.copyUidButton.setOnClickListener(v -> {
+                    copyToClipboard("User ID", "LOCAL_USER");
+                });
+            }
+            binding.primarySettingsLayout.createdDate.setText("Using local storage");
+            return;
+        }
+
         if (userProfile != null && !TextUtils.isEmpty(userProfile.getUserName())) {
             binding.primarySettingsLayout.userName.setText(userProfile.getUserName());
         } else if (currentUser.getDisplayName() != null && !currentUser.getDisplayName().isEmpty()) {
@@ -390,7 +443,11 @@ public class SettingsActivity extends BaseActivity {
     private void logoutUser() {
         removeFirebaseListeners();
         SessionCache.getInstance().clear();
-        mAuth.signOut();
+        SharedPreferences prefs = getSharedPreferences("AppPrefs", Context.MODE_PRIVATE);
+        prefs.edit().putBoolean("is_local_mode", false).apply();
+        if (mAuth.getCurrentUser() != null) {
+            mAuth.signOut();
+        }
         Toast.makeText(this, "Logged out", Toast.LENGTH_SHORT).show();
         Intent intent = new Intent(this, SignInActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -424,7 +481,8 @@ public class SettingsActivity extends BaseActivity {
 
     private void saveActiveCashbookId(String cashbookId) {
         SharedPreferences prefs = getSharedPreferences("AppPrefs", Context.MODE_PRIVATE);
-        prefs.edit().putString("active_cashbook_id_" + currentUser.getUid(), cashbookId).apply();
+        String uid = currentUser != null ? currentUser.getUid() : "local_user";
+        prefs.edit().putString("active_cashbook_id_" + uid, cashbookId).apply();
     }
 
     // ═══════════════════════════════════════════════════════════
@@ -457,5 +515,16 @@ public class SettingsActivity extends BaseActivity {
                                     .markPageTutorialCompleted(OnboardingManager.PAGE_SETTINGS))
                     .start();
         }, 600);
+    }
+
+    private void openPlayStore() {
+        String packageName = getPackageName();
+        try {
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + packageName));
+            startActivity(intent);
+        } catch (android.content.ActivityNotFoundException e) {
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + packageName));
+            startActivity(intent);
+        }
     }
 }

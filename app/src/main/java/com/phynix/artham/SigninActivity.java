@@ -32,6 +32,7 @@ public class SignInActivity extends BaseActivity {
     private static final String TAG = "SignInActivity";
 
     private LinearLayout btnGoogleSignIn;
+    private LinearLayout btnLocalMode;
     private ImageView backButton, helpButton;
     private ProgressBar loadingIndicator;
 
@@ -78,6 +79,12 @@ public class SignInActivity extends BaseActivity {
     @Override
     protected void onStart() {
         super.onStart();
+        // Ensure local mode flag is disabled for testing safety
+        getSharedPreferences("AppPrefs", MODE_PRIVATE)
+                .edit()
+                .putBoolean("is_local_mode", false)
+                .apply();
+
         // Check if user is already signed in (non-null) and update UI accordingly.
         if (FirebaseAuth.getInstance().getCurrentUser() != null) {
             navigateToHome();
@@ -95,6 +102,7 @@ public class SignInActivity extends BaseActivity {
 
     private void initializeUI() {
         btnGoogleSignIn = findViewById(R.id.btnGoogleSignIn);
+        btnLocalMode = findViewById(R.id.btnLocalMode);
         loadingIndicator = findViewById(R.id.loadingIndicator);
         backButton = findViewById(R.id.backButton);
         helpButton = findViewById(R.id.helpButton);
@@ -102,6 +110,9 @@ public class SignInActivity extends BaseActivity {
 
     private void setupClickListeners() {
         btnGoogleSignIn.setOnClickListener(v -> signInWithGoogle());
+        btnLocalMode.setOnClickListener(v -> {
+            Toast.makeText(this, "Guest Mode will be available after testing is finished.", Toast.LENGTH_LONG).show();
+        });
         backButton.setOnClickListener(v -> finish());
         helpButton.setOnClickListener(v -> Toast.makeText(this,
                 "Sign in to sync your expenses across devices.",
@@ -126,6 +137,10 @@ public class SignInActivity extends BaseActivity {
             loadingIndicator.setVisibility(isLoading ? View.VISIBLE : View.GONE);
             btnGoogleSignIn.setEnabled(!isLoading);
             btnGoogleSignIn.setAlpha(isLoading ? 0.5f : 1.0f);
+            if (btnLocalMode != null) {
+                btnLocalMode.setEnabled(!isLoading);
+                btnLocalMode.setAlpha(isLoading ? 0.5f : 1.0f);
+            }
         });
     }
 
@@ -138,6 +153,10 @@ public class SignInActivity extends BaseActivity {
     }
 
     private void signInWithGoogle() {
+        getSharedPreferences("AppPrefs", MODE_PRIVATE)
+                .edit()
+                .putBoolean("is_local_mode", false)
+                .apply();
         viewModel.setLoading(true);
         Intent signInIntent = mGoogleSignInClient.getSignInIntent();
         googleSignInLauncher.launch(signInIntent);

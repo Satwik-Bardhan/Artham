@@ -97,12 +97,50 @@
     <color name="rose_accent">#FB7185</color>             <!-- Warm saturated rose -->
     <color name="rose_header">#2A1520</color>             <!-- Rich plum header -->
 
+    <!-- ════════════════════════════════════════════════════════════════
+         SUNSET THEME — "Terracotta"
+         Warm coral and terracotta dark mode. Warm and premium.
+         ════════════════════════════════════════════════════════════════ -->
+    <color name="sunset_primary">#FF6B6B</color>           <!-- Coral -->
+    <color name="sunset_primary_dark">#C84B4B</color>      <!-- Deep Terracotta -->
+    <color name="sunset_secondary">#FFA07A</color>         <!-- Light Salmon -->
+    <color name="sunset_background">#1F1414</color>        <!-- Deep Terracotta black -->
+    <color name="sunset_surface">#2A1B1B</color>           <!-- Warm terracotta card -->
+    <color name="sunset_divider">#3D2727</color>           <!-- Rust border -->
+    <color name="sunset_selected_item">#442E2E</color>     <!-- Muted rust selection -->
+    <color name="sunset_text_primary">#FFEBEB</color>      <!-- Peach white -->
+    <color name="sunset_text_secondary">#FFA8A8</color>    <!-- Coral pink -->
+    <color name="sunset_text_hint">#7D5555</color>         <!-- Muted rust -->
+    <color name="sunset_balance">#FF6B6B</color>           <!-- Coral balance -->
+    <color name="sunset_accent">#FF6B6B</color>            <!-- Coral accent -->
+    <color name="sunset_header">#2A1B1B</color>            <!-- Warm terracotta header -->
+
+    <!-- ════════════════════════════════════════════════════════════════
+         OCEAN THEME — "Sapphire"
+         Deep ocean sapphire and sea foam teal dark mode. Premium marine aesthetic.
+         ════════════════════════════════════════════════════════════════ -->
+    <color name="ocean_primary">#00D2FF</color>            <!-- Sapphire blue -->
+    <color name="ocean_primary_dark">#0082A8</color>       <!-- Deep ocean blue -->
+    <color name="ocean_secondary">#00F5D4</color>          <!-- Sea foam teal -->
+    <color name="ocean_background">#06121E</color>         <!-- Deep abyss blue -->
+    <color name="ocean_surface">#0C1D2F</color>            <!-- Marine card -->
+    <color name="ocean_divider">#1A2F45</color>            <!-- Subtle wave border -->
+    <color name="ocean_selected_item">#142C44</color>      <!-- Marine selection -->
+    <color name="ocean_text_primary">#E0F7FA</color>       <!-- Sea foam white -->
+    <color name="ocean_text_secondary">#80DEEA</color>     <!-- Aqua blue -->
+    <color name="ocean_text_hint">#376D80</color>          <!-- Muted reef -->
+    <color name="ocean_balance">#00D2FF</color>            <!-- Aqua balance -->
+    <color name="ocean_accent">#00D2FF</color>             <!-- Aqua accent -->
+    <color name="ocean_header">#0C1D2F</color>             <!-- Marine header -->
+
     <!-- Splash wave colors -->
     <color name="splash_wave_light">#2E5BFF</color>       <!-- Confident blue -->
     <color name="splash_wave_dark">#7AA2F7</color>        <!-- Luminous blue -->
     <color name="splash_wave_purple">#A78BFA</color>      <!-- Vivid lavender -->
     <color name="splash_wave_emerald">#34D399</color>     <!-- Bright emerald -->
     <color name="splash_wave_rose">#FB7185</color>        <!-- Warm rose -->
+    <color name="splash_wave_sunset">#FF6B6B</color>      <!-- Coral -->
+    <color name="splash_wave_ocean">#00D2FF</color>       <!-- Sapphire -->
 
     <!-- Convenience aliases (Light defaults) -->
     <color name="primary_blue">@color/light_primary</color>

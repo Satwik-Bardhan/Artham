@@ -168,7 +168,17 @@ public class CashbookAdapter extends RecyclerView.Adapter<CashbookAdapter.Cashbo
             if (iconCard != null) {
                 iconCard.setCardBackgroundColor(getIconBackgroundColor(cashbook));
                 if (bookIcon != null) {
-                    bookIcon.setColorFilter(Color.BLACK);
+                    bookIcon.setColorFilter(Color.WHITE);
+                    if (cashbook.getThemeIcon() != null && !cashbook.getThemeIcon().isEmpty()) {
+                        int resId = context.getResources().getIdentifier(cashbook.getThemeIcon(), "drawable", context.getPackageName());
+                        if (resId != 0) {
+                            bookIcon.setImageResource(resId);
+                        } else {
+                            bookIcon.setImageResource(R.drawable.ic_book);
+                        }
+                    } else {
+                        bookIcon.setImageResource(R.drawable.ic_book);
+                    }
                 }
             }
 
@@ -280,6 +290,13 @@ public class CashbookAdapter extends RecyclerView.Adapter<CashbookAdapter.Cashbo
         }
 
         private int getIconBackgroundColor(CashbookModel cashbook) {
+            if (cashbook.getThemeColor() != null && !cashbook.getThemeColor().isEmpty()) {
+                try {
+                    return Color.parseColor(cashbook.getThemeColor());
+                } catch (Exception e) {
+                    // Fallback
+                }
+            }
             if (cashbook.isFavorite()) return Color.parseColor("#FFD700");
             if (cashbook.isCurrent()) return ThemeUtil.getThemeAttrColor(context, R.attr.chk_primary_blue);
             if (cashbook.isActive()) return ThemeUtil.getThemeAttrColor(context, R.attr.chk_incomeColor);

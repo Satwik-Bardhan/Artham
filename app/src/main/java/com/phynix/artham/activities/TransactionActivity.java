@@ -47,6 +47,8 @@ import com.phynix.artham.utils.Constants;
 import com.phynix.artham.utils.SnackbarHelper;
 import com.phynix.artham.utils.ExcelReportGenerator;
 
+import com.phynix.artham.db.DataRepository;
+import com.phynix.artham.models.CashbookModel;
 import com.phynix.artham.utils.NavPillAnimator;
 import com.phynix.artham.utils.ThemeManager;
 import com.phynix.artham.viewmodels.TransactionViewModel;
@@ -159,7 +161,8 @@ public class TransactionActivity extends BaseActivity {
         currentUser = mAuth.getCurrentUser();
         currentMonthCalendar = Calendar.getInstance();
 
-        if (currentCashbookId == null || currentUser == null) {
+        boolean isLocal = DataRepository.getInstance(getApplication()).isLocalMode();
+        if (currentCashbookId == null || (!isLocal && currentUser == null)) {
             showSnackbar("Error: No active cashbook found.");
             finish();
             return;
@@ -180,15 +183,14 @@ public class TransactionActivity extends BaseActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (currentUser != null) {
-            SharedPreferences prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-            String savedId = prefs.getString("active_cashbook_id_" + currentUser.getUid(), currentCashbookId);
-            if (savedId != null && !savedId.equals(currentCashbookId)) {
-                currentCashbookId = savedId;
-                fetchCashbookName();
-                if (viewModel != null) {
-                    viewModel.setCashbookId(currentCashbookId);
-                }
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        String uid = currentUser != null ? currentUser.getUid() : "local_user";
+        String savedId = prefs.getString("active_cashbook_id_" + uid, currentCashbookId);
+        if (savedId != null && !savedId.equals(currentCashbookId)) {
+            currentCashbookId = savedId;
+            fetchCashbookName();
+            if (viewModel != null) {
+                viewModel.setCashbookId(currentCashbookId);
             }
         }
         // Re-apply settings-level visibility (user may have toggled in AppSettings)
@@ -234,7 +236,7 @@ public class TransactionActivity extends BaseActivity {
         allTransactionsText = findViewById(R.id.allTransactionsText);
         allTransactionsIcon = findViewById(R.id.allTransactionsIcon);
 
-        // Apply saved summary visibility (default: hidden)
+        // Apply saved summary visibility (default: shown)
         applySavedSummaryVisibility();
 
         // Apply settings-level visibility (hides entire sections if disabled)
@@ -483,6 +485,19 @@ public class TransactionActivity extends BaseActivity {
     }
 
     private void fetchCashbookName() {
+        boolean isLocal = DataRepository.getInstance(getApplication()).isLocalMode();
+        if (isLocal) {
+            DataRepository.getInstance(getApplication()).getCashbooks(cashbooks -> {
+                for (CashbookModel cb : cashbooks) {
+                    if (cb.getCashbookId().equals(currentCashbookId)) {
+                        currentCashbookName = cb.getName();
+                        break;
+                    }
+                }
+            }, null);
+            return;
+        }
+
         DatabaseReference ref = FirebaseDatabase.getInstance().getReference()
                 .child("users").child(currentUser.getUid()).child("cashbooks").child(currentCashbookId).child("name");
         ref.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -738,7 +753,8 @@ public class TransactionActivity extends BaseActivity {
             if (newId != null && !newId.equals(currentCashbookId)) {
                 currentCashbookId = newId; currentCashbookName = newName;
                 showSnackbar("Switched to: " + newName);
-                getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit().putString("active_cashbook_id_" + currentUser.getUid(), newId).apply();
+                String uid = currentUser != null ? currentUser.getUid() : "local_user";
+                getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit().putString("active_cashbook_id_" + uid, newId).apply();
 
                 if (viewModel != null) {
                     viewModel.setCashbookId(currentCashbookId);
@@ -889,8 +905,8 @@ public class TransactionActivity extends BaseActivity {
         SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         // If settings-level disabled, don't show at all
         if (!prefs.getBoolean(KEY_SETTINGS_SHOW_SUMMARY, true)) return;
-        // Default is hidden (false)
-        boolean show = prefs.getBoolean(KEY_SHOW_SUMMARY, false);
+        // Default is shown (true)
+        boolean show = prefs.getBoolean(KEY_SHOW_SUMMARY, true);
         setSummaryVisibility(show, false);
     }
 

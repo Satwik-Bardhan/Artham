@@ -25,8 +25,8 @@ import com.phynix.artham.utils.ThemeManager;
  */
 public class FontSelectionActivity extends BaseActivity {
 
-    private CardView cardSystemDefault, cardInter, cardPoppins, cardSpartan, cardKhand, cardTinos;
-    private RadioButton radioSystemDefault, radioInter, radioPoppins, radioSpartan, radioKhand, radioTinos;
+    private CardView cardSystemDefault, cardInter, cardPoppins, cardSpartan, cardKhand, cardTinos, cardMontserrat, cardRoboto, cardRotis;
+    private RadioButton radioSystemDefault, radioInter, radioPoppins, radioSpartan, radioKhand, radioTinos, radioMontserrat, radioRoboto, radioRotis;
     private ImageView backButton;
 
     @Override
@@ -53,18 +53,23 @@ public class FontSelectionActivity extends BaseActivity {
         // System Default — use device default
         applyTypefaceToCard(cardSystemDefault, Typeface.DEFAULT);
 
-        // Each font card gets its own typeface
         Typeface interTf = ResourcesCompat.getFont(this, R.font.inter_regular);
         Typeface poppinsTf = ResourcesCompat.getFont(this, R.font.poppins_regular);
         Typeface spartanTf = ResourcesCompat.getFont(this, R.font.spartan_regular);
         Typeface khandTf = ResourcesCompat.getFont(this, R.font.khand_medium);
         Typeface tinosTf = ResourcesCompat.getFont(this, R.font.tinos_regular);
+        Typeface montserratTf = ResourcesCompat.getFont(this, R.font.montserrat_regular);
+        Typeface robotoTf = ResourcesCompat.getFont(this, R.font.roboto_regular);
+        Typeface rotisTf = ResourcesCompat.getFont(this, R.font.rotis_sans_serif);
 
         applyTypefaceToCard(cardInter, interTf);
         applyTypefaceToCard(cardPoppins, poppinsTf);
         applyTypefaceToCard(cardSpartan, spartanTf);
         applyTypefaceToCard(cardKhand, khandTf);
         applyTypefaceToCard(cardTinos, tinosTf);
+        applyTypefaceToCard(cardMontserrat, montserratTf);
+        applyTypefaceToCard(cardRoboto, robotoTf);
+        applyTypefaceToCard(cardRotis, rotisTf);
     }
 
     /**
@@ -93,12 +98,18 @@ public class FontSelectionActivity extends BaseActivity {
         cardSpartan = findViewById(R.id.cardSpartan);
         cardKhand = findViewById(R.id.cardKhand);
         cardTinos = findViewById(R.id.cardTinos);
+        cardMontserrat = findViewById(R.id.cardMontserrat);
+        cardRoboto = findViewById(R.id.cardRoboto);
+        cardRotis = findViewById(R.id.cardRotis);
         radioSystemDefault = findViewById(R.id.radioSystemDefault);
         radioInter = findViewById(R.id.radioInter);
         radioPoppins = findViewById(R.id.radioPoppins);
         radioSpartan = findViewById(R.id.radioSpartan);
         radioKhand = findViewById(R.id.radioKhand);
         radioTinos = findViewById(R.id.radioTinos);
+        radioMontserrat = findViewById(R.id.radioMontserrat);
+        radioRoboto = findViewById(R.id.radioRoboto);
+        radioRotis = findViewById(R.id.radioRotis);
     }
 
     private void setupCurrentState() {
@@ -121,6 +132,15 @@ public class FontSelectionActivity extends BaseActivity {
             case FontManager.FONT_TINOS:
                 radioTinos.setChecked(true);
                 break;
+            case FontManager.FONT_MONTSERRAT:
+                radioMontserrat.setChecked(true);
+                break;
+            case FontManager.FONT_ROBOTO:
+                radioRoboto.setChecked(true);
+                break;
+            case FontManager.FONT_ROTIS:
+                radioRotis.setChecked(true);
+                break;
             case FontManager.FONT_SYSTEM:
             default:
                 radioSystemDefault.setChecked(true);
@@ -135,6 +155,9 @@ public class FontSelectionActivity extends BaseActivity {
         radioSpartan.setChecked(false);
         radioKhand.setChecked(false);
         radioTinos.setChecked(false);
+        radioMontserrat.setChecked(false);
+        radioRoboto.setChecked(false);
+        radioRotis.setChecked(false);
     }
 
     private void setupClickListeners() {
@@ -145,6 +168,9 @@ public class FontSelectionActivity extends BaseActivity {
         cardSpartan.setOnClickListener(v -> handleFontChange(FontManager.FONT_SPARTAN));
         cardKhand.setOnClickListener(v -> handleFontChange(FontManager.FONT_KHAND));
         cardTinos.setOnClickListener(v -> handleFontChange(FontManager.FONT_TINOS));
+        cardMontserrat.setOnClickListener(v -> handleFontChange(FontManager.FONT_MONTSERRAT));
+        cardRoboto.setOnClickListener(v -> handleFontChange(FontManager.FONT_ROBOTO));
+        cardRotis.setOnClickListener(v -> handleFontChange(FontManager.FONT_ROTIS));
     }
 
     private void handleFontChange(String newFont) {
@@ -171,6 +197,15 @@ public class FontSelectionActivity extends BaseActivity {
                     break;
                 case FontManager.FONT_TINOS:
                     radioTinos.setChecked(true);
+                    break;
+                case FontManager.FONT_MONTSERRAT:
+                    radioMontserrat.setChecked(true);
+                    break;
+                case FontManager.FONT_ROBOTO:
+                    radioRoboto.setChecked(true);
+                    break;
+                case FontManager.FONT_ROTIS:
+                    radioRotis.setChecked(true);
                     break;
                 default:
                     radioSystemDefault.setChecked(true);

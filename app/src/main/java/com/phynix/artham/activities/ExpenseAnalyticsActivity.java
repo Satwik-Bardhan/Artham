@@ -102,28 +102,32 @@ public class ExpenseAnalyticsActivity extends BaseActivity {
         if (getSupportActionBar() != null) getSupportActionBar().hide();
 
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        boolean isLocal = com.phynix.artham.db.DataRepository.getInstance(getApplication()).isLocalMode();
 
         if (currentUser != null) {
             userId = currentUser.getUid();
             SharedPreferences prefs = getSharedPreferences("AppPrefs", Context.MODE_PRIVATE);
             cashbookId = prefs.getString("active_cashbook_id_" + userId, getIntent().getStringExtra("cashbook_id"));
         } else {
-            cashbookId = getIntent().getStringExtra("cashbook_id");
+            SharedPreferences prefs = getSharedPreferences("AppPrefs", Context.MODE_PRIVATE);
+            cashbookId = prefs.getString("active_cashbook_id_local_user", getIntent().getStringExtra("cashbook_id"));
         }
 
-        if (cashbookId == null || currentUser == null) {
+        if (cashbookId == null || (!isLocal && currentUser == null)) {
             Log.e(TAG, "Missing cashbookId or User");
             Toast.makeText(this, "Error: Invalid session.", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
 
-        transactionsRef = FirebaseDatabase.getInstance().getReference("users")
-                .child(userId).child("cashbooks")
-                .child(cashbookId).child("transactions");
+        if (!isLocal) {
+            transactionsRef = FirebaseDatabase.getInstance().getReference("users")
+                    .child(userId).child("cashbooks")
+                    .child(cashbookId).child("transactions");
 
-        categoriesRef = FirebaseDatabase.getInstance().getReference("users")
-                .child(userId).child("categories");
+            categoriesRef = FirebaseDatabase.getInstance().getReference("users")
+                    .child(userId).child("categories");
+        }
 
         initializeUI();
         setupRecyclerViews();
@@ -204,6 +208,28 @@ public class ExpenseAnalyticsActivity extends BaseActivity {
     }
 
     private void loadCategoriesAndTransactions() {
+        boolean isLocal = com.phynix.artham.db.DataRepository.getInstance(getApplication()).isLocalMode();
+        if (isLocal) {
+            loadingProgressBar.setVisibility(View.VISIBLE);
+            com.phynix.artham.db.DataRepository.getInstance(getApplication()).getCategories(cashbookId, categories -> {
+                categoryMap.clear();
+                for (CategoryModel cat : categories) {
+                    if (cat.getName() != null) {
+                        categoryMap.put(cat.getName(), cat);
+                    }
+                }
+                com.phynix.artham.db.DataRepository.getInstance(getApplication()).getAllTransactions(cashbookId, transactions -> {
+                    allTransactions.clear();
+                    allTransactions.addAll(transactions);
+                    processTransactionData();
+                }, error -> {
+                    loadingProgressBar.setVisibility(View.GONE);
+                    Toast.makeText(ExpenseAnalyticsActivity.this, "Failed to load data", Toast.LENGTH_SHORT).show();
+                });
+            });
+            return;
+        }
+
         loadingProgressBar.setVisibility(View.VISIBLE);
 
         categoriesRef.addListenerForSingleValueEvent(new ValueEventListener() {

@@ -182,6 +182,33 @@
                             android:textColor="?attr/chk_textColorPrimary" />
                     </LinearLayout>
 
+                    <LinearLayout
+                        android:id="@+id/btnLocalMode"
+                        android:layout_width="match_parent"
+                        android:layout_height="56dp"
+                        android:layout_marginBottom="16dp"
+                        android:background="@drawable/bg_pill_button_outline"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:layout_marginEnd="12dp"
+                            android:src="@drawable/ic_storage"
+                            app:tint="?attr/chk_textColorPrimary" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Guest Mode (Local Storage)"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            android:textColor="?attr/chk_textColorPrimary" />
+                    </LinearLayout>
+
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
         </androidx.constraintlayout.widget.ConstraintLayout>
