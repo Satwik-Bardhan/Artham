@@ -21,6 +21,8 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.view.ViewParent;
+import androidx.core.widget.NestedScrollView;
 
 import com.phynix.artham.R;
 
@@ -261,7 +263,7 @@ public class OnboardingOverlay extends FrameLayout {
     }
 
     // ─── Show a specific step ────────────────────────────────────────
-    private void showStep(int index) {
+    private void showStep(final int index) {
         if (index < 0 || index >= steps.size()) {
             dismiss();
             return;
@@ -270,11 +272,14 @@ public class OnboardingOverlay extends FrameLayout {
         currentStepIndex = index;
         OnboardingStep step = steps.get(index);
 
-        // Find target view
-        View targetView = activity.findViewById(step.targetViewId);
+        // Find target view (look for a visible one first in case of duplicate IDs like sticky views)
+        View foundView = findVisibleViewWithId(activity.findViewById(android.R.id.content), step.targetViewId);
+        if (foundView == null) {
+            foundView = activity.findViewById(step.targetViewId);
+        }
+        final View targetView = foundView;
 
-        if (targetView == null || targetView.getVisibility() != VISIBLE
-                || targetView.getWidth() == 0 || targetView.getHeight() == 0) {
+        if (targetView == null || !targetView.isShown()) {
             // Target not visible, skip this step
             if (index + 1 < steps.size()) {
                 showStep(index + 1);
@@ -284,40 +289,129 @@ public class OnboardingOverlay extends FrameLayout {
             return;
         }
 
-        // Calculate spotlight rect
-        int[] loc = new int[2];
-        targetView.getLocationOnScreen(loc);
-
-        // Adjust for overlay's own position
-        int[] overlayLoc = new int[2];
-        getLocationOnScreen(overlayLoc);
-
-        float left = loc[0] - overlayLoc[0] - spotlightPadding;
-        float top = loc[1] - overlayLoc[1] - spotlightPadding;
-        float right = left + targetView.getWidth() + spotlightPadding * 2;
-        float bottom = top + targetView.getHeight() + spotlightPadding * 2;
-
-        spotlightRect.set(left, top, right, bottom);
-        invalidate();
-
-        // Update tooltip content
-        tooltipStepCounter.setText("Step " + (index + 1) + " of " + steps.size());
-        tooltipTitle.setText(step.title);
-        tooltipDescription.setText(step.description);
-
-        if (index == steps.size() - 1) {
-            btnNext.setText("Got it! ✓");
-            btnSkip.setVisibility(GONE);
-        } else {
-            btnNext.setText("Next →");
-            btnSkip.setVisibility(VISIBLE);
+        if (targetView.getWidth() == 0 || targetView.getHeight() == 0) {
+            targetView.post(() -> showStep(index));
+            return;
         }
 
-        // Position tooltip above or below the spotlight
-        positionTooltip();
+        // Auto-scroll parent if target view is inside a ScrollView/NestedScrollView
+        scrollToTargetIfNeeded(targetView, () -> {
+            // Recalculate target position since it might have changed after scroll
+            int[] loc = new int[2];
+            targetView.getLocationOnScreen(loc);
 
-        // Animate in
-        animateTooltipIn();
+            // Adjust for overlay's own position
+            int[] overlayLoc = new int[2];
+            getLocationOnScreen(overlayLoc);
+
+            float left = loc[0] - overlayLoc[0] - spotlightPadding;
+            float top = loc[1] - overlayLoc[1] - spotlightPadding;
+            float right = left + targetView.getWidth() + spotlightPadding * 2;
+            float bottom = top + targetView.getHeight() + spotlightPadding * 2;
+
+            spotlightRect.set(left, top, right, bottom);
+            invalidate();
+
+            // Update tooltip content
+            tooltipStepCounter.setText("Step " + (index + 1) + " of " + steps.size());
+            tooltipTitle.setText(step.title);
+            tooltipDescription.setText(step.description);
+
+            if (index == steps.size() - 1) {
+                btnNext.setText("Got it! ✓");
+                btnSkip.setVisibility(GONE);
+            } else {
+                btnNext.setText("Next →");
+                btnSkip.setVisibility(VISIBLE);
+            }
+
+            // Position tooltip above or below the spotlight
+            positionTooltip();
+
+            // Animate in
+            animateTooltipIn();
+        });
+    }
+
+    private void scrollToTargetIfNeeded(final View targetView, final Runnable onDone) {
+        ViewParent parent = targetView.getParent();
+        ViewGroup scrollParent = null;
+
+        while (parent != null) {
+            if (parent instanceof androidx.core.widget.NestedScrollView || parent instanceof android.widget.ScrollView) {
+                scrollParent = (ViewGroup) parent;
+                break;
+            }
+            parent = parent.getParent();
+        }
+
+        if (scrollParent != null) {
+            // Calculate top of targetView relative to the scroll parent
+            int targetTop = 0;
+            View temp = targetView;
+            while (temp != null && temp != scrollParent) {
+                targetTop += temp.getTop();
+                ViewParent tempParent = temp.getParent();
+                if (tempParent instanceof View) {
+                    temp = (View) tempParent;
+                } else {
+                    break;
+                }
+            }
+
+            int scrollY = scrollParent.getScrollY();
+            int containerHeight = scrollParent.getHeight();
+            int targetHeight = targetView.getHeight();
+
+            // Check if the target view is fully visible in the scroll parent's viewport
+            boolean isFullyVisible = (targetTop >= scrollY) && ((targetTop + targetHeight) <= (scrollY + containerHeight));
+
+            if (!isFullyVisible) {
+                // Scroll target view to the center of the viewport
+                int scrollToY = Math.max(0, targetTop - (containerHeight / 2) + (targetHeight / 2));
+
+                if (scrollParent instanceof androidx.core.widget.NestedScrollView) {
+                    ((androidx.core.widget.NestedScrollView) scrollParent).smoothScrollTo(0, scrollToY);
+                } else if (scrollParent instanceof android.widget.ScrollView) {
+                    ((android.widget.ScrollView) scrollParent).smoothScrollTo(0, scrollToY);
+                }
+
+                // Wait for the smooth scroll animation to finish (approx 300ms)
+                scrollParent.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (activity == null || activity.isFinishing() || activity.isDestroyed()) {
+                            return;
+                        }
+                        if (getParent() == null) {
+                            return;
+                        }
+                        onDone.run();
+                    }
+                }, 300);
+                return;
+            }
+        }
+
+        // If no scrollable parent or already fully visible, run callback immediately
+        onDone.run();
+    }
+
+    private View findVisibleViewWithId(View root, int id) {
+        if (root == null) return null;
+        if (root.getId() == id && root.isShown()) {
+            return root;
+        }
+        if (root instanceof ViewGroup) {
+            ViewGroup group = (ViewGroup) root;
+            for (int i = 0; i < group.getChildCount(); i++) {
+                View found = findVisibleViewWithId(group.getChildAt(i), id);
+                if (found != null) {
+                    return found;
+                }
+            }
+        }
+        return null;
     }
 
     private void positionTooltip() {

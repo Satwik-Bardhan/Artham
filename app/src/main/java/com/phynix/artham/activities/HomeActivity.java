@@ -1291,6 +1291,9 @@ public class HomeActivity extends BaseActivity {
                 .addStep(R.id.btnCashOut,
                         "Cash Out",
                         "Tap here to record expenses — food, travel, bills, shopping, etc.")
+                .addStep(R.id.dailySummaryInclude,
+                        "Daily Summary",
+                        "View a summary of your net cash flow for today. Tap the card to view historical daily summaries.")
                 .addStep(R.id.transactionListCard,
                         "Today's Transactions",
                         "All entries for today appear here. See your daily cash flow at a glance.")

@@ -251,6 +251,7 @@
     <string name="widget_description">Quick Cash In / Cash Out entry buttons</string>
     <string name="widget_label">Artham Quick Entry</string>
 
+
     <string-array name="search_hints">
         <item>Search by party name…</item>
         <item>Try searching "Rent"…</item>

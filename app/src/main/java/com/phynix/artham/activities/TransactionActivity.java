@@ -979,6 +979,9 @@ public class TransactionActivity extends BaseActivity {
                     .addStep(R.id.pie_chart_layout,
                             "Expense Chart",
                             "Visual breakdown of your spending by category. Tap the header for detailed analytics.")
+                    .addStep(R.id.allTransactionsButton,
+                            "Toggle Range",
+                            "Switch between monthly view and all-time history with a single tap.")
                     .addStep(R.id.downloadReportButton,
                             "Export Reports",
                             "Download your transactions as a PDF report to share or print anytime.")

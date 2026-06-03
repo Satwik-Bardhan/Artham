@@ -18,8 +18,8 @@ import java.util.Random;
 
 public class AboutActivity extends BaseActivity {
 
-    private static final String UPI_ID = "9777122601@okbizaxis";
-    private static final String UPI_NAME = "PHYNIX LABS";
+    private static final String UPI_ID = "9777122601@okaxis";
+    private static final String UPI_NAME = "Satwik Bardhan Behera";
     private static final Random random = new Random();
 
     private static final String[] CHAI_MESSAGES = {

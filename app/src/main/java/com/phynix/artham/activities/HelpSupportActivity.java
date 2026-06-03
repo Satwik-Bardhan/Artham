@@ -194,8 +194,8 @@ public class HelpSupportActivity extends BaseActivity {
 
         com.phynix.artham.utils.DialogUtils.applyBlurEffect(dialog, this);
 
-        String upiId = "9777122601@okbizaxis";
-        String upiName = "PHYNIX LABS";
+        String upiId = "9777122601@okaxis";
+        String upiName = "Satwik Bardhan Behera";
 
         dialog.findViewById(R.id.optionChai).setOnClickListener(v -> {
             dialog.dismiss();

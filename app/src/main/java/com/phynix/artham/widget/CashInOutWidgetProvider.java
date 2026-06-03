@@ -10,6 +10,7 @@ import android.widget.RemoteViews;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.phynix.artham.MainActivity;
 import com.phynix.artham.activities.CashInOutActivity;
 import com.phynix.artham.R;
 import com.phynix.artham.SignInActivity;
@@ -55,6 +56,17 @@ public class CashInOutWidgetProvider extends AppWidgetProvider {
         // Cash Out button → opens CashInOutActivity with type=OUT
         PendingIntent cashOutPending = buildTransactionIntent(context, Constants.TRANSACTION_TYPE_OUT, appWidgetId * 10 + 1);
         views.setOnClickPendingIntent(R.id.widget_btn_cash_out, cashOutPending);
+
+        // Logo / App Name click → opens the app (MainActivity)
+        Intent appIntent = new Intent(context, MainActivity.class);
+        appIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        PendingIntent appLaunchPending = PendingIntent.getActivity(
+                context,
+                appWidgetId * 10 + 2, // Unique request code for launcher
+                appIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+        );
+        views.setOnClickPendingIntent(R.id.widget_logo_container, appLaunchPending);
 
         appWidgetManager.updateAppWidget(appWidgetId, views);
     }
