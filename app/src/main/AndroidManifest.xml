@@ -220,7 +220,36 @@
                 android:resource="@xml/cash_in_out_widget_info" />
         </receiver>
 
+        <!-- Cashbook List Home Screen Widget -->
+        <receiver
+            android:name=".widget.CashbookListWidgetProvider"
+            android:exported="true"
+            android:label="@string/widget_cashbook_list_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="com.phynix.artham.ACTION_CASHBOOK_CLICK" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/cashbook_list_widget_info" />
+        </receiver>
 
+        <!-- RemoteViewsService for the Cashbook List Widget scrollable list -->
+        <service
+            android:name=".widget.CashbookListRemoteViewsService"
+            android:exported="false"
+            android:permission="android.permission.BIND_REMOTEVIEWS" />
+
+        <!-- Cashbook Widget Configuration Activity -->
+        <activity
+            android:name=".activities.CashbookWidgetConfigActivity"
+            android:exported="true"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.AppCompat.NoActionBar">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
+            </intent-filter>
+        </activity>
 
         <!-- Monthly Summary Notification -->
         <receiver

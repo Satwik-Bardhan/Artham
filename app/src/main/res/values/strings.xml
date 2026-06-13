@@ -250,7 +250,8 @@
 
     <string name="widget_description">Quick Cash In / Cash Out entry buttons</string>
     <string name="widget_label">Artham Quick Entry</string>
-
+    <string name="widget_cashbook_list_description">Scrollable list of your cashbooks with quick access</string>
+    <string name="widget_cashbook_list_label">Artham Cashbooks</string>
 
     <string-array name="search_hints">
         <item>Search by party name…</item>

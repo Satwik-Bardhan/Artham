@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_widget"
+    android:orientation="vertical"
+    android:padding="12dp">
+
+    <!-- Header Row -->
+    <LinearLayout
+        android:id="@+id/widget_header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingBottom="6dp"
+        android:clickable="true"
+        android:focusable="true">
+
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_marginEnd="6dp"
+            android:src="@mipmap/ic_launcher_round"
+            android:contentDescription="Artham" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="My Books"
+            android:textColor="#FFFFFF"
+            android:textSize="13sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/widget_settings_btn"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:gravity="center"
+            android:text="⚙"
+            android:textColor="#80FFFFFF"
+            android:textSize="16sp"
+            android:clickable="true"
+            android:focusable="true" />
+    </LinearLayout>
+
+    <!-- Divider -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#15FFFFFF"
+        android:layout_marginBottom="4dp" />
+
+    <!-- Scrollable Cashbook List -->
+    <ListView
+        android:id="@+id/widget_cashbook_listview"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:divider="@null"
+        android:dividerHeight="0dp"
+        android:scrollbars="none" />
+
+    <!-- Empty State -->
+    <TextView
+        android:id="@+id/widget_empty_text"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:text="No cashbooks selected"
+        android:textColor="#80FFFFFF"
+        android:textSize="11sp"
+        android:visibility="gone" />
+
+</LinearLayout>

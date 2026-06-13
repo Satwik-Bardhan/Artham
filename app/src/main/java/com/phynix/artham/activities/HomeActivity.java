@@ -1199,6 +1199,8 @@ public class HomeActivity extends BaseActivity {
     private void refreshWidget() {
         try {
             AppWidgetManager widgetManager = AppWidgetManager.getInstance(this);
+
+            // Refresh Cash In/Out Widget
             ComponentName widgetComponent = new ComponentName(this,
                     com.phynix.artham.widget.CashInOutWidgetProvider.class);
             int[] widgetIds = widgetManager.getAppWidgetIds(widgetComponent);
@@ -1209,10 +1211,23 @@ public class HomeActivity extends BaseActivity {
                 updateIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, widgetIds);
                 sendBroadcast(updateIntent);
             }
+
+            // Refresh Cashbook List Widget
+            ComponentName listWidgetComponent = new ComponentName(this,
+                    com.phynix.artham.widget.CashbookListWidgetProvider.class);
+            int[] listWidgetIds = widgetManager.getAppWidgetIds(listWidgetComponent);
+            if (listWidgetIds != null && listWidgetIds.length > 0) {
+                Intent listUpdateIntent = new Intent(this,
+                        com.phynix.artham.widget.CashbookListWidgetProvider.class);
+                listUpdateIntent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
+                listUpdateIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, listWidgetIds);
+                sendBroadcast(listUpdateIntent);
+            }
         } catch (Exception e) {
             Log.w(TAG, "Widget refresh failed", e);
         }
     }
+
 
     // ═══════════════════════════════════════════════════════════
     //  ONBOARDING / TUTORIAL
