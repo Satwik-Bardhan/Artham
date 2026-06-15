@@ -2,7 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/bg_widget"
+    android:background="@drawable/bg_widget_dark_transparent"
     android:orientation="vertical"
     android:padding="12dp">
 
@@ -46,11 +46,11 @@
     </LinearLayout>
 
     <!-- Divider -->
-    <View
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:background="#15FFFFFF"
-        android:layout_marginBottom="4dp" />
+        android:layout_marginBottom="8dp" />
 
     <!-- Scrollable Cashbook List -->
     <ListView
@@ -60,7 +60,10 @@
         android:layout_weight="1"
         android:divider="@null"
         android:dividerHeight="0dp"
-        android:scrollbars="none" />
+        android:scrollbars="none"
+        android:paddingTop="2dp"
+        android:paddingBottom="4dp"
+        android:clipToPadding="false" />
 
     <!-- Empty State -->
     <TextView

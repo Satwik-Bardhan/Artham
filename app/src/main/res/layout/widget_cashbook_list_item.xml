@@ -1,22 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/widget_cashbook_list_item_root"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:gravity="center_vertical"
-    android:orientation="horizontal"
-    android:paddingHorizontal="8dp"
-    android:paddingVertical="7dp"
-    android:clickable="true"
-    android:focusable="true">
+    android:layout_height="wrap_content">
 
-    <!-- Color Dot -->
-    <View
+    <LinearLayout
+        android:id="@+id/widget_cashbook_list_item_root"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="12dp"
+        android:paddingVertical="10dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="4dp"
+        android:layout_marginStart="4dp"
+        android:layout_marginEnd="4dp">
+
+    <!-- Color Dot (must be ImageView so setColorFilter works via RemoteViews) -->
+    <ImageView
         android:id="@+id/widget_item_color_dot"
         android:layout_width="8dp"
         android:layout_height="8dp"
         android:layout_marginEnd="10dp"
-        android:background="@drawable/shape_circle_solid" />
+        android:src="@drawable/shape_circle_solid"
+        android:contentDescription="Color indicator" />
 
     <!-- Name and Balance -->
     <LinearLayout
@@ -55,5 +62,5 @@
         android:textSize="18sp"
         android:gravity="center"
         android:paddingStart="6dp" />
-
-</LinearLayout>
+    </LinearLayout>
+</FrameLayout>

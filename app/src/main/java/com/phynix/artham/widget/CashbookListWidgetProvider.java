@@ -15,8 +15,10 @@ import com.google.firebase.auth.FirebaseUser;
 import com.phynix.artham.MainActivity;
 import com.phynix.artham.R;
 import com.phynix.artham.activities.CashbookWidgetConfigActivity;
+import android.graphics.Color;
 import com.phynix.artham.activities.HomeActivity;
 import com.phynix.artham.utils.Constants;
+import com.phynix.artham.utils.ThemeManager;
 
 /**
  * Widget provider for the scrollable Cashbook List Widget.

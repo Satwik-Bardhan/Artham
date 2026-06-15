@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Semi-transparent dark background for the list widget -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="#B30B0B14" /> <!-- ~70% opaque dark violet-black -->
+    <corners android:radius="20dp" />
+</shape>

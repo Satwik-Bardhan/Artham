@@ -8,7 +8,7 @@
     android:resizeMode="horizontal|vertical"
     android:updatePeriodMillis="1800000"
     android:previewImage="@drawable/widget_cashbook_list_preview"
-    android:previewLayout="@layout/widget_cashbook_list"
     android:widgetCategory="home_screen"
     android:configure="com.phynix.artham.activities.CashbookWidgetConfigActivity"
     android:description="@string/widget_cashbook_list_description" />
+

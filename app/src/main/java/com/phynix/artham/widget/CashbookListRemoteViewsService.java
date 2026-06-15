@@ -8,6 +8,9 @@ import android.widget.RemoteViews;
 import android.widget.RemoteViewsService;
 
 import com.phynix.artham.R;
+import com.phynix.artham.db.DataRepository;
+import com.phynix.artham.models.CashbookModel;
+import com.phynix.artham.models.TransactionModel;
 import com.phynix.artham.utils.AmountFormatter;
 import com.phynix.artham.utils.Constants;
 
@@ -15,7 +18,10 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * RemoteViewsService that powers the scrollable cashbook ListView in the widget.
@@ -59,20 +65,121 @@ public class CashbookListRemoteViewsService extends RemoteViewsService {
 
             if (json == null || json.isEmpty()) return;
 
+            // 1. Parse the selected cashbook IDs and metadata from cache
+            List<String> selectedIds = new ArrayList<>();
+            Map<String, CashbookData> selectedMetaData = new HashMap<>();
             try {
                 JSONArray array = new JSONArray(json);
                 for (int i = 0; i < array.length(); i++) {
                     JSONObject obj = array.getJSONObject(i);
-                    CashbookData data = new CashbookData();
-                    data.id = obj.optString("id", "");
-                    data.name = obj.optString("name", "Cashbook");
-                    data.balance = obj.optDouble("balance", 0.0);
-                    data.color = obj.optString("color", "#3F51B5");
-                    data.balanceFormatted = "₹" + AmountFormatter.formatCompact(data.balance);
-                    cashbooks.add(data);
+                    String id = obj.optString("id", "");
+                    if (!id.isEmpty()) {
+                        selectedIds.add(id);
+                        CashbookData data = new CashbookData();
+                        data.id = id;
+                        data.name = obj.optString("name", "Cashbook");
+                        data.color = obj.optString("color", "#3F51B5");
+                        data.balance = obj.optDouble("balance", 0.0); // fallback
+                        selectedMetaData.put(id, data);
+                    }
                 }
             } catch (Exception e) {
                 e.printStackTrace();
+            }
+
+            if (selectedIds.isEmpty()) return;
+
+            // 2. Fetch the latest cashbooks from database synchronously
+            DataRepository repo = DataRepository.getInstance((android.app.Application) context.getApplicationContext());
+            List<CashbookModel> updatedCashbooks = new ArrayList<>();
+
+            if (repo.isLocalMode()) {
+                DataRepository.LocalDataWrapper localData = repo.loadLocalData();
+                if (localData != null && localData.cashbooks != null) {
+                    updatedCashbooks.addAll(localData.cashbooks);
+                }
+            } else {
+                // Firebase mode: query synchronously using a CountDownLatch
+                final java.util.concurrent.CountDownLatch latch = new java.util.concurrent.CountDownLatch(1);
+                repo.getCashbooks(
+                    cashbooksList -> {
+                        if (cashbooksList != null) {
+                            updatedCashbooks.addAll(cashbooksList);
+                        }
+                        latch.countDown();
+                    },
+                    error -> latch.countDown()
+                );
+                try {
+                    // Block for max 2.5 seconds to avoid UI freeze if completely offline
+                    latch.await(2500, java.util.concurrent.TimeUnit.MILLISECONDS);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            // 3. Compute the accurate balance for all selected cashbooks
+            for (CashbookModel cb : updatedCashbooks) {
+                if (selectedIds.contains(cb.getCashbookId())) {
+                    double totalIncome = 0;
+                    double totalExpense = 0;
+                    for (TransactionModel t : cb.getTransactionList()) {
+                        if ("IN".equalsIgnoreCase(t.getType())) {
+                            totalIncome += t.getAmount();
+                        } else {
+                            totalExpense += t.getAmount();
+                        }
+                    }
+                    double balance = totalIncome - totalExpense;
+
+                    CashbookData data = selectedMetaData.get(cb.getCashbookId());
+                    if (data != null) {
+                        data.name = cb.getName();
+                        data.balance = balance;
+                    }
+                }
+            }
+
+            // 4. Retrieve active cashbook ID for sorting
+            String activeCashbookId = prefs.getString("last_selected_cashbook_id", null);
+            if (activeCashbookId == null) {
+                com.google.firebase.auth.FirebaseUser user = com.google.firebase.auth.FirebaseAuth.getInstance().getCurrentUser();
+                if (user != null) {
+                    activeCashbookId = prefs.getString(Constants.PREF_ACTIVE_CASHBOOK_PREFIX + user.getUid(), null);
+                } else {
+                    activeCashbookId = prefs.getString(Constants.PREF_ACTIVE_CASHBOOK_PREFIX + "local_user", null);
+                }
+            }
+
+            // 5. Gather valid cashbooks and sort alphabetically by name
+            List<CashbookData> sortedList = new ArrayList<>();
+            for (String id : selectedIds) {
+                CashbookData data = selectedMetaData.get(id);
+                if (data != null) {
+                    sortedList.add(data);
+                }
+            }
+            Collections.sort(sortedList, (d1, d2) -> d1.name.compareToIgnoreCase(d2.name));
+
+            // 6. Move active cashbook to the very top (index 0)
+            if (activeCashbookId != null) {
+                CashbookData activeData = null;
+                for (CashbookData d : sortedList) {
+                    if (d.id.equals(activeCashbookId)) {
+                        activeData = d;
+                        break;
+                    }
+                }
+                if (activeData != null) {
+                    sortedList.remove(activeData);
+                    sortedList.add(0, activeData);
+                }
+            }
+
+            // 7. Add sorted books to list and format balance
+            for (CashbookData data : sortedList) {
+                data.balanceFormatted = AmountFormatter.formatCompact(data.balance);
+                cashbooks.add(data);
             }
         }
 
@@ -95,6 +202,22 @@ public class CashbookListRemoteViewsService extends RemoteViewsService {
                 views.setInt(R.id.widget_item_color_dot, "setColorFilter", color);
             } catch (Exception e) {
                 views.setInt(R.id.widget_item_color_dot, "setColorFilter", Color.parseColor("#3F51B5"));
+            }
+
+            // Highlight active cashbook with a distinct border/background drawable
+            SharedPreferences prefs = context.getSharedPreferences("AppPrefs", Context.MODE_PRIVATE);
+            String activeCashbookId = prefs.getString("last_selected_cashbook_id", null);
+            if (activeCashbookId == null) {
+                com.google.firebase.auth.FirebaseUser user = com.google.firebase.auth.FirebaseAuth.getInstance().getCurrentUser();
+                String key = Constants.PREF_ACTIVE_CASHBOOK_PREFIX + (user != null ? user.getUid() : "local_user");
+                activeCashbookId = prefs.getString(key, null);
+            }
+
+            boolean isActive = item.id.equals(activeCashbookId);
+            if (isActive) {
+                views.setInt(R.id.widget_cashbook_list_item_root, "setBackgroundResource", R.drawable.bg_widget_item_border_active);
+            } else {
+                views.setInt(R.id.widget_cashbook_list_item_root, "setBackgroundResource", R.drawable.bg_widget_item_border);
             }
 
             // Fill-in intent for this item's click

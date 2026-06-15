@@ -23,6 +23,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.phynix.artham.R;
 import com.phynix.artham.db.DataRepository;
 import com.phynix.artham.models.CashbookModel;
+import com.phynix.artham.models.TransactionModel;
 import com.phynix.artham.utils.AmountFormatter;
 import com.phynix.artham.widget.CashbookListWidgetProvider;
 
@@ -120,7 +121,19 @@ public class CashbookWidgetConfigActivity extends AppCompatActivity {
 
                     allCashbooks.clear();
                     if (cashbooks != null) {
-                        allCashbooks.addAll(cashbooks);
+                        for (CashbookModel cb : cashbooks) {
+                            double totalIncome = 0;
+                            double totalExpense = 0;
+                            for (TransactionModel t : cb.getTransactionList()) {
+                                if ("IN".equalsIgnoreCase(t.getType())) {
+                                    totalIncome += t.getAmount();
+                                } else {
+                                    totalExpense += t.getAmount();
+                                }
+                            }
+                            cb.setTotalBalance(totalIncome - totalExpense);
+                            allCashbooks.add(cb);
+                        }
                     }
 
                     // Load previously selected cashbooks if reconfiguring
@@ -224,7 +237,7 @@ public class CashbookWidgetConfigActivity extends AppCompatActivity {
             CashbookModel cashbook = allCashbooks.get(position);
 
             holder.nameText.setText(cashbook.getName());
-            holder.balanceText.setText("₹" + AmountFormatter.formatCompact(cashbook.getTotalBalance()));
+            holder.balanceText.setText(AmountFormatter.formatCompact(cashbook.getTotalBalance()));
 
             // Set checkbox state without triggering listener
             holder.checkbox.setOnCheckedChangeListener(null);
