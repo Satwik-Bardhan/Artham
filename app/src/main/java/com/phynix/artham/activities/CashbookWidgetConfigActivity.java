@@ -197,15 +197,9 @@ public class CashbookWidgetConfigActivity extends AppCompatActivity {
                     .putString("widget_cashbooks_" + appWidgetId, jsonArray.toString())
                     .apply();
 
-            // Trigger widget update
+            // Trigger widget update directly using the static method
             AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(this);
-            appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetId, R.id.widget_cashbook_listview);
-
-            // Also trigger a full update
-            Intent updateIntent = new Intent(this, CashbookListWidgetProvider.class);
-            updateIntent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
-            updateIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, new int[]{appWidgetId});
-            sendBroadcast(updateIntent);
+            CashbookListWidgetProvider.updateWidget(this, appWidgetManager, appWidgetId);
 
             // Set result OK
             Intent resultIntent = new Intent();

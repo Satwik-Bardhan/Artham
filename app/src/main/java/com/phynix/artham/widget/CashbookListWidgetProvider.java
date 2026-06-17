@@ -37,7 +37,7 @@ public class CashbookListWidgetProvider extends AppWidgetProvider {
         }
     }
 
-    private void updateWidget(Context context, AppWidgetManager appWidgetManager, int appWidgetId) {
+    public static void updateWidget(Context context, AppWidgetManager appWidgetManager, int appWidgetId) {
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget_cashbook_list);
 
         // Set up the RemoteViewsService intent for the ListView
