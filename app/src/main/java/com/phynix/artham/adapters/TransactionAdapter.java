@@ -4,6 +4,9 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.text.SpannableStringBuilder;
+import android.text.style.ForegroundColorSpan;
+import android.text.Spanned;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -37,7 +40,35 @@ import com.phynix.artham.utils.ThemeUtil;
  */
 public class TransactionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
-    private final List<Object> items = new ArrayList<>(); // Mixed list: Strings (Headers) and TransactionModels
+    /**
+     * Data class representing a date header with transaction counts.
+     */
+    static class DateHeaderInfo {
+        final String dateText;
+        final int inCount;
+        final int outCount;
+
+        DateHeaderInfo(String dateText, int inCount, int outCount) {
+            this.dateText = dateText;
+            this.inCount = inCount;
+            this.outCount = outCount;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof DateHeaderInfo)) return false;
+            DateHeaderInfo that = (DateHeaderInfo) o;
+            return inCount == that.inCount && outCount == that.outCount && Objects.equals(dateText, that.dateText);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(dateText, inCount, outCount);
+        }
+    }
+
+    private final List<Object> items = new ArrayList<>(); // Mixed list: DateHeaderInfo (Headers) and TransactionModels
     private final OnItemClickListener listener;
 
     private static final int VIEW_TYPE_HEADER = 0;
@@ -62,7 +93,7 @@ public class TransactionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
     @Override
     public int getItemViewType(int position) {
         Object item = items.get(position);
-        if (item instanceof String) {
+        if (item instanceof DateHeaderInfo) {
             return VIEW_TYPE_HEADER;
         }
         TransactionModel transaction = (TransactionModel) item;
@@ -87,7 +118,7 @@ public class TransactionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         Object item = items.get(position);
         if (holder instanceof HeaderViewHolder) {
-            ((HeaderViewHolder) holder).bind((String) item);
+            ((HeaderViewHolder) holder).bind((DateHeaderInfo) item);
         } else if (holder instanceof TransactionViewHolder) {
             ((TransactionViewHolder) holder).bind((TransactionModel) item);
         }
@@ -100,6 +131,23 @@ public class TransactionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
     public void updateTransactions(List<TransactionModel> newTransactions) {
         updateData(newTransactions);
+    }
+
+    /**
+     * Returns true if the item at the given position is a date header.
+     */
+    public boolean isHeader(int position) {
+        if (position < 0 || position >= items.size()) return false;
+        return items.get(position) instanceof DateHeaderInfo;
+    }
+
+    /**
+     * Returns the DateHeaderInfo at the given position, or null if it's not a header.
+     */
+    public DateHeaderInfo getHeaderAtPosition(int position) {
+        if (position < 0 || position >= items.size()) return null;
+        Object item = items.get(position);
+        return item instanceof DateHeaderInfo ? (DateHeaderInfo) item : null;
     }
 
     private void updateData(List<TransactionModel> transactions) {
@@ -134,13 +182,32 @@ public class TransactionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         List<TransactionModel> sortedList = new ArrayList<>(transactions);
         Collections.sort(sortedList, (t1, t2) -> Long.compare(t2.getTimestamp(), t1.getTimestamp()));
 
+        // Pre-compute IN/OUT counts per date
+        java.util.LinkedHashMap<String, int[]> dateCounts = new java.util.LinkedHashMap<>();
+        for (TransactionModel t : sortedList) {
+            String dateKey = getRelativeDateString(t.getTimestamp());
+            int[] counts = dateCounts.get(dateKey);
+            if (counts == null) {
+                counts = new int[]{0, 0}; // [inCount, outCount]
+                dateCounts.put(dateKey, counts);
+            }
+            if ("IN".equalsIgnoreCase(t.getType())) {
+                counts[0]++;
+            } else {
+                counts[1]++;
+            }
+        }
+
         List<Object> grouped = new ArrayList<>();
         String lastDate = "";
 
         for (TransactionModel t : sortedList) {
             String currentDate = getRelativeDateString(t.getTimestamp());
             if (!currentDate.equals(lastDate)) {
-                grouped.add(currentDate); // Inject Relative Date Header
+                int[] counts = dateCounts.get(currentDate);
+                int inCount = counts != null ? counts[0] : 0;
+                int outCount = counts != null ? counts[1] : 0;
+                grouped.add(new DateHeaderInfo(currentDate, inCount, outCount)); // Inject Date Header with counts
                 lastDate = currentDate;
             }
             grouped.add(t); // Inject Transaction Item
@@ -172,12 +239,35 @@ public class TransactionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
     static class HeaderViewHolder extends RecyclerView.ViewHolder {
         TextView headerText;
+
         HeaderViewHolder(@NonNull View itemView) {
             super(itemView);
             headerText = itemView.findViewById(R.id.dateHeaderTextView);
         }
-        void bind(String date) {
-            headerText.setText(date);
+
+        void bind(DateHeaderInfo info) {
+            Context context = itemView.getContext();
+            int inColor = ThemeUtil.getThemeAttrColor(context, R.attr.chk_incomeColor);
+            int outColor = ThemeUtil.getThemeAttrColor(context, R.attr.chk_expenseColor);
+
+            String inStr = String.valueOf(info.inCount);
+            String outStr = String.valueOf(info.outCount);
+            // Format: "TODAY (3,5)" or "16 MAY 2026 (3,5)"
+            String full = info.dateText + " (" + inStr + "," + outStr + ")";
+
+            SpannableStringBuilder spannable = new SpannableStringBuilder(full);
+
+            // Color the in-count number green
+            int inStart = info.dateText.length() + 2; // after " ("
+            int inEnd = inStart + inStr.length();
+            spannable.setSpan(new ForegroundColorSpan(inColor), inStart, inEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+            // Color the out-count number red
+            int outStart = inEnd + 1; // after ","
+            int outEnd = outStart + outStr.length();
+            spannable.setSpan(new ForegroundColorSpan(outColor), outStart, outEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+            headerText.setText(spannable);
         }
     }
 
@@ -305,7 +395,9 @@ public class TransactionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         public boolean areItemsTheSame(int oldPos, int newPos) {
             Object oldObj = oldList.get(oldPos);
             Object newObj = newList.get(newPos);
-            if (oldObj instanceof String && newObj instanceof String) return oldObj.equals(newObj);
+            if (oldObj instanceof DateHeaderInfo && newObj instanceof DateHeaderInfo) {
+                return ((DateHeaderInfo) oldObj).dateText.equals(((DateHeaderInfo) newObj).dateText);
+            }
             if (oldObj instanceof TransactionModel && newObj instanceof TransactionModel) {
                 return Objects.equals(((TransactionModel) oldObj).getTransactionId(), ((TransactionModel) newObj).getTransactionId());
             }
