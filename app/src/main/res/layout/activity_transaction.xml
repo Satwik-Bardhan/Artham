@@ -243,4 +243,22 @@
         </androidx.core.widget.NestedScrollView>
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
+    <!-- Sticky date header overlay — drawn last so it sits on top of scrolling content -->
+    <TextView
+        android:id="@+id/stickyDateHeader"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="12dp"
+        android:paddingVertical="8dp"
+        android:gravity="center"
+        android:background="?attr/chk_backgroundColor"
+        android:textColor="?attr/chk_textColorSecondary"
+        android:textSize="13sp"
+        android:textStyle="bold"
+        android:textAllCaps="true"
+        android:letterSpacing="0.05"
+        android:elevation="3dp"
+        android:visibility="gone"
+        android:layout_below="@id/fixed_search_bar_container" />
+
 </RelativeLayout>

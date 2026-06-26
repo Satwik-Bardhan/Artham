@@ -21,7 +21,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.phynix.artham.adapters.TransactionAdapter;
 import com.phynix.artham.models.TransactionModel;
-import com.phynix.artham.utils.StickyHeaderDecoration;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -96,13 +95,11 @@ public class TransactionItemFragment extends Fragment {
 
         LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
         transactionRecyclerView.setLayoutManager(layoutManager);
+        transactionRecyclerView.setNestedScrollingEnabled(false);
 
         // [FIX] Use the existing clickListener if it was set before adapter was created
         transactionAdapter = new TransactionAdapter(transactionList, clickListener);
         transactionRecyclerView.setAdapter(transactionAdapter);
-
-        // Attach sticky header decoration so date headers stick at the top while scrolling
-        transactionRecyclerView.addItemDecoration(new StickyHeaderDecoration(getContext(), transactionAdapter));
 
         // Update empty state
         updateEmptyState();

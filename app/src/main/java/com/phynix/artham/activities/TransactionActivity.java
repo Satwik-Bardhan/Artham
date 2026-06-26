@@ -16,7 +16,10 @@ import android.os.Build;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
+import android.text.SpannableStringBuilder;
+import android.text.Spanned;
 import android.text.TextWatcher;
+import android.text.style.ForegroundColorSpan;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
@@ -30,7 +33,9 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.widget.NestedScrollView;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.facebook.shimmer.ShimmerFrameLayout;
 import com.github.mikephil.charting.animation.Easing;
@@ -56,6 +61,7 @@ import com.phynix.artham.viewmodels.TransactionViewModelFactory;
 import com.phynix.artham.utils.PdfReportGenerator;
 import com.phynix.artham.utils.OnboardingManager;
 import com.phynix.artham.utils.OnboardingOverlay;
+import com.phynix.artham.utils.UpdateChecker;
 import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
@@ -111,6 +117,9 @@ public class TransactionActivity extends BaseActivity {
 
     private TransactionItemFragment transactionFragment;
     private TransactionViewModel viewModel;
+
+    // Sticky date header
+    private TextView stickyDateHeader;
 
     private FirebaseAuth mAuth;
     private String currentCashbookId;
@@ -260,6 +269,100 @@ public class TransactionActivity extends BaseActivity {
 
         int textColor = getThemeColor(android.R.attr.textColorPrimary);
         pieChartBinding.pieChart.setNoDataTextColor(textColor);
+
+        // Initialize sticky date header
+        stickyDateHeader = findViewById(R.id.stickyDateHeader);
+
+        // Setup scroll listener for sticky date header
+        binding.mainScrollView.setOnScrollChangeListener(
+                (NestedScrollView.OnScrollChangeListener) (v, scrollX, scrollY, oldScrollX, oldScrollY) -> {
+                    updateStickyHeader(scrollY);
+                });
+    }
+
+    /**
+     * Updates the sticky date header overlay based on the current scroll position.
+     * Uses screen coordinates for reliable position detection since the RecyclerView
+     * is nested inside a NestedScrollView.
+     */
+    private void updateStickyHeader(int scrollY) {
+        if (stickyDateHeader == null || transactionFragment == null) return;
+
+        // Get the fragment's RecyclerView
+        RecyclerView recyclerView = transactionFragment.getRecyclerView();
+        if (recyclerView == null || recyclerView.getAdapter() == null) {
+            stickyDateHeader.setVisibility(View.GONE);
+            return;
+        }
+
+        TransactionAdapter adapter = (TransactionAdapter) recyclerView.getAdapter();
+        if (adapter.getItemCount() == 0) {
+            stickyDateHeader.setVisibility(View.GONE);
+            return;
+        }
+
+        // Use the search bar's bottom as the reference line (sticky header sits just below it)
+        int[] searchBarLoc = new int[2];
+        binding.fixedSearchBarContainer.getLocationOnScreen(searchBarLoc);
+        int referenceY = searchBarLoc[1] + binding.fixedSearchBarContainer.getHeight();
+
+        // Iterate through RecyclerView's laid-out children to find the last header
+        // whose top has scrolled above the reference line
+        TransactionAdapter.DateHeaderInfo stickyInfo = null;
+        int childCount = recyclerView.getChildCount();
+
+        for (int i = 0; i < childCount; i++) {
+            View child = recyclerView.getChildAt(i);
+            int adapterPos = recyclerView.getChildAdapterPosition(child);
+            if (adapterPos == RecyclerView.NO_POSITION) continue;
+
+            if (adapter.isHeader(adapterPos)) {
+                int[] childLoc = new int[2];
+                child.getLocationOnScreen(childLoc);
+
+                if (childLoc[1] <= referenceY) {
+                    // This header has scrolled past the top — current sticky candidate
+                    stickyInfo = adapter.getHeaderAtPosition(adapterPos);
+                } else {
+                    // This header is still below the reference — stop
+                    break;
+                }
+            }
+        }
+
+        if (stickyInfo != null) {
+            stickyDateHeader.setText(buildStickyHeaderText(stickyInfo));
+            stickyDateHeader.setVisibility(View.VISIBLE);
+        } else {
+            stickyDateHeader.setVisibility(View.GONE);
+        }
+    }
+
+    /**
+     * Builds a SpannableString for the sticky header: "DATE (inCount,outCount)"
+     * with inCount colored green and outCount colored red.
+     */
+    private CharSequence buildStickyHeaderText(TransactionAdapter.DateHeaderInfo info) {
+        int inColor = getThemeColor(R.attr.chk_incomeColor);
+        int outColor = getThemeColor(R.attr.chk_expenseColor);
+
+        String inStr = String.valueOf(info.inCount);
+        String outStr = String.valueOf(info.outCount);
+        String full = info.dateText + " (" + inStr + "," + outStr + ")";
+
+        SpannableStringBuilder spannable = new SpannableStringBuilder(full);
+
+        // Color the in-count number green
+        int inStart = info.dateText.length() + 2; // after " ("
+        int inEnd = inStart + inStr.length();
+        spannable.setSpan(new ForegroundColorSpan(inColor), inStart, inEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+        // Color the out-count number red
+        int outStart = inEnd + 1; // after ","
+        int outEnd = outStart + outStr.length();
+        spannable.setSpan(new ForegroundColorSpan(outColor), outStart, outEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+        return spannable;
     }
 
     private void initViewModel() {
@@ -735,6 +838,28 @@ public class TransactionActivity extends BaseActivity {
             startActivity(intent);
             overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
             finish();
+        });
+
+        // Show update notification dot on Settings icon if update is available
+        showSettingsUpdateDot(navRoot);
+    }
+
+    private void showSettingsUpdateDot(View navRoot) {
+        UpdateChecker checker = UpdateChecker.getInstance();
+
+        // If already checked, apply immediately
+        if (checker.hasChecked() && checker.isUpdateAvailable()) {
+            View dot = navRoot.findViewById(R.id.settingsUpdateDot);
+            if (dot != null) dot.setVisibility(View.VISIBLE);
+            return;
+        }
+
+        // Otherwise, check now and update the dot when result arrives
+        checker.checkForUpdate(this, updateAvailable -> {
+            if (updateAvailable && !isDestroyed() && !isFinishing()) {
+                View dot = navRoot.findViewById(R.id.settingsUpdateDot);
+                if (dot != null) dot.setVisibility(View.VISIBLE);
+            }
         });
     }
 

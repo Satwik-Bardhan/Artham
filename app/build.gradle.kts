@@ -15,8 +15,8 @@ android {
         applicationId = "com.phynix.artham"
         minSdk = 24
         targetSdk = 36
-        versionCode = 6
-        versionName = "1.5"
+        versionCode = 7
+        versionName = "1.6"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -79,6 +79,9 @@ dependencies {
     // --- Google Play In-App Review ---
     implementation("com.google.android.play:review:2.0.2")
     implementation("com.google.android.play:review-ktx:2.0.2")
+    // --- Google Play In-App Update ---
+    implementation("com.google.android.play:app-update:2.1.0")
+    implementation("com.google.android.play:app-update-ktx:2.1.0")
 
     // --- Google Services ---
     implementation("com.google.android.gms:play-services-auth:21.2.0")

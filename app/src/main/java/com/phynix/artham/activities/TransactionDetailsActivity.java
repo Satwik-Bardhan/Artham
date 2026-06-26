@@ -20,7 +20,6 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.google.android.material.button.MaterialButton;
 import com.phynix.artham.models.TransactionModel;
 import com.phynix.artham.utils.AmountFormatter;
 import com.phynix.artham.utils.SnackbarHelper;
@@ -201,7 +200,7 @@ public class TransactionDetailsActivity extends BaseActivity {
             }
         });
 
-        MaterialButton btnEdit = findViewById(R.id.btnEditTransaction);
+        View btnEdit = findViewById(R.id.btnEditTransaction);
         btnEdit.setOnClickListener(v -> openEditActivity());
     }
 

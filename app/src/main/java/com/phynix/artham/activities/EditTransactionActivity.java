@@ -35,6 +35,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.phynix.artham.activities.CategoryPickerActivity;
+import com.phynix.artham.utils.AutoCategorySuggester;
 import com.phynix.artham.utils.CategoryColorUtil;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -108,6 +109,7 @@ public class EditTransactionActivity extends BaseActivity {
     private TransactionModel currentTransaction;
     private String currentCashbookId;
     private Calendar calendar;
+    private boolean manualCategorySelected = false; // Track if user manually picked a category
 
     // --- Activity Launchers ---
     private final ActivityResultLauncher<Intent> categoryLauncher = registerForActivityResult(
@@ -119,6 +121,7 @@ public class EditTransactionActivity extends BaseActivity {
                     int iconRes = result.getData().getIntExtra("category_icon_res", 0);
 
                     if (category != null) {
+                        manualCategorySelected = true; // User explicitly picked a category
                         selectedCategoryTextView.setText(category);
                         selectedCategoryTextView.setTextColor(getThemeColor(R.attr.chk_primary_blue));
                         currentTransaction.setTransactionCategory(category);
@@ -194,6 +197,9 @@ public class EditTransactionActivity extends BaseActivity {
         initializeUI();
         populateData();
         setupClickListeners();
+
+        // ── Auto Category Suggestion: analyze remark text ──
+        setupAutoCategorySuggestion();
     }
 
     private void initViewModel() {
@@ -866,5 +872,60 @@ public class EditTransactionActivity extends BaseActivity {
             autoRepeatText.setTextColor(typedValue.data);
             autoRepeatIcon.setColorFilter(typedValue.data);
         }
+    }
+
+    // ===== AUTO CATEGORY SUGGESTION =====
+
+    private void setupAutoCategorySuggestion() {
+        if (remarkEditText == null) return;
+
+        remarkEditText.addTextChangedListener(AutoCategorySuggester.createAutoSuggestWatcher(categoryName -> {
+            try {
+                // Only auto-suggest if user hasn't manually picked a category in this session
+                if (manualCategorySelected) return;
+                if (selectedCategoryTextView == null || currentTransaction == null) return;
+
+                // Only auto-suggest if the current category is "Other" or generic
+                String currentCat = selectedCategoryTextView.getText().toString().trim();
+                boolean isDefaultCategory = "Other".equalsIgnoreCase(currentCat)
+                        || "Other Expenses".equalsIgnoreCase(currentCat)
+                        || "Other Income".equalsIgnoreCase(currentCat)
+                        || "Select Category".equalsIgnoreCase(currentCat)
+                        || currentCat.isEmpty();
+
+                // Also allow overriding if the current category was previously auto-suggested
+                boolean wasAutoSuggested = !isDefaultCategory && !manualCategorySelected;
+
+                if (!isDefaultCategory && !wasAutoSuggested) return;
+
+                if (categoryName != null) {
+                    // Found a match — apply it
+                    com.phynix.artham.models.CategoryModel model = AutoCategorySuggester.getSuggestedCategoryModel(categoryName);
+                    if (model != null) {
+                        selectedCategoryTextView.setText(model.getName());
+                        selectedCategoryTextView.setTextColor(getThemeColor(R.attr.chk_primary_blue));
+                        currentTransaction.setTransactionCategory(model.getName());
+
+                        // Apply color to icon container
+                        if (selectedIconContainer != null) {
+                            try {
+                                selectedIconContainer.setBackgroundTintList(
+                                        ColorStateList.valueOf(Color.parseColor(model.getColorHex())));
+                            } catch (Exception e) {
+                                selectedIconContainer.setBackgroundTintList(
+                                        ColorStateList.valueOf(getThemeColor(R.attr.chk_primary_blue)));
+                            }
+                        }
+
+                        // Apply icon
+                        if (selectedCategoryIcon != null) {
+                            selectedCategoryIcon.setImageResource(model.getIconResId());
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                android.util.Log.e("EditTransactionActivity", "Auto-suggest error: " + e.getMessage());
+            }
+        }));
     }
 }

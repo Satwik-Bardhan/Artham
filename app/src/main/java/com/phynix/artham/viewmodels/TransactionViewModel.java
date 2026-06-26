@@ -70,9 +70,6 @@ public class TransactionViewModel extends AndroidViewModel {
         return isLoading;
     }
 
-    /**
-     * Loads transactions from repository
-     */
     private void loadTransactions() {
         Log.d(TAG, "Loading transactions...");
         isLoading.postValue(true);
@@ -86,6 +83,20 @@ public class TransactionViewModel extends AndroidViewModel {
         repository.getAllTransactions(cashbookId,
                 transactions -> {
                     Log.d(TAG, "Transactions loaded successfully: " + transactions.size() + " items");
+                    
+                    // Pre-calculate running balances chronologically (oldest to newest)
+                    List<TransactionModel> chronological = new ArrayList<>(transactions);
+                    java.util.Collections.sort(chronological, (t1, t2) -> Long.compare(t1.getTimestamp(), t2.getTimestamp()));
+                    double balance = 0.0;
+                    for (TransactionModel t : chronological) {
+                        if ("IN".equalsIgnoreCase(t.getType())) {
+                            balance += t.getAmount();
+                        } else {
+                            balance -= t.getAmount();
+                        }
+                        t.setRunningBalance(balance);
+                    }
+                    
                     allTransactions.postValue(transactions);
                     filteredTransactions.postValue(transactions); // Initially, show all
                     isLoading.postValue(false);

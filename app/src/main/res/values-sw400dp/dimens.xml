@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Action Button dimensions — larger screens (400-599dp width) -->
+    <!-- e.g. Samsung Galaxy S Ultra, Pixel Pro, larger phones -->
+    <dimen name="action_btn_container_padding_h">12dp</dimen>
+    <dimen name="action_btn_gap">6dp</dimen>
+    <dimen name="action_btn_padding_start">12dp</dimen>
+    <dimen name="action_btn_padding_end">20dp</dimen>
+    <dimen name="action_btn_padding_v">10dp</dimen>
+    <dimen name="action_btn_icon_size">36dp</dimen>
+    <dimen name="action_btn_icon_inner">18dp</dimen>
+    <dimen name="action_btn_icon_margin">10dp</dimen>
+    <dimen name="action_btn_title_size">15sp</dimen>
+    <dimen name="action_btn_subtitle_size">11sp</dimen>
+</resources>

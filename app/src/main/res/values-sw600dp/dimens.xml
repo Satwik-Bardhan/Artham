@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Action Button dimensions — tablet screens (600dp+ width) -->
+    <dimen name="action_btn_container_padding_h">16dp</dimen>
+    <dimen name="action_btn_gap">8dp</dimen>
+    <dimen name="action_btn_padding_start">16dp</dimen>
+    <dimen name="action_btn_padding_end">24dp</dimen>
+    <dimen name="action_btn_padding_v">12dp</dimen>
+    <dimen name="action_btn_icon_size">40dp</dimen>
+    <dimen name="action_btn_icon_inner">20dp</dimen>
+    <dimen name="action_btn_icon_margin">12dp</dimen>
+    <dimen name="action_btn_title_size">17sp</dimen>
+    <dimen name="action_btn_subtitle_size">13sp</dimen>
+</resources>

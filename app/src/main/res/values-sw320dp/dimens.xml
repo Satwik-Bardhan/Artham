@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Action Button dimensions — small-medium screens (320-359dp width) -->
+    <!-- e.g. Samsung Galaxy S series in portrait, older compact phones -->
+    <dimen name="action_btn_container_padding_h">8dp</dimen>
+    <dimen name="action_btn_gap">4dp</dimen>
+    <dimen name="action_btn_padding_start">8dp</dimen>
+    <dimen name="action_btn_padding_end">10dp</dimen>
+    <dimen name="action_btn_padding_v">8dp</dimen>
+    <dimen name="action_btn_icon_size">30dp</dimen>
+    <dimen name="action_btn_icon_inner">15dp</dimen>
+    <dimen name="action_btn_icon_margin">6dp</dimen>
+    <dimen name="action_btn_title_size">13sp</dimen>
+    <dimen name="action_btn_subtitle_size">10sp</dimen>
+</resources>

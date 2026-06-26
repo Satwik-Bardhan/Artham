@@ -77,6 +77,7 @@ import com.phynix.artham.utils.OnboardingManager;
 
 import com.phynix.artham.utils.OnboardingOverlay;
 import com.phynix.artham.utils.DialogUtils;
+import com.phynix.artham.utils.UpdateChecker;
 import com.phynix.artham.viewmodels.HomeViewModel;
 
 import android.app.Dialog;
@@ -1045,6 +1046,28 @@ public class HomeActivity extends BaseActivity {
             startActivity(intent);
             overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
             finish();
+        });
+
+        // Show update notification dot on Settings icon if update is available
+        showSettingsUpdateDot(navRoot);
+    }
+
+    private void showSettingsUpdateDot(View navRoot) {
+        UpdateChecker checker = UpdateChecker.getInstance();
+
+        // If already checked, apply immediately
+        if (checker.hasChecked() && checker.isUpdateAvailable()) {
+            View dot = navRoot.findViewById(R.id.settingsUpdateDot);
+            if (dot != null) dot.setVisibility(View.VISIBLE);
+            return;
+        }
+
+        // Otherwise, check now and update the dot when result arrives
+        checker.checkForUpdate(this, updateAvailable -> {
+            if (updateAvailable && !isDestroyed() && !isFinishing()) {
+                View dot = navRoot.findViewById(R.id.settingsUpdateDot);
+                if (dot != null) dot.setVisibility(View.VISIBLE);
+            }
         });
     }
 

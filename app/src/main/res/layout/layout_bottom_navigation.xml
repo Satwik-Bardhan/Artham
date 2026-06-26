@@ -193,6 +193,16 @@
                             app:tint="@color/bottom_nav_item_color_selector"
                             android:duplicateParentState="true"
                             android:contentDescription="Settings" />
+
+                        <View
+                            android:id="@+id/settingsUpdateDot"
+                            android:layout_width="8dp"
+                            android:layout_height="8dp"
+                            android:layout_gravity="top|end"
+                            android:layout_marginEnd="10dp"
+                            android:layout_marginTop="2dp"
+                            android:background="@drawable/bg_notification_dot"
+                            android:visibility="gone" />
                     </FrameLayout>
 
                     <TextView

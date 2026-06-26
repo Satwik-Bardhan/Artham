@@ -19,8 +19,8 @@ import com.phynix.artham.utils.ThemeManager;
 
 public class ThemeSelectionActivity extends BaseActivity {
 
-    private CardView cardSystem, cardLight, cardDark, cardPurple, cardEmerald, cardRose, cardSunset, cardOcean, cardRandom;
-    private RadioButton radioSystem, radioLight, radioDark, radioPurple, radioEmerald, radioRose, radioSunset, radioOcean, radioRandom;
+    private CardView cardSystem, cardLight, cardDark, cardPurple, cardEmerald, cardRose, cardSunset, cardOcean, cardYellow, cardRandom;
+    private RadioButton radioSystem, radioLight, radioDark, radioPurple, radioEmerald, radioRose, radioSunset, radioOcean, radioYellow, radioRandom;
     private ImageView backButton;
 
     @Override
@@ -48,6 +48,7 @@ public class ThemeSelectionActivity extends BaseActivity {
         cardRose = findViewById(R.id.cardRose);
         cardSunset = findViewById(R.id.cardSunset);
         cardOcean = findViewById(R.id.cardOcean);
+        cardYellow = findViewById(R.id.cardYellow);
         cardRandom = findViewById(R.id.cardRandom);
         radioSystem = findViewById(R.id.radioSystem);
         radioLight = findViewById(R.id.radioLight);
@@ -57,6 +58,7 @@ public class ThemeSelectionActivity extends BaseActivity {
         radioRose = findViewById(R.id.radioRose);
         radioSunset = findViewById(R.id.radioSunset);
         radioOcean = findViewById(R.id.radioOcean);
+        radioYellow = findViewById(R.id.radioYellow);
         radioRandom = findViewById(R.id.radioRandom);
     }
 
@@ -70,6 +72,7 @@ public class ThemeSelectionActivity extends BaseActivity {
         radioRose.setChecked(false);
         radioSunset.setChecked(false);
         radioOcean.setChecked(false);
+        radioYellow.setChecked(false);
         radioRandom.setChecked(false);
 
         switch (currentTheme) {
@@ -94,6 +97,9 @@ public class ThemeSelectionActivity extends BaseActivity {
             case ThemeManager.THEME_OCEAN:
                 radioOcean.setChecked(true);
                 break;
+            case ThemeManager.THEME_YELLOW:
+                radioYellow.setChecked(true);
+                break;
             case ThemeManager.THEME_RANDOM:
                 radioRandom.setChecked(true);
                 break;
@@ -113,6 +119,7 @@ public class ThemeSelectionActivity extends BaseActivity {
         cardRose.setOnClickListener(v -> handleThemeChange(ThemeManager.THEME_ROSE));
         cardSunset.setOnClickListener(v -> handleThemeChange(ThemeManager.THEME_SUNSET));
         cardOcean.setOnClickListener(v -> handleThemeChange(ThemeManager.THEME_OCEAN));
+        cardYellow.setOnClickListener(v -> handleThemeChange(ThemeManager.THEME_YELLOW));
         cardRandom.setOnClickListener(v -> handleThemeChange(ThemeManager.THEME_RANDOM));
     }
 
@@ -133,6 +140,7 @@ public class ThemeSelectionActivity extends BaseActivity {
             radioRose.setChecked(ThemeManager.THEME_ROSE.equals(newTheme));
             radioSunset.setChecked(ThemeManager.THEME_SUNSET.equals(newTheme));
             radioOcean.setChecked(ThemeManager.THEME_OCEAN.equals(newTheme));
+            radioYellow.setChecked(ThemeManager.THEME_YELLOW.equals(newTheme));
             radioRandom.setChecked(ThemeManager.THEME_RANDOM.equals(newTheme));
 
             // 3. Restart App to apply to ALL pages

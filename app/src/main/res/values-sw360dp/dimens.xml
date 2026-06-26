@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Action Button dimensions — standard screens (360-399dp width) -->
+    <!-- e.g. Samsung Galaxy S24/S25/S26, most modern phones -->
+    <dimen name="action_btn_container_padding_h">10dp</dimen>
+    <dimen name="action_btn_gap">5dp</dimen>
+    <dimen name="action_btn_padding_start">10dp</dimen>
+    <dimen name="action_btn_padding_end">14dp</dimen>
+    <dimen name="action_btn_padding_v">9dp</dimen>
+    <dimen name="action_btn_icon_size">32dp</dimen>
+    <dimen name="action_btn_icon_inner">16dp</dimen>
+    <dimen name="action_btn_icon_margin">8dp</dimen>
+    <dimen name="action_btn_title_size">14sp</dimen>
+    <dimen name="action_btn_subtitle_size">11sp</dimen>
+</resources>

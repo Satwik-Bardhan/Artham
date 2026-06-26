@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
@@ -13,11 +14,11 @@
         android:id="@+id/dateHeaderTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="02 Feb 2024 (6,7)"
         android:textColor="?attr/chk_textColorSecondary"
         android:textSize="13sp"
         android:layout_gravity="center"
         android:textStyle="bold"
         android:textAllCaps="true"
-        android:letterSpacing="0.05" />
+        android:letterSpacing="0.05"
+        tools:text="18 JUN 2026 (6,7)" />
 </LinearLayout>

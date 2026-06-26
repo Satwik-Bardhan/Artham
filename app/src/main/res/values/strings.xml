@@ -291,4 +291,8 @@
     <string name="auto_backup">Auto Backup</string>
     <string name="enabled">Enabled</string>
 
+    <!-- App Update Notification -->
+    <string name="updates_available">Updates Available !</string>
+    <string name="update_badge_desc">App update available</string>
+
 </resources>

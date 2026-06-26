@@ -43,12 +43,12 @@ public class TransactionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
     /**
      * Data class representing a date header with transaction counts.
      */
-    static class DateHeaderInfo {
-        final String dateText;
-        final int inCount;
-        final int outCount;
+    public static class DateHeaderInfo {
+        public final String dateText;
+        public final int inCount;
+        public final int outCount;
 
-        DateHeaderInfo(String dateText, int inCount, int outCount) {
+        public DateHeaderInfo(String dateText, int inCount, int outCount) {
             this.dateText = dateText;
             this.inCount = inCount;
             this.outCount = outCount;
@@ -163,20 +163,6 @@ public class TransactionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
     private List<Object> groupTransactionsByDate(List<TransactionModel> transactions) {
         if (transactions == null || transactions.isEmpty()) return new ArrayList<>();
-
-        // First, compute running balances by sorting ascending (oldest first)
-        List<TransactionModel> chronological = new ArrayList<>(transactions);
-        Collections.sort(chronological, (t1, t2) -> Long.compare(t1.getTimestamp(), t2.getTimestamp()));
-
-        double balance = 0.0;
-        for (TransactionModel t : chronological) {
-            if ("IN".equalsIgnoreCase(t.getType())) {
-                balance += t.getAmount();
-            } else {
-                balance -= t.getAmount();
-            }
-            t.setRunningBalance(balance);
-        }
 
         // Sort descending (Newest first) for display
         List<TransactionModel> sortedList = new ArrayList<>(transactions);

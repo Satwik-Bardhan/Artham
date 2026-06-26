@@ -9,20 +9,20 @@
     tools:context=".TransactionDetailsActivity">
 
     <!-- ═══════════════════════════════════════════════════
-         HEADER — Matching app-wide style
+         HEADER — Clean compact toolbar
          ═══════════════════════════════════════════════════ -->
     <androidx.cardview.widget.CardView
         android:id="@+id/headerContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:cardBackgroundColor="?attr/chk_headerColor"
-        android:layout_marginEnd="12dp"
         android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        app:cardBackgroundColor="?attr/chk_headerColor"
         app:cardCornerRadius="8dp"
         app:cardElevation="0dp"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        app:layout_constraintTop_toTopOf="parent">
 
         <RelativeLayout
             android:layout_width="match_parent"
@@ -35,6 +35,7 @@
                 android:layout_height="36dp"
                 android:layout_alignParentStart="true"
                 android:layout_centerVertical="true"
+                android:background="?attr/selectableItemBackgroundBorderless"
                 android:clickable="true"
                 android:contentDescription="Back"
                 android:focusable="true"
@@ -54,16 +55,16 @@
                     android:layout_height="wrap_content"
                     android:text="Entry Details"
                     android:textColor="?attr/chk_textColorPrimary"
-                    android:textSize="24sp"
+                    android:textSize="18sp"
                     android:textStyle="bold" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
+                    android:layout_marginTop="2dp"
                     android:text="Transaction overview"
                     android:textColor="?attr/chk_textColorSecondary"
-                    android:textSize="13sp" />
+                    android:textSize="12sp" />
             </LinearLayout>
 
             <ImageView
@@ -72,6 +73,7 @@
                 android:layout_height="36dp"
                 android:layout_alignParentEnd="true"
                 android:layout_centerVertical="true"
+                android:background="?attr/selectableItemBackgroundBorderless"
                 android:clickable="true"
                 android:contentDescription="Options"
                 android:focusable="true"
@@ -100,145 +102,166 @@
             android:paddingBottom="16dp">
 
             <!-- ─────────────────────────────────────────
-                 HERO: Amount + Type Badge
+                 HERO CARD — Amount + Type Badge
                  ───────────────────────────────────────── -->
-            <LinearLayout
-                android:id="@+id/cardEntry"
+            <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:paddingTop="36dp"
-                android:paddingBottom="28dp">
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginTop="12dp"
+                app:cardBackgroundColor="?attr/chk_surfaceColor"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp">
 
-                <!-- Type icon in a soft circle -->
-                <FrameLayout
-                    android:layout_width="56dp"
-                    android:layout_height="56dp">
-
-                    <ImageView
-                        android:id="@+id/typeIcon"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:background="@drawable/bg_circle_soft"
-                        android:contentDescription="Type"
-                        android:padding="14dp"
-                        android:src="@drawable/ic_minus"
-                        app:tint="?attr/chk_expenseColor" />
-                </FrameLayout>
-
-                <!-- Amount -->
-                <TextView
-                    android:id="@+id/detailAmount"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="14dp"
-                    android:text="₹ 0.00"
-                    android:textColor="?attr/chk_expenseColor"
-                    android:textSize="34sp"
-                    android:textStyle="bold"
-                    android:letterSpacing="-0.02" />
-
-                <!-- Type chip + Date -->
                 <LinearLayout
-                    android:layout_width="wrap_content"
+                    android:id="@+id/cardEntry"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:paddingTop="32dp"
+                    android:paddingBottom="28dp">
 
-                    <TextView
-                        android:id="@+id/detailType"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/bg_rounded_tag"
-                        android:paddingHorizontal="10dp"
-                        android:paddingVertical="3dp"
-                        android:text="OUT"
-                        android:textColor="?attr/chk_textColorPrimary"
-                        android:textSize="11sp"
-                        android:textStyle="bold"
-                        android:letterSpacing="0.06" />
-
-                    <View
-                        android:layout_width="4dp"
-                        android:layout_height="4dp"
-                        android:layout_marginHorizontal="8dp"
-                        android:background="@drawable/circle_shape"
-                        android:backgroundTint="?attr/chk_textColorHint"
-                        android:alpha="0.5" />
-
-                    <TextView
-                        android:id="@+id/detailDate"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="24 Nov 2025, 01:02 PM"
-                        android:textColor="?attr/chk_textColorSecondary"
-                        android:textSize="13sp" />
-                </LinearLayout>
-            </LinearLayout>
-
-            <!-- ─────────────────────────────────────────
-                 NOTE CARD — Standalone, prominent
-                 ───────────────────────────────────────── -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:paddingHorizontal="16dp"
-                android:paddingVertical="14dp">
-
-                    <androidx.cardview.widget.CardView
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        android:layout_marginEnd="14dp"
-                        app:cardBackgroundColor="#332196F3"
-                        app:cardCornerRadius="8dp"
-                        app:cardElevation="0dp">
+                    <!-- Type icon in a soft circle -->
+                    <FrameLayout
+                        android:layout_width="64dp"
+                        android:layout_height="64dp">
 
                         <ImageView
+                            android:id="@+id/typeIcon"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
-                            android:padding="10dp"
-                            android:src="@drawable/ic_notes"
-                            app:tint="?attr/chk_primary_blue" />
-                    </androidx.cardview.widget.CardView>
+                            android:background="@drawable/bg_circle_soft"
+                            android:contentDescription="Type"
+                            android:padding="16dp"
+                            android:src="@drawable/ic_minus"
+                            app:tint="?attr/chk_expenseColor" />
+                    </FrameLayout>
 
-                    <LinearLayout
-                        android:layout_width="0dp"
+                    <!-- Amount -->
+                    <TextView
+                        android:id="@+id/detailAmount"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
+                        android:layout_marginTop="16dp"
+                        android:letterSpacing="-0.02"
+                        android:text="₹ 0.00"
+                        android:textColor="?attr/chk_expenseColor"
+                        android:textSize="36sp"
+                        android:textStyle="bold" />
+
+                    <!-- Type chip + Date -->
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
 
                         <TextView
+                            android:id="@+id/detailType"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Note"
-                            android:textColor="?attr/chk_textColorHint"
-                            android:textSize="11sp"
-                            android:letterSpacing="0.04" />
-
-                        <TextView
-                            android:id="@+id/detailRemark"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
-                            android:text="No details provided"
+                            android:background="@drawable/bg_rounded_tag"
+                            android:letterSpacing="0.06"
+                            android:paddingHorizontal="12dp"
+                            android:paddingVertical="4dp"
+                            android:text="OUT"
                             android:textColor="?attr/chk_textColorPrimary"
-                            android:textSize="15sp"
+                            android:textSize="11sp"
                             android:textStyle="bold" />
+
+                        <View
+                            android:layout_width="4dp"
+                            android:layout_height="4dp"
+                            android:layout_marginHorizontal="10dp"
+                            android:alpha="0.5"
+                            android:background="@drawable/circle_shape"
+                            android:backgroundTint="?attr/chk_textColorHint" />
+
+                        <TextView
+                            android:id="@+id/detailDate"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="24 Nov 2025, 01:02 PM"
+                            android:textColor="?attr/chk_textColorSecondary"
+                            android:textSize="13sp" />
                     </LinearLayout>
-            </LinearLayout>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
 
             <!-- ─────────────────────────────────────────
-                 DETAILS CARD — Grouped rows
+                 DETAILS CARD — Grouped info rows
                  ───────────────────────────────────────── -->
-            <LinearLayout
+            <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:paddingVertical="4dp">
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginTop="12dp"
+                app:cardBackgroundColor="?attr/chk_surfaceColor"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingVertical="6dp">
+
+                    <!-- Note Row -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:paddingHorizontal="16dp"
+                        android:paddingVertical="14dp">
+
+                        <FrameLayout
+                            android:layout_width="42dp"
+                            android:layout_height="42dp"
+                            android:layout_marginEnd="14dp"
+                            android:background="@drawable/bg_detail_icon_blue">
+
+                            <ImageView
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:padding="10dp"
+                                android:src="@drawable/ic_notes"
+                                app:tint="?attr/chk_primary_blue" />
+                        </FrameLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:letterSpacing="0.04"
+                                android:text="Note"
+                                android:textColor="?attr/chk_textColorHint"
+                                android:textSize="11sp" />
+
+                            <TextView
+                                android:id="@+id/detailRemark"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="3dp"
+                                android:text="No details provided"
+                                android:textColor="?attr/chk_textColorPrimary"
+                                android:textSize="15sp" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginStart="72dp"
+                        android:layout_marginEnd="16dp"
+                        android:background="?attr/chk_dividerHorizontal" />
 
                     <!-- Category Row -->
                     <LinearLayout
@@ -247,23 +270,21 @@
                         android:gravity="center_vertical"
                         android:orientation="horizontal"
                         android:paddingHorizontal="16dp"
-                        android:paddingVertical="13dp">
+                        android:paddingVertical="14dp">
 
-                        <androidx.cardview.widget.CardView
-                            android:layout_width="40dp"
-                            android:layout_height="40dp"
+                        <FrameLayout
+                            android:layout_width="42dp"
+                            android:layout_height="42dp"
                             android:layout_marginEnd="14dp"
-                            app:cardBackgroundColor="#33E91E63"
-                            app:cardCornerRadius="8dp"
-                            app:cardElevation="0dp">
+                            android:background="@drawable/bg_detail_icon_pink">
 
                             <ImageView
                                 android:layout_width="match_parent"
                                 android:layout_height="match_parent"
                                 android:padding="10dp"
                                 android:src="@drawable/ic_category"
-                                app:tint="?attr/chk_primary_blue" />
-                        </androidx.cardview.widget.CardView>
+                                app:tint="#E91E63" />
+                        </FrameLayout>
 
                         <LinearLayout
                             android:layout_width="0dp"
@@ -274,22 +295,28 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
+                                android:letterSpacing="0.04"
                                 android:text="Category"
                                 android:textColor="?attr/chk_textColorHint"
-                                android:textSize="11sp"
-                                android:letterSpacing="0.04" />
+                                android:textSize="11sp" />
 
                             <TextView
                                 android:id="@+id/detailCategory"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_marginTop="2dp"
+                                android:layout_marginTop="3dp"
                                 android:text="General"
                                 android:textColor="?attr/chk_textColorPrimary"
-                                android:textSize="15sp"
-                                android:textStyle="bold" />
+                                android:textSize="15sp" />
                         </LinearLayout>
                     </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginStart="72dp"
+                        android:layout_marginEnd="16dp"
+                        android:background="?attr/chk_dividerHorizontal" />
 
                     <!-- Payment Mode Row -->
                     <LinearLayout
@@ -298,23 +325,21 @@
                         android:gravity="center_vertical"
                         android:orientation="horizontal"
                         android:paddingHorizontal="16dp"
-                        android:paddingVertical="13dp">
+                        android:paddingVertical="14dp">
 
-                        <androidx.cardview.widget.CardView
-                            android:layout_width="40dp"
-                            android:layout_height="40dp"
+                        <FrameLayout
+                            android:layout_width="42dp"
+                            android:layout_height="42dp"
                             android:layout_marginEnd="14dp"
-                            app:cardBackgroundColor="#33FF9800"
-                            app:cardCornerRadius="8dp"
-                            app:cardElevation="0dp">
+                            android:background="@drawable/bg_detail_icon_orange">
 
                             <ImageView
                                 android:layout_width="match_parent"
                                 android:layout_height="match_parent"
                                 android:padding="10dp"
                                 android:src="@drawable/ic_payment"
-                                app:tint="?attr/chk_primary_blue" />
-                        </androidx.cardview.widget.CardView>
+                                app:tint="#FF9800" />
+                        </FrameLayout>
 
                         <LinearLayout
                             android:layout_width="0dp"
@@ -325,20 +350,19 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
+                                android:letterSpacing="0.04"
                                 android:text="Payment Mode"
                                 android:textColor="?attr/chk_textColorHint"
-                                android:textSize="11sp"
-                                android:letterSpacing="0.04" />
+                                android:textSize="11sp" />
 
                             <TextView
                                 android:id="@+id/detailPaymentMode"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_marginTop="2dp"
+                                android:layout_marginTop="3dp"
                                 android:text="Cash"
                                 android:textColor="?attr/chk_textColorPrimary"
-                                android:textSize="15sp"
-                                android:textStyle="bold" />
+                                android:textSize="15sp" />
                         </LinearLayout>
                     </LinearLayout>
 
@@ -353,7 +377,8 @@
                         <View
                             android:layout_width="match_parent"
                             android:layout_height="1dp"
-                            android:layout_marginStart="68dp"
+                            android:layout_marginStart="72dp"
+                            android:layout_marginEnd="16dp"
                             android:background="?attr/chk_dividerHorizontal" />
 
                         <LinearLayout
@@ -362,23 +387,21 @@
                             android:gravity="center_vertical"
                             android:orientation="horizontal"
                             android:paddingHorizontal="16dp"
-                            android:paddingVertical="13dp">
+                            android:paddingVertical="14dp">
 
-                            <androidx.cardview.widget.CardView
-                                android:layout_width="40dp"
-                                android:layout_height="40dp"
+                            <FrameLayout
+                                android:layout_width="42dp"
+                                android:layout_height="42dp"
                                 android:layout_marginEnd="14dp"
-                                app:cardBackgroundColor="#334CAF50"
-                                app:cardCornerRadius="8dp"
-                                app:cardElevation="0dp">
+                                android:background="@drawable/bg_detail_icon_green">
 
                                 <ImageView
                                     android:layout_width="match_parent"
                                     android:layout_height="match_parent"
                                     android:padding="10dp"
                                     android:src="@drawable/ic_receipt_long"
-                                    app:tint="?attr/chk_primary_blue" />
-                            </androidx.cardview.widget.CardView>
+                                    app:tint="#4CAF50" />
+                            </FrameLayout>
 
                             <LinearLayout
                                 android:layout_width="0dp"
@@ -389,20 +412,19 @@
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
+                                    android:letterSpacing="0.04"
                                     android:text="Tax / GST Details"
                                     android:textColor="?attr/chk_textColorHint"
-                                    android:textSize="11sp"
-                                    android:letterSpacing="0.04" />
+                                    android:textSize="11sp" />
 
                                 <TextView
                                     android:id="@+id/detailTax"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:layout_marginTop="2dp"
+                                    android:layout_marginTop="3dp"
                                     android:text="0% Tax"
                                     android:textColor="?attr/chk_textColorPrimary"
-                                    android:textSize="15sp"
-                                    android:textStyle="bold" />
+                                    android:textSize="15sp" />
                             </LinearLayout>
                         </LinearLayout>
                     </LinearLayout>
@@ -418,7 +440,8 @@
                         <View
                             android:layout_width="match_parent"
                             android:layout_height="1dp"
-                            android:layout_marginStart="68dp"
+                            android:layout_marginStart="72dp"
+                            android:layout_marginEnd="16dp"
                             android:background="?attr/chk_dividerHorizontal" />
 
                         <LinearLayout
@@ -427,23 +450,21 @@
                             android:gravity="center_vertical"
                             android:orientation="horizontal"
                             android:paddingHorizontal="16dp"
-                            android:paddingVertical="13dp">
+                            android:paddingVertical="14dp">
 
-                            <androidx.cardview.widget.CardView
-                                android:layout_width="40dp"
-                                android:layout_height="40dp"
+                            <FrameLayout
+                                android:layout_width="42dp"
+                                android:layout_height="42dp"
                                 android:layout_marginEnd="14dp"
-                                app:cardBackgroundColor="#33673AB7"
-                                app:cardCornerRadius="8dp"
-                                app:cardElevation="0dp">
+                                android:background="@drawable/bg_detail_icon_purple">
 
                                 <ImageView
                                     android:layout_width="match_parent"
                                     android:layout_height="match_parent"
                                     android:padding="10dp"
                                     android:src="@drawable/ic_person"
-                                    app:tint="?attr/chk_primary_blue" />
-                            </androidx.cardview.widget.CardView>
+                                    app:tint="#673AB7" />
+                            </FrameLayout>
 
                             <LinearLayout
                                 android:layout_width="0dp"
@@ -454,20 +475,19 @@
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
+                                    android:letterSpacing="0.04"
                                     android:text="Party"
                                     android:textColor="?attr/chk_textColorHint"
-                                    android:textSize="11sp"
-                                    android:letterSpacing="0.04" />
+                                    android:textSize="11sp" />
 
                                 <TextView
                                     android:id="@+id/detailParty"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:layout_marginTop="2dp"
+                                    android:layout_marginTop="3dp"
                                     android:text="John Doe"
                                     android:textColor="?attr/chk_textColorPrimary"
-                                    android:textSize="15sp"
-                                    android:textStyle="bold" />
+                                    android:textSize="15sp" />
                             </LinearLayout>
                         </LinearLayout>
                     </LinearLayout>
@@ -483,7 +503,8 @@
                         <View
                             android:layout_width="match_parent"
                             android:layout_height="1dp"
-                            android:layout_marginStart="68dp"
+                            android:layout_marginStart="72dp"
+                            android:layout_marginEnd="16dp"
                             android:background="?attr/chk_dividerHorizontal" />
 
                         <LinearLayout
@@ -492,23 +513,21 @@
                             android:gravity="center_vertical"
                             android:orientation="horizontal"
                             android:paddingHorizontal="16dp"
-                            android:paddingVertical="13dp">
+                            android:paddingVertical="14dp">
 
-                            <androidx.cardview.widget.CardView
-                                android:layout_width="40dp"
-                                android:layout_height="40dp"
+                            <FrameLayout
+                                android:layout_width="42dp"
+                                android:layout_height="42dp"
                                 android:layout_marginEnd="14dp"
-                                app:cardBackgroundColor="#334CAF50"
-                                app:cardCornerRadius="8dp"
-                                app:cardElevation="0dp">
+                                android:background="@drawable/bg_detail_icon_green">
 
                                 <ImageView
                                     android:layout_width="match_parent"
                                     android:layout_height="match_parent"
                                     android:padding="10dp"
                                     android:src="@drawable/ic_label"
-                                    app:tint="?attr/chk_primary_blue" />
-                            </androidx.cardview.widget.CardView>
+                                    app:tint="#4CAF50" />
+                            </FrameLayout>
 
                             <LinearLayout
                                 android:layout_width="0dp"
@@ -519,55 +538,62 @@
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
+                                    android:letterSpacing="0.04"
                                     android:text="Tags"
                                     android:textColor="?attr/chk_textColorHint"
-                                    android:textSize="11sp"
-                                    android:letterSpacing="0.04" />
+                                    android:textSize="11sp" />
 
                                 <TextView
                                     android:id="@+id/detailTags"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:layout_marginTop="2dp"
+                                    android:layout_marginTop="3dp"
                                     android:text="Personal"
                                     android:textColor="?attr/chk_textColorPrimary"
-                                    android:textSize="15sp"
-                                    android:textStyle="bold" />
+                                    android:textSize="15sp" />
                             </LinearLayout>
                         </LinearLayout>
                     </LinearLayout>
-
-            </LinearLayout>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
 
             <!-- ─────────────────────────────────────────
-                 RUNNING BALANCE — Expandable row
+                 RUNNING BALANCE CARD — Expandable
                  ───────────────────────────────────────── -->
-            <LinearLayout
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginTop="12dp"
+                app:cardBackgroundColor="?attr/chk_surfaceColor"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp">
+
+                <LinearLayout
                     android:id="@+id/btnViewRunningBalance"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:background="?attr/selectableItemBackground"
                     android:clickable="true"
                     android:focusable="true"
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
                     android:paddingHorizontal="16dp"
-                    android:paddingVertical="14dp">
+                    android:paddingVertical="16dp">
 
-                    <androidx.cardview.widget.CardView
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
+                    <FrameLayout
+                        android:layout_width="42dp"
+                        android:layout_height="42dp"
                         android:layout_marginEnd="14dp"
-                        app:cardBackgroundColor="#33009688"
-                        app:cardCornerRadius="8dp"
-                        app:cardElevation="0dp">
+                        android:background="@drawable/bg_detail_icon_teal">
 
                         <ImageView
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
                             android:padding="10dp"
                             android:src="@drawable/ic_account_balance_wallet"
-                            app:tint="?attr/chk_primary_blue" />
-                    </androidx.cardview.widget.CardView>
+                            app:tint="#009688" />
+                    </FrameLayout>
 
                     <LinearLayout
                         android:layout_width="0dp"
@@ -587,7 +613,7 @@
                             android:id="@+id/runningBalanceLabel"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
+                            android:layout_marginTop="3dp"
                             android:text="Tap to view balance impact"
                             android:textColor="?attr/chk_textColorHint"
                             android:textSize="11sp" />
@@ -596,10 +622,10 @@
                             android:id="@+id/runningBalanceAmount"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="6dp"
+                            android:layout_marginTop="8dp"
                             android:text="₹ 0.00"
                             android:textColor="?attr/chk_textColorPrimary"
-                            android:textSize="20sp"
+                            android:textSize="22sp"
                             android:textStyle="bold"
                             android:visibility="gone" />
                     </LinearLayout>
@@ -610,7 +636,8 @@
                         android:layout_height="22dp"
                         android:src="@drawable/ic_expand_more"
                         app:tint="?attr/chk_textColorHint" />
-            </LinearLayout>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
 
             <!-- ─────────────────────────────────────────
                  TRUST BADGES — Cloud sync + security
@@ -618,7 +645,7 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
+                android:layout_marginTop="24dp"
                 android:alpha="0.7"
                 android:gravity="center"
                 android:orientation="vertical">
@@ -661,40 +688,39 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="6dp"
+                        android:letterSpacing="0.04"
                         android:text="100% Safe &amp; Secure"
                         android:textColor="?attr/chk_incomeColor"
                         android:textSize="10sp"
-                        android:textStyle="bold"
-                        android:letterSpacing="0.04" />
+                        android:textStyle="bold" />
                 </LinearLayout>
             </LinearLayout>
 
             <!-- ─────────────────────────────────────────
-                 EDIT BUTTON — Inline at end of content
+                 EDIT BUTTON
                  ───────────────────────────────────────── -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingHorizontal="16dp"
                 android:layout_marginTop="24dp"
-                android:paddingBottom="24dp">
+                android:paddingBottom="24dp"
+                android:paddingHorizontal="16dp">
 
-                <com.google.android.material.button.MaterialButton
+                <Button
                     android:id="@+id/btnEditTransaction"
                     android:layout_width="match_parent"
-                    android:layout_height="50dp"
-                    android:backgroundTint="?attr/chk_primary_blue"
-                    android:stateListAnimator="@null"
+                    android:layout_height="52dp"
+                    android:background="@drawable/button_primary"
+                    android:drawableStart="@drawable/ic_edit"
+                    android:drawablePadding="8dp"
+                    android:drawableTint="@android:color/white"
+                    android:gravity="center"
                     android:text="Edit Entry"
+                    android:textAllCaps="false"
                     android:textColor="@android:color/white"
                     android:textSize="15sp"
                     android:textStyle="bold"
-                    android:letterSpacing="0.02"
-                    app:cornerRadius="12dp"
-                    app:elevation="0dp"
-                    app:icon="@drawable/ic_edit"
-                    app:iconGravity="textStart"
-                    app:iconTint="@android:color/white" />
+                    app:backgroundTint="@null" />
             </LinearLayout>
 
         </LinearLayout>

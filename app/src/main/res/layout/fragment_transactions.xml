@@ -16,7 +16,8 @@
         android:scrollbars="vertical"
         android:overScrollMode="never"
         android:background="?attr/chk_backgroundColor"
-        tools:listitem="@layout/item_transaction_card" />
+        tools:listitem="@layout/item_transaction_card"
+        tools:itemCount="5" />
 
     <LinearLayout
         android:id="@+id/emptyStateLayout"

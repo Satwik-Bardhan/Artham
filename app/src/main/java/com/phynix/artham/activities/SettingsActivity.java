@@ -31,6 +31,9 @@ import com.phynix.artham.utils.NavPillAnimator;
 import com.phynix.artham.utils.ThemeManager;
 import com.phynix.artham.utils.OnboardingManager;
 import com.phynix.artham.utils.OnboardingOverlay;
+import com.phynix.artham.utils.UpdateChecker;
+import android.view.animation.Animation;
+import android.view.animation.TranslateAnimation;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -119,6 +122,60 @@ public class SettingsActivity extends BaseActivity {
                 binding.versionText.setText("Version 1.2");
             }
         }
+
+        // Check for app updates
+        checkForAppUpdate();
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    //  APP UPDATE CHECK
+    // ═══════════════════════════════════════════════════════════
+
+    private void checkForAppUpdate() {
+        UpdateChecker checker = UpdateChecker.getInstance();
+
+        // If we already checked and update is available, show immediately
+        if (checker.hasChecked() && checker.isUpdateAvailable()) {
+            showUpdateIndicators();
+            return;
+        }
+
+        // Otherwise, check now
+        checker.checkForUpdate(this, updateAvailable -> {
+            if (updateAvailable && !isDestroyed() && !isFinishing()) {
+                showUpdateIndicators();
+            }
+        });
+    }
+
+    private void showUpdateIndicators() {
+        // Show the speech bubble popup above ARTHAM text
+        if (binding.updateBubbleContainer != null) {
+            binding.updateBubbleContainer.setVisibility(View.VISIBLE);
+            animateBubble();
+        }
+
+        // Show the notification dot on the Settings nav icon
+        View dot = binding.bottomNavigation.getRoot().findViewById(R.id.settingsUpdateDot);
+        if (dot != null) {
+            dot.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void animateBubble() {
+        if (binding.updateBubbleContainer == null) return;
+
+        // Gentle floating bounce animation
+        TranslateAnimation bounce = new TranslateAnimation(
+                Animation.RELATIVE_TO_SELF, 0f,
+                Animation.RELATIVE_TO_SELF, 0f,
+                Animation.RELATIVE_TO_SELF, 0f,
+                Animation.RELATIVE_TO_SELF, -0.15f);
+        bounce.setDuration(800);
+        bounce.setRepeatCount(Animation.INFINITE);
+        bounce.setRepeatMode(Animation.REVERSE);
+        bounce.setInterpolator(new android.view.animation.AccelerateDecelerateInterpolator());
+        binding.updateBubbleContainer.startAnimation(bounce);
     }
 
 
@@ -157,6 +214,11 @@ public class SettingsActivity extends BaseActivity {
 
         if (binding.brandTitle != null) {
             binding.brandTitle.setOnClickListener(v -> openPlayStore());
+        }
+
+        // Tapping the speech bubble also opens Play Store
+        if (binding.updateBubbleContainer != null) {
+            binding.updateBubbleContainer.setOnClickListener(v -> openPlayStore());
         }
     }
 

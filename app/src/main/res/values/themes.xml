@@ -275,6 +275,43 @@
         <item name="buttonStyle">@style/ProfessionalButton</item>
     </style>
 
+    <style name="Theme.Artham.Yellow" parent="Theme.MaterialComponents.NoActionBar">
+        <item name="colorPrimary">@color/yellow_primary</item>
+        <item name="colorPrimaryDark">@color/yellow_primary_dark</item>
+        <item name="colorSecondary">@color/yellow_secondary</item>
+        <item name="android:colorBackground">@color/yellow_background</item>
+        <item name="colorSurface">@color/yellow_surface</item>
+        <item name="android:statusBarColor">@color/yellow_background</item>
+        <item name="android:windowLightStatusBar">false</item>
+
+        <item name="chk_backgroundColor">@color/yellow_background</item>
+        <item name="chk_surfaceColor">@color/yellow_surface</item>
+        <item name="chk_dividerHorizontal">@color/yellow_divider</item>
+        <item name="chk_dividerVertical">@color/yellow_divider</item>
+        <item name="chk_dividerColor">@color/yellow_divider</item> <item name="chk_selectedItemColor">@color/yellow_selected_item</item>
+        <item name="chk_textColorPrimary">@color/yellow_text_primary</item>
+        <item name="chk_textColorSecondary">@color/yellow_text_secondary</item>
+        <item name="chk_textColorHint">@color/yellow_text_hint</item>
+        <item name="android:textColorPrimary">@color/yellow_text_primary</item>
+
+        <item name="chk_primary_blue">@color/yellow_accent</item>
+        <item name="chk_secondary_green">@color/yellow_secondary</item>
+        <item name="chk_incomeColor">@color/income_green</item>
+        <item name="chk_expenseColor">@color/expense_red</item>
+        <item name="chk_balanceColor">@color/yellow_balance</item>
+
+        <item name="chk_bottomNavIconTextColor">@color/yellow_text_secondary</item>
+        <item name="chk_bottomNavSelectedColor">@color/yellow_primary</item>
+        <item name="chk_bottomNavBorderColor">@color/yellow_divider</item>
+
+        <item name="chk_card_start">#1A1408</item>
+        <item name="chk_card_end">#6B5310</item>
+        <item name="chk_splash_wave">@color/splash_wave_yellow</item>
+        <item name="chk_headerColor">@color/yellow_header</item>
+
+        <item name="buttonStyle">@style/ProfessionalButton</item>
+    </style>
+
     <style name="Theme.Artham.Dialog" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <item name="android:windowIsFloating">true</item>
         <item name="android:windowIsTranslucent">true</item>

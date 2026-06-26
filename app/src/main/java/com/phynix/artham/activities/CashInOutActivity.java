@@ -36,6 +36,7 @@ import androidx.appcompat.app.AlertDialog;
 
 // Using the newly updated CategoryPickerActivity
 import com.phynix.artham.activities.CategoryPickerActivity;
+import com.phynix.artham.utils.AutoCategorySuggester;
 import com.phynix.artham.utils.CategoryColorUtil;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -105,6 +106,7 @@ public class CashInOutActivity extends BaseActivity {
     private String selectedColorHex = "#9E9E9E"; // Default Grey
     private String selectedParty = null;
     private boolean isSaveAndNew = false;
+    private boolean manualCategorySelected = false; // Track if user manually picked a category
 
     // Timer
     private final Handler timeHandler = new Handler(Looper.getMainLooper());
@@ -150,6 +152,9 @@ public class CashInOutActivity extends BaseActivity {
 
         // Attach amount input validation: max 15 digits before decimal, 2 after
         amountEditText.addTextChangedListener(AmountFormatter.createAmountInputWatcher(amountEditText));
+
+        // ── Auto Category Suggestion: analyze remark text ──
+        setupAutoCategorySuggestion();
 
         // ── Onboarding: Show tooltips on first visit ──
         checkAndShowOnboarding();
@@ -391,6 +396,7 @@ public class CashInOutActivity extends BaseActivity {
                         int selectedIconRes = result.getData().getIntExtra("category_icon_res", 0);
 
                         if (selectedCategory != null) {
+                            manualCategorySelected = true; // User explicitly picked a category
                             selectedCategoryTextView.setText(selectedCategory);
                             selectedCategoryTextView.setTextColor(ContextCompat.getColor(this, R.color.primary_blue));
 
@@ -542,6 +548,7 @@ public class CashInOutActivity extends BaseActivity {
 
         selectedCategory = "Other";
         selectedColorHex = "#9E9E9E";
+        manualCategorySelected = false; // Reset so auto-suggest works again
 
         // Reset Visuals
         selectedIconContainer.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor(selectedColorHex)));
@@ -870,6 +877,69 @@ public class CashInOutActivity extends BaseActivity {
         if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             if (requestCode == CONTACTS_PERMISSION_REQUEST_CODE) launchContactPicker();
         }
+    }
+
+    // ===== AUTO CATEGORY SUGGESTION =====
+
+    private void setupAutoCategorySuggestion() {
+        if (remarkEditText == null) return;
+
+        remarkEditText.addTextChangedListener(AutoCategorySuggester.createAutoSuggestWatcher(categoryName -> {
+            try {
+                // Only auto-suggest if the user hasn't manually picked a category
+                if (manualCategorySelected) return;
+
+                if (categoryName != null) {
+                    // Found a match — apply it
+                    com.phynix.artham.models.CategoryModel model = AutoCategorySuggester.getSuggestedCategoryModel(categoryName);
+                    if (model != null) {
+                        selectedCategory = model.getName();
+                        selectedColorHex = model.getColorHex();
+
+                        if (selectedCategoryTextView != null) {
+                            selectedCategoryTextView.setText(selectedCategory);
+                            selectedCategoryTextView.setTextColor(ContextCompat.getColor(CashInOutActivity.this, R.color.primary_blue));
+                        }
+
+                        // Apply color to icon container
+                        if (selectedIconContainer != null) {
+                            try {
+                                selectedIconContainer.setBackgroundTintList(
+                                        ColorStateList.valueOf(Color.parseColor(selectedColorHex)));
+                            } catch (Exception e) {
+                                selectedIconContainer.setBackgroundTintList(
+                                        ColorStateList.valueOf(ContextCompat.getColor(CashInOutActivity.this, R.color.primary_blue)));
+                            }
+                        }
+
+                        // Apply icon
+                        if (selectedCategoryIcon != null) {
+                            selectedCategoryIcon.setImageResource(model.getIconResId());
+                        }
+                    }
+                } else {
+                    // No match — reset to default only if auto-suggested previously
+                    if (!"Other".equals(selectedCategory) && !manualCategorySelected) {
+                        selectedCategory = "Other";
+                        selectedColorHex = "#9E9E9E";
+                        if (selectedCategoryTextView != null) {
+                            selectedCategoryTextView.setText("Select Category");
+                        }
+                        if (selectedIconContainer != null) {
+                            try {
+                                selectedIconContainer.setBackgroundTintList(
+                                        ColorStateList.valueOf(Color.parseColor(selectedColorHex)));
+                            } catch (Exception ignored) {}
+                        }
+                        if (selectedCategoryIcon != null) {
+                            selectedCategoryIcon.setImageResource(CategoryColorUtil.getCategoryIcon("Other"));
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                android.util.Log.e("CashInOutActivity", "Auto-suggest error: " + e.getMessage());
+            }
+        }));
     }
 
     @Override
