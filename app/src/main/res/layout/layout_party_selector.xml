@@ -1,21 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/partySelectorLayout"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
-    android:layout_marginTop="8dp"
-    android:paddingBottom="10dp"
-    android:gravity="top">
+    android:layout_marginTop="4dp"
+    android:paddingBottom="6dp">
 
     <com.google.android.material.textfield.TextInputLayout
-        android:layout_width="0dp"
+        android:id="@+id/partyInputLayout"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
         android:hint="Party (Optional)"
         android:textColorHint="?attr/chk_textColorSecondary"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         app:hintTextColor="?attr/chk_primary_blue"
         app:boxStrokeColor="?attr/chk_primary_blue"
         app:boxStrokeWidth="1dp"
@@ -23,38 +21,38 @@
         app:boxCornerRadiusBottomEnd="12dp"
         app:boxCornerRadiusBottomStart="12dp"
         app:boxCornerRadiusTopEnd="12dp"
-        app:boxCornerRadiusTopStart="12dp"
-        app:startIconTint="?attr/chk_textColorPrimary">
+        app:boxCornerRadiusTopStart="12dp">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/partyTextView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:paddingEnd="52dp"
             android:inputType="textPersonName"
             android:focusable="true"
             android:clickable="true"
             android:textColor="?attr/chk_textColorPrimary"
-            android:textSize="16sp" />
+            android:textSize="14sp" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <FrameLayout
         android:id="@+id/contactBookButton"
-        android:layout_width="56dp"
-        android:layout_height="56dp"
-        android:layout_marginStart="12dp"
-        android:layout_gravity="center"
+        android:layout_width="38dp"
+        android:layout_height="38dp"
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true"
+        android:layout_marginEnd="6dp"
         android:background="@drawable/bg_search_field"
         android:clickable="true"
-        android:focusable="true"
-        android:foreground="?attr/selectableItemBackground">
+        android:focusable="true">
 
         <ImageView
-            android:layout_width="24dp"
-            android:layout_height="24dp"
+            android:layout_width="18dp"
+            android:layout_height="18dp"
             android:layout_gravity="center"
             android:src="@drawable/ic_contacts"
             app:tint="?attr/chk_primary_blue"
             android:contentDescription="Select Contact"/>
     </FrameLayout>
 
-</LinearLayout>
+</RelativeLayout>

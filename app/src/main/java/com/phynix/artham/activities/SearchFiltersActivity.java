@@ -100,6 +100,9 @@ public class SearchFiltersActivity extends BaseActivity {
         selectedCategoryTextView = findViewById(R.id.selectedCategoryTextView);
         categorySelectorCard = findViewById(R.id.categorySelectorCard);
         partySelectorLayout = findViewById(R.id.partySelectorLayout);
+        if (partySelectorLayout != null) {
+            partySelectorLayout.setVisibility(View.GONE);
+        }
 
         // Tags
         filterTagsInput = findViewById(R.id.filterTagsInput);

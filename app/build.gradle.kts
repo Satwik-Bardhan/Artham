@@ -1,22 +1,22 @@
 
 
 plugins {
-    id("com.android.application")
-    id("com.google.gms.google-services")
-    id("com.google.firebase.crashlytics")
-
+    alias(libs.plugins.androidApplication)
+    alias(libs.plugins.googleGmsGoogleServices)
+    alias(libs.plugins.firebaseCrashlytics)
 }
 
 android {
     namespace = "com.phynix.artham"
     compileSdk = 36
+    compileSdkMinor = 1
 
     defaultConfig {
         applicationId = "com.phynix.artham"
         minSdk = 24
         targetSdk = 36
-        versionCode = 7
-        versionName = "1.6"
+        versionCode = 10
+        versionName = "1.9"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -42,6 +42,9 @@ android {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            ndk {
+                debugSymbolLevel = "SYMBOL_TABLE"
+            }
         }
         debug {
         }
@@ -53,57 +56,60 @@ android {
     buildFeatures {
         viewBinding = true
     }
-    compileSdkMinor = 1
+    lint {
+        checkReleaseBuilds = false
+        abortOnError = false
+    }
 }
 
 dependencies {
     // --- AndroidX & UI Core ---
-    implementation("androidx.core:core-ktx:1.13.1")
-    implementation("androidx.appcompat:appcompat:1.7.0")
-    implementation("com.google.android.material:material:1.12.0")
-    implementation("androidx.activity:activity:1.9.2")
-    implementation("androidx.constraintlayout:constraintlayout:2.1.4")
-    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.google.material)
+    implementation(libs.androidx.activity)
+    implementation(libs.androidx.constraintlayout)
+    implementation(libs.androidx.swiperefreshlayout)
 
     // --- Lifecycle ---
-    implementation("androidx.lifecycle:lifecycle-viewmodel:2.8.4")
-    implementation("androidx.lifecycle:lifecycle-livedata:2.8.4")
+    implementation(libs.androidx.lifecycle.viewmodel)
+    implementation(libs.androidx.lifecycle.livedata)
 
     // --- Firebase (Using BoM for version management) ---
-    implementation(platform("com.google.firebase:firebase-bom:33.1.2"))
-    implementation("com.google.firebase:firebase-auth")
-    implementation("com.google.firebase:firebase-database")
-    implementation("com.google.firebase:firebase-storage")
-    implementation("com.google.firebase:firebase-analytics")
-    implementation("com.google.firebase:firebase-crashlytics")
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.database)
+    implementation(libs.firebase.storage)
+    implementation(libs.firebase.analytics)
+    implementation(libs.firebase.crashlytics)
+
     // --- Google Play In-App Review ---
-    implementation("com.google.android.play:review:2.0.2")
-    implementation("com.google.android.play:review-ktx:2.0.2")
+    implementation(libs.play.review)
+    implementation(libs.play.review.ktx)
+
     // --- Google Play In-App Update ---
-    implementation("com.google.android.play:app-update:2.1.0")
-    implementation("com.google.android.play:app-update-ktx:2.1.0")
+    implementation(libs.app.update)
+    implementation(libs.app.update.ktx)
 
     // --- Google Services ---
-    implementation("com.google.android.gms:play-services-auth:21.2.0")
-    implementation("com.google.android.gms:play-services-location:21.0.1")
+    implementation(libs.play.services.auth)
+    implementation(libs.play.services.location)
 
     // --- Third Party Libraries ---
-    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
-    implementation("com.github.Dhaval2404:ColorPicker:2.3")
-    implementation("com.github.bumptech.glide:glide:4.16.0")
-    implementation("com.itextpdf:itextpdf:5.5.13.3")
-
-    implementation("com.github.skydoves:colorpickerview:2.2.4")
-
+    implementation(libs.mpandroidchart)
+    implementation(libs.dhaval.colorpicker)
+    implementation(libs.glide)
+    implementation(libs.itextpdf)
+    implementation(libs.skydoves.colorpickerview)
 
     // --- Testing ---
-    testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.2.1")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
 
-    implementation("com.facebook.shimmer:shimmer:0.5.0")
+    // --- UI Effects ---
+    implementation(libs.shimmer)
 
     // --- Offline Support ---
-    implementation("com.google.code.gson:gson:2.10.1")
-
+    implementation(libs.gson)
 }

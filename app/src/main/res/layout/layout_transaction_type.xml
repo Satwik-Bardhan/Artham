@@ -3,16 +3,16 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingBottom="10dp"
+    android:paddingBottom="6dp"
     android:orientation="vertical">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="12dp"
+        android:layout_marginBottom="6dp"
         android:text="Transaction Type"
         android:textColor="?attr/chk_textColorPrimary"
-        android:textSize="16sp"
+        android:textSize="14sp"
         android:textStyle="bold" />
 
     <LinearLayout
@@ -30,38 +30,40 @@
 
             <RadioButton
                 android:id="@+id/radioIn"
-                android:layout_width="80dp"
-                android:layout_height="40dp"
+                android:layout_width="72dp"
+                android:layout_height="36dp"
                 android:background="@drawable/transaction_type_in_selector"
                 android:button="@android:color/transparent"
                 android:checked="true"
                 android:gravity="center"
                 android:text="IN"
                 android:textColor="@color/transaction_in_text_selector"
+                android:textSize="13sp"
                 android:textStyle="bold" />
 
             <ImageView
                 android:id="@+id/swap_horiz"
-                android:layout_width="42dp"
-                android:layout_height="42dp"
-                android:layout_marginStart="50dp"
-                android:layout_marginEnd="50dp"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_marginStart="24dp"
+                android:layout_marginEnd="24dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:clickable="true"
                 android:focusable="true"
-                android:padding="9dp"
+                android:padding="8dp"
                 android:src="@drawable/ic_swap_horiz"
                 app:tint="?attr/chk_textColorPrimary" />
 
             <RadioButton
                 android:id="@+id/radioOut"
-                android:layout_width="80dp"
-                android:layout_height="40dp"
+                android:layout_width="72dp"
+                android:layout_height="36dp"
                 android:background="@drawable/transaction_type_out_selector"
                 android:button="@android:color/transparent"
                 android:gravity="center"
                 android:text="OUT"
                 android:textColor="@color/transaction_out_text_selector"
+                android:textSize="13sp"
                 android:textStyle="bold" />
         </RadioGroup>
     </LinearLayout>

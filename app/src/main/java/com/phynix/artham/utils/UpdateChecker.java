@@ -7,7 +7,6 @@ import com.google.android.play.core.appupdate.AppUpdateInfo;
 import com.google.android.play.core.appupdate.AppUpdateManager;
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory;
 import com.google.android.play.core.install.model.UpdateAvailability;
-import com.google.android.gms.tasks.Task;
 
 /**
  * Singleton utility that checks for available app updates via the
@@ -24,6 +23,10 @@ import com.google.android.gms.tasks.Task;
 public class UpdateChecker {
 
     private static final String TAG = "UpdateChecker";
+
+    // ⚠️ SET TO true TO TEST THE UPDATE BUBBLE UI
+    // ⚠️ SET BACK TO false BEFORE PUBLISHING TO PLAY STORE
+    public static final boolean DEBUG_TEST_UPDATE = false;
 
     private static volatile UpdateChecker instance;
 
@@ -59,26 +62,36 @@ public class UpdateChecker {
      * @param callback receives true if an update is available, false otherwise
      */
     public void checkForUpdate(Context context, UpdateCheckCallback callback) {
-        try {
-            AppUpdateManager appUpdateManager = AppUpdateManagerFactory.create(context);
-            Task<AppUpdateInfo> appUpdateInfoTask = appUpdateManager.getAppUpdateInfo();
+        if (DEBUG_TEST_UPDATE) {
+            updateAvailable = true;
+            hasChecked = true;
+            if (callback != null) callback.onResult(true);
+            return;
+        }
 
-            appUpdateInfoTask.addOnSuccessListener(appUpdateInfo -> {
-                updateAvailable = (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE);
-                hasChecked = true;
-                Log.d(TAG, "Update check complete. Available: " + updateAvailable);
-                if (callback != null) {
-                    callback.onResult(updateAvailable);
-                }
-            }).addOnFailureListener(e -> {
-                // Failure is expected during development / sideloaded installs
-                Log.w(TAG, "Update check failed (expected if not installed from Play Store): " + e.getMessage());
-                updateAvailable = false;
-                hasChecked = true;
-                if (callback != null) {
-                    callback.onResult(false);
-                }
-            });
+        try {
+            AppUpdateManager appUpdateManager = AppUpdateManagerFactory.create(context.getApplicationContext());
+
+            appUpdateManager.getAppUpdateInfo()
+                .addOnSuccessListener(appUpdateInfo -> {
+                    int availability = appUpdateInfo.updateAvailability();
+                    updateAvailable = (availability == UpdateAvailability.UPDATE_AVAILABLE
+                            || availability == UpdateAvailability.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS);
+                    hasChecked = true;
+                    Log.d(TAG, "Update check complete. Availability=" + availability + ", updateAvailable=" + updateAvailable);
+                    if (callback != null) {
+                        callback.onResult(updateAvailable);
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    // Failure is expected during development / sideloaded installs
+                    Log.w(TAG, "Update check failed: " + e.getClass().getSimpleName() + " - " + e.getMessage());
+                    updateAvailable = false;
+                    hasChecked = true;
+                    if (callback != null) {
+                        callback.onResult(false);
+                    }
+                });
         } catch (Exception e) {
             Log.e(TAG, "Error creating AppUpdateManager", e);
             updateAvailable = false;
@@ -94,7 +107,7 @@ public class UpdateChecker {
      * Call {@link #checkForUpdate(Context, UpdateCheckCallback)} at least once first.
      */
     public boolean isUpdateAvailable() {
-        return updateAvailable;
+        return DEBUG_TEST_UPDATE || updateAvailable;
     }
 
     /**
@@ -105,7 +118,8 @@ public class UpdateChecker {
     }
 
     /**
-     * Resets the cached state (e.g. after the user updates the app).
+     * Resets the cached state so the next call to checkForUpdate
+     * will hit the Play Store again.
      */
     public void reset() {
         updateAvailable = false;

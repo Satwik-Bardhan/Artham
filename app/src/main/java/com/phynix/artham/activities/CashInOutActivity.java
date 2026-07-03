@@ -32,6 +32,7 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AlertDialog;
 
 // Using the newly updated CategoryPickerActivity
@@ -51,8 +52,13 @@ import androidx.lifecycle.ViewModelProvider;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.material.card.MaterialCardView;
+import com.google.android.material.chip.Chip;
+import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
+
+import android.view.KeyEvent;
+import android.view.inputmethod.EditorInfo;
 import com.phynix.artham.models.TransactionModel;
 import com.phynix.artham.utils.AmountFormatter;
 import com.phynix.artham.utils.Constants;
@@ -91,6 +97,7 @@ public class CashInOutActivity extends BaseActivity {
     private View taxDetailsContainer;
     private TextInputLayout taxAmountLayout;
     private TextInputEditText taxAmountEditText, remarkEditText, tagsEditText, partyTextView;
+    private ChipGroup tagsChipGroup;
     private RadioGroup taxTypeToggle;
     private TextView taxBaseAmountTextView, taxCalculatedAmountTextView, taxTotalAmountTextView;
     private EditText amountEditText;
@@ -158,6 +165,23 @@ public class CashInOutActivity extends BaseActivity {
 
         // ── Onboarding: Show tooltips on first visit ──
         checkAndShowOnboarding();
+
+        // ── Unsaved changes: Confirm before discarding ──
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                if (hasUnsavedChanges()) {
+                    new com.google.android.material.dialog.MaterialAlertDialogBuilder(CashInOutActivity.this)
+                            .setTitle("Discard Changes?")
+                            .setMessage("You have unsaved changes. Are you sure you want to go back?")
+                            .setPositiveButton("Discard", (dialog, which) -> finish())
+                            .setNegativeButton("Keep Editing", null)
+                            .show();
+                } else {
+                    finish();
+                }
+            }
+        });
     }
 
     private void observeViewModel() {
@@ -245,6 +269,8 @@ public class CashInOutActivity extends BaseActivity {
         contactBookButton = findViewById(R.id.contactBookButton);
 
         tagsEditText = findViewById(R.id.tagsEditText);
+        tagsChipGroup = findViewById(R.id.tagsChipGroup);
+        setupTagsInput();
 
         saveEntryButton = findViewById(R.id.saveEntryButton);
         saveAndAddNewButton = findViewById(R.id.saveAndAddNewButton);
@@ -322,13 +348,17 @@ public class CashInOutActivity extends BaseActivity {
 
         taxTypeToggle.setOnCheckedChangeListener((group, checkedId) -> recalculateTax());
 
-        voiceInputButton.setOnClickListener(v -> startVoiceInput());
+        if (voiceInputButton != null) {
+            voiceInputButton.setOnClickListener(v -> startVoiceInput());
+        }
 
         if (categorySelectorCard != null) {
             categorySelectorCard.setOnClickListener(v -> openCategorySelector());
         }
 
-        contactBookButton.setOnClickListener(v -> openContactPicker());
+        if (contactBookButton != null) {
+            contactBookButton.setOnClickListener(v -> openContactPicker());
+        }
 
         saveEntryButton.setOnClickListener(v -> saveTransaction(false));
         saveAndAddNewButton.setOnClickListener(v -> saveTransaction(true));
@@ -528,7 +558,7 @@ public class CashInOutActivity extends BaseActivity {
             transaction.setPartyName(party);
         }
 
-        String tags = tagsEditText.getText().toString().trim();
+        String tags = getTagsFromChips();
         if (!tags.isEmpty()) {
             transaction.setTags(tags);
         }
@@ -543,6 +573,7 @@ public class CashInOutActivity extends BaseActivity {
         amountEditText.setText("");
         remarkEditText.setText("");
         tagsEditText.setText("");
+        if (tagsChipGroup != null) tagsChipGroup.removeAllViews();
         selectedCategoryTextView.setText("Select Category");
         partyTextView.setText("");
 
@@ -948,6 +979,21 @@ public class CashInOutActivity extends BaseActivity {
         timeHandler.removeCallbacks(timeRunnable);
     }
 
+    /**
+     * Checks if the user has entered any data that would be lost on back press.
+     */
+    private boolean hasUnsavedChanges() {
+        if (amountEditText != null && amountEditText.getText() != null) {
+            String amount = amountEditText.getText().toString().trim();
+            if (!amount.isEmpty() && !"0".equals(amount)) return true;
+        }
+        if (remarkEditText != null && remarkEditText.getText() != null) {
+            String remark = remarkEditText.getText().toString().trim();
+            if (!remark.isEmpty()) return true;
+        }
+        return false;
+    }
+
     // ===== AUTO REPEAT LOGIC =====
 
     private void showAutoFrequencyDialog() {
@@ -1005,12 +1051,12 @@ public class CashInOutActivity extends BaseActivity {
 
         if (selectedAutoFrequency != null) {
             autoRepeatButton.setSelected(true);
-            autoRepeatText.setText(selectedAutoFrequency);
+            autoRepeatText.setText("Auto · " + selectedAutoFrequency);
             autoRepeatText.setTextColor(ContextCompat.getColor(this, android.R.color.white));
             autoRepeatIcon.setColorFilter(ContextCompat.getColor(this, android.R.color.white));
         } else {
             autoRepeatButton.setSelected(false);
-            autoRepeatText.setText("Auto");
+            autoRepeatText.setText("Auto Add Entries");
             // Reset to theme secondary text color
             android.util.TypedValue typedValue = new android.util.TypedValue();
             getTheme().resolveAttribute(R.attr.chk_textColorSecondary, typedValue, true);
@@ -1051,5 +1097,79 @@ public class CashInOutActivity extends BaseActivity {
                                     .markPageTutorialCompleted(OnboardingManager.PAGE_CASH_IN_OUT))
                     .start();
         }, 600);
+    }
+
+    private void setupTagsInput() {
+        if (tagsEditText == null || tagsChipGroup == null) return;
+        tagsEditText.setOnKeyListener((v, keyCode, event) -> {
+            if (event.getAction() == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_ENTER) {
+                String tagText = tagsEditText.getText().toString().trim();
+                if (!tagText.isEmpty()) {
+                    addTagChip(tagText);
+                    tagsEditText.setText("");
+                }
+                return true;
+            }
+            return false;
+        });
+        tagsEditText.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_NEXT) {
+                String tagText = tagsEditText.getText().toString().trim();
+                if (!tagText.isEmpty()) {
+                    addTagChip(tagText);
+                    tagsEditText.setText("");
+                }
+                return true;
+            }
+            return false;
+        });
+    }
+
+    private void addTagChip(String tag) {
+        if (tagsChipGroup == null) return;
+        // Avoid duplicates
+        for (int i = 0; i < tagsChipGroup.getChildCount(); i++) {
+            View child = tagsChipGroup.getChildAt(i);
+            if (child instanceof Chip) {
+                if (((Chip) child).getText().toString().equalsIgnoreCase(tag)) {
+                    return;
+                }
+            }
+        }
+        Chip chip = new Chip(this);
+        chip.setText(tag);
+        chip.setCloseIconVisible(true);
+        chip.setCheckable(false);
+
+        android.util.TypedValue typedValue = new android.util.TypedValue();
+        getTheme().resolveAttribute(R.attr.chk_primary_blue, typedValue, true);
+        int primaryColor = typedValue.data;
+        getTheme().resolveAttribute(R.attr.chk_surfaceColor, typedValue, true);
+        int surfaceColor = typedValue.data;
+        getTheme().resolveAttribute(R.attr.chk_textColorPrimary, typedValue, true);
+        int textColor = typedValue.data;
+
+        chip.setChipBackgroundColor(ColorStateList.valueOf(surfaceColor));
+        chip.setChipStrokeColor(ColorStateList.valueOf(primaryColor));
+        chip.setChipStrokeWidth(1.0f * getResources().getDisplayMetrics().density);
+        chip.setTextColor(textColor);
+        chip.setCloseIconTint(ColorStateList.valueOf(primaryColor));
+        chip.setChipCornerRadius(6.0f * getResources().getDisplayMetrics().density);
+
+        chip.setOnCloseIconClickListener(v -> tagsChipGroup.removeView(chip));
+        tagsChipGroup.addView(chip);
+    }
+
+    private String getTagsFromChips() {
+        if (tagsChipGroup == null) return "";
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < tagsChipGroup.getChildCount(); i++) {
+            View child = tagsChipGroup.getChildAt(i);
+            if (child instanceof Chip) {
+                if (sb.length() > 0) sb.append(",");
+                sb.append(((Chip) child).getText().toString().trim());
+            }
+        }
+        return sb.toString();
     }
 }

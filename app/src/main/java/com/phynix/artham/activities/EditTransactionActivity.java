@@ -19,6 +19,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.speech.RecognizerIntent;
+import android.text.Editable;
 import android.text.TextUtils;
 import android.util.TypedValue;
 import android.view.MenuItem;
@@ -41,6 +42,7 @@ import com.phynix.artham.utils.CategoryColorUtil;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -49,6 +51,10 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
+import com.google.android.material.chip.Chip;
+import com.google.android.material.chip.ChipGroup;
+import android.view.KeyEvent;
+import android.view.inputmethod.EditorInfo;
 import com.phynix.artham.models.TransactionModel;
 import com.phynix.artham.utils.AmountFormatter;
 import com.phynix.artham.utils.DialogUtils;
@@ -86,6 +92,7 @@ public class EditTransactionActivity extends BaseActivity {
     private TextView createdDateText, updatedDateText;
     private EditText amountEditText;
     private TextInputEditText remarkEditText, tagsEditText, taxAmountEditText;
+    private ChipGroup tagsChipGroup;
     private TextInputLayout taxAmountLayout;
     private CheckBox taxCheckbox;
     private View taxDetailsContainer;
@@ -93,7 +100,8 @@ public class EditTransactionActivity extends BaseActivity {
     private TextView taxBaseAmountTextView, taxCalculatedAmountTextView, taxTotalAmountTextView;
     private RadioGroup inOutToggle, cashOnlineToggle;
     private RadioButton radioIn, radioOut, radioCash, radioOnline, radioCard;
-    private LinearLayout dateSelectorLayout, timeSelectorLayout, partySelectorLayout;
+    private LinearLayout dateSelectorLayout, timeSelectorLayout;
+    private View partySelectorLayout;
 
     // Quick Amount Buttons
     private Button quickAmount100, quickAmount500, quickAmount1000, quickAmount5000;
@@ -110,6 +118,7 @@ public class EditTransactionActivity extends BaseActivity {
     private String currentCashbookId;
     private Calendar calendar;
     private boolean manualCategorySelected = false; // Track if user manually picked a category
+    private boolean hasUserMadeChanges = false; // Track if user modified any field
 
     // --- Activity Launchers ---
     private final ActivityResultLauncher<Intent> categoryLauncher = registerForActivityResult(
@@ -200,6 +209,43 @@ public class EditTransactionActivity extends BaseActivity {
 
         // ── Auto Category Suggestion: analyze remark text ──
         setupAutoCategorySuggestion();
+
+        // ── Unsaved changes: Confirm before discarding ──
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                if (hasUserMadeChanges) {
+                    new com.google.android.material.dialog.MaterialAlertDialogBuilder(EditTransactionActivity.this)
+                            .setTitle("Discard Changes?")
+                            .setMessage("You have unsaved changes. Are you sure you want to go back?")
+                            .setPositiveButton("Discard", (dialog, which) -> finish())
+                            .setNegativeButton("Keep Editing", null)
+                            .show();
+                } else {
+                    finish();
+                }
+            }
+        });
+
+        // Track field changes after initial population
+        setupChangeTracking();
+    }
+
+    /**
+     * Sets up TextWatchers to detect when the user modifies any field.
+     * Called AFTER populateData() so initial population doesn't trigger the flag.
+     */
+    private void setupChangeTracking() {
+        android.text.TextWatcher changeWatcher = new android.text.TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                hasUserMadeChanges = true;
+            }
+            @Override public void afterTextChanged(Editable s) {}
+        };
+
+        if (amountEditText != null) amountEditText.addTextChangedListener(changeWatcher);
+        if (remarkEditText != null) remarkEditText.addTextChangedListener(changeWatcher);
     }
 
     private void initViewModel() {
@@ -257,6 +303,8 @@ public class EditTransactionActivity extends BaseActivity {
         voiceInputButton = findViewById(R.id.voiceInputButton);
 
         tagsEditText = findViewById(R.id.tagsEditText);
+        tagsChipGroup = findViewById(R.id.tagsChipGroup);
+        setupTagsInput();
 
         taxCheckbox = findViewById(R.id.taxCheckbox);
         taxDetailsContainer = findViewById(R.id.taxDetailsContainer);
@@ -321,8 +369,19 @@ public class EditTransactionActivity extends BaseActivity {
 
         if (currentTransaction.getRemark() != null) remarkEditText.setText(currentTransaction.getRemark());
 
-        if (currentTransaction.getTags() != null) {
-            tagsEditText.setText(currentTransaction.getTags().toString().replace("[", "").replace("]", ""));
+        if (tagsChipGroup != null) {
+            tagsChipGroup.removeAllViews();
+        }
+        String currentTags = currentTransaction.getTags();
+        if (currentTags != null && !currentTags.trim().isEmpty()) {
+            String cleanTags = currentTags.replace("[", "").replace("]", "");
+            String[] splitTags = cleanTags.split(",");
+            for (String t : splitTags) {
+                String trimT = t.trim();
+                if (!trimT.isEmpty()) {
+                    addTagChip(trimT);
+                }
+            }
         }
 
         updateDateText();
@@ -373,7 +432,10 @@ public class EditTransactionActivity extends BaseActivity {
         if (timePickerIcon != null) timePickerIcon.setOnClickListener(timeListener);
 
         if (calculatorButton != null) calculatorButton.setOnClickListener(v -> checkAndOpenCalculator());
-        if (voiceInputButton != null) voiceInputButton.setOnClickListener(v -> startVoiceInput());
+        
+        if (voiceInputButton != null) {
+            voiceInputButton.setOnClickListener(v -> startVoiceInput());
+        }
 
         // Setup Quick Amount Buttons
         setupQuickAmountButtons();
@@ -528,7 +590,7 @@ public class EditTransactionActivity extends BaseActivity {
 
             currentTransaction.setRemark(remarkEditText.getText().toString().trim());
 
-            String tagsStr = tagsEditText.getText().toString().trim();
+            String tagsStr = getTagsFromChips();
             currentTransaction.setTags(tagsStr);
             currentTransaction.setAutoFrequency(selectedAutoFrequency);
 
@@ -753,24 +815,50 @@ public class EditTransactionActivity extends BaseActivity {
 
     private String safeEvaluate(String expression) {
         try {
+            // Normalize Unicode operators to standard characters
+            expression = expression.replace("×", "*");
+            expression = expression.replace("÷", "/");
             expression = expression.replace("%", "/100");
 
-            if (expression.contains("+")) {
-                String[] parts = expression.split("\\+");
-                return formatCalcResult(Double.parseDouble(parts[0]) + Double.parseDouble(parts[1]));
-            } else if (expression.contains("-")) {
-                String[] parts = expression.split("-");
-                if (parts.length == 2) {
-                    return formatCalcResult(Double.parseDouble(parts[0]) - Double.parseDouble(parts[1]));
+            // Tokenize the expression into numbers and operators
+            java.util.List<String> tokens = new java.util.ArrayList<>();
+            StringBuilder currentNumber = new StringBuilder();
+
+            for (int i = 0; i < expression.length(); i++) {
+                char c = expression.charAt(i);
+                // Handle negative numbers at the start or after an operator
+                if (c == '-' && (i == 0 || "+-*/".indexOf(expression.charAt(i - 1)) >= 0)) {
+                    currentNumber.append(c);
+                } else if ("+-*/".indexOf(c) >= 0) {
+                    if (currentNumber.length() > 0) {
+                        tokens.add(currentNumber.toString());
+                        currentNumber.setLength(0);
+                    }
+                    tokens.add(String.valueOf(c));
+                } else {
+                    currentNumber.append(c);
                 }
-            } else if (expression.contains("*")) {
-                String[] parts = expression.split("\\*");
-                return formatCalcResult(Double.parseDouble(parts[0]) * Double.parseDouble(parts[1]));
-            } else if (expression.contains("/")) {
-                String[] parts = expression.split("/");
-                return formatCalcResult(Double.parseDouble(parts[0]) / Double.parseDouble(parts[1]));
             }
-            return expression;
+            if (currentNumber.length() > 0) {
+                tokens.add(currentNumber.toString());
+            }
+
+            if (tokens.isEmpty()) return expression;
+
+            // Evaluate left-to-right
+            double result = Double.parseDouble(tokens.get(0));
+            for (int i = 1; i < tokens.size() - 1; i += 2) {
+                String operator = tokens.get(i);
+                double nextNum = Double.parseDouble(tokens.get(i + 1));
+                switch (operator) {
+                    case "+": result += nextNum; break;
+                    case "-": result -= nextNum; break;
+                    case "*": result *= nextNum; break;
+                    case "/": result /= nextNum; break;
+                }
+            }
+
+            return formatCalcResult(result);
         } catch (Exception e) {
             return "Error";
         }
@@ -927,5 +1015,79 @@ public class EditTransactionActivity extends BaseActivity {
                 android.util.Log.e("EditTransactionActivity", "Auto-suggest error: " + e.getMessage());
             }
         }));
+    }
+
+    private void setupTagsInput() {
+        if (tagsEditText == null || tagsChipGroup == null) return;
+        tagsEditText.setOnKeyListener((v, keyCode, event) -> {
+            if (event.getAction() == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_ENTER) {
+                String tagText = tagsEditText.getText().toString().trim();
+                if (!tagText.isEmpty()) {
+                    addTagChip(tagText);
+                    tagsEditText.setText("");
+                }
+                return true;
+            }
+            return false;
+        });
+        tagsEditText.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_NEXT) {
+                String tagText = tagsEditText.getText().toString().trim();
+                if (!tagText.isEmpty()) {
+                    addTagChip(tagText);
+                    tagsEditText.setText("");
+                }
+                return true;
+            }
+            return false;
+        });
+    }
+
+    private void addTagChip(String tag) {
+        if (tagsChipGroup == null) return;
+        // Avoid duplicates
+        for (int i = 0; i < tagsChipGroup.getChildCount(); i++) {
+            View child = tagsChipGroup.getChildAt(i);
+            if (child instanceof Chip) {
+                if (((Chip) child).getText().toString().equalsIgnoreCase(tag)) {
+                    return;
+                }
+            }
+        }
+        Chip chip = new Chip(this);
+        chip.setText(tag);
+        chip.setCloseIconVisible(true);
+        chip.setCheckable(false);
+
+        android.util.TypedValue typedValue = new android.util.TypedValue();
+        getTheme().resolveAttribute(R.attr.chk_primary_blue, typedValue, true);
+        int primaryColor = typedValue.data;
+        getTheme().resolveAttribute(R.attr.chk_surfaceColor, typedValue, true);
+        int surfaceColor = typedValue.data;
+        getTheme().resolveAttribute(R.attr.chk_textColorPrimary, typedValue, true);
+        int textColor = typedValue.data;
+
+        chip.setChipBackgroundColor(ColorStateList.valueOf(surfaceColor));
+        chip.setChipStrokeColor(ColorStateList.valueOf(primaryColor));
+        chip.setChipStrokeWidth(1.0f * getResources().getDisplayMetrics().density);
+        chip.setTextColor(textColor);
+        chip.setCloseIconTint(ColorStateList.valueOf(primaryColor));
+        chip.setChipCornerRadius(6.0f * getResources().getDisplayMetrics().density);
+
+        chip.setOnCloseIconClickListener(v -> tagsChipGroup.removeView(chip));
+        tagsChipGroup.addView(chip);
+    }
+
+    private String getTagsFromChips() {
+        if (tagsChipGroup == null) return "";
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < tagsChipGroup.getChildCount(); i++) {
+            View child = tagsChipGroup.getChildAt(i);
+            if (child instanceof Chip) {
+                if (sb.length() > 0) sb.append(",");
+                sb.append(((Chip) child).getText().toString().trim());
+            }
+        }
+        return sb.toString();
     }
 }

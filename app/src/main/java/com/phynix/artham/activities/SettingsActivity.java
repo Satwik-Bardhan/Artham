@@ -134,13 +134,12 @@ public class SettingsActivity extends BaseActivity {
     private void checkForAppUpdate() {
         UpdateChecker checker = UpdateChecker.getInstance();
 
-        // If we already checked and update is available, show immediately
-        if (checker.hasChecked() && checker.isUpdateAvailable()) {
+        // If we already know an update is available, show immediately
+        if (checker.isUpdateAvailable()) {
             showUpdateIndicators();
-            return;
         }
 
-        // Otherwise, check now
+        // Always perform a fresh check (the API caches internally)
         checker.checkForUpdate(this, updateAvailable -> {
             if (updateAvailable && !isDestroyed() && !isFinishing()) {
                 showUpdateIndicators();
@@ -152,7 +151,6 @@ public class SettingsActivity extends BaseActivity {
         // Show the speech bubble popup above ARTHAM text
         if (binding.updateBubbleContainer != null) {
             binding.updateBubbleContainer.setVisibility(View.VISIBLE);
-            animateBubble();
         }
 
         // Show the notification dot on the Settings nav icon
@@ -160,22 +158,6 @@ public class SettingsActivity extends BaseActivity {
         if (dot != null) {
             dot.setVisibility(View.VISIBLE);
         }
-    }
-
-    private void animateBubble() {
-        if (binding.updateBubbleContainer == null) return;
-
-        // Gentle floating bounce animation
-        TranslateAnimation bounce = new TranslateAnimation(
-                Animation.RELATIVE_TO_SELF, 0f,
-                Animation.RELATIVE_TO_SELF, 0f,
-                Animation.RELATIVE_TO_SELF, 0f,
-                Animation.RELATIVE_TO_SELF, -0.15f);
-        bounce.setDuration(800);
-        bounce.setRepeatCount(Animation.INFINITE);
-        bounce.setRepeatMode(Animation.REVERSE);
-        bounce.setInterpolator(new android.view.animation.AccelerateDecelerateInterpolator());
-        binding.updateBubbleContainer.startAnimation(bounce);
     }
 
 

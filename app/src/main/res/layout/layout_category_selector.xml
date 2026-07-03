@@ -5,22 +5,22 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:paddingBottom="10dp">
+    android:paddingBottom="6dp">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
+        android:layout_marginBottom="6dp"
         android:text="Category"
         android:textColor="?attr/chk_textColorPrimary"
-        android:textSize="16sp"
+        android:textSize="14sp"
         android:textStyle="bold" />
 
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/categorySelectorCard"
         android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:layout_marginBottom="8dp"
+        android:layout_height="48dp"
+        android:layout_marginBottom="6dp"
         android:clickable="true"
         android:focusable="true"
         android:foreground="?attr/selectableItemBackground"
@@ -36,12 +36,12 @@
             android:duplicateParentState="true"
             android:gravity="center_vertical"
             android:orientation="horizontal"
-            android:paddingHorizontal="16dp">
+            android:paddingHorizontal="12dp">
 
             <FrameLayout
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:layout_marginEnd="16dp">
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:layout_marginEnd="12dp">
 
                 <View
                     android:id="@+id/selectedIconContainer"
@@ -52,8 +52,8 @@
 
                 <ImageView
                     android:id="@+id/selectedCategoryIcon"
-                    android:layout_width="18dp"
-                    android:layout_height="18dp"
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
                     android:layout_gravity="center"
                     android:contentDescription="Category Icon"
                     android:src="@drawable/ic_category"
@@ -69,11 +69,11 @@
                 android:maxLines="1"
                 android:text="Select Category"
                 android:textColor="?attr/chk_textColorPrimary"
-                android:textSize="16sp" />
+                android:textSize="14sp" />
 
             <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
                 android:contentDescription="Expand"
                 android:src="@drawable/ic_arrow_down"
                 app:tint="?attr/chk_textColorSecondary" />

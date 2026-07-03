@@ -13,6 +13,9 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 import android.widget.TextView;
+import com.google.android.material.chip.Chip;
+import com.google.android.material.chip.ChipGroup;
+import android.content.res.ColorStateList;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -103,7 +106,7 @@ public class TransactionDetailsActivity extends BaseActivity {
         TextView detailParty = findViewById(R.id.detailParty);
 
         View tagsSection = findViewById(R.id.tagsSection);
-        TextView detailTags = findViewById(R.id.detailTags);
+        ChipGroup detailTagsChipGroup = findViewById(R.id.detailTagsChipGroup);
 
         ImageView typeIcon = findViewById(R.id.typeIcon);
 
@@ -161,7 +164,37 @@ public class TransactionDetailsActivity extends BaseActivity {
             if (tagsSection != null) tagsSection.setVisibility(View.GONE);
         } else {
             if (tagsSection != null) tagsSection.setVisibility(View.VISIBLE);
-            detailTags.setText(transaction.getTags().toString().replace("[", "").replace("]", ""));
+            if (detailTagsChipGroup != null) {
+                detailTagsChipGroup.removeAllViews();
+                String cleanTags = transaction.getTags().toString().replace("[", "").replace("]", "");
+                String[] splitTags = cleanTags.split(",");
+                for (String t : splitTags) {
+                    String trimT = t.trim();
+                    if (!trimT.isEmpty()) {
+                        Chip chip = new Chip(this);
+                        chip.setText(trimT);
+                        chip.setCloseIconVisible(false);
+                        chip.setCheckable(false);
+                        chip.setClickable(false);
+
+                        android.util.TypedValue typedValue = new android.util.TypedValue();
+                        getTheme().resolveAttribute(R.attr.chk_primary_blue, typedValue, true);
+                        int primaryColor = typedValue.data;
+                        getTheme().resolveAttribute(R.attr.chk_surfaceColor, typedValue, true);
+                        int surfaceColor = typedValue.data;
+                        getTheme().resolveAttribute(R.attr.chk_textColorPrimary, typedValue, true);
+                        int textColor = typedValue.data;
+
+                        chip.setChipBackgroundColor(ColorStateList.valueOf(surfaceColor));
+                        chip.setChipStrokeColor(ColorStateList.valueOf(primaryColor));
+                        chip.setChipStrokeWidth(1.0f * getResources().getDisplayMetrics().density);
+                        chip.setTextColor(textColor);
+                        chip.setChipCornerRadius(6.0f * getResources().getDisplayMetrics().density);
+
+                        detailTagsChipGroup.addView(chip);
+                    }
+                }
+            }
         }
 
         // --- Running Balance Section Logic ---

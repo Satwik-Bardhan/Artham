@@ -61,6 +61,14 @@ public class OfflineSyncWorker {
                 DataRepository repository = DataRepository.getInstance(
                         (android.app.Application) appContext);
 
+                // Use CountDownLatch to properly wait for all Firebase callbacks
+                final java.util.concurrent.CountDownLatch latch =
+                        new java.util.concurrent.CountDownLatch(pendingList.size());
+                final java.util.concurrent.atomic.AtomicInteger successCount =
+                        new java.util.concurrent.atomic.AtomicInteger(0);
+                final java.util.concurrent.atomic.AtomicInteger failCount =
+                        new java.util.concurrent.atomic.AtomicInteger(0);
+
                 for (OfflineTransactionManager.PendingTransaction pending : pendingList) {
                     String cashbookId = pending.getCashbookId();
                     TransactionModel transaction = pending.getTransaction();
@@ -69,6 +77,7 @@ public class OfflineSyncWorker {
                     if (cashbookId == null || transaction == null) {
                         Log.w(TAG, "Skipping invalid pending entry: " + pendingId);
                         OfflineTransactionManager.removePendingTransaction(appContext, pendingId);
+                        latch.countDown();
                         continue;
                     }
 
@@ -77,21 +86,25 @@ public class OfflineSyncWorker {
                         if (success) {
                             Log.d(TAG, "✓ Synced transaction: " + pendingId);
                             OfflineTransactionManager.removePendingTransaction(appContext, pendingId);
+                            successCount.incrementAndGet();
                         } else {
                             Log.w(TAG, "✗ Failed to sync transaction: " + pendingId + " — will retry later");
+                            failCount.incrementAndGet();
                         }
+                        latch.countDown();
                     });
                 }
 
-                // Give Firebase callbacks a moment to complete
-                Thread.sleep(2000);
+                // Wait for all callbacks with a reasonable timeout (30 seconds)
+                boolean completed = latch.await(30, java.util.concurrent.TimeUnit.SECONDS);
+
+                if (!completed) {
+                    Log.w(TAG, "Sync timed out after 30 seconds — some transactions may still be pending");
+                }
 
                 int remaining = OfflineTransactionManager.getPendingCount(appContext);
-                if (remaining > 0) {
-                    Log.d(TAG, "Sync completed with " + remaining + " entries still pending");
-                } else {
-                    Log.d(TAG, "All offline transactions synced successfully!");
-                }
+                Log.d(TAG, "Sync finished: " + successCount.get() + " succeeded, "
+                        + failCount.get() + " failed, " + remaining + " still pending");
 
             } catch (Exception e) {
                 Log.e(TAG, "Error during offline sync", e);

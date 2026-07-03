@@ -63,8 +63,6 @@ public class MainActivity extends BaseActivity {
                 try {
                     FirebaseCrashlytics crashlytics = FirebaseCrashlytics.getInstance();
                     crashlytics.setUserId(currentUser.getUid());
-                    crashlytics.setCustomKey("user_email",
-                            currentUser.getEmail() != null ? currentUser.getEmail() : getString(R.string.unknown_email));
                 } catch (Exception e) {
                     Log.d(TAG, getString(R.string.log_crashlytics_unavailable));
                 }

@@ -241,7 +241,7 @@ public class DataRepository {
         return categories;
     }
 
-    public void getCategories(String cashbookId, DataCallback<List<CategoryModel>> callback) {
+    public ValueEventListener getCategories(String cashbookId, DataCallback<List<CategoryModel>> callback) {
         if (isLocalMode()) {
             LocalDataWrapper data = loadLocalData();
             List<CategoryModel> cats = data.categories.get(cashbookId);
@@ -256,17 +256,22 @@ public class DataRepository {
             } else {
                 callback.onCallback(cats);
             }
-            return;
+            // Return dummy listener for local mode (consistent with subscribeToTransactions pattern)
+            return new ValueEventListener() {
+                @Override public void onDataChange(@NonNull DataSnapshot snapshot) {}
+                @Override public void onCancelled(@NonNull DatabaseError error) {}
+            };
         }
 
         DatabaseReference userDatabase = getUserDatabaseRef();
         if (userDatabase == null || cashbookId == null) {
             if (callback != null) callback.onCallback(new ArrayList<>());
-            return;
+            return null;
         }
 
-        userDatabase.child(Constants.NODE_CASHBOOKS).child(cashbookId).child("categories")
-                .addValueEventListener(new ValueEventListener() {
+        DatabaseReference categoriesRef = userDatabase.child(Constants.NODE_CASHBOOKS).child(cashbookId).child("categories");
+
+        ValueEventListener listener = new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                         List<CategoryModel> categories = new ArrayList<>();
@@ -289,7 +294,10 @@ public class DataRepository {
                     public void onCancelled(@NonNull DatabaseError error) {
                         Log.e(TAG, "getCategories cancelled", error.toException());
                     }
-                });
+                };
+
+        categoriesRef.addValueEventListener(listener);
+        return listener;
     }
 
     public void addCategory(String cashbookId, CategoryModel category, DataCallback<Boolean> callback) {

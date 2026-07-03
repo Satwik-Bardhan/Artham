@@ -543,14 +543,13 @@
                                     android:textColor="?attr/chk_textColorHint"
                                     android:textSize="11sp" />
 
-                                <TextView
-                                    android:id="@+id/detailTags"
-                                    android:layout_width="wrap_content"
+                                <com.google.android.material.chip.ChipGroup
+                                    android:id="@+id/detailTagsChipGroup"
+                                    android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
-                                    android:layout_marginTop="3dp"
-                                    android:text="Personal"
-                                    android:textColor="?attr/chk_textColorPrimary"
-                                    android:textSize="15sp" />
+                                    android:layout_marginTop="4dp"
+                                    app:chipSpacingHorizontal="6dp"
+                                    app:chipSpacingVertical="4dp" />
                             </LinearLayout>
                         </LinearLayout>
                     </LinearLayout>

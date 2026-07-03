@@ -100,6 +100,10 @@ public class TransactionActivity extends BaseActivity {
     // Debounce handler — prevents skeleton flash on fast loads (tab switches)
     private final android.os.Handler skeletonShowHandler = new android.os.Handler(android.os.Looper.getMainLooper());
 
+    // Search debounce — prevents filtering on every keystroke (300ms delay)
+    private final android.os.Handler searchDebounceHandler = new android.os.Handler(android.os.Looper.getMainLooper());
+    private Runnable searchDebounceRunnable;
+
     private ActivityTransactionBinding binding;
     private LayoutSummaryCardsBinding summaryBinding;
     private LayoutPieChartBinding pieChartBinding;
@@ -631,7 +635,15 @@ public class TransactionActivity extends BaseActivity {
                 searchBinding.clearSearchButton.setVisibility(hasText ? View.VISIBLE : View.GONE);
                 searchBinding.searchDivider.setVisibility(hasText ? View.GONE : View.VISIBLE);
                 searchBinding.filterButton.setVisibility(hasText ? View.GONE : View.VISIBLE);
-                if(viewModel!=null) viewModel.filter(s.toString(), 0, 0, "All", null, null);
+                // Debounced search — waits 300ms after user stops typing
+                if (searchDebounceRunnable != null) {
+                    searchDebounceHandler.removeCallbacks(searchDebounceRunnable);
+                }
+                final String query = s.toString();
+                searchDebounceRunnable = () -> {
+                    if (viewModel != null) viewModel.filter(query, 0, 0, "All", null, null);
+                };
+                searchDebounceHandler.postDelayed(searchDebounceRunnable, 300);
             }
             @Override public void afterTextChanged(Editable s) {}
         });
@@ -1115,5 +1127,12 @@ public class TransactionActivity extends BaseActivity {
                                     .markPageTutorialCompleted(OnboardingManager.PAGE_TRANSACTIONS))
                     .start();
         }, 600);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        searchDebounceHandler.removeCallbacksAndMessages(null);
+        skeletonShowHandler.removeCallbacksAndMessages(null);
     }
 }

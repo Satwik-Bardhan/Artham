@@ -17,7 +17,7 @@ import androidx.annotation.NonNull;
 public class NetworkMonitor {
 
     private static final String TAG = "NetworkMonitor";
-    private static NetworkMonitor INSTANCE;
+    private static volatile NetworkMonitor INSTANCE;
 
     private ConnectivityManager connectivityManager;
     private ConnectivityManager.NetworkCallback networkCallback;
