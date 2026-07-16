@@ -39,5 +39,8 @@ public class MyApplication extends Application {
 
         // 6. Schedule interval-based transaction reminder (default: every 2 hours)
         IntervalReminderReceiver.scheduleNextAlarm(this);
+
+        // 7. Schedule periodic Supabase sync (every 1 hour, requires network)
+        com.phynix.artham.db.sync.SyncWorker.schedulePeriodicSync(this);
     }
 }

@@ -119,18 +119,24 @@ public class CashbookListRemoteViewsService extends RemoteViewsService {
             }
 
             // 3. Compute the accurate balance for all selected cashbooks
+            boolean isLocal = repo.isLocalMode();
             for (CashbookModel cb : updatedCashbooks) {
                 if (selectedIds.contains(cb.getCashbookId())) {
-                    double totalIncome = 0;
-                    double totalExpense = 0;
-                    for (TransactionModel t : cb.getTransactionList()) {
-                        if ("IN".equalsIgnoreCase(t.getType())) {
-                            totalIncome += t.getAmount();
-                        } else {
-                            totalExpense += t.getAmount();
+                    double balance;
+                    if (isLocal) {
+                        balance = cb.getTotalBalance();
+                    } else {
+                        double totalIncome = 0;
+                        double totalExpense = 0;
+                        for (TransactionModel t : cb.getTransactionList()) {
+                            if ("IN".equalsIgnoreCase(t.getType())) {
+                                totalIncome += t.getAmount();
+                            } else {
+                                totalExpense += t.getAmount();
+                            }
                         }
+                        balance = totalIncome - totalExpense;
                     }
-                    double balance = totalIncome - totalExpense;
 
                     CashbookData data = selectedMetaData.get(cb.getCashbookId());
                     if (data != null) {

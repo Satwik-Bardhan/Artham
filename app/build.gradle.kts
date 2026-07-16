@@ -2,6 +2,8 @@
 
 plugins {
     alias(libs.plugins.androidApplication)
+    alias(libs.plugins.jetbrainsKotlinAndroid)
+    alias(libs.plugins.kotlinxSerialization)
     alias(libs.plugins.googleGmsGoogleServices)
     alias(libs.plugins.firebaseCrashlytics)
 }
@@ -18,6 +20,8 @@ android {
         versionCode = 15
         versionName = "2.0.3"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField("String", "SUPABASE_URL", "\"https://pgrgcpyysvuzozylgump.supabase.co\"")
+        buildConfigField("String", "SUPABASE_ANON_KEY", "\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBncmdjcHl5c3Z1em96eWxndW1wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM5NTA3ODMsImV4cCI6MjA5OTUyNjc4M30.BhM1BPFcKyKwH0jvFowyl8TguSNiTaEWNJlwQWQ1_kM\"")
     }
 
     // =========================================================
@@ -53,8 +57,12 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
+    kotlinOptions {
+        jvmTarget = "17"
+    }
     buildFeatures {
         viewBinding = true
+        buildConfig = true
     }
     lint {
         checkReleaseBuilds = false
@@ -112,4 +120,17 @@ dependencies {
 
     // --- Offline Support ---
     implementation(libs.gson)
+
+    // --- Room Database ---
+    implementation(libs.room.runtime)
+    annotationProcessor(libs.room.compiler)
+    implementation(libs.work.runtime)
+
+    // --- Supabase ---
+    implementation(platform(libs.supabase.bom))
+    implementation(libs.supabase.postgrest)
+    implementation(libs.supabase.gotrue)
+    implementation(libs.ktor.client.okhttp)
+    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.kotlinx.coroutines.android)
 }

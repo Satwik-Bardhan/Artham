@@ -308,21 +308,6 @@ public class CashbookSwitchActivity extends BaseActivity {
                 for (CashbookModel cb : data) {
                     boolean isCurrent = currentCashbookId != null && currentCashbookId.equals(cb.getCashbookId());
                     cb.setCurrent(isCurrent);
-
-                    double totalIncome = 0;
-                    double totalExpense = 0;
-                    int count = 0;
-                    for (TransactionModel t : cb.getTransactionList()) {
-                        count++;
-                        if ("IN".equalsIgnoreCase(t.getType())) {
-                            totalIncome += t.getAmount();
-                        } else {
-                            totalExpense += t.getAmount();
-                        }
-                    }
-                    cb.setTotalBalance(totalIncome - totalExpense);
-                    cb.setTransactionCount(count);
-
                     allCashbooks.add(cb);
                 }
                 applyFiltersAndSort();
@@ -408,6 +393,20 @@ public class CashbookSwitchActivity extends BaseActivity {
     }
 
     private void handleAddNewCashbook() {
+        if (repository.isLocalMode() && allCashbooks.size() >= 1) {
+            new MaterialAlertDialogBuilder(this)
+                    .setTitle("Backup Required")
+                    .setMessage("Guest mode is limited to 1 cashbook. Please sign in with your Google account to create unlimited cashbooks and backup your data.")
+                    .setPositiveButton("Sign In", (dialog, which) -> {
+                        Intent intent = new Intent(this, com.phynix.artham.SignInActivity.class);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        startActivity(intent);
+                        finish();
+                    })
+                    .setNegativeButton("Cancel", null)
+                    .show();
+            return;
+        }
         showCreateCashbookDialog(null);
     }
 
@@ -637,17 +636,25 @@ public class CashbookSwitchActivity extends BaseActivity {
             newCashbook.setLastModified(System.currentTimeMillis());
             newCashbook.setActive(true);
 
-            com.phynix.artham.db.DataRepository.LocalDataWrapper data = repository.loadLocalData();
-            data.cashbooks.add(newCashbook);
-            repository.saveLocalData(data);
-
-            repository.createDefaultCategories(cashbookId, success -> {
+            repository.createNewCashbook(newCashbook, successId -> {
                 if (!category.isEmpty()) {
                     saveCustomCategory(category);
                 }
-                showSnackbar("Cashbook created successfully!");
-                onCashbookSelected(newCashbook);
-            });
+                new MaterialAlertDialogBuilder(this)
+                        .setTitle("Backup Your Cashbook")
+                        .setMessage("Your cashbook has been created locally! Please sign in with Google now to back it up and prevent data loss.")
+                        .setPositiveButton("Sign In", (dialog, which) -> {
+                            Intent intent = new Intent(this, com.phynix.artham.SignInActivity.class);
+                            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                            startActivity(intent);
+                            finish();
+                        })
+                        .setNegativeButton("Keep Offline", (dialog, which) -> {
+                            showSnackbar("Cashbook created successfully!");
+                            onCashbookSelected(newCashbook);
+                        })
+                        .show();
+            }, error -> showSnackbar("Failed to create cashbook locally: " + error));
             return;
         }
 
@@ -684,19 +691,13 @@ public class CashbookSwitchActivity extends BaseActivity {
         cashbook.setLastModified(System.currentTimeMillis());
 
         if (repository.isLocalMode()) {
-            com.phynix.artham.db.DataRepository.LocalDataWrapper data = repository.loadLocalData();
-            for (int i = 0; i < data.cashbooks.size(); i++) {
-                if (data.cashbooks.get(i).getCashbookId().equals(cashbook.getCashbookId())) {
-                    data.cashbooks.set(i, cashbook);
-                    break;
+            repository.updateCashbook(cashbook, success -> {
+                if (!category.isEmpty()) {
+                    saveCustomCategory(category);
                 }
-            }
-            repository.saveLocalData(data);
-            if (!category.isEmpty()) {
-                saveCustomCategory(category);
-            }
-            showSnackbar("Cashbook updated");
-            loadCashbooks();
+                showSnackbar("Cashbook updated");
+                loadCashbooks();
+            });
             return;
         }
 
@@ -722,16 +723,10 @@ public class CashbookSwitchActivity extends BaseActivity {
         cashbook.setLastModified(System.currentTimeMillis());
 
         if (repository.isLocalMode()) {
-            com.phynix.artham.db.DataRepository.LocalDataWrapper data = repository.loadLocalData();
-            for (int i = 0; i < data.cashbooks.size(); i++) {
-                if (data.cashbooks.get(i).getCashbookId().equals(cashbook.getCashbookId())) {
-                    data.cashbooks.set(i, cashbook);
-                    break;
-                }
-            }
-            repository.saveLocalData(data);
-            showSnackbar(newFavoriteState ? "Added to favorites" : "Removed from favorites");
-            loadCashbooks();
+            repository.updateCashbook(cashbook, success -> {
+                showSnackbar(newFavoriteState ? "Added to favorites" : "Removed from favorites");
+                loadCashbooks();
+            });
             return;
         }
 
@@ -783,25 +778,26 @@ public class CashbookSwitchActivity extends BaseActivity {
         showSnackbar("Preparing export...");
 
         if (repository.isLocalMode()) {
-            List<TransactionModel> transactions = cashbook.getTransactionList();
-            if (transactions.isEmpty()) {
-                showSnackbar("No transactions to export in this cashbook");
-                return;
-            }
-            long earliest = Long.MAX_VALUE;
-            long latest = Long.MIN_VALUE;
-            for (TransactionModel txn : transactions) {
-                if (txn.getTimestamp() < earliest) earliest = txn.getTimestamp();
-                if (txn.getTimestamp() > latest) latest = txn.getTimestamp();
-            }
-            String bookName = cashbook.getName() != null ? cashbook.getName() : "Cashbook";
-            PdfReportGenerator.generateReport(
-                    CashbookSwitchActivity.this,
-                    transactions,
-                    bookName,
-                    earliest,
-                    latest
-            );
+            repository.getAllTransactions(cashbook.getCashbookId(), transactions -> {
+                if (transactions.isEmpty()) {
+                    showSnackbar("No transactions to export in this cashbook");
+                    return;
+                }
+                long earliest = Long.MAX_VALUE;
+                long latest = Long.MIN_VALUE;
+                for (TransactionModel txn : transactions) {
+                    if (txn.getTimestamp() < earliest) earliest = txn.getTimestamp();
+                    if (txn.getTimestamp() > latest) latest = txn.getTimestamp();
+                }
+                String bookName = cashbook.getName() != null ? cashbook.getName() : "Cashbook";
+                PdfReportGenerator.generateReport(
+                        CashbookSwitchActivity.this,
+                        transactions,
+                        bookName,
+                        earliest,
+                        latest
+                );
+            }, error -> showSnackbar("Failed to fetch transactions for export: " + error));
             return;
         }
 
@@ -858,16 +854,10 @@ public class CashbookSwitchActivity extends BaseActivity {
         cashbook.setLastModified(System.currentTimeMillis());
 
         if (repository.isLocalMode()) {
-            com.phynix.artham.db.DataRepository.LocalDataWrapper data = repository.loadLocalData();
-            for (int i = 0; i < data.cashbooks.size(); i++) {
-                if (data.cashbooks.get(i).getCashbookId().equals(cashbook.getCashbookId())) {
-                    data.cashbooks.set(i, cashbook);
-                    break;
-                }
-            }
-            repository.saveLocalData(data);
-            showSnackbar(newActiveState ? "Cashbook activated" : "Cashbook deactivated");
-            loadCashbooks();
+            repository.updateCashbook(cashbook, success -> {
+                showSnackbar(newActiveState ? "Cashbook activated" : "Cashbook deactivated");
+                loadCashbooks();
+            });
             return;
         }
 
@@ -1364,19 +1354,13 @@ public class CashbookSwitchActivity extends BaseActivity {
         cashbook.setLastModified(System.currentTimeMillis());
 
         if (repository.isLocalMode()) {
-            com.phynix.artham.db.DataRepository.LocalDataWrapper data = repository.loadLocalData();
-            for (int i = 0; i < data.cashbooks.size(); i++) {
-                if (data.cashbooks.get(i).getCashbookId().equals(cashbook.getCashbookId())) {
-                    data.cashbooks.set(i, cashbook);
-                    break;
+            repository.updateCashbook(cashbook, success -> {
+                if (!category.isEmpty() && !customCategories.contains(category)) {
+                    saveCustomCategory(category);
                 }
-            }
-            repository.saveLocalData(data);
-            if (!category.isEmpty() && !customCategories.contains(category)) {
-                saveCustomCategory(category);
-            }
-            showSnackbar("Category updated successfully");
-            loadCashbooks();
+                showSnackbar("Category updated successfully");
+                loadCashbooks();
+            });
             return;
         }
 

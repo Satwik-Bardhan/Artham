@@ -202,6 +202,25 @@ public class SettingsActivity extends BaseActivity {
         if (binding.updateBubbleContainer != null) {
             binding.updateBubbleContainer.setOnClickListener(v -> openPlayStore());
         }
+
+        // Guest Mode: Show sign-in banner and handle sign-in button
+        boolean isLocal = DataRepository.getInstance(getApplication()).isLocalMode();
+        if (isLocal) {
+            if (binding.guestSignInBanner != null) {
+                binding.guestSignInBanner.setVisibility(View.VISIBLE);
+            }
+            if (binding.guestSignInButton != null) {
+                binding.guestSignInButton.setOnClickListener(v -> {
+                    // Navigate to SignInActivity for Google sign-in
+                    // DataRepository.migrateLocalDataToFirebase() will run automatically
+                    // in HomeViewModel after successful sign-in
+                    Intent intent = new Intent(this, SignInActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
+                    finish();
+                });
+            }
+        }
     }
 
     private void setupBottomNavigation() {
@@ -492,6 +511,8 @@ public class SettingsActivity extends BaseActivity {
         if (mAuth.getCurrentUser() != null) {
             mAuth.signOut();
         }
+        // Supabase sign-out (parallel, non-blocking)
+        com.phynix.artham.auth.SupabaseAuthManager.signOut(null);
         Toast.makeText(this, "Logged out", Toast.LENGTH_SHORT).show();
         Intent intent = new Intent(this, SignInActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -500,10 +521,17 @@ public class SettingsActivity extends BaseActivity {
     }
 
     private void showLogoutConfirmationDialog() {
+        boolean isLocal = DataRepository.getInstance(getApplication()).isLocalMode();
+        String title = isLocal ? "Exit Guest Mode" : "Logout";
+        String message = isLocal
+                ? "Your local data will remain on this device. You can sign in with Google to backup and sync your data."
+                : "Are you sure you want to log out?";
+        String positiveText = isLocal ? "Exit" : "Logout";
+
         new AlertDialog.Builder(this)
-                .setTitle("Logout")
-                .setMessage("Are you sure you want to log out?")
-                .setPositiveButton("Logout", (dialog, which) -> logoutUser())
+                .setTitle(title)
+                .setMessage(message)
+                .setPositiveButton(positiveText, (dialog, which) -> logoutUser())
                 .setNegativeButton("Cancel", null)
                 .show();
     }

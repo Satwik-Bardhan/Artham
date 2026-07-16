@@ -75,7 +75,8 @@ public class HomeViewModel extends AndroidViewModel {
             if (user != null) {
                 // User is authenticated, proceed to load data
                 currentUserId = user.getUid();
-                repository.migrateLocalDataToFirebase(success -> {
+                // One-time migration: pull Firebase RTDB data into Room
+                repository.migrateFirebaseDataToRoom(success -> {
                     loadCashbooks();
                 });
             } else {
@@ -151,10 +152,6 @@ public class HomeViewModel extends AndroidViewModel {
     public void switchCashbook(String cashbookId) {
         if (cashbookId == null || currentUserId == null) return;
 
-        if (activeTransactionListener != null && activeTransactionRef != null) {
-            activeTransactionRef.removeEventListener(activeTransactionListener);
-        }
-
         currentCashbookId = cashbookId;
         saveActiveCashbookIdToPrefs(cashbookId);
 
@@ -169,15 +166,6 @@ public class HomeViewModel extends AndroidViewModel {
         }
 
         isLoading.setValue(true);
-
-        if (!repository.isLocalMode()) {
-            activeTransactionRef = FirebaseDatabase.getInstance().getReference()
-                    .child(Constants.NODE_USERS)
-                    .child(currentUserId)
-                    .child(Constants.NODE_CASHBOOKS)
-                    .child(cashbookId)
-                    .child(Constants.NODE_TRANSACTIONS);
-        }
 
         activeTransactionListener = repository.subscribeToTransactions(cashbookId,
                 this::processTransactions,

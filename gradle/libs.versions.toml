@@ -40,6 +40,12 @@ itextpdf = "5.5.13.3"
 skydovesColorpicker = "2.2.4"
 shimmer = "0.5.0"
 gson = "2.14.0"
+room = "2.7.1"
+workManager = "2.10.1"
+supabase = "3.1.4"
+ktor = "3.1.3"
+kotlinxSerializationJson = "1.8.1"
+kotlinxCoroutinesAndroid = "1.10.2"
 
 [libraries]
 # --- AndroidX & UI Core ---
@@ -86,6 +92,15 @@ itextpdf = { group = "com.itextpdf", name = "itextpdf", version.ref = "itextpdf"
 skydoves-colorpickerview = { group = "com.github.skydoves", name = "colorpickerview", version.ref = "skydovesColorpicker" }
 shimmer = { group = "com.facebook.shimmer", name = "shimmer", version.ref = "shimmer" }
 gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
+room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
+room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
+work-runtime = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "workManager" }
+supabase-bom = { group = "io.github.jan-tennert.supabase", name = "bom", version.ref = "supabase" }
+supabase-postgrest = { group = "io.github.jan-tennert.supabase", name = "postgrest-kt" }
+supabase-gotrue = { group = "io.github.jan-tennert.supabase", name = "auth-kt" }
+ktor-client-okhttp = { group = "io.ktor", name = "ktor-client-okhttp", version.ref = "ktor" }
+kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
+kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "kotlinxCoroutinesAndroid" }
 
 # --- Testing ---
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -99,3 +114,4 @@ jetbrainsKotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "k
 googleGmsGoogleServices = { id = "com.google.gms.google-services", version.ref = "googleGmsGoogleServices" }
 firebaseCrashlytics = { id = "com.google.firebase.crashlytics", version.ref = "crashlyticsGradle" }
 firebaseAppdistribution = { id = "com.google.firebase.appdistribution", version.ref = "appdistributionGradle" }
+kotlinxSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }

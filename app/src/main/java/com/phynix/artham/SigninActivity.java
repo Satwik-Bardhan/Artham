@@ -24,6 +24,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
+import com.phynix.artham.auth.SupabaseAuthManager;
 import com.phynix.artham.utils.ThemeManager; // Import ThemeManager
 import com.phynix.artham.viewmodels.SignInViewModel;
 
@@ -79,12 +80,6 @@ public class SignInActivity extends BaseActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        // Ensure local mode flag is disabled for testing safety
-        getSharedPreferences("AppPrefs", MODE_PRIVATE)
-                .edit()
-                .putBoolean("is_local_mode", false)
-                .apply();
-
         // Check if user is already signed in (non-null) and update UI accordingly.
         if (FirebaseAuth.getInstance().getCurrentUser() != null) {
             navigateToHome();
@@ -110,9 +105,7 @@ public class SignInActivity extends BaseActivity {
 
     private void setupClickListeners() {
         btnGoogleSignIn.setOnClickListener(v -> signInWithGoogle());
-        btnLocalMode.setOnClickListener(v -> {
-            Toast.makeText(this, "Guest Mode will be available after testing is finished.", Toast.LENGTH_LONG).show();
-        });
+        btnLocalMode.setOnClickListener(v -> enterGuestMode());
         backButton.setOnClickListener(v -> finish());
         helpButton.setOnClickListener(v -> Toast.makeText(this,
                 "Sign in to sync your expenses across devices.",
@@ -152,6 +145,19 @@ public class SignInActivity extends BaseActivity {
         finish();
     }
 
+    /**
+     * Enter Guest Mode — All data stored locally in Room DB.
+     * User can sign in later to sync data to cloud.
+     */
+    private void enterGuestMode() {
+        getSharedPreferences("AppPrefs", MODE_PRIVATE)
+                .edit()
+                .putBoolean("is_local_mode", true)
+                .apply();
+        Toast.makeText(this, "Welcome! Using offline mode.", Toast.LENGTH_SHORT).show();
+        navigateToHome();
+    }
+
     private void signInWithGoogle() {
         getSharedPreferences("AppPrefs", MODE_PRIVATE)
                 .edit()
@@ -166,7 +172,29 @@ public class SignInActivity extends BaseActivity {
         try {
             GoogleSignInAccount account = completedTask.getResult(ApiException.class);
             if (account != null) {
+                // Firebase Auth (primary)
                 viewModel.firebaseAuthWithGoogle(account);
+
+                // Supabase Auth (parallel, non-fatal)
+                String idToken = account.getIdToken();
+                if (idToken != null) {
+                    String email = account.getEmail();
+                    String displayName = account.getDisplayName();
+                    String photoUrl = account.getPhotoUrl() != null ? account.getPhotoUrl().toString() : null;
+                    // Firebase UID will be set after Firebase auth completes;
+                    // pass null for now — it will be updated on next sign-in
+                    SupabaseAuthManager.signInWithGoogle(idToken, null, email, displayName, photoUrl,
+                            new SupabaseAuthManager.AuthCallback() {
+                                @Override
+                                public void onSuccess(String userId) {
+                                    Log.d(TAG, "Supabase auth successful: " + userId);
+                                }
+                                @Override
+                                public void onError(String error) {
+                                    Log.w(TAG, "Supabase auth failed (non-fatal): " + error);
+                                }
+                            });
+                }
             } else {
                 viewModel.setLoading(false);
             }

@@ -1215,6 +1215,8 @@ public class HomeActivity extends BaseActivity {
         }
         SessionCache.getInstance().clear();
         FirebaseAuth.getInstance().signOut();
+        // Supabase sign-out (parallel, non-blocking)
+        com.phynix.artham.auth.SupabaseAuthManager.signOut(null);
         startActivity(new Intent(this, SignInActivity.class));
         finish();
     }
