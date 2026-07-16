@@ -121,17 +121,20 @@ public class CashbookWidgetConfigActivity extends AppCompatActivity {
 
                     allCashbooks.clear();
                     if (cashbooks != null) {
+                        boolean isLocal = DataRepository.getInstance(getApplication()).isLocalMode();
                         for (CashbookModel cb : cashbooks) {
-                            double totalIncome = 0;
-                            double totalExpense = 0;
-                            for (TransactionModel t : cb.getTransactionList()) {
-                                if ("IN".equalsIgnoreCase(t.getType())) {
-                                    totalIncome += t.getAmount();
-                                } else {
-                                    totalExpense += t.getAmount();
+                            if (!isLocal) {
+                                double totalIncome = 0;
+                                double totalExpense = 0;
+                                for (TransactionModel t : cb.getTransactionList()) {
+                                    if ("IN".equalsIgnoreCase(t.getType())) {
+                                        totalIncome += t.getAmount();
+                                    } else {
+                                        totalExpense += t.getAmount();
+                                    }
                                 }
+                                cb.setTotalBalance(totalIncome - totalExpense);
                             }
-                            cb.setTotalBalance(totalIncome - totalExpense);
                             allCashbooks.add(cb);
                         }
                     }

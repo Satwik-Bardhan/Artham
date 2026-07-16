@@ -16,13 +16,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
+
 import com.phynix.artham.R;
+import com.phynix.artham.auth.AuthManager;
 import com.phynix.artham.adapters.CategorySelectionAdapter;
 import com.phynix.artham.models.CategoryModel;
 
@@ -43,7 +39,7 @@ public class CategoryFilterFragment extends BottomSheetDialogFragment {
     private List<CategoryModel> filteredCategoryList;
     private Set<String> selectedCategories;
 
-    private DatabaseReference categoryRef;
+
     private OnFilterAppliedListener filterListener;
 
     public interface OnFilterAppliedListener {
@@ -68,11 +64,7 @@ public class CategoryFilterFragment extends BottomSheetDialogFragment {
         // Uses the theme-compatible dialog layout
         View view = inflater.inflate(R.layout.dialog_category_selection, container, false);
 
-        String userId = FirebaseAuth.getInstance().getUid();
-        if (userId != null) {
-            categoryRef = FirebaseDatabase.getInstance().getReference("users")
-                    .child(userId).child("categories");
-        }
+        String userId = AuthManager.getUserId(requireContext());
 
         if (selectedCategories == null) {
             selectedCategories = new HashSet<>();
@@ -110,45 +102,7 @@ public class CategoryFilterFragment extends BottomSheetDialogFragment {
     }
 
     private void loadCategories() {
-        if (categoryRef == null) return;
-
-        categoryRef.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                fullCategoryList.clear();
-                List<CategoryModel> defaultCats = new ArrayList<>();
-                List<CategoryModel> customCats = new ArrayList<>();
-
-                for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
-                    CategoryModel category = dataSnapshot.getValue(CategoryModel.class);
-                    if (category != null) {
-                        // Requirement #4: Separate Default and Custom for structured filtering
-                        if (category.isCustom()) {
-                            customCats.add(category);
-                        } else {
-                            defaultCats.add(category);
-                        }
-                    }
-                }
-
-                // Sort alphabetically
-                Collections.sort(defaultCats, (c1, c2) -> c1.getName().compareToIgnoreCase(c2.getName()));
-                Collections.sort(customCats, (c1, c2) -> c1.getName().compareToIgnoreCase(c2.getName()));
-
-                // Add defaults first, then user-created custom categories
-                fullCategoryList.addAll(defaultCats);
-                fullCategoryList.addAll(customCats);
-
-                filterList(""); // Apply initial empty filter to populate the list
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                if (getContext() != null) {
-                    Toast.makeText(getContext(), "Failed to load categories.", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
+        filterList("");
     }
 
     private void setupSearch() {

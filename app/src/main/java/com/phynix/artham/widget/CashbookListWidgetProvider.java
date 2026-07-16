@@ -10,8 +10,7 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.widget.RemoteViews;
 
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
+import com.phynix.artham.auth.AuthManager;
 import com.phynix.artham.MainActivity;
 import com.phynix.artham.R;
 import com.phynix.artham.activities.CashbookWidgetConfigActivity;
@@ -106,9 +105,8 @@ public class CashbookListWidgetProvider extends AppWidgetProvider {
                 }
 
                 // Also set as the active cashbook for the current user
-                FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-                if (user != null) {
-                    editor.putString(Constants.PREF_ACTIVE_CASHBOOK_PREFIX + user.getUid(), cashbookId);
+                if (AuthManager.isSignedIn(context)) {
+                    editor.putString(Constants.PREF_ACTIVE_CASHBOOK_PREFIX + AuthManager.getUserId(context), cashbookId);
                 } else {
                     // Local mode
                     editor.putString(Constants.PREF_ACTIVE_CASHBOOK_PREFIX + "local_user", cashbookId);

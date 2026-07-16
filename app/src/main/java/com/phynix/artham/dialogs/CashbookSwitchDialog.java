@@ -20,13 +20,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.snackbar.Snackbar;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
+
 import com.phynix.artham.R;
+import com.phynix.artham.auth.AuthManager;
 import com.phynix.artham.adapters.CashbookAdapter;
 import com.phynix.artham.models.CashbookModel;
 import com.phynix.artham.utils.ErrorHandler;
@@ -178,63 +174,15 @@ public class CashbookSwitchDialog extends DialogFragment {
     }
 
     private void loadCashbooks() {
-        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
-        if (currentUser == null) {
+        if (!AuthManager.isSignedIn(requireContext())) {
             showError("Not authenticated");
             return;
         }
 
         showLoading(true);
-        String userId = currentUser.getUid();
-
-        FirebaseDatabase.getInstance()
-                .getReference("users").child(userId).child("cashbooks")
-                .addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                        allCashbooks.clear();
-
-                        for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                            try {
-                                CashbookModel cashbook = snapshot.getValue(CashbookModel.class);
-                                if (cashbook != null) {
-                                    cashbook.setCashbookId(snapshot.getKey());
-                                    // Set 'current' status for visual checkmark in adapter
-                                    cashbook.setCurrent(cashbook.getCashbookId().equals(currentCashbookId));
-                                    allCashbooks.add(cashbook);
-                                }
-                            } catch (Exception e) {
-                                Log.e(TAG, "Error parsing cashbook", e);
-                            }
-                        }
-
-                        // --- UPDATED: Apply pinning rule immediately to dialog list ---
-                        allCashbooks.sort((c1, c2) -> {
-                            // Rule 1: Pin Current book to top
-                            if (c1.isCurrent() && !c2.isCurrent()) return -1;
-                            if (!c1.isCurrent() && c2.isCurrent()) return 1;
-
-                            // Rule 2: Sort by recently created descending
-                            return Long.compare(c2.getCreatedDate(), c1.getCreatedDate());
-                        });
-
-                        showLoading(false);
-                        if (allCashbooks.isEmpty()) {
-                            showEmptyState(true);
-                        } else {
-                            showEmptyState(false);
-                            adapter.updateCashbooks(allCashbooks);
-                        }
-                    }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error) {
-                        showLoading(false);
-                        if(getContext() != null) {
-                            ErrorHandler.handleFirebaseError(getContext(), error);
-                        }
-                    }
-                });
+        // Firebase code removed
+        showLoading(false);
+        showEmptyState(true);
     }
 
     private void filterCashbooks(String query) {

@@ -14,8 +14,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 
 import com.google.android.material.switchmaterial.SwitchMaterial;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
+import com.phynix.artham.auth.AuthManager;
 import com.phynix.artham.utils.FontManager;
 import com.phynix.artham.utils.ThemeManager;
 import com.phynix.artham.utils.OnboardingManager;
@@ -330,8 +329,7 @@ public class AppSettingsActivity extends BaseActivity {
             manageCategoriesLayout.setOnClickListener(v -> {
                 Intent intent = new Intent(AppSettingsActivity.this, CategoryActivity.class);
 
-                FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-                String uid = user != null ? user.getUid() : "local_user";
+                String uid = AuthManager.getUserId(AppSettingsActivity.this);
                 SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
                 String currentCashbookId = prefs.getString("active_cashbook_id_" + uid, "");
                 if (!currentCashbookId.isEmpty()) {
@@ -373,8 +371,7 @@ public class AppSettingsActivity extends BaseActivity {
                     .show();
             return;
         }
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        String email = (user != null && user.getEmail() != null) ? user.getEmail() : "Unknown Account";
+        String email = "Artham Account";
 
         new AlertDialog.Builder(this)
                 .setTitle("Cloud Backup")

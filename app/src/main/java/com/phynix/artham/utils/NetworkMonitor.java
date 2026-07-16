@@ -72,6 +72,8 @@ public class NetworkMonitor {
                 super.onAvailable(network);
                 Log.d(TAG, "Network available — triggering offline sync");
                 OfflineSyncWorker.syncNow(context.getApplicationContext());
+                // Trigger Supabase sync engine on reconnect
+                com.phynix.artham.db.sync.SyncWorker.triggerImmediateSync(context.getApplicationContext());
             }
 
             @Override

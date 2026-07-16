@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Artham</string>
+    <!-- Google OAuth Web Client ID (from Google Cloud Console, NOT Firebase) -->
+    <string name="default_web_client_id">468688842282-eovrl7bgfosoun9rt53r5recbup70tkr.apps.googleusercontent.com</string>
     <string name="artham_manager">Artham Manager</string>
     <string name="app_logo_description">App Logo</string>
 
@@ -81,7 +83,7 @@
     <string name="current_cashbook_format">%1$s (Current)</string>
     <string name="format_current_cashbook">%1$s (Current)</string>
     <string name="format_cashbook_copy">%1$s - Copy</string>
-    <string name="default_cashbook_name">My Cashbook</string>
+    <string name="default_cashbook_name">Record Book</string>
     <string name="status_current_cashbook">(Current)</string>
     <string name="status_available_cashbooks">Available Cashbooks</string>
     <string name="dropdown_hint_text">Tap to switch or manage cashbooks</string>
@@ -242,7 +244,6 @@
     <string name="transactions_label">Transactions</string>
     <string name="created_label">Created</string>
     <string name="help_support_coming_soon">Help &amp; Support - Coming Soon</string>
-    <string name="com.google.firebase.crashlytics.mapping_file_id">none</string>
 
     <string name="cancel_button">Cancel</string>
     <string name="no_cashbooks_title">No Cashbooks Found</string>

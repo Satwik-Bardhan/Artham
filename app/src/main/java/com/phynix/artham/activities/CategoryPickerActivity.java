@@ -14,12 +14,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
+import com.phynix.artham.auth.AuthManager;
 import com.phynix.artham.R;
 import com.phynix.artham.adapters.CategoryPickerAdapter;
 import com.phynix.artham.models.CategoryModel;
@@ -49,7 +44,7 @@ public class CategoryPickerActivity extends BaseActivity {
     private List<CategoryModel> customFullList = new ArrayList<>();
     private List<CategoryModel> customFilteredList = new ArrayList<>();
 
-    private DatabaseReference dbRef;
+    // private DatabaseReference dbRef;
     private String currentCashbookId;
     private String transactionType;
 
@@ -110,56 +105,39 @@ public class CategoryPickerActivity extends BaseActivity {
         });
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        loadCategories();
+    }
+
     private void setupFirebase() {
-        String uid = FirebaseAuth.getInstance().getUid();
-        if (uid == null) return;
+        loadCategories();
+    }
 
-        dbRef = FirebaseDatabase.getInstance().getReference("users")
-                .child(uid).child("categories");
+    private void loadCategories() {
+        if (currentCashbookId == null || currentCashbookId.isEmpty()) {
+            android.content.SharedPreferences prefs = getSharedPreferences("AppPrefs", android.content.Context.MODE_PRIVATE);
+            String uid = AuthManager.getUserId(this);
+            currentCashbookId = prefs.getString("active_cashbook_id_" + uid, "");
+        }
 
-        dbRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                defaultFullList.clear();
-                customFullList.clear();
-                boolean hasDefaults = false;
-
-                if (snapshot.exists() && snapshot.hasChildren()) {
-                    for (DataSnapshot ds : snapshot.getChildren()) {
-                        CategoryModel model = ds.getValue(CategoryModel.class);
-                        if (model != null) {
-                            model.setId(ds.getKey());
-
-                            if (!model.isCustom()) {
-                                hasDefaults = true;
-                            }
-
-                            if (model.isCustom()) {
-                                customFullList.add(model);
-                            } else {
-                                defaultFullList.add(model);
-                            }
-                        }
+        com.phynix.artham.db.DataRepository.getInstance(getApplication()).getCategories(currentCashbookId, categories -> {
+            defaultFullList.clear();
+            customFullList.clear();
+            if (categories != null) {
+                for (CategoryModel c : categories) {
+                    if (transactionType != null && !transactionType.isEmpty() && c.getType() != null) {
+                        if (!c.getType().equalsIgnoreCase(transactionType)) continue;
+                    }
+                    if (c.isCustom()) {
+                        customFullList.add(c);
+                    } else {
+                        defaultFullList.add(c);
                     }
                 }
-
-                // If no defaults exist, tell the Seeder to make them.
-                // We DO NOT 'return;' here anymore, so the UI can still update immediately!
-                if (!hasDefaults) {
-                    CategorySeeder.seedDefaultCategories();
-                }
-
-                // Sort lists alphabetically
-                Collections.sort(defaultFullList, (c1, c2) -> c1.getName().compareToIgnoreCase(c2.getName()));
-                Collections.sort(customFullList, (c1, c2) -> c1.getName().compareToIgnoreCase(c2.getName()));
-
-                updateLists("");
             }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Toast.makeText(CategoryPickerActivity.this, "Error loading categories", Toast.LENGTH_SHORT).show();
-            }
+            updateLists("");
         });
     }
 

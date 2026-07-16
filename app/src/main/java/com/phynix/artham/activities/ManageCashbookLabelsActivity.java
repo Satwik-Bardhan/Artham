@@ -22,13 +22,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputEditText;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
+import com.phynix.artham.auth.AuthManager;
+
 
 import com.phynix.artham.BaseActivity;
 import com.phynix.artham.R;
@@ -41,6 +36,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
+import java.util.LinkedHashSet;
+import com.phynix.artham.db.DataRepository;
 
 public class ManageCashbookLabelsActivity extends BaseActivity implements CashbookLabelsAdapter.OnCategoryClickListener {
 
@@ -51,17 +49,14 @@ public class ManageCashbookLabelsActivity extends BaseActivity implements Cashbo
     private View emptyStateLayout;
     private com.google.android.material.floatingactionbutton.FloatingActionButton fabAdd;
 
-    private DatabaseReference userCategoriesRef;
-    private DatabaseReference userCashbooksRef;
-    private ValueEventListener categoriesListener;
-    private ValueEventListener cashbooksListener;
+
 
     private final List<String> allCategories = new ArrayList<>();
     private final List<String> filteredCategories = new ArrayList<>();
     private final List<CashbookModel> allCashbooks = new ArrayList<>();
     private CashbookLabelsAdapter adapter;
 
-    private FirebaseUser currentUser;
+
     private String currentSearchQuery = "";
 
     @Override
@@ -74,18 +69,13 @@ public class ManageCashbookLabelsActivity extends BaseActivity implements Cashbo
             getSupportActionBar().hide();
         }
 
-        currentUser = FirebaseAuth.getInstance().getCurrentUser();
-        if (currentUser == null) {
+        if (!AuthManager.isSignedIn(this)) {
             Toast.makeText(this, "Not authenticated. Please log in again.", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
 
-        String uid = currentUser.getUid();
-        userCategoriesRef = FirebaseDatabase.getInstance().getReference("users")
-                .child(uid).child("cashbookCategories");
-        userCashbooksRef = FirebaseDatabase.getInstance().getReference("users")
-                .child(uid).child("cashbooks");
+        String uid = AuthManager.getUserId(this);
 
         initViews();
         setupRecyclerView();
@@ -125,50 +115,35 @@ public class ManageCashbookLabelsActivity extends BaseActivity implements Cashbo
         });
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        loadData();
+    }
+
     private void setupFirebaseListeners() {
-        categoriesListener = new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                allCategories.clear();
-                for (DataSnapshot snap : snapshot.getChildren()) {
-                    String catName = snap.getKey();
-                    if (catName != null && !catName.trim().isEmpty()) {
-                        allCategories.add(catName);
-                    }
-                }
-                filterCategories(currentSearchQuery);
+        loadData();
+    }
+
+    private void loadData() {
+        DataRepository repo = DataRepository.getInstance(getApplication());
+        repo.getCashbooks(cashbooks -> {
+            allCashbooks.clear();
+            if (cashbooks != null) {
+                allCashbooks.addAll(cashbooks);
             }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Log.e(TAG, "Failed to load labels", error.toException());
-                Toast.makeText(ManageCashbookLabelsActivity.this, "Failed to load labels", Toast.LENGTH_SHORT).show();
-            }
-        };
-
-        cashbooksListener = new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                allCashbooks.clear();
-                for (DataSnapshot snap : snapshot.getChildren()) {
-                    CashbookModel cashbook = snap.getValue(CashbookModel.class);
-                    if (cashbook != null) {
-                        allCashbooks.add(cashbook);
-                    }
-                }
-                if (adapter != null) {
-                    adapter.notifyDataSetChanged();
+            Set<String> uniqueCategories = new LinkedHashSet<>();
+            for (CashbookModel cb : allCashbooks) {
+                if (cb.getCategory() != null && !cb.getCategory().trim().isEmpty()) {
+                    uniqueCategories.add(cb.getCategory());
                 }
             }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Log.e(TAG, "Failed to load cashbooks", error.toException());
-            }
-        };
-
-        userCategoriesRef.addValueEventListener(categoriesListener);
-        userCashbooksRef.addValueEventListener(cashbooksListener);
+            allCategories.clear();
+            allCategories.addAll(uniqueCategories);
+            filterCategories(currentSearchQuery);
+        }, null);
     }
 
     private void filterCategories(String query) {
@@ -229,9 +204,9 @@ public class ManageCashbookLabelsActivity extends BaseActivity implements Cashbo
                     return;
                 }
 
-                // Validate: reject Firebase-illegal characters
-                if (com.phynix.artham.utils.FirebasePathUtils.containsIllegalChars(name)) {
-                    Toast.makeText(this, com.phynix.artham.utils.FirebasePathUtils.getIllegalCharsMessage(), Toast.LENGTH_LONG).show();
+                // Validate: reject illegal characters
+                if (com.phynix.artham.utils.NameValidationUtils.containsIllegalChars(name)) {
+                    Toast.makeText(this, com.phynix.artham.utils.NameValidationUtils.getIllegalCharsMessage(), Toast.LENGTH_LONG).show();
                     return;
                 }
 
@@ -261,21 +236,12 @@ public class ManageCashbookLabelsActivity extends BaseActivity implements Cashbo
     }
 
     private void saveCategoryToFirebase(String name) {
-        if (com.phynix.artham.utils.FirebasePathUtils.containsIllegalChars(name)) {
-            Toast.makeText(this, com.phynix.artham.utils.FirebasePathUtils.getIllegalCharsMessage(), Toast.LENGTH_LONG).show();
-            return;
-        }
-        try {
-            userCategoriesRef.child(name).setValue(true)
-                    .addOnSuccessListener(aVoid -> {
-                        Toast.makeText(this, "Label '" + name + "' created!", Toast.LENGTH_SHORT).show();
-                    })
-                    .addOnFailureListener(e -> {
-                        Toast.makeText(this, "Failed to create label: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                    });
-        } catch (Exception e) {
-            Log.e(TAG, "Invalid Firebase path for label: " + name, e);
-            Toast.makeText(this, "Invalid label name. " + com.phynix.artham.utils.FirebasePathUtils.getIllegalCharsMessage(), Toast.LENGTH_LONG).show();
+        if (name == null || name.trim().isEmpty()) return;
+        String trimmed = name.trim();
+        if (!allCategories.contains(trimmed)) {
+            allCategories.add(trimmed);
+            filterCategories(currentSearchQuery);
+            Toast.makeText(this, "Label '" + trimmed + "' created", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -305,10 +271,6 @@ public class ManageCashbookLabelsActivity extends BaseActivity implements Cashbo
             TextView dialogTitle = dialogView.findViewById(R.id.dialogTitle);
             dialogTitle.setText("Rename Label");
 
-            TextView dialogDescription = dialogView.findViewById(R.id.dialogTitle).getRootView().findViewWithTag("desc");
-            // If the layout has a description text view below title, let's update it or just let the default serve.
-            // Alternatively, we can locate the TextView by content or index, but the TextInputLayout is standard.
-
             TextInputEditText categoryNameInput = dialogView.findViewById(R.id.categoryNameInput);
             categoryNameInput.setText(oldName);
             // Pre-select all text for ease of renaming
@@ -329,9 +291,9 @@ public class ManageCashbookLabelsActivity extends BaseActivity implements Cashbo
                     return;
                 }
 
-                // Validate: reject Firebase-illegal characters
-                if (com.phynix.artham.utils.FirebasePathUtils.containsIllegalChars(newName)) {
-                    Toast.makeText(this, com.phynix.artham.utils.FirebasePathUtils.getIllegalCharsMessage(), Toast.LENGTH_LONG).show();
+                // Validate: reject illegal characters
+                if (com.phynix.artham.utils.NameValidationUtils.containsIllegalChars(newName)) {
+                    Toast.makeText(this, com.phynix.artham.utils.NameValidationUtils.getIllegalCharsMessage(), Toast.LENGTH_LONG).show();
                     return;
                 }
 
@@ -365,35 +327,20 @@ public class ManageCashbookLabelsActivity extends BaseActivity implements Cashbo
     }
 
     private void renameCategoryInFirebase(String oldName, String newName) {
-        String uid = currentUser.getUid();
-        DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
-        Map<String, Object> updates = new HashMap<>();
-
-        // Remove old category from index, write new one
-        updates.put("users/" + uid + "/cashbookCategories/" + oldName, null);
-        updates.put("users/" + uid + "/cashbookCategories/" + newName, true);
-
-        // Cascade rename to all associated cashbooks (case-insensitive)
-        int updatedCount = 0;
+        if (oldName == null || newName == null) return;
+        DataRepository repo = DataRepository.getInstance(getApplication());
         for (CashbookModel cb : allCashbooks) {
-            if (cb.getCategory() != null && oldName.equalsIgnoreCase(cb.getCategory())) {
-                updates.put("users/" + uid + "/cashbooks/" + cb.getCashbookId() + "/category", newName);
-                updatedCount++;
+            if (oldName.equalsIgnoreCase(cb.getCategory())) {
+                cb.setCategory(newName);
+                repo.updateCashbook(cb, null);
             }
         }
-
-        final int finalUpdatedCount = updatedCount;
-        rootRef.updateChildren(updates)
-                .addOnSuccessListener(aVoid -> {
-                    String msg = "Label renamed to '" + newName + "'";
-                    if (finalUpdatedCount > 0) {
-                        msg += " across " + finalUpdatedCount + " cashbooks";
-                    }
-                    Toast.makeText(ManageCashbookLabelsActivity.this, msg, Toast.LENGTH_SHORT).show();
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(ManageCashbookLabelsActivity.this, "Failed to rename label: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                });
+        int idx = allCategories.indexOf(oldName);
+        if (idx != -1) {
+            allCategories.set(idx, newName);
+        }
+        filterCategories(currentSearchQuery);
+        Toast.makeText(this, "Label renamed to '" + newName + "'", Toast.LENGTH_SHORT).show();
     }
 
     private void showDeleteCategoryDialog(String categoryName) {
@@ -423,44 +370,21 @@ public class ManageCashbookLabelsActivity extends BaseActivity implements Cashbo
     }
 
     private void deleteCategoryFromFirebase(String categoryName) {
-        String uid = currentUser.getUid();
-        DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
-        Map<String, Object> updates = new HashMap<>();
-
-        // Remove category node
-        updates.put("users/" + uid + "/cashbookCategories/" + categoryName, null);
-
-        // Safe clear of category tag in cashbooks (sets to "", leaving cashbooks otherwise untouched and unharmed)
-        int updatedCount = 0;
+        if (categoryName == null) return;
+        DataRepository repo = DataRepository.getInstance(getApplication());
         for (CashbookModel cb : allCashbooks) {
-            if (cb.getCategory() != null && categoryName.equalsIgnoreCase(cb.getCategory())) {
-                updates.put("users/" + uid + "/cashbooks/" + cb.getCashbookId() + "/category", "");
-                updatedCount++;
+            if (categoryName.equalsIgnoreCase(cb.getCategory())) {
+                cb.setCategory("");
+                repo.updateCashbook(cb, null);
             }
         }
-
-        final int finalUpdatedCount = updatedCount;
-        rootRef.updateChildren(updates)
-                .addOnSuccessListener(aVoid -> {
-                    String msg = "Label deleted successfully";
-                    if (finalUpdatedCount > 0) {
-                        msg += " (removed from " + finalUpdatedCount + " cashbooks)";
-                    }
-                    Toast.makeText(ManageCashbookLabelsActivity.this, msg, Toast.LENGTH_SHORT).show();
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(ManageCashbookLabelsActivity.this, "Failed to delete label: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                });
+        allCategories.remove(categoryName);
+        filterCategories(currentSearchQuery);
+        Toast.makeText(this, "Label deleted", Toast.LENGTH_SHORT).show();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (categoriesListener != null && userCategoriesRef != null) {
-            userCategoriesRef.removeEventListener(categoriesListener);
-        }
-        if (cashbooksListener != null && userCashbooksRef != null) {
-            userCashbooksRef.removeEventListener(cashbooksListener);
-        }
     }
 }

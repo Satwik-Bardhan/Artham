@@ -8,46 +8,16 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.google.firebase.database.DatabaseError;
+import com.phynix.artham.auth.AuthManager;
 
 import java.io.IOException;
 
 public class ErrorHandler {
     private static final String TAG = "ErrorHandler";
 
-    public static void handleFirebaseError(@NonNull Context context, @NonNull DatabaseError error) {
-        Log.e(TAG, "Firebase error: " + error.getMessage());
-
-        if (error.getCode() == DatabaseError.PERMISSION_DENIED) {
-            try {
-                if (com.google.firebase.auth.FirebaseAuth.getInstance().getCurrentUser() == null) {
-                    Log.d(TAG, "Permission denied error ignored because user session has ended.");
-                    return;
-                }
-            } catch (Exception e) {
-                Log.e(TAG, "Error checking FirebaseAuth state", e);
-            }
-        }
-
-        String userMessage;
-        switch (error.getCode()) {
-            case DatabaseError.NETWORK_ERROR:
-                userMessage = "Network connection failed. Please check your internet connection.";
-                break;
-            case DatabaseError.PERMISSION_DENIED:
-                userMessage = "Permission denied. Please log in again.";
-                break;
-            case DatabaseError.UNAVAILABLE:
-                userMessage = "Service temporarily unavailable. Please try again later.";
-                break;
-            case DatabaseError.USER_CODE_EXCEPTION:
-                userMessage = "Invalid data format. Please try again.";
-                break;
-            default:
-                userMessage = "An unexpected error occurred. Please try again.";
-        }
-
-        showErrorToUser(context, userMessage);
+    public static void handleDatabaseError(@NonNull Context context, @NonNull String errorMessage) {
+        Log.e(TAG, "Database error: " + errorMessage);
+        showErrorToUser(context, errorMessage != null ? errorMessage : "An unexpected error occurred. Please try again.");
     }
 
     public static void handleAuthError(@NonNull Context context, @Nullable Exception e) {

@@ -21,12 +21,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
+import com.phynix.artham.auth.AuthManager;
 import com.phynix.artham.R;
 import com.phynix.artham.adapters.CategoryIconAdapter;
 import com.phynix.artham.models.CategoryModel;
@@ -53,7 +48,7 @@ public class CreateCategoryActivity extends BaseActivity {
     private MaterialButton saveButton;
     private ImageView editHexButton;
 
-    private DatabaseReference categoryRef;
+    // private DatabaseReference categoryRef;
     private String categoryId = null; // Null means create new, otherwise edit existing
     private String selectedHexColor = "#FF5252"; // Default fallback
     private int selectedIconResId = R.drawable.ic_category; // Default icon
@@ -70,11 +65,8 @@ public class CreateCategoryActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_category);
 
-        String userId = FirebaseAuth.getInstance().getUid();
-        if (userId != null) {
-            categoryRef = FirebaseDatabase.getInstance().getReference("users")
-                    .child(userId).child("categories");
-        }
+        String userId = AuthManager.getUserId(this);
+        // Firebase initialization removed
 
         if (getIntent() != null) {
             if (getIntent().hasExtra("CATEGORY_ID")) {
@@ -218,38 +210,7 @@ public class CreateCategoryActivity extends BaseActivity {
     }
 
     private void loadExistingCategory() {
-        if (categoryRef == null || categoryId == null) return;
-
-        categoryRef.child(categoryId).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                CategoryModel model = snapshot.getValue(CategoryModel.class);
-                if (model != null) {
-                    categoryNameInput.setText(model.getName());
-                    selectedHexColor = model.getColorHex();
-                    selectedIconResId = model.getIconResId();
-                    categoryType = model.getType();
-
-                    colorHexText.setText(selectedHexColor);
-                    try {
-                        int parsedColor = Color.parseColor(selectedHexColor);
-                        colorPreview.setBackgroundTintList(ColorStateList.valueOf(parsedColor));
-                        colorPickerView.selectByHsvColor(parsedColor);
-                    } catch (Exception ignored) {
-                    }
-
-                    int iconIndex = availableIcons.indexOf(selectedIconResId);
-                    if (iconIndex != -1) {
-                        iconAdapter.setSelectedIndex(iconIndex);
-                    }
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Toast.makeText(CreateCategoryActivity.this, "Failed to load category", Toast.LENGTH_SHORT).show();
-            }
-        });
+        // Firebase logic removed
     }
 
     private void setupListeners() {
@@ -267,33 +228,25 @@ public class CreateCategoryActivity extends BaseActivity {
         });
     }
 
+    private String targetCashbookId;
+
     private void saveCategoryToFirebase(String name) {
-        if (categoryRef == null) return;
-
-        CategoryModel newCategory = new CategoryModel(
-                name,
-                categoryType,
-                selectedHexColor,
-                selectedIconResId,
-                true // Requirement #4: Mark as user-created
-        );
-
-        if (categoryId == null) {
-            // Create new
-            String id = categoryRef.push().getKey();
-            if (id != null) {
-                newCategory.setId(id);
-                categoryRef.child(id).setValue(newCategory)
-                        .addOnSuccessListener(aVoid -> finishWithSuccess("Category Created"))
-                        .addOnFailureListener(e -> showError("Failed to create category"));
-            }
-        } else {
-            // Update existing
-            newCategory.setId(categoryId);
-            categoryRef.child(categoryId).setValue(newCategory)
-                    .addOnSuccessListener(aVoid -> finishWithSuccess("Category Updated"))
-                    .addOnFailureListener(e -> showError("Failed to update category"));
+        if (targetCashbookId == null || targetCashbookId.isEmpty()) {
+            android.content.SharedPreferences prefs = getSharedPreferences("AppPrefs", android.content.Context.MODE_PRIVATE);
+            String uid = AuthManager.getUserId(this);
+            targetCashbookId = prefs.getString("active_cashbook_id_" + uid, getIntent().getStringExtra("cashbook_id"));
         }
+
+        CategoryModel category = new CategoryModel();
+        category.setName(name);
+        category.setType(categoryType != null ? categoryType : "Expense");
+        category.setColorHex(selectedHexColor != null ? selectedHexColor : "#FF5722");
+        category.setIconResId(selectedIconResId != 0 ? selectedIconResId : R.drawable.ic_category);
+        category.setCustom(true);
+
+        com.phynix.artham.db.DataRepository.getInstance(getApplication()).addCategory(targetCashbookId, category, success -> {
+            finishWithSuccess("Category saved successfully");
+        });
     }
 
     private void finishWithSuccess(String message) {

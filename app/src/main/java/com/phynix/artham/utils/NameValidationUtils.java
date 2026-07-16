@@ -1,24 +1,22 @@
 package com.phynix.artham.utils;
 
 /**
- * FirebasePathUtils — Utility class for sanitizing and validating
- * strings used as Firebase Realtime Database path keys.
+ * NameValidationUtils — Utility class for sanitizing and validating
+ * strings used as keys or names in local and cloud systems.
  *
- * Firebase Database keys CANNOT contain: . # $ [ ] /
- * Using any of these characters throws a DatabaseException at runtime.
+ * Replaces FirebasePathUtils to avoid Firebase terminology.
  */
-public final class FirebasePathUtils {
+public final class NameValidationUtils {
 
-    /** Characters that are illegal in Firebase Realtime Database keys. */
+    /** Characters that are illegal in names/keys for database compatibility. */
     private static final String ILLEGAL_CHARS = ".#$[]/";
 
-    private FirebasePathUtils() {
+    private NameValidationUtils() {
         // Utility class — prevent instantiation
     }
 
     /**
-     * Check if the given string contains any characters that are
-     * illegal in a Firebase Database path key.
+     * Check if the given string contains any illegal characters.
      *
      * @param key the string to validate
      * @return true if the key contains illegal characters
@@ -34,11 +32,10 @@ public final class FirebasePathUtils {
     }
 
     /**
-     * Sanitize the given string by removing all characters that are
-     * illegal in Firebase Database path keys.
+     * Sanitize the given string by removing all illegal characters.
      *
      * @param key the raw string
-     * @return a sanitized version safe for use as a Firebase key
+     * @return a sanitized version safe for use
      */
     public static String sanitize(String key) {
         if (key == null) return "";

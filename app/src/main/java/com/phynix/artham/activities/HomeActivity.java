@@ -51,14 +51,8 @@ import com.bumptech.glide.Glide;
 import com.google.android.play.core.review.ReviewInfo;
 import com.google.android.play.core.review.ReviewManager;
 import com.google.android.play.core.review.ReviewManagerFactory;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ServerValue;
-import com.google.firebase.database.ValueEventListener;
+import com.phynix.artham.auth.AuthManager;
+
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.phynix.artham.adapters.DailyBalanceAdapter;
 import com.phynix.artham.databinding.ActivityHomeBinding;
@@ -162,9 +156,7 @@ public class HomeActivity extends BaseActivity {
     private Handler insightHandler = new Handler(Looper.getMainLooper());
     private Runnable insightRunnable;
 
-    // Firebase user listener for cleanup
-    private DatabaseReference userRef;
-    private ValueEventListener userListener;
+
 
     // --- Launchers ---
 
@@ -228,6 +220,21 @@ public class HomeActivity extends BaseActivity {
                 }
             });
 
+    private final android.content.BroadcastReceiver syncReceiver = new android.content.BroadcastReceiver() {
+        @Override
+        public void onReceive(android.content.Context context, Intent intent) {
+            if ("com.phynix.artham.ACTION_SYNC_COMPLETED".equals(intent.getAction())) {
+                Log.d("HomeActivity", "Sync completed broadcast received, reloading data...");
+                if (viewModel != null) {
+                    viewModel.loadCashbooks();
+                    if (currentCashbookId != null && !currentCashbookId.isEmpty()) {
+                        viewModel.switchCashbook(currentCashbookId);
+                    }
+                }
+            }
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         ThemeManager.applyActivityTheme(this);
@@ -235,6 +242,12 @@ public class HomeActivity extends BaseActivity {
 
         binding = ActivityHomeBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        // Register sync completed receiver (RECEIVER_NOT_EXPORTED required for API 33+)
+        androidx.core.content.ContextCompat.registerReceiver(
+                this, syncReceiver,
+                new android.content.IntentFilter("com.phynix.artham.ACTION_SYNC_COMPLETED"),
+                androidx.core.content.ContextCompat.RECEIVER_NOT_EXPORTED);
 
         if (getSupportActionBar() != null) {
             getSupportActionBar().hide();
@@ -246,14 +259,14 @@ public class HomeActivity extends BaseActivity {
         currencyFormat = NumberFormat.getCurrencyInstance(new Locale("en", "IN"));
 
         boolean isLocal = DataRepository.getInstance(getApplication()).isLocalMode();
-        if (!isLocal && FirebaseAuth.getInstance().getCurrentUser() == null) {
+        if (!isLocal && !AuthManager.isSignedIn(this)) {
             signOutUser();
             return;
         }
 
         // Initialize category cache so user-created category icons/colors are used
         // everywhere
-        com.phynix.artham.utils.CategoryColorUtil.initialize();
+        com.phynix.artham.utils.CategoryColorUtil.initialize(this);
 
         // READ THE SELECTION SECURELY ON STARTUP
         SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
@@ -626,74 +639,65 @@ public class HomeActivity extends BaseActivity {
     }
 
     private void updateCashbookLastOpened(String cashbookId) {
-        FirebaseUser fbUser = FirebaseAuth.getInstance().getCurrentUser();
-        if (fbUser == null || cashbookId == null)
+        if (!AuthManager.isSignedIn(this) || cashbookId == null)
             return;
-
-        DatabaseReference bookRef = FirebaseDatabase.getInstance()
-                .getReference("users")
-                .child(fbUser.getUid())
-                .child("cashbooks")
-                .child(cashbookId);
-
-        Map<String, Object> updates = new HashMap<>();
-        updates.put("lastOpenedAt", ServerValue.TIMESTAMP);
-
-        bookRef.updateChildren(updates).addOnFailureListener(e -> {
-            Log.e(TAG, "Failed to update last opened time", e);
-            if (e.getMessage() != null && e.getMessage().contains("Permission denied")) {
-                Log.e(TAG, "CHECK FIREBASE RULES: Write denied at " + bookRef.toString());
-            }
-        });
+        
+        String userId = AuthManager.getUserId(this);
     }
 
     private void fetchUserDataDirectly() {
-        FirebaseUser fbUser = FirebaseAuth.getInstance().getCurrentUser();
-        if (fbUser == null)
+        if (!AuthManager.isSignedIn(this))
             return;
 
-        // Instantly populate from session cache if available (prevents flicker on tab switch)
+        String userId = AuthManager.getUserId(this);
+
+        // Prefer user-edited values from SharedPreferences over AuthManager (Google) defaults
+        android.content.SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+        String editedName = prefs.getString("user_display_name", "");
+        String editedPhotoPath = prefs.getString("user_photo_path", "");
+
+        String name = !editedName.isEmpty() ? editedName : AuthManager.getUserName(this);
+        String email = AuthManager.getUserEmail(this);
+        String photoUrl = !editedPhotoPath.isEmpty() ? editedPhotoPath : AuthManager.getUserPhotoUrl(this);
+
+        Users updatedUser = new Users(userId, name, email, null, photoUrl);
         SessionCache cache = SessionCache.getInstance();
-        if (cache.hasUserProfile()) {
-            updateUserUI(cache.getCachedUserProfile());
-        } else {
-            updateUserUI(null);
-        }
-
-        userRef = FirebaseDatabase.getInstance().getReference("users").child(fbUser.getUid());
-        userListener = new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                if (isDestroyed() || isFinishing())
-                    return;
-                Users user = snapshot.getValue(Users.class);
-                // Cache for other activities
-                SessionCache.getInstance().cacheUserProfile(user);
-                updateUserUI(user);
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-            }
-        };
-        userRef.addValueEventListener(userListener);
+        cache.cacheUserProfile(updatedUser);
+        updateUserUI(updatedUser);
     }
 
     private void updateUserUI(Users user) {
         boolean isLocal = DataRepository.getInstance(getApplication()).isLocalMode();
+        android.content.SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+        String savedPhotoPath = prefs.getString("user_photo_path", "");
+        String savedName = prefs.getString("user_display_name", "");
+
         if (isLocal) {
+            String localName = !savedName.isEmpty() ? savedName : "Local User";
             if (backUserName != null)
-                backUserName.setText("Local User");
+                backUserName.setText(localName);
             if (backProfileImage != null && !isDestroyed() && !isFinishing()) {
                 backProfileImage.clearColorFilter();
-                backProfileImage.setImageResource(R.drawable.ic_person_placeholder);
+                // Try locally saved photo first
+                if (!savedPhotoPath.isEmpty()) {
+                    java.io.File photoFile = new java.io.File(savedPhotoPath);
+                    if (photoFile.exists()) {
+                        Glide.with(this).load(photoFile)
+                                .placeholder(R.drawable.ic_person_placeholder)
+                                .circleCrop()
+                                .into(backProfileImage);
+                    } else {
+                        backProfileImage.setImageResource(R.drawable.ic_person_placeholder);
+                    }
+                } else {
+                    backProfileImage.setImageResource(R.drawable.ic_person_placeholder);
+                }
             }
             return;
         }
 
-        FirebaseUser fbUser = FirebaseAuth.getInstance().getCurrentUser();
         String name = "User";
-        String uid = "";
+        String uid = AuthManager.getUserId(this);
         String photoUrl = null;
         if (user != null) {
             if (user.getUserName() != null && !user.getUserName().isEmpty())
@@ -702,22 +706,28 @@ public class HomeActivity extends BaseActivity {
                 name = user.getName();
             photoUrl = user.getProfile();
         }
-        if (name.equals("User") && fbUser != null && fbUser.getDisplayName() != null
-                && !fbUser.getDisplayName().isEmpty()) {
-            name = fbUser.getDisplayName();
-        }
-        if (fbUser != null)
-            uid = fbUser.getUid();
-        if (photoUrl == null && fbUser != null && fbUser.getPhotoUrl() != null) {
-            photoUrl = fbUser.getPhotoUrl().toString();
+
+        // Fallback to saved name if user profile name is generic
+        if ("User".equals(name) && !savedName.isEmpty()) {
+            name = savedName;
         }
 
         if (backUserName != null)
             backUserName.setText(name);
         if (backProfileImage != null && !isDestroyed() && !isFinishing()) {
             backProfileImage.clearColorFilter();
-            Glide.with(this).load(photoUrl).placeholder(R.drawable.ic_person_placeholder).circleCrop()
-                    .into(backProfileImage);
+            if (photoUrl != null && !photoUrl.isEmpty()) {
+                // Detect local file path vs URL
+                Object glideSource = photoUrl.startsWith("/") 
+                        ? new java.io.File(photoUrl) : photoUrl;
+                Glide.with(this).load(glideSource)
+                        .skipMemoryCache(true)
+                        .placeholder(R.drawable.ic_person_placeholder)
+                        .circleCrop()
+                        .into(backProfileImage);
+            } else {
+                backProfileImage.setImageResource(R.drawable.ic_person_placeholder);
+            }
         }
     }
 
@@ -1210,12 +1220,11 @@ public class HomeActivity extends BaseActivity {
     }
 
     private void signOutUser() {
-        if (userRef != null && userListener != null) {
-            userRef.removeEventListener(userListener);
-        }
         SessionCache.getInstance().clear();
-        FirebaseAuth.getInstance().signOut();
-        startActivity(new Intent(this, SignInActivity.class));
+        AuthManager.signOut(this);
+        Intent intent = new Intent(this, SignInActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
         finish();
     }
 
@@ -1342,16 +1351,30 @@ public class HomeActivity extends BaseActivity {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        // Reload profile data (photo/name) from SharedPreferences when returning from EditProfileActivity
+        boolean isLocal = DataRepository.getInstance(getApplication()).isLocalMode();
+        if (isLocal) {
+            updateUserUI(null);
+        } else {
+            SessionCache cache = SessionCache.getInstance();
+            updateUserUI(cache.hasUserProfile() ? cache.getCachedUserProfile() : null);
+        }
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
+        try {
+            unregisterReceiver(syncReceiver);
+        } catch (Exception e) {
+            Log.w("HomeActivity", "Failed to unregister syncReceiver", e);
+        }
         // Clean up the skeleton timeout to prevent leaks
         skeletonTimeoutHandler.removeCallbacks(skeletonTimeoutRunnable);
         if (insightHandler != null) {
             insightHandler.removeCallbacksAndMessages(null);
-        }
-
-        if (userRef != null && userListener != null) {
-            userRef.removeEventListener(userListener);
         }
         binding = null;
     }

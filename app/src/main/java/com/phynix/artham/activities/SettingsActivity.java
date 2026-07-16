@@ -34,13 +34,8 @@ import com.phynix.artham.utils.OnboardingOverlay;
 import com.phynix.artham.utils.UpdateChecker;
 import android.view.animation.Animation;
 import android.view.animation.TranslateAnimation;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
+import com.phynix.artham.auth.AuthManager;
+
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -54,14 +49,7 @@ public class SettingsActivity extends BaseActivity {
     // ViewBinding
     private ActivitySettingsBinding binding;
 
-    private FirebaseAuth mAuth;
-    private DatabaseReference mDatabase;
-    private FirebaseUser currentUser;
-    private DatabaseReference userRef;
 
-    // Listeners
-    private ValueEventListener userProfileListener;
-    private ValueEventListener cashbookNameListener;
 
     // Data
     private String currentCashbookId;
@@ -83,12 +71,8 @@ public class SettingsActivity extends BaseActivity {
 
         originalTheme = ThemeManager.getTheme(this);
 
-        mAuth = FirebaseAuth.getInstance();
-        currentUser = mAuth.getCurrentUser();
-        mDatabase = FirebaseDatabase.getInstance().getReference();
-
         boolean isLocal = DataRepository.getInstance(getApplication()).isLocalMode();
-        if (!isLocal && currentUser == null) {
+        if (!isLocal && !AuthManager.isSignedIn(this)) {
             Toast.makeText(this, "Not logged in.", Toast.LENGTH_SHORT).show();
             logoutUser();
             return;
@@ -101,13 +85,11 @@ public class SettingsActivity extends BaseActivity {
         // 2. If the intent missed it (due to fast navigation), pull it instantly from local memory
         if (currentCashbookId == null || currentCashbookId.trim().isEmpty()) {
             SharedPreferences prefs = getSharedPreferences("AppPrefs", Context.MODE_PRIVATE);
-            String uid = currentUser != null ? currentUser.getUid() : "local_user";
+            String uid = AuthManager.getUserId(this);
             currentCashbookId = prefs.getString("active_cashbook_id_" + uid, "");
         }
 
-        if (!isLocal && currentUser != null) {
-            userRef = mDatabase.child("users").child(currentUser.getUid());
-        }
+
 
         setupClickListeners();
         setupBottomNavigation();
@@ -168,6 +150,19 @@ public class SettingsActivity extends BaseActivity {
         String currentTheme = ThemeManager.getTheme(this);
         if (originalTheme != null && !originalTheme.equals(currentTheme)) {
             recreate();
+            return;
+        }
+        // Reload profile data from SharedPreferences (e.g., after EditProfileActivity)
+        boolean isLocal = DataRepository.getInstance(getApplication()).isLocalMode();
+        if (isLocal) {
+            populateProfileUI(null);
+        } else {
+            SessionCache cache = SessionCache.getInstance();
+            if (cache.hasUserProfile()) {
+                populateProfileUI(cache.getCachedUserProfile());
+            } else {
+                populateProfileUI(null);
+            }
         }
     }
 
@@ -201,6 +196,25 @@ public class SettingsActivity extends BaseActivity {
         // Tapping the speech bubble also opens Play Store
         if (binding.updateBubbleContainer != null) {
             binding.updateBubbleContainer.setOnClickListener(v -> openPlayStore());
+        }
+
+        // Guest Mode: Show sign-in banner and handle sign-in button
+        boolean isLocal = DataRepository.getInstance(getApplication()).isLocalMode();
+        if (isLocal) {
+            if (binding.guestSignInBanner != null) {
+                binding.guestSignInBanner.setVisibility(View.VISIBLE);
+            }
+            if (binding.guestSignInButton != null) {
+                binding.guestSignInButton.setOnClickListener(v -> {
+                    // Navigate to SignInActivity for Google sign-in
+                    // DataRepository.migrateLocalDataToFirebase() will run automatically
+                    // in HomeViewModel after successful sign-in
+                    Intent intent = new Intent(this, SignInActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
+                    finish();
+                });
+            }
         }
     }
 
@@ -281,7 +295,7 @@ public class SettingsActivity extends BaseActivity {
             } else if (binding.primarySettingsLayout != null) {
                 binding.primarySettingsLayout.activeCashbookName.setText("No Active Cashbook");
             }
-        } else if (currentUser != null) {
+        } else if (AuthManager.isSignedIn(this)) {
             // Check session cache first — skip skeleton if we already have data
             SessionCache cache = SessionCache.getInstance();
             if (cache.hasUserProfile()) {
@@ -352,37 +366,21 @@ public class SettingsActivity extends BaseActivity {
     }
 
     private void startListeningForUserProfile() {
-        if (userRef == null) return;
-
-        if (userProfileListener != null) {
-            userRef.removeEventListener(userProfileListener);
-        }
-
-        userProfileListener = new ValueEventListener() {
-            @SuppressLint("SetTextI18n")
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if (!dataSnapshot.exists()) {
-                    hideSkeleton();
-                    return;
-                }
-
-                Users userProfile = dataSnapshot.getValue(Users.class);
-
-                // Cache the profile for instant display on tab switches
-                SessionCache.getInstance().cacheUserProfile(userProfile);
-
-                populateProfileUI(userProfile);
-                hideSkeleton();
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-                hideSkeleton();
-                ErrorHandler.handleFirebaseError(SettingsActivity.this, databaseError);
-            }
-        };
-        userRef.addValueEventListener(userProfileListener);
+        String userId = AuthManager.getUserId(this);
+        
+        // Prefer user-edited values from SharedPreferences over AuthManager (Google) defaults
+        android.content.SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+        String editedName = prefs.getString("user_display_name", "");
+        String editedPhotoPath = prefs.getString("user_photo_path", "");
+        
+        String name = !editedName.isEmpty() ? editedName : AuthManager.getUserName(this);
+        String email = AuthManager.getUserEmail(this);
+        String photoUrl = (!editedPhotoPath.isEmpty()) ? editedPhotoPath : AuthManager.getUserPhotoUrl(this);
+        
+        Users profile = new Users(userId, name, email, null, photoUrl);
+        SessionCache.getInstance().cacheUserProfile(profile);
+        populateProfileUI(profile);
+        hideSkeletonInstant();
     }
 
     /** Populates profile card UI from a Users object (either cached or fresh from Firebase). */
@@ -391,9 +389,31 @@ public class SettingsActivity extends BaseActivity {
         if (binding.primarySettingsLayout == null) return;
 
         boolean isLocal = DataRepository.getInstance(getApplication()).isLocalMode();
+        android.content.SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+        String savedName = prefs.getString("user_display_name", "");
+        String savedPhotoPath = prefs.getString("user_photo_path", "");
+
         if (isLocal) {
-            binding.primarySettingsLayout.userName.setText("Local User");
-            binding.primarySettingsLayout.profileImg.setImageResource(R.drawable.ic_person_placeholder);
+            String displayName = !savedName.isEmpty() ? savedName : "Local User";
+            binding.primarySettingsLayout.userName.setText(displayName);
+
+            // Load saved profile photo
+            if (!savedPhotoPath.isEmpty()) {
+                java.io.File photoFile = new java.io.File(savedPhotoPath);
+                if (photoFile.exists() && !isDestroyed() && !isFinishing()) {
+                    Glide.with(this)
+                            .load(photoFile)
+                            .placeholder(R.drawable.ic_person_placeholder)
+                            .error(R.drawable.ic_person_placeholder)
+                            .circleCrop()
+                            .into(binding.primarySettingsLayout.profileImg);
+                } else {
+                    binding.primarySettingsLayout.profileImg.setImageResource(R.drawable.ic_person_placeholder);
+                }
+            } else {
+                binding.primarySettingsLayout.profileImg.setImageResource(R.drawable.ic_person_placeholder);
+            }
+
             binding.primarySettingsLayout.uidText.setText("UID: LOCAL_USER");
             if (binding.primarySettingsLayout.copyUidButton != null) {
                 binding.primarySettingsLayout.copyUidButton.setOnClickListener(v -> {
@@ -406,35 +426,51 @@ public class SettingsActivity extends BaseActivity {
 
         if (userProfile != null && !TextUtils.isEmpty(userProfile.getUserName())) {
             binding.primarySettingsLayout.userName.setText(userProfile.getUserName());
-        } else if (currentUser.getDisplayName() != null && !currentUser.getDisplayName().isEmpty()) {
-            binding.primarySettingsLayout.userName.setText(currentUser.getDisplayName());
         } else {
-            binding.primarySettingsLayout.userName.setText("Artham User");
+            // Fallback: load saved name from SharedPreferences
+            String nameToUse = !savedName.isEmpty() ? savedName : "Artham User";
+            binding.primarySettingsLayout.userName.setText(nameToUse);
         }
 
+        // Try profile photo (could be URL or local file path)
+        boolean photoLoaded = false;
         if (userProfile != null && userProfile.getProfile() != null && !userProfile.getProfile().isEmpty()) {
             if (!isDestroyed() && !isFinishing()) {
+                String profileSource = userProfile.getProfile();
+                Object glideSource = profileSource.startsWith("/") 
+                        ? new java.io.File(profileSource) : profileSource;
                 Glide.with(this)
-                        .load(userProfile.getProfile())
+                        .load(glideSource)
+                        .skipMemoryCache(true)
                         .placeholder(R.drawable.ic_person_placeholder)
                         .error(R.drawable.ic_person_placeholder)
                         .circleCrop()
                         .into(binding.primarySettingsLayout.profileImg);
+                photoLoaded = true;
             }
-        } else if (currentUser.getPhotoUrl() != null) {
-            if (!isDestroyed() && !isFinishing()) {
-                Glide.with(this)
-                        .load(currentUser.getPhotoUrl())
-                        .placeholder(R.drawable.ic_person_placeholder)
-                        .error(R.drawable.ic_person_placeholder)
-                        .circleCrop()
-                        .into(binding.primarySettingsLayout.profileImg);
+        }
+
+        if (!photoLoaded) {
+            // Fallback: load saved photo from internal storage
+            if (!savedPhotoPath.isEmpty()) {
+                java.io.File fallbackFile = new java.io.File(savedPhotoPath);
+                if (fallbackFile.exists() && !isDestroyed() && !isFinishing()) {
+                    Glide.with(this)
+                            .load(fallbackFile)
+                            .placeholder(R.drawable.ic_person_placeholder)
+                            .error(R.drawable.ic_person_placeholder)
+                            .circleCrop()
+                            .into(binding.primarySettingsLayout.profileImg);
+                    photoLoaded = true;
+                }
             }
-        } else {
+        }
+
+        if (!photoLoaded) {
             binding.primarySettingsLayout.profileImg.setImageResource(R.drawable.ic_person_placeholder);
         }
 
-        String uidString = currentUser.getUid().toUpperCase();
+        String uidString = AuthManager.getUserId(this).toUpperCase();
         binding.primarySettingsLayout.uidText.setText("UID: " + uidString);
 
         if (binding.primarySettingsLayout.copyUidButton != null) {
@@ -443,11 +479,7 @@ public class SettingsActivity extends BaseActivity {
             });
         }
 
-        if (currentUser.getMetadata() != null) {
-            SimpleDateFormat sdf = new SimpleDateFormat("dd MMM, yyyy", Locale.getDefault());
-            String creationDate = sdf.format(new Date(currentUser.getMetadata().getCreationTimestamp()));
-            binding.primarySettingsLayout.createdDate.setText("Joined on " + creationDate);
-        }
+        binding.primarySettingsLayout.createdDate.setVisibility(View.GONE);
     }
 
     private void copyToClipboard(String label, String text) {
@@ -460,28 +492,18 @@ public class SettingsActivity extends BaseActivity {
     }
 
     private void startListeningForCashbookName(String cashbookId) {
-        if (userRef == null || cashbookId == null || cashbookId.isEmpty()) return;
-
-        if (cashbookNameListener != null) {
-            userRef.child("cashbooks").child(cashbookId).removeEventListener(cashbookNameListener);
-        }
-
-        cashbookNameListener = new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                CashbookModel cashbook = dataSnapshot.getValue(CashbookModel.class);
-                if (cashbook != null && binding.primarySettingsLayout != null) {
-                    binding.primarySettingsLayout.activeCashbookName.setText(cashbook.getName());
-                    // Cache cashbook name for instant display on tab switches
-                    SessionCache.getInstance().cacheCashbookName(cashbookId, cashbook.getName());
+        if (cashbookId == null || cashbookId.isEmpty()) return;
+        DataRepository.getInstance(getApplication()).getCashbooks(cashbooks -> {
+            for (CashbookModel cb : cashbooks) {
+                if (cb.getCashbookId().equals(cashbookId)) {
+                    SessionCache.getInstance().cacheCashbookName(cashbookId, cb.getName());
+                    if (binding.primarySettingsLayout != null) {
+                        binding.primarySettingsLayout.activeCashbookName.setText(cb.getName());
+                    }
+                    break;
                 }
             }
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-                ErrorHandler.handleFirebaseError(SettingsActivity.this, databaseError);
-            }
-        };
-        userRef.child("cashbooks").child(cashbookId).addValueEventListener(cashbookNameListener);
+        }, null);
     }
 
     private void logoutUser() {
@@ -489,9 +511,7 @@ public class SettingsActivity extends BaseActivity {
         SessionCache.getInstance().clear();
         SharedPreferences prefs = getSharedPreferences("AppPrefs", Context.MODE_PRIVATE);
         prefs.edit().putBoolean("is_local_mode", false).apply();
-        if (mAuth.getCurrentUser() != null) {
-            mAuth.signOut();
-        }
+        AuthManager.signOut(this);
         Toast.makeText(this, "Logged out", Toast.LENGTH_SHORT).show();
         Intent intent = new Intent(this, SignInActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -500,10 +520,17 @@ public class SettingsActivity extends BaseActivity {
     }
 
     private void showLogoutConfirmationDialog() {
+        boolean isLocal = DataRepository.getInstance(getApplication()).isLocalMode();
+        String title = isLocal ? "Exit Guest Mode" : "Logout";
+        String message = isLocal
+                ? "Your local data will remain on this device. You can sign in with Google to backup and sync your data."
+                : "Are you sure you want to log out?";
+        String positiveText = isLocal ? "Exit" : "Logout";
+
         new AlertDialog.Builder(this)
-                .setTitle("Logout")
-                .setMessage("Are you sure you want to log out?")
-                .setPositiveButton("Logout", (dialog, which) -> logoutUser())
+                .setTitle(title)
+                .setMessage(message)
+                .setPositiveButton(positiveText, (dialog, which) -> logoutUser())
                 .setNegativeButton("Cancel", null)
                 .show();
     }
@@ -513,19 +540,11 @@ public class SettingsActivity extends BaseActivity {
     }
 
     private void removeFirebaseListeners() {
-        if (userRef == null) return;
-
-        if (userProfileListener != null) {
-            userRef.removeEventListener(userProfileListener);
-        }
-        if (cashbookNameListener != null && currentCashbookId != null && !currentCashbookId.isEmpty()) {
-            userRef.child("cashbooks").child(currentCashbookId).removeEventListener(cashbookNameListener);
-        }
     }
 
     private void saveActiveCashbookId(String cashbookId) {
         SharedPreferences prefs = getSharedPreferences("AppPrefs", Context.MODE_PRIVATE);
-        String uid = currentUser != null ? currentUser.getUid() : "local_user";
+        String uid = AuthManager.getUserId(this);
         prefs.edit().putString("active_cashbook_id_" + uid, cashbookId).apply();
     }
 

@@ -57,7 +57,7 @@ public class CashbookAdapter extends RecyclerView.Adapter<CashbookAdapter.Cashbo
         this.successColor = ThemeUtil.getThemeAttrColor(context, R.attr.chk_incomeColor);
         this.secondaryColor = ThemeUtil.getThemeAttrColor(context, R.attr.chk_textColorSecondary);
         this.expenseColor = ThemeUtil.getThemeAttrColor(context, R.attr.chk_expenseColor);
-        this.favoriteColor = ContextCompat.getColor(context, R.color.category_rent);
+        this.favoriteColor = Color.parseColor("#FFD700");
     }
 
     @NonNull
@@ -247,10 +247,10 @@ public class CashbookAdapter extends RecyclerView.Adapter<CashbookAdapter.Cashbo
 
             if (cashbook.isFavorite()) {
                 favoriteButton.setImageResource(R.drawable.ic_star_filled);
-                favoriteButton.setColorFilter(favoriteColor);
+                favoriteButton.setColorFilter(favoriteColor, android.graphics.PorterDuff.Mode.SRC_IN);
             } else {
                 favoriteButton.setImageResource(R.drawable.ic_star_outline);
-                favoriteButton.setColorFilter(secondaryColor);
+                favoriteButton.setColorFilter(secondaryColor, android.graphics.PorterDuff.Mode.SRC_IN);
             }
         }
 

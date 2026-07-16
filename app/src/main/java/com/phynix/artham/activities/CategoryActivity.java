@@ -25,12 +25,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
+import com.phynix.artham.auth.AuthManager;
 
 import com.phynix.artham.R;
 import com.phynix.artham.adapters.CategoryAdapter;
@@ -48,7 +43,6 @@ public class CategoryActivity extends BaseActivity {
 
     private RecyclerView categoriesRecyclerView;
     private CategoryAdapter categoryAdapter;
-    private DatabaseReference userCategoriesRef;
 
     private EditText searchEditText;
     private ImageButton sortButton;
@@ -76,11 +70,8 @@ public class CategoryActivity extends BaseActivity {
         searchEditText = findViewById(R.id.searchEditText);
         sortButton = findViewById(R.id.sortButton);
 
-        String uid = FirebaseAuth.getInstance().getUid();
-        if (uid != null) {
-            userCategoriesRef = FirebaseDatabase.getInstance().getReference("users")
-                    .child(uid).child("categories");
-        }
+        String uid = AuthManager.getUserId(this);
+        // Firebase initialization removed
 
         setupRecyclerView();
         setupSearchAndSort();
@@ -142,28 +133,26 @@ public class CategoryActivity extends BaseActivity {
         categoriesRecyclerView.setAdapter(categoryAdapter);
     }
 
+    private String cashbookId;
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        loadCategories();
+    }
+
     private void loadCategories() {
-        if (userCategoriesRef == null) return;
-
-        userCategoriesRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                allCategories.clear();
-
-                for (DataSnapshot s : snapshot.getChildren()) {
-                    CategoryModel c = s.getValue(CategoryModel.class);
-                    if (c != null) {
-                        c.setId(s.getKey());
-                        allCategories.add(c);
-                    }
-                }
-                applyFilterAndSort();
+        if (cashbookId == null || cashbookId.isEmpty()) {
+            android.content.SharedPreferences prefs = getSharedPreferences("AppPrefs", android.content.Context.MODE_PRIVATE);
+            String uid = AuthManager.getUserId(this);
+            cashbookId = prefs.getString("active_cashbook_id_" + uid, getIntent().getStringExtra("cashbook_id"));
+        }
+        com.phynix.artham.db.DataRepository.getInstance(getApplication()).getCategories(cashbookId, categories -> {
+            allCategories.clear();
+            if (categories != null) {
+                allCategories.addAll(categories);
             }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Toast.makeText(CategoryActivity.this, "Failed to load categories.", Toast.LENGTH_SHORT).show();
-            }
+            applyFilterAndSort();
         });
     }
 
@@ -213,34 +202,19 @@ public class CategoryActivity extends BaseActivity {
         if (category != null && category.getId() != null) {
             intent.putExtra("CATEGORY_ID", category.getId());
         }
+        intent.putExtra("cashbook_id", cashbookId);
         startActivity(intent);
     }
 
     private void deleteCategory(CategoryModel c) {
-        if (c.getId() == null) return;
+        if (c == null || c.getId() == null) return;
         new AlertDialog.Builder(this)
                 .setTitle("Delete Category")
                 .setMessage("Are you sure you want to delete " + c.getName() + "?")
                 .setPositiveButton("Delete", (d, w) -> {
-                    final CategoryModel backup = c;
-                    userCategoriesRef.child(c.getId()).removeValue().addOnCompleteListener(task -> {
-                        if (task.isSuccessful()) {
-                            SnackbarHelper.showWithAction(
-                                    CategoryActivity.this,
-                                    "Category deleted",
-                                    "UNDO",
-                                    v -> {
-                                        if (backup.getId() != null) {
-                                            userCategoriesRef.child(backup.getId()).setValue(backup)
-                                                    .addOnSuccessListener(aVoid -> Toast.makeText(CategoryActivity.this, "Category restored", Toast.LENGTH_SHORT).show())
-                                                    .addOnFailureListener(e -> Toast.makeText(CategoryActivity.this, "Failed to restore category", Toast.LENGTH_SHORT).show());
-                                        }
-                                    },
-                                    findViewById(R.id.categoriesRecyclerView)
-                            );
-                        } else {
-                            Toast.makeText(CategoryActivity.this, "Failed to delete category", Toast.LENGTH_SHORT).show();
-                        }
+                    com.phynix.artham.db.DataRepository.getInstance(getApplication()).deleteCategory(c.getId(), success -> {
+                        Toast.makeText(this, "Category deleted", Toast.LENGTH_SHORT).show();
+                        loadCategories();
                     });
                 })
                 .setNegativeButton("Cancel", null)

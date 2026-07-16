@@ -14,12 +14,7 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
 
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
+import com.phynix.artham.auth.AuthManager;
 import com.phynix.artham.R;
 import com.phynix.artham.models.TransactionModel;
 
@@ -58,99 +53,8 @@ public class MonthlySummaryReceiver extends BroadcastReceiver {
     }
 
     private void fetchAndNotify(Context context) {
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        if (user == null) return;
-
-        // Get the active cashbook ID
-        SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
-        String cashbookId = prefs.getString("last_selected_cashbook_id", null);
-        if (cashbookId == null) return;
-
-        // Calculate last month's time range
-        Calendar cal = Calendar.getInstance();
-        cal.add(Calendar.MONTH, -1);
-        cal.set(Calendar.DAY_OF_MONTH, 1);
-        cal.set(Calendar.HOUR_OF_DAY, 0);
-        cal.set(Calendar.MINUTE, 0);
-        cal.set(Calendar.SECOND, 0);
-        long lastMonthStart = cal.getTimeInMillis();
-
-        Calendar endCal = Calendar.getInstance();
-        endCal.set(Calendar.DAY_OF_MONTH, 1);
-        endCal.set(Calendar.HOUR_OF_DAY, 0);
-        endCal.set(Calendar.MINUTE, 0);
-        endCal.set(Calendar.SECOND, 0);
-        long thisMonthStart = endCal.getTimeInMillis();
-
-        String[] monthNames = {"January", "February", "March", "April", "May", "June",
-                "July", "August", "September", "October", "November", "December"};
-        String monthName = monthNames[cal.get(Calendar.MONTH)];
-
-        // Fetch transactions
-        FirebaseDatabase.getInstance().getReference()
-                .child(Constants.NODE_USERS)
-                .child(user.getUid())
-                .child(Constants.NODE_CASHBOOKS)
-                .child(cashbookId)
-                .child(Constants.NODE_TRANSACTIONS)
-                .addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        double totalIn = 0, totalOut = 0;
-                        Map<String, Double> categorySpending = new HashMap<>();
-
-                        for (DataSnapshot ds : snapshot.getChildren()) {
-                            TransactionModel t = ds.getValue(TransactionModel.class);
-                            if (t == null) continue;
-
-                            long ts = t.getTimestamp();
-                            if (ts < lastMonthStart || ts >= thisMonthStart) continue;
-
-                            if ("IN".equalsIgnoreCase(t.getType())) {
-                                totalIn += t.getAmount();
-                            } else {
-                                totalOut += t.getAmount();
-                                String cat = t.getTransactionCategory() != null ? t.getTransactionCategory() : "Other";
-                                categorySpending.merge(cat, t.getAmount(), Double::sum);
-                            }
-                        }
-
-                        // Find top category
-                        String topCat = "None";
-                        double topAmt = 0;
-                        for (Map.Entry<String, Double> entry : categorySpending.entrySet()) {
-                            if (entry.getValue() > topAmt) {
-                                topAmt = entry.getValue();
-                                topCat = entry.getKey();
-                            }
-                        }
-
-                        double saved = totalIn - totalOut;
-                        String title = "📊 " + monthName + " Summary";
-                        String body = String.format("In: ₹%s | Out: ₹%s | %s: %s₹%s",
-                                formatAmount(totalIn),
-                                formatAmount(totalOut),
-                                saved >= 0 ? "Saved" : "Over",
-                                saved >= 0 ? "+" : "-",
-                                formatAmount(Math.abs(saved)));
-
-                        String expanded = String.format("💰 Total Income: ₹%s\n💸 Total Expense: ₹%s\n%s Net: %s₹%s\n🏷️ Top Category: %s (₹%s)",
-                                formatAmount(totalIn),
-                                formatAmount(totalOut),
-                                saved >= 0 ? "🎉" : "⚠️",
-                                saved >= 0 ? "+" : "-",
-                                formatAmount(Math.abs(saved)),
-                                topCat,
-                                formatAmount(topAmt));
-
-                        showNotification(context, title, body, expanded);
-                    }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error) {
-                        Log.e(TAG, "Failed to fetch transactions for summary", error.toException());
-                    }
-                });
+        if (!AuthManager.isSignedIn(context)) return;
+        // Stubbed completely
     }
 
     private void showNotification(Context context, String title, String body, String expanded) {

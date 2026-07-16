@@ -65,14 +65,7 @@ import com.phynix.artham.utils.UpdateChecker;
 import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
-
+import com.phynix.artham.auth.AuthManager;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -125,10 +118,8 @@ public class TransactionActivity extends BaseActivity {
     // Sticky date header
     private TextView stickyDateHeader;
 
-    private FirebaseAuth mAuth;
     private String currentCashbookId;
     private String currentCashbookName = "Artham Cashbook";
-    private FirebaseUser currentUser;
 
 
     private boolean isShowingAllTransactions = false;
@@ -170,12 +161,10 @@ public class TransactionActivity extends BaseActivity {
         if (getSupportActionBar() != null) getSupportActionBar().hide();
 
         currentCashbookId = getIntent().getStringExtra("cashbook_id");
-        mAuth = FirebaseAuth.getInstance();
-        currentUser = mAuth.getCurrentUser();
         currentMonthCalendar = Calendar.getInstance();
 
         boolean isLocal = DataRepository.getInstance(getApplication()).isLocalMode();
-        if (currentCashbookId == null || (!isLocal && currentUser == null)) {
+        if (currentCashbookId == null || (!isLocal && !AuthManager.isSignedIn(this))) {
             showSnackbar("Error: No active cashbook found.");
             finish();
             return;
@@ -197,7 +186,7 @@ public class TransactionActivity extends BaseActivity {
     protected void onResume() {
         super.onResume();
         SharedPreferences prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        String uid = currentUser != null ? currentUser.getUid() : "local_user";
+        String uid = AuthManager.isSignedIn(this) ? AuthManager.getUserId(this) : "local_user";
         String savedId = prefs.getString("active_cashbook_id_" + uid, currentCashbookId);
         if (savedId != null && !savedId.equals(currentCashbookId)) {
             currentCashbookId = savedId;
@@ -604,15 +593,6 @@ public class TransactionActivity extends BaseActivity {
             }, null);
             return;
         }
-
-        DatabaseReference ref = FirebaseDatabase.getInstance().getReference()
-                .child("users").child(currentUser.getUid()).child("cashbooks").child(currentCashbookId).child("name");
-        ref.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override public void onDataChange(@NonNull DataSnapshot snapshot) {
-                if (snapshot.exists()) currentCashbookName = snapshot.getValue(String.class);
-            }
-            @Override public void onCancelled(@NonNull DatabaseError error) {}
-        });
     }
 
     private int getThemeColor(int attr) {
@@ -890,7 +870,7 @@ public class TransactionActivity extends BaseActivity {
             if (newId != null && !newId.equals(currentCashbookId)) {
                 currentCashbookId = newId; currentCashbookName = newName;
                 showSnackbar("Switched to: " + newName);
-                String uid = currentUser != null ? currentUser.getUid() : "local_user";
+                String uid = AuthManager.getUserId(this);
                 getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit().putString("active_cashbook_id_" + uid, newId).apply();
 
                 if (viewModel != null) {

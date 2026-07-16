@@ -5,11 +5,7 @@ import android.view.View;
 
 import androidx.recyclerview.widget.LinearLayoutManager;
 
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
+import com.phynix.artham.auth.AuthManager;
 import com.phynix.artham.BaseActivity;
 import com.phynix.artham.adapters.DailyBalanceAdapter;
 import com.phynix.artham.databinding.ActivityDailySummaryBinding;
@@ -33,8 +29,8 @@ public class DailySummaryActivity extends BaseActivity {
     private DataRepository repository;
     private String cashbookId;
 
-    private DatabaseReference transactionsRef;
-    private ValueEventListener transactionsListener;
+    // private DatabaseReference transactionsRef;
+    // private ValueEventListener transactionsListener;
     private DailyBalanceAdapter adapter;
     private final List<DailyBalanceAdapter.DailyBalanceItem> dailyBalancesList = new ArrayList<>();
 
@@ -67,22 +63,16 @@ public class DailySummaryActivity extends BaseActivity {
 
     private void subscribeToTransactions() {
         boolean isLocal = repository.isLocalMode();
-        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
-        if (cashbookId == null || (!isLocal && currentUser == null)) {
+        if (cashbookId == null || (!isLocal && !AuthManager.isSignedIn(this))) {
             showEmptyState(true);
             return;
         }
 
         if (!isLocal) {
-            transactionsRef = FirebaseDatabase.getInstance().getReference()
-                    .child(Constants.NODE_USERS)
-                    .child(currentUser.getUid())
-                    .child(Constants.NODE_CASHBOOKS)
-                    .child(cashbookId)
-                    .child(Constants.NODE_TRANSACTIONS);
+            // Firebase setup removed
         }
 
-        transactionsListener = repository.subscribeToTransactions(cashbookId, transactions -> {
+        repository.subscribeToTransactions(cashbookId, transactions -> {
             processTransactions(transactions);
         }, error -> {
             showEmptyState(dailyBalancesList.isEmpty());
@@ -146,9 +136,6 @@ public class DailySummaryActivity extends BaseActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (transactionsRef != null && transactionsListener != null) {
-            transactionsRef.removeEventListener(transactionsListener);
-        }
         binding = null;
     }
 }

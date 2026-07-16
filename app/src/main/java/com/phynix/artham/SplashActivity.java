@@ -11,8 +11,7 @@ import android.widget.ProgressBar;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
+import com.phynix.artham.auth.AuthManager;
 import com.phynix.artham.utils.ThemeManager;
 
 public class SplashActivity extends BaseActivity {
@@ -20,7 +19,6 @@ public class SplashActivity extends BaseActivity {
     // Changed from 3000 to 2000 for a 2-second delay
     private static final int SPLASH_DELAY = 2000;
     private ProgressBar splashProgress;
-    private FirebaseAuth mAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,7 +28,6 @@ public class SplashActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
 
-        mAuth = FirebaseAuth.getInstance();
         splashProgress = findViewById(R.id.progressBar);
 
         if (splashProgress != null) {
@@ -38,10 +35,7 @@ public class SplashActivity extends BaseActivity {
         }
 
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
-            boolean isLocalMode = getSharedPreferences("AppPrefs", MODE_PRIVATE)
-                    .getBoolean("is_local_mode", false);
-            FirebaseUser currentUser = mAuth.getCurrentUser();
-            if (currentUser != null || isLocalMode) {
+            if (AuthManager.isSignedIn(this)) {
                 launchActivity(HomeActivity.class);
             } else {
                 launchActivity(SignInActivity.class);

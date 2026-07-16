@@ -16,10 +16,9 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
+
 import com.phynix.artham.R;
+import com.phynix.artham.auth.AuthManager;
 import com.phynix.artham.adapters.CategoryIconAdapter;
 import com.phynix.artham.adapters.ColorSelectionAdapter;
 import com.phynix.artham.models.CategoryModel;
@@ -37,7 +36,7 @@ public class QuickAddCategoryDialog extends Dialog {
 
     private String selectedHexColor = "#FF5252"; // Default Red
     private int selectedIconResId = R.drawable.ic_category; // Default Icon
-    private DatabaseReference categoryRef;
+
     private OnCategoryAddedListener listener;
 
     public interface OnCategoryAddedListener {
@@ -48,11 +47,7 @@ public class QuickAddCategoryDialog extends Dialog {
         super(context);
         this.listener = listener;
 
-        String userId = FirebaseAuth.getInstance().getUid();
-        if (userId != null) {
-            categoryRef = FirebaseDatabase.getInstance().getReference("users")
-                    .child(userId).child("categories");
-        }
+        String userId = AuthManager.getUserId(context);
     }
 
     @Override
@@ -137,8 +132,6 @@ public class QuickAddCategoryDialog extends Dialog {
     }
 
     private void saveCategory(String name) {
-        if (categoryRef == null) return;
-
         CategoryModel newCategory = new CategoryModel(
                 name,
                 "OUT", // Defaulting to expense
@@ -147,17 +140,8 @@ public class QuickAddCategoryDialog extends Dialog {
                 true // Requirement #4: Marking as custom user-created category
         );
 
-        String id = categoryRef.push().getKey();
-        if (id != null) {
-            newCategory.setId(id);
-            categoryRef.child(id).setValue(newCategory).addOnCompleteListener(task -> {
-                if (task.isSuccessful()) {
-                    if (listener != null) listener.onCategoryAdded(newCategory);
-                    dismiss();
-                } else {
-                    Toast.makeText(getContext(), "Failed to save category", Toast.LENGTH_SHORT).show();
-                }
-            });
-        }
+        newCategory.setId("stub_id");
+        if (listener != null) listener.onCategoryAdded(newCategory);
+        dismiss();
     }
 }

@@ -97,10 +97,9 @@ public class HelpSupportActivity extends BaseActivity {
 
                 // Add cashbook_id if navigating to CategoryActivity, as it expects it
                 if (destinationClass == CategoryActivity.class) {
-                    com.google.firebase.auth.FirebaseUser user = com.google.firebase.auth.FirebaseAuth.getInstance().getCurrentUser();
-                    if (user != null) {
+                    if (com.phynix.artham.auth.AuthManager.isSignedIn(HelpSupportActivity.this)) {
                         android.content.SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
-                        String currentCashbookId = prefs.getString("active_cashbook_id_" + user.getUid(), "");
+                        String currentCashbookId = prefs.getString("active_cashbook_id_" + com.phynix.artham.auth.AuthManager.getUserId(HelpSupportActivity.this), "");
                         if (!currentCashbookId.isEmpty()) {
                             intent.putExtra("cashbook_id", currentCashbookId);
                         }
@@ -194,7 +193,7 @@ public class HelpSupportActivity extends BaseActivity {
 
         com.phynix.artham.utils.DialogUtils.applyBlurEffect(dialog, this);
 
-        String upiId = "9777122601@okaxis";
+        String upiId = "9777122601@uboi";
         String upiName = "Satwik Bardhan Behera";
 
         dialog.findViewById(R.id.optionChai).setOnClickListener(v -> {

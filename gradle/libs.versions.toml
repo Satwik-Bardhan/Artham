@@ -1,5 +1,5 @@
 [versions]
-agp = "9.2.1"
+agp = "9.3.0"
 kotlin = "2.2.10"
 coreKtx = "1.15.0"
 junit = "4.13.2"
@@ -17,15 +17,9 @@ cardview = "1.0.0"
 swiperefreshlayout = "1.2.0"
 viewbinding = "8.13.2"
 
-# Google & Firebase
-googleGmsGoogleServices = "4.4.2"
-firebaseBom = "34.15.0"
+# Google
 playServicesAuth = "21.6.0"
 playServicesLocation = "21.4.0"
-
-# Firebase Plugins
-crashlyticsGradle = "3.0.2"
-appdistributionGradle = "5.0.0"
 
 # Google Play Libraries
 playReview = "2.0.2"
@@ -40,6 +34,12 @@ itextpdf = "5.5.13.3"
 skydovesColorpicker = "2.2.4"
 shimmer = "0.5.0"
 gson = "2.14.0"
+room = "2.7.1"
+workManager = "2.10.1"
+supabase = "3.1.4"
+ktor = "3.1.3"
+kotlinxSerializationJson = "1.8.1"
+kotlinxCoroutinesAndroid = "1.10.2"
 
 [libraries]
 # --- AndroidX & UI Core ---
@@ -58,14 +58,7 @@ androidx-lifecycle-viewmodel = { group = "androidx.lifecycle", name = "lifecycle
 androidx-lifecycle-livedata = { group = "androidx.lifecycle", name = "lifecycle-livedata", version.ref = "lifecycleLivedata" }
 androidx-lifecycle-common-java8 = { group = "androidx.lifecycle", name = "lifecycle-common-java8", version.ref = "lifecycleCommonJava8" }
 
-# --- Firebase ---
-firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
-firebase-auth = { group = "com.google.firebase", name = "firebase-auth" }
-firebase-database = { group = "com.google.firebase", name = "firebase-database" }
-firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore" }
-firebase-storage = { group = "com.google.firebase", name = "firebase-storage" }
-firebase-crashlytics = { group = "com.google.firebase", name = "firebase-crashlytics" }
-firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics" }
+# --- Firebase removed: All data now uses Room + Supabase ---
 
 # --- Google Play Services ---
 play-services-auth = { group = "com.google.android.gms", name = "play-services-auth", version.ref = "playServicesAuth" }
@@ -86,6 +79,15 @@ itextpdf = { group = "com.itextpdf", name = "itextpdf", version.ref = "itextpdf"
 skydoves-colorpickerview = { group = "com.github.skydoves", name = "colorpickerview", version.ref = "skydovesColorpicker" }
 shimmer = { group = "com.facebook.shimmer", name = "shimmer", version.ref = "shimmer" }
 gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
+room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
+room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
+work-runtime = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "workManager" }
+supabase-bom = { group = "io.github.jan-tennert.supabase", name = "bom", version.ref = "supabase" }
+supabase-postgrest = { group = "io.github.jan-tennert.supabase", name = "postgrest-kt" }
+supabase-gotrue = { group = "io.github.jan-tennert.supabase", name = "auth-kt" }
+ktor-client-okhttp = { group = "io.ktor", name = "ktor-client-okhttp", version.ref = "ktor" }
+kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
+kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "kotlinxCoroutinesAndroid" }
 
 # --- Testing ---
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -96,6 +98,4 @@ androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-co
 androidApplication = { id = "com.android.application", version.ref = "agp" }
 androidLibrary = { id = "com.android.library", version.ref = "agp" }
 jetbrainsKotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
-googleGmsGoogleServices = { id = "com.google.gms.google-services", version.ref = "googleGmsGoogleServices" }
-firebaseCrashlytics = { id = "com.google.firebase.crashlytics", version.ref = "crashlyticsGradle" }
-firebaseAppdistribution = { id = "com.google.firebase.appdistribution", version.ref = "appdistributionGradle" }
+kotlinxSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }

@@ -8,8 +8,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.widget.RemoteViews;
 
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
+import com.phynix.artham.auth.AuthManager;
 import com.phynix.artham.MainActivity;
 import com.phynix.artham.activities.CashInOutActivity;
 import com.phynix.artham.R;
@@ -77,13 +76,11 @@ public class CashInOutWidgetProvider extends AppWidgetProvider {
      * - launches SignInActivity (if not authenticated)
      */
     private PendingIntent buildTransactionIntent(Context context, String transactionType, int requestCode) {
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-
         Intent intent;
-        if (user != null) {
+        if (AuthManager.isSignedIn(context)) {
             // User is signed in — get active cashbook and launch CashInOutActivity
             SharedPreferences prefs = context.getSharedPreferences(PREFS_APP, Context.MODE_PRIVATE);
-            String activeCashbookId = prefs.getString("active_cashbook_id_" + user.getUid(), "");
+            String activeCashbookId = prefs.getString("active_cashbook_id_" + AuthManager.getUserId(context), "");
 
             intent = new Intent(context, CashInOutActivity.class);
             intent.putExtra(Constants.EXTRA_CASHBOOK_ID, activeCashbookId);

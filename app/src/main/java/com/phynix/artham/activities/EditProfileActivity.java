@@ -30,22 +30,15 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageMetadata;
-import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
+import com.phynix.artham.auth.AuthManager;
+
 import com.phynix.artham.models.Users;
 import com.phynix.artham.utils.ThemeManager;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -62,34 +55,29 @@ public class EditProfileActivity extends BaseActivity {
     private LinearLayout dateOfBirthLayout;
     private Button saveProfileButton, cancelButton, deleteAccountButton;
 
-    private FirebaseAuth mAuth;
-    private DatabaseReference userDatabaseRef;
-    private FirebaseUser currentUser;
+
 
     private Uri imageUri;
+    private String originalTheme;
     private final Calendar dobCalendar = Calendar.getInstance();
     private long dobTimestamp = 0;
     private String currentPhotoUrl;
 
     private ActivityResultLauncher<Intent> imagePickerLauncher;
-    private ValueEventListener userDatabaseListener;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         ThemeManager.applyActivityTheme(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_profile);
+        originalTheme = ThemeManager.getTheme(this);
 
-        mAuth = FirebaseAuth.getInstance();
-        currentUser = mAuth.getCurrentUser();
-
-        if (currentUser == null) {
-            Toast.makeText(this, "User not logged in!", Toast.LENGTH_SHORT).show();
+        if (!AuthManager.isSignedIn(this)) {
+            Toast.makeText(this, "Not authenticated", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
-
-        userDatabaseRef = FirebaseDatabase.getInstance().getReference("users").child(currentUser.getUid());
 
         initViews();
         setupImagePicker();
@@ -157,47 +145,44 @@ public class EditProfileActivity extends BaseActivity {
     }
 
     private void loadUserInfo() {
-        if (currentUser.getEmail() != null) displayEmail.setText(currentUser.getEmail());
-        if (currentUser.getUid() != null) displayUid.setText(currentUser.getUid());
+        // Load UID
+        displayUid.setText(AuthManager.getUserId(this));
 
-        userDatabaseListener = new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                Users user = snapshot.getValue(Users.class);
-                if (user != null) {
-                    if (user.getUserName() != null) editFullName.setText(user.getUserName());
-                    else if (user.getName() != null) editFullName.setText(user.getName());
+        // Load saved profile data from SharedPreferences
+        android.content.SharedPreferences prefs = getSharedPreferences("AppPrefs", Context.MODE_PRIVATE);
 
-                    if (user.getEmail() != null && !user.getEmail().isEmpty()) displayEmail.setText(user.getEmail());
+        // Load name
+        String savedName = prefs.getString("user_display_name", "");
+        if (!savedName.isEmpty()) {
+            editFullName.setText(savedName);
+        }
 
-                    if (user.getProfile() != null && !user.getProfile().isEmpty() && !isDestroyed()) {
-                        currentPhotoUrl = user.getProfile();
+        // Load email
+        String savedEmail = prefs.getString("user_email", "");
+        if (!savedEmail.isEmpty()) {
+            displayEmail.setText(savedEmail);
+        }
 
-                        // PERFECT CIRCLE GLIDE LOGIC
-                        Glide.with(EditProfileActivity.this)
-                                .load(currentPhotoUrl)
-                                .placeholder(R.drawable.ic_person_placeholder)
-                                .error(R.drawable.ic_person_placeholder)
-                                .centerCrop() // Scales image to fill bounds without stretching
-                                .circleCrop() // Crops into a perfect circle
-                                .into(profileImageView);
-                    }
+        // Load DOB
+        long savedDob = prefs.getLong("user_dob", 0);
+        if (savedDob > 0) {
+            dobTimestamp = savedDob;
+            updateDobText(savedDob);
+        }
 
-                    if (snapshot.hasChild("dateOfBirthTimestamp")) {
-                        dobTimestamp = snapshot.child("dateOfBirthTimestamp").getValue(Long.class);
-                        updateDobText(dobTimestamp);
-                    } else {
-                        dateOfBirthText.setText("Select Date");
-                    }
-                }
+        // Load profile photo from internal storage
+        String savedPhotoPath = prefs.getString("user_photo_path", "");
+        if (!savedPhotoPath.isEmpty()) {
+            File photoFile = new File(savedPhotoPath);
+            if (photoFile.exists()) {
+                currentPhotoUrl = savedPhotoPath;
+                Glide.with(this)
+                        .load(photoFile)
+                        .centerCrop()
+                        .circleCrop()
+                        .into(profileImageView);
             }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Toast.makeText(EditProfileActivity.this, "Failed to load user data.", Toast.LENGTH_SHORT).show();
-            }
-        };
-        userDatabaseRef.addValueEventListener(userDatabaseListener);
+        }
     }
 
     private void saveProfileChanges() {
@@ -209,62 +194,97 @@ public class EditProfileActivity extends BaseActivity {
             return;
         }
 
+        // Read image data on main thread FIRST (URI permissions may not work on background threads)
+        final byte[] imageData;
+        if (imageUri != null) {
+            imageData = getCompressedImageData(imageUri);
+            Log.d(TAG, "Image data read: " + (imageData != null ? imageData.length + " bytes" : "null"));
+        } else {
+            imageData = null;
+            Log.d(TAG, "No new image selected");
+        }
+
         ProgressDialog progressDialog = new ProgressDialog(this);
         progressDialog.setTitle("Updating Profile");
         progressDialog.setMessage("Please wait...");
         progressDialog.setCanceledOnTouchOutside(false);
         progressDialog.show();
 
-        if (imageUri != null) {
-            progressDialog.setMessage("Uploading image to Firebase...");
-            Log.d(TAG, "Starting image upload process");
-
-            /* * IMPORTANT: Bulletproof storage initialization.
-             * Tries the specific bucket first, falls back to default if it fails.
-             */
-            FirebaseStorage storage;
+        // Save on background thread
+        new Thread(() -> {
             try {
-                storage = FirebaseStorage.getInstance("gs://artham-67.firebasestorage.app");
-            } catch (Exception e) {
-                Log.e(TAG, "Storage init failed. Falling back to default.", e);
-                storage = FirebaseStorage.getInstance();
-            }
+                android.content.SharedPreferences.Editor editor =
+                        getSharedPreferences("AppPrefs", Context.MODE_PRIVATE).edit();
 
-            StorageReference fileRef = storage.getReference().child("profile_pictures/" + currentUser.getUid() + ".jpg");
-            byte[] imageData = getCompressedImageData(imageUri);
+                // Save name
+                editor.putString("user_display_name", name);
+                Log.d(TAG, "Saving name: " + name);
 
-            if (imageData == null || imageData.length == 0) {
-                progressDialog.dismiss();
-                Toast.makeText(this, "Image processing failed. Try a different photo.", Toast.LENGTH_LONG).show();
-                return;
-            }
+                // Save DOB if set
+                if (dobTimestamp > 0) {
+                    editor.putLong("user_dob", dobTimestamp);
+                }
 
-            StorageMetadata metadata = new StorageMetadata.Builder().setContentType("image/jpeg").build();
-            UploadTask uploadTask = fileRef.putBytes(imageData, metadata);
+                // Save profile photo to internal storage
+                if (imageData != null) {
+                    File photoDir = new File(getFilesDir(), "profile");
+                    if (!photoDir.exists()) photoDir.mkdirs();
+                    File photoFile = new File(photoDir, "profile_photo.jpg");
 
-            uploadTask.addOnSuccessListener(taskSnapshot -> {
-                Log.d(TAG, "Upload successful, fetching URL...");
-                progressDialog.setMessage("Image uploaded! Securing link...");
+                    try (FileOutputStream fos = new FileOutputStream(photoFile)) {
+                        fos.write(imageData);
+                        fos.flush();
+                    }
 
-                fileRef.getDownloadUrl().addOnSuccessListener(uri -> {
-                    updateDatabase(name, uri.toString(), progressDialog);
-                }).addOnFailureListener(e -> {
+                    String photoPath = photoFile.getAbsolutePath();
+                    editor.putString("user_photo_path", photoPath);
+                    Log.d(TAG, "Profile photo saved to: " + photoPath + " (size: " + photoFile.length() + " bytes)");
+                }
+
+                // Use commit() instead of apply() to guarantee save before reading
+                boolean saved = editor.commit();
+                Log.d(TAG, "SharedPreferences commit result: " + saved);
+
+                // Update SessionCache so Settings/Home show updated data immediately
+                com.phynix.artham.utils.SessionCache cache = com.phynix.artham.utils.SessionCache.getInstance();
+                com.phynix.artham.models.Users cachedUser = cache.getCachedUserProfile();
+                if (cachedUser != null) {
+                    cachedUser.setName(name);
+                    if (imageData != null) {
+                        // Set profile to local file path so Glide can load it
+                        String savedPhoto = getSharedPreferences("AppPrefs", Context.MODE_PRIVATE)
+                                .getString("user_photo_path", "");
+                        if (!savedPhoto.isEmpty()) {
+                            cachedUser.setProfile(savedPhoto);
+                        }
+                    }
+                    cache.cacheUserProfile(cachedUser);
+                } else {
+                    // Create a new cache entry
+                    String userId = AuthManager.getUserId(this);
+                    String savedPhoto = getSharedPreferences("AppPrefs", Context.MODE_PRIVATE)
+                            .getString("user_photo_path", "");
+                    com.phynix.artham.models.Users newUser = new com.phynix.artham.models.Users(
+                            userId, name, "", null, savedPhoto);
+                    cache.cacheUserProfile(newUser);
+                }
+                Log.d(TAG, "SessionCache updated with name: " + name);
+
+                runOnUiThread(() -> {
                     progressDialog.dismiss();
-                    Log.e(TAG, "Failed to get download URL", e);
-                    Toast.makeText(EditProfileActivity.this, "Error getting link: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    Toast.makeText(this, "Profile saved: " + name, Toast.LENGTH_LONG).show();
+                    setResult(RESULT_OK);
+                    finish();
                 });
 
-            }).addOnFailureListener(e -> {
-                progressDialog.dismiss();
-                Log.e(TAG, "Image Upload Failed", e);
-                Toast.makeText(EditProfileActivity.this, "Image Upload Failed. Check your network or Firebase rules.", Toast.LENGTH_LONG).show();
-            });
-
-        } else {
-            Log.d(TAG, "No image selected. Updating database only.");
-            progressDialog.setMessage("Saving profile data...");
-            updateDatabase(name, null, progressDialog);
-        }
+            } catch (Exception e) {
+                Log.e(TAG, "Error saving profile", e);
+                runOnUiThread(() -> {
+                    progressDialog.dismiss();
+                    Toast.makeText(this, "Failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                });
+            }
+        }).start();
     }
 
     private byte[] getCompressedImageData(Uri uri) {
@@ -306,25 +326,8 @@ public class EditProfileActivity extends BaseActivity {
     }
 
     private void updateDatabase(String name, String imageUrl, ProgressDialog loadingBar) {
-        loadingBar.setMessage("Finalizing update...");
-        Map<String, Object> profileUpdates = new HashMap<>();
-        profileUpdates.put("name", name);
-        profileUpdates.put("userName", name);
-
-        if (dobTimestamp > 0) profileUpdates.put("dateOfBirthTimestamp", dobTimestamp);
-        if (imageUrl != null) profileUpdates.put("profile", imageUrl);
-
-        userDatabaseRef.updateChildren(profileUpdates)
-                .addOnSuccessListener(aVoid -> {
-                    loadingBar.dismiss();
-                    Toast.makeText(EditProfileActivity.this, "Profile updated successfully!", Toast.LENGTH_SHORT).show();
-                    finish();
-                })
-                .addOnFailureListener(e -> {
-                    loadingBar.dismiss();
-                    Log.e(TAG, "Database Update Failed", e);
-                    Toast.makeText(EditProfileActivity.this, "Database Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                });
+        loadingBar.dismiss();
+        finish();
     }
 
     private void showDatePicker() {
@@ -359,26 +362,12 @@ public class EditProfileActivity extends BaseActivity {
         pd.setMessage("Deleting account...");
         pd.show();
 
-        userDatabaseRef.removeValue().addOnSuccessListener(aVoid -> {
-            if (currentUser != null) {
-                currentUser.delete().addOnCompleteListener(task -> {
-                    pd.dismiss();
-                    if (task.isSuccessful()) {
-                        logoutAndRedirect();
-                    } else {
-                        Toast.makeText(this, "Re-login required to delete account.", Toast.LENGTH_LONG).show();
-                        logoutAndRedirect();
-                    }
-                });
-            }
-        });
+        pd.dismiss();
+        logoutAndRedirect();
     }
 
     private void logoutAndRedirect() {
-        if (userDatabaseRef != null && userDatabaseListener != null) {
-            userDatabaseRef.removeEventListener(userDatabaseListener);
-        }
-        mAuth.signOut();
+        AuthManager.signOut(this);
         getSharedPreferences("AppPrefs", Context.MODE_PRIVATE).edit().clear().apply();
         Intent intent = new Intent(this, SignInActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -389,8 +378,5 @@ public class EditProfileActivity extends BaseActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (userDatabaseRef != null && userDatabaseListener != null) {
-            userDatabaseRef.removeEventListener(userDatabaseListener);
-        }
     }
 }

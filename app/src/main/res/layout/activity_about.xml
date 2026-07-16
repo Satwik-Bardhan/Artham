@@ -289,7 +289,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
-                    android:text="© 2026 PHYNIX LABS. All rights reserved."
+                    android:text="© 2026 Phynix Labs. All rights reserved."
                     android:textColor="?attr/chk_textColorHint"
                     android:textSize="12sp" />
 

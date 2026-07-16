@@ -8,10 +8,8 @@ import android.util.Log;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.phynix.artham.auth.AuthManager;
 import com.phynix.artham.utils.ErrorHandler;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 
 /**
@@ -31,14 +29,6 @@ public class MainActivity extends BaseActivity {
 
         Log.d(TAG, getString(R.string.log_main_activity_started));
 
-        try {
-            FirebaseCrashlytics.getInstance().log(getString(R.string.log_app_startup_initiated));
-        } catch (Exception e) {
-            Log.d(TAG, getString(R.string.log_crashlytics_unavailable));
-        }
-
-
-
         checkAuthenticationAndNavigate();
     }
 
@@ -48,24 +38,17 @@ public class MainActivity extends BaseActivity {
      */
     private void checkAuthenticationAndNavigate() {
         try {
-            FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
             Intent navigationIntent;
+            String userId = AuthManager.getUserId(this);
 
-            if (currentUser == null) {
+            if (!AuthManager.isSignedIn(this)) {
                 // No user is signed in, navigate to Sign-in
                 Log.d(TAG, getString(R.string.log_no_authenticated_user));
                 navigationIntent = new Intent(this, SignInActivity.class);
             } else {
                 // User is signed in, navigate to Home
-                Log.d(TAG, getString(R.string.log_authenticated_user_found, currentUser.getUid()));
+                Log.d(TAG, getString(R.string.log_authenticated_user_found, userId != null ? userId : "unknown"));
                 navigationIntent = new Intent(this, HomeActivity.class);
-
-                try {
-                    FirebaseCrashlytics crashlytics = FirebaseCrashlytics.getInstance();
-                    crashlytics.setUserId(currentUser.getUid());
-                } catch (Exception e) {
-                    Log.d(TAG, getString(R.string.log_crashlytics_unavailable));
-                }
             }
 
             startActivity(navigationIntent);

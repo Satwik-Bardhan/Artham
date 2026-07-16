@@ -6,12 +6,7 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
+import com.phynix.artham.auth.AuthManager;
 import com.phynix.artham.R;
 import com.phynix.artham.models.CategoryModel;
 
@@ -40,37 +35,11 @@ public class CategoryColorUtil {
      * Initialize the cache by loading user categories from Firebase.
      * Should be called early in the app lifecycle (e.g., MyApplication or HomeActivity).
      */
-    public static void initialize() {
-        String uid = FirebaseAuth.getInstance().getUid();
+    public static void initialize(Context context) {
+        String uid = AuthManager.getUserId(context);
         if (uid == null) return;
 
-        DatabaseReference categoriesRef = FirebaseDatabase.getInstance().getReference("users")
-                .child(uid).child("categories");
-
-        categoriesRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                userCategoryCache.clear();
-                for (DataSnapshot s : snapshot.getChildren()) {
-                    CategoryModel model = s.getValue(CategoryModel.class);
-                    if (model != null && model.getName() != null) {
-                        // Only cache CUSTOM categories from Firebase.
-                        // Default categories must always resolve from DefaultCategoryManager
-                        // because Firebase stores stale iconResId integers that change across builds.
-                        if (model.isCustom()) {
-                            userCategoryCache.put(model.getName().trim().toLowerCase(), model);
-                        }
-                    }
-                }
-                isInitialized = true;
-                Log.d(TAG, "Loaded " + userCategoryCache.size() + " user categories into cache");
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Log.e(TAG, "Failed to load user categories: " + error.getMessage());
-            }
-        });
+        isInitialized = true;
     }
 
     /**

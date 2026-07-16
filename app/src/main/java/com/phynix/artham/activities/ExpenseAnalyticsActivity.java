@@ -32,13 +32,8 @@ import com.github.mikephil.charting.charts.PieChart;
 import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
+import com.phynix.artham.auth.AuthManager;
+
 import com.phynix.artham.models.CategoryModel;
 import com.phynix.artham.models.TransactionModel;
 import com.phynix.artham.utils.AmountFormatter;
@@ -89,9 +84,9 @@ public class ExpenseAnalyticsActivity extends BaseActivity {
     // Firebase
     private String cashbookId;
     private String userId;
-    private DatabaseReference transactionsRef;
-    private DatabaseReference categoriesRef;
-    private ValueEventListener transactionsListener;
+    // private DatabaseReference transactionsRef;
+    // private DatabaseReference categoriesRef;
+    // private ValueEventListener transactionsListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -101,11 +96,10 @@ public class ExpenseAnalyticsActivity extends BaseActivity {
 
         if (getSupportActionBar() != null) getSupportActionBar().hide();
 
-        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         boolean isLocal = com.phynix.artham.db.DataRepository.getInstance(getApplication()).isLocalMode();
 
-        if (currentUser != null) {
-            userId = currentUser.getUid();
+        if (AuthManager.isSignedIn(this)) {
+            userId = AuthManager.getUserId(this);
             SharedPreferences prefs = getSharedPreferences("AppPrefs", Context.MODE_PRIVATE);
             cashbookId = prefs.getString("active_cashbook_id_" + userId, getIntent().getStringExtra("cashbook_id"));
         } else {
@@ -113,7 +107,7 @@ public class ExpenseAnalyticsActivity extends BaseActivity {
             cashbookId = prefs.getString("active_cashbook_id_local_user", getIntent().getStringExtra("cashbook_id"));
         }
 
-        if (cashbookId == null || (!isLocal && currentUser == null)) {
+        if (cashbookId == null || (!isLocal && !AuthManager.isSignedIn(this))) {
             Log.e(TAG, "Missing cashbookId or User");
             Toast.makeText(this, "Error: Invalid session.", Toast.LENGTH_SHORT).show();
             finish();
@@ -121,12 +115,7 @@ public class ExpenseAnalyticsActivity extends BaseActivity {
         }
 
         if (!isLocal) {
-            transactionsRef = FirebaseDatabase.getInstance().getReference("users")
-                    .child(userId).child("cashbooks")
-                    .child(cashbookId).child("transactions");
-
-            categoriesRef = FirebaseDatabase.getInstance().getReference("users")
-                    .child(userId).child("categories");
+            // Firebase setup removed
         }
 
         initializeUI();
@@ -208,75 +197,31 @@ public class ExpenseAnalyticsActivity extends BaseActivity {
     }
 
     private void loadCategoriesAndTransactions() {
-        boolean isLocal = com.phynix.artham.db.DataRepository.getInstance(getApplication()).isLocalMode();
-        if (isLocal) {
-            loadingProgressBar.setVisibility(View.VISIBLE);
-            com.phynix.artham.db.DataRepository.getInstance(getApplication()).getCategories(cashbookId, categories -> {
-                categoryMap.clear();
+        loadingProgressBar.setVisibility(View.VISIBLE);
+        com.phynix.artham.db.DataRepository.getInstance(getApplication()).getCategories(cashbookId, categories -> {
+            categoryMap.clear();
+            if (categories != null) {
                 for (CategoryModel cat : categories) {
                     if (cat.getName() != null) {
                         categoryMap.put(cat.getName(), cat);
                     }
                 }
-                com.phynix.artham.db.DataRepository.getInstance(getApplication()).getAllTransactions(cashbookId, transactions -> {
-                    allTransactions.clear();
+            }
+            com.phynix.artham.db.DataRepository.getInstance(getApplication()).getAllTransactions(cashbookId, transactions -> {
+                allTransactions.clear();
+                if (transactions != null) {
                     allTransactions.addAll(transactions);
-                    processTransactionData();
-                }, error -> {
-                    loadingProgressBar.setVisibility(View.GONE);
-                    Toast.makeText(ExpenseAnalyticsActivity.this, "Failed to load data", Toast.LENGTH_SHORT).show();
-                });
-            });
-            return;
-        }
-
-        loadingProgressBar.setVisibility(View.VISIBLE);
-
-        categoriesRef.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                categoryMap.clear();
-                if (snapshot.exists()) {
-                    for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
-                        CategoryModel category = dataSnapshot.getValue(CategoryModel.class);
-                        if (category != null && category.getName() != null) {
-                            categoryMap.put(category.getName(), category);
-                        }
-                    }
                 }
-                loadTransactionData();
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Log.e(TAG, "Failed to load categories: " + error.getMessage());
-                loadTransactionData();
-            }
+                processTransactionData();
+            }, error -> {
+                loadingProgressBar.setVisibility(View.GONE);
+                Toast.makeText(ExpenseAnalyticsActivity.this, "Failed to load data", Toast.LENGTH_SHORT).show();
+            });
         });
     }
 
     private void loadTransactionData() {
-        transactionsListener = transactionsRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                allTransactions.clear();
-                if (dataSnapshot.exists()) {
-                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                        TransactionModel transaction = snapshot.getValue(TransactionModel.class);
-                        if (transaction != null) {
-                            allTransactions.add(transaction);
-                        }
-                    }
-                }
-                processTransactionData();
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-                loadingProgressBar.setVisibility(View.GONE);
-                Toast.makeText(ExpenseAnalyticsActivity.this, "Failed to load data", Toast.LENGTH_SHORT).show();
-            }
-        });
+        processTransactionData();
     }
 
     private void processTransactionData() {
@@ -501,9 +446,6 @@ public class ExpenseAnalyticsActivity extends BaseActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (transactionsListener != null && transactionsRef != null) {
-            transactionsRef.removeEventListener(transactionsListener);
-        }
     }
 
     // --- Inner Classes ---

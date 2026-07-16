@@ -94,9 +94,21 @@ public class CashbookListRemoteViewsService extends RemoteViewsService {
             List<CashbookModel> updatedCashbooks = new ArrayList<>();
 
             if (repo.isLocalMode()) {
-                DataRepository.LocalDataWrapper localData = repo.loadLocalData();
-                if (localData != null && localData.cashbooks != null) {
-                    updatedCashbooks.addAll(localData.cashbooks);
+                // Use Room DB via getCashbooks (which recalculates stats) instead of stale JSON
+                final java.util.concurrent.CountDownLatch localLatch = new java.util.concurrent.CountDownLatch(1);
+                repo.getCashbooks(
+                    cashbooksList -> {
+                        if (cashbooksList != null) {
+                            updatedCashbooks.addAll(cashbooksList);
+                        }
+                        localLatch.countDown();
+                    },
+                    error -> localLatch.countDown()
+                );
+                try {
+                    localLatch.await(2500, java.util.concurrent.TimeUnit.MILLISECONDS);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
             } else {
                 // Firebase mode: query synchronously using a CountDownLatch
@@ -118,24 +130,13 @@ public class CashbookListRemoteViewsService extends RemoteViewsService {
                 }
             }
 
-            // 3. Compute the accurate balance for all selected cashbooks
+            // 3. Use the accurate balance from getCashbooks (already recalculated)
             for (CashbookModel cb : updatedCashbooks) {
                 if (selectedIds.contains(cb.getCashbookId())) {
-                    double totalIncome = 0;
-                    double totalExpense = 0;
-                    for (TransactionModel t : cb.getTransactionList()) {
-                        if ("IN".equalsIgnoreCase(t.getType())) {
-                            totalIncome += t.getAmount();
-                        } else {
-                            totalExpense += t.getAmount();
-                        }
-                    }
-                    double balance = totalIncome - totalExpense;
-
                     CashbookData data = selectedMetaData.get(cb.getCashbookId());
                     if (data != null) {
                         data.name = cb.getName();
-                        data.balance = balance;
+                        data.balance = cb.getTotalBalance();
                     }
                 }
             }
@@ -143,9 +144,8 @@ public class CashbookListRemoteViewsService extends RemoteViewsService {
             // 4. Retrieve active cashbook ID for sorting
             String activeCashbookId = prefs.getString("last_selected_cashbook_id", null);
             if (activeCashbookId == null) {
-                com.google.firebase.auth.FirebaseUser user = com.google.firebase.auth.FirebaseAuth.getInstance().getCurrentUser();
-                if (user != null) {
-                    activeCashbookId = prefs.getString(Constants.PREF_ACTIVE_CASHBOOK_PREFIX + user.getUid(), null);
+                if (com.phynix.artham.auth.AuthManager.isSignedIn(context)) {
+                    activeCashbookId = prefs.getString(Constants.PREF_ACTIVE_CASHBOOK_PREFIX + com.phynix.artham.auth.AuthManager.getUserId(context), null);
                 } else {
                     activeCashbookId = prefs.getString(Constants.PREF_ACTIVE_CASHBOOK_PREFIX + "local_user", null);
                 }
@@ -208,8 +208,7 @@ public class CashbookListRemoteViewsService extends RemoteViewsService {
             SharedPreferences prefs = context.getSharedPreferences("AppPrefs", Context.MODE_PRIVATE);
             String activeCashbookId = prefs.getString("last_selected_cashbook_id", null);
             if (activeCashbookId == null) {
-                com.google.firebase.auth.FirebaseUser user = com.google.firebase.auth.FirebaseAuth.getInstance().getCurrentUser();
-                String key = Constants.PREF_ACTIVE_CASHBOOK_PREFIX + (user != null ? user.getUid() : "local_user");
+                String key = Constants.PREF_ACTIVE_CASHBOOK_PREFIX + (com.phynix.artham.auth.AuthManager.isSignedIn(context) ? com.phynix.artham.auth.AuthManager.getUserId(context) : "local_user");
                 activeCashbookId = prefs.getString(key, null);
             }
 
