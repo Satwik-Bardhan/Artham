@@ -170,12 +170,12 @@ public class SignInActivity extends BaseActivity {
         try {
             GoogleSignInAccount account = completedTask.getResult(ApiException.class);
             if (account != null) {
+
                 String idToken = account.getIdToken();
                 if (idToken != null) {
                     String email = account.getEmail();
                     String displayName = account.getDisplayName();
                     String photoUrl = account.getPhotoUrl() != null ? account.getPhotoUrl().toString() : null;
-
                     // Save user profile locally to avoid skeleton loader issues
                     AuthManager.saveUserProfile(this, displayName, email, photoUrl);
 

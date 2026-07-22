@@ -83,7 +83,6 @@ object SyncEngine {
 
         try {
             val db = ArthamDatabase.getInstance(context)
-
             // Ensure profile is linked/created first (self-healing for existing logged-in sessions)
             val authId = SupabaseAuthManager.getCurrentUserId()
             if (authId != null) {
@@ -92,7 +91,6 @@ object SyncEngine {
                 val photoUrl = com.phynix.artham.auth.AuthManager.getUserPhotoUrl(context)
                 SupabaseAuthManager.ensureUserProfile(authId, null, email, name, photoUrl)
             }
-
             val supabaseUserId = getSupabaseUserIdFromDb(context) ?: run {
                 Log.w(TAG, "No Supabase user ID found, cannot sync.")
                 return
@@ -484,7 +482,6 @@ object SyncEngine {
         val id: String,
         @kotlinx.serialization.SerialName("auth_id") val authId: String
     )
-
     /**
      * Parse a Supabase ISO 8601 timestamp (e.g. "2026-07-18T08:57:42.628715+00:00")
      * into epoch milliseconds for Room's createdDate field.
