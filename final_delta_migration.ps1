@@ -7,10 +7,10 @@
 $ErrorActionPreference = "Continue"
 
 $FIREBASE_DB_URL = "https://artham-67-default-rtdb.firebaseio.com"
-$FIREBASE_SECRET = "A94JfvGo6mIevgvG3jl9cFf7j0oAgAdyj28RJH7K"
+$FIREBASE_SECRET = if ($env:FIREBASE_SECRET) { $env:FIREBASE_SECRET } else { Read-Host "Enter FIREBASE_SECRET" }
 
 $SUPABASE_URL = "https://pgrgcpyysvuzozylgump.supabase.co"
-$SUPABASE_SERVICE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBncmdjcHl5c3Z1em96eWxndW1wIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4Mzk1MDc4MywiZXhwIjoyMDk5NTI2NzgzfQ.C2OVGNAYKIjDjPEl07niVd8gVdghd7vFy0jQHWWAFjM"
+$SUPABASE_SERVICE_KEY = if ($env:SUPABASE_SERVICE_KEY) { $env:SUPABASE_SERVICE_KEY } else { Read-Host "Enter SUPABASE_SERVICE_KEY" }
 
 # ───────────────────────────────────────
 #  Helper Functions

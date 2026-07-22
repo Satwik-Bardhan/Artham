@@ -9,11 +9,7 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
+import com.phynix.artham.auth.AuthManager;
 import com.phynix.artham.db.DataRepository;
 import com.phynix.artham.models.CashbookModel;
 import com.phynix.artham.models.TransactionModel;
@@ -32,8 +28,6 @@ public class HomeViewModel extends AndroidViewModel {
 
     private final DataRepository repository;
     private final ExecutorService executorService;
-    private final FirebaseAuth mAuth;
-    private FirebaseAuth.AuthStateListener authListener;
 
     private String currentUserId;
     private String currentCashbookId;
@@ -58,41 +52,12 @@ public class HomeViewModel extends AndroidViewModel {
     private final MutableLiveData<Boolean> isLoading = new MutableLiveData<>(false);
     private final MutableLiveData<String> errorMessage = new MutableLiveData<>();
 
-    // --- Listeners for Cleanup ---
-    private ValueEventListener activeTransactionListener;
-    private DatabaseReference activeTransactionRef;
-
     public HomeViewModel(@NonNull Application application) {
         super(application);
         repository = DataRepository.getInstance(application);
         executorService = Executors.newSingleThreadExecutor();
-        mAuth = FirebaseAuth.getInstance();
-
-        // Initialize Auth State Listener
-        // This ensures we wait for Firebase to confirm the session before loading data
-        authListener = firebaseAuth -> {
-            FirebaseUser user = firebaseAuth.getCurrentUser();
-            if (user != null) {
-                // User is authenticated, proceed to load data
-                currentUserId = user.getUid();
-                // One-time migration: pull Firebase RTDB data into Room
-                repository.migrateFirebaseDataToRoom(success -> {
-                    loadCashbooks();
-                });
-            } else {
-                // User is signed out or session invalid
-                errorMessage.setValue("User session expired or not found.");
-                isLoading.setValue(false);
-            }
-        };
-
-        if (repository.isLocalMode()) {
-            currentUserId = "local_user";
-            loadCashbooks();
-        } else {
-            // Attach the listener immediately
-            mAuth.addAuthStateListener(authListener);
-        }
+        currentUserId = AuthManager.getUserId(application);
+        loadCashbooks();
     }
 
     // ============================================
@@ -119,8 +84,10 @@ public class HomeViewModel extends AndroidViewModel {
     // Actions
     // ============================================
 
-    private void loadCashbooks() {
-        // Prevent reloading if we are already loading or don't have an ID
+    public void loadCashbooks() {
+        if (currentUserId == null) {
+            currentUserId = AuthManager.getUserId(getApplication());
+        }
         if (currentUserId == null) return;
 
         isLoading.setValue(true);
@@ -139,7 +106,6 @@ public class HomeViewModel extends AndroidViewModel {
             if (targetId != null) {
                 switchCashbook(targetId);
             } else {
-                // CRITICAL FIX: If no cashbooks exist, notify UI by setting null
                 activeCashbook.setValue(null);
                 isLoading.setValue(false);
             }
@@ -167,7 +133,7 @@ public class HomeViewModel extends AndroidViewModel {
 
         isLoading.setValue(true);
 
-        activeTransactionListener = repository.subscribeToTransactions(cashbookId,
+        repository.subscribeToTransactions(cashbookId,
                 this::processTransactions,
                 error -> {
                     errorMessage.setValue(error);
@@ -247,14 +213,8 @@ public class HomeViewModel extends AndroidViewModel {
     @Override
     protected void onCleared() {
         super.onCleared();
-        // Remove Firebase Auth Listener
-        if (mAuth != null && authListener != null) {
-            mAuth.removeAuthStateListener(authListener);
-        }
-
-        // Remove Database Listeners
-        if (activeTransactionListener != null && activeTransactionRef != null) {
-            activeTransactionRef.removeEventListener(activeTransactionListener);
+        if (executorService != null && !executorService.isShutdown()) {
+            executorService.shutdown();
         }
     }
 }
