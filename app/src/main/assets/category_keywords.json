@@ -1,0 +1,224 @@
+{
+  "_README": "Add or edit keywords here to improve auto-category suggestions. Each category maps to an array of keywords. When a remark matches a keyword, the corresponding category is auto-selected. Longer keyword matches score higher. The app merges these with built-in defaults — your entries here take priority.",
+
+  "Food & Dining": [
+    "food", "lunch", "dinner", "breakfast", "snack", "snacks", "biryani",
+    "pizza", "burger", "zomato", "swiggy", "restaurant", "cafe", "coffee",
+    "tea", "dosa", "idli", "meal", "tiffin", "canteen", "mess", "dhaba",
+    "thali", "noodles", "momos", "sandwich", "juice", "milkshake",
+    "ice cream", "dessert", "bakery", "cake", "starbucks", "dominos",
+    "mcdonalds", "kfc", "subway", "chaiwala", "eating out", "dining",
+    "takeaway", "delivery", "brunch", "paneer", "chicken", "mutton",
+    "fish", "egg", "paratha", "roti", "chapati", "pav bhaji", "chaat",
+    "samosa", "vada pav", "pani puri", "golgappa", "lassi", "chai",
+    "maggi", "pasta", "wrap", "roll", "kebab", "tandoori", "tikka",
+    "dal makhani", "butter chicken", "masala dosa", "uttapam",
+    "poha", "upma", "chole bhature", "rajma chawal"
+  ],
+
+  "Groceries": [
+    "grocery", "groceries", "vegetables", "veggies", "fruits", "milk", "eggs",
+    "supermarket", "kirana", "bigbasket", "big basket", "blinkit", "zepto",
+    "instamart", "dmart", "d-mart", "reliance fresh", "more supermarket",
+    "sabzi", "ration", "provisions", "daily needs", "kitchen supplies",
+    "cooking oil", "atta", "dal", "rice", "spices", "masala",
+    "sugar", "salt", "flour", "ghee", "butter", "curd", "paneer",
+    "bread", "biscuits", "soap", "shampoo", "toothpaste", "detergent",
+    "tissue", "toilet paper", "cleaning", "dishwash", "market"
+  ],
+
+  "Bills & Utility": [
+    "ebill", "e-bill", "electric", "electricity", "power bill", "water bill",
+    "gas bill", "wifi", "broadband", "internet bill", "recharge", "dth",
+    "postpaid", "prepaid", "phone bill", "mobile bill", "utility", "utilities",
+    "current bill", "bijli", "pani", "light bill", "telephone", "landline",
+    "sewage", "garbage", "municipal", "bescom", "bses", "tata power",
+    "adani electricity", "jio fiber", "airtel fiber", "act fibernet",
+    "bill paid", "bill payment", "cylinder", "gas cylinder", "lpg",
+    "piped gas", "png", "water purifier", "ro service"
+  ],
+
+  "Transport": [
+    "uber", "ola", "cab", "taxi", "auto", "rickshaw", "bus", "metro",
+    "train", "petrol", "diesel", "fuel", "parking", "toll", "fastag",
+    "rapido", "bike taxi", "local train", "railway", "irctc", "commute",
+    "transport", "transportation", "car wash", "servicing", "car service",
+    "bike service", "tyre", "puncture", "cng", "ev charging", "charging station",
+    "namma yatri", "bluSmart", "meru", "ubergo", "ola mini"
+  ],
+
+  "Travel": [
+    "flight", "hotel", "trip", "travel", "holiday", "vacation", "booking",
+    "airbnb", "makemytrip", "goibibo", "oyo", "resort", "tourism", "tour",
+    "passport", "visa", "luggage", "suitcase", "cleartrip", "yatra",
+    "ixigo", "indigo", "air india", "spicejet", "vistara", "homestay",
+    "trek", "trekking", "camping", "road trip", "sightseeing",
+    "pilgrimage", "tirupati", "vaishno devi", "kedarnath"
+  ],
+
+  "Rent": [
+    "rent", "house rent", "room rent", "pg", "hostel", "maintenance",
+    "society maintenance", "flat rent", "apartment rent", "rent paid",
+    "monthly rent", "paying guest", "security deposit", "brokerage",
+    "broker fee", "house deposit"
+  ],
+
+  "Subscriptions": [
+    "netflix", "hotstar", "disney", "prime video", "amazon prime",
+    "spotify", "youtube premium", "subscription", "jio", "airtel",
+    "membership", "apple music", "gaana", "wynk", "zee5", "sonyliv",
+    "hbo", "crunchyroll", "linkedin premium", "icloud", "google one",
+    "cloud storage", "vpn", "antivirus", "microsoft 365", "adobe",
+    "canva pro", "chatgpt", "premium plan", "annual plan", "monthly plan",
+    "notion", "figma", "github copilot", "claude", "gemini pro"
+  ],
+
+  "Shopping": [
+    "amazon", "flipkart", "myntra", "shopping", "clothes", "shoes",
+    "dress", "electronics", "gadget", "mobile", "phone", "laptop",
+    "meesho", "ajio", "nykaa", "tata cliq", "croma", "reliance digital",
+    "watch", "jewellery", "jewelry", "accessories", "bag", "purse",
+    "cosmetics", "makeup", "grooming", "perfume", "appliance",
+    "furniture", "home decor", "curtains", "bedsheet", "kitchen appliance",
+    "jeans", "shirt", "kurti", "saree", "t-shirt", "hoodie",
+    "sneakers", "sandals", "chappal", "headphones", "earbuds",
+    "charger", "cable", "power bank", "smartwatch"
+  ],
+
+  "Entertainment": [
+    "movie", "cinema", "theatre", "theater", "game", "gaming", "concert",
+    "party", "outing", "pvr", "inox", "carnival", "imax", "amusement",
+    "theme park", "water park", "event", "show", "standup", "comedy",
+    "sports", "match", "stadium", "bowling", "arcade", "pub", "bar",
+    "nightclub", "karaoke", "picnic", "zoo", "museum", "exhibition",
+    "play store", "app store", "in-app purchase", "playstation", "xbox",
+    "nintendo", "steam", "valorant", "pubg", "bgmi", "free fire"
+  ],
+
+  "Health": [
+    "doctor", "hospital", "medicine", "pharmacy", "medical", "health",
+    "checkup", "check up", "lab test", "blood test", "dental", "dentist",
+    "eye", "optician", "glasses", "gym", "fitness", "yoga", "ayurveda",
+    "homeopathy", "physiotherapy", "surgery", "operation", "clinic",
+    "apollo", "medplus", "1mg", "pharmeasy", "netmeds", "practo",
+    "therapy", "counseling", "wellness", "vitamin", "supplement",
+    "x-ray", "mri", "ct scan", "ultrasound", "ecg", "vaccination",
+    "injection", "ointment", "tablet", "capsule", "syrup",
+    "protein powder", "whey", "creatine"
+  ],
+
+  "Education": [
+    "school", "college", "tuition", "course", "exam", "books", "fees",
+    "coaching", "udemy", "skillshare", "coursera", "unacademy",
+    "byjus", "education", "training", "workshop", "seminar", "webinar",
+    "library", "stationery", "notebook", "pen", "pencil", "study",
+    "scholarship", "admission", "university", "degree", "certificate",
+    "class", "classes", "tutorial", "lecture", "assignment", "project",
+    "thesis", "research", "lab", "practical"
+  ],
+
+  "Salary": [
+    "salary", "wages", "pay", "paycheck", "stipend", "monthly salary",
+    "salary credited", "pay day", "payday", "income received",
+    "bonus", "incentive", "appraisal", "increment", "allowance",
+    "hra", "da", "ta", "overtime", "arrears"
+  ],
+
+  "Freelance": [
+    "freelance", "project payment", "client payment", "gig", "consulting",
+    "contract work", "side hustle", "upwork", "fiverr", "freelancing",
+    "commission", "consultancy", "toptal", "freelancer.com"
+  ],
+
+  "Gifts & Charity": [
+    "donation", "charity", "temple", "church", "mosque", "gurudwara",
+    "zakat", "tithe", "ngo", "fundraiser", "crowdfunding", "helping",
+    "orphanage", "old age home", "daan", "seva", "pooja", "puja",
+    "havan", "yajna", "prasad", "offerings"
+  ],
+
+  "Gifts": [
+    "gift", "present", "birthday gift", "wedding gift", "anniversary gift",
+    "surprise", "gift card", "bouquet", "flowers", "shagun", "envelope",
+    "birthday party", "wedding"
+  ],
+
+  "Insurance": [
+    "insurance", "lic", "premium", "policy", "term plan", "health insurance",
+    "car insurance", "bike insurance", "vehicle insurance", "life insurance",
+    "mediclaim", "accidental", "endowment", "ulip", "star health",
+    "max life", "hdfc life", "icici prudential", "sbi life"
+  ],
+
+  "Taxes": [
+    "tax", "gst", "income tax", "tds", "advance tax", "tax filing",
+    "tax return", "itr", "property tax", "road tax", "professional tax",
+    "tax paid", "tax payment", "ca fees", "chartered accountant",
+    "tax consultant", "audit"
+  ],
+
+  "Investment": [
+    "investment", "mutual fund", "sip", "stock", "shares", "fd",
+    "fixed deposit", "ppf", "nps", "crypto", "bitcoin", "ethereum",
+    "demat", "zerodha", "groww", "paytm money", "kuvera",
+    "gold", "silver", "bond", "elss", "nifty", "sensex", "trading",
+    "portfolio", "equity", "debt fund", "etf", "index fund",
+    "angel one", "upstox", "5paisa", "ipo", "smallcase",
+    "sgb", "sovereign gold bond", "rdsp", "sukanya samriddhi", "groww",
+    "postal", "postoffice", "india post"
+  ],
+
+  "Refunds": [
+    "refund", "cashback", "return", "reimbursement", "money back",
+    "refund received", "claim", "reversal", "chargeback",
+    "warranty claim", "replacement"
+  ],
+
+  "Business": [
+    "business", "office", "supplies", "stationery", "printing", "courier",
+    "postage", "stamp", "xerox", "photocopy", "visiting card",
+    "business expense", "office expense", "coworking", "meeting",
+    "wework", "office rent", "office supplies"
+  ],
+
+  "Business Revenue": [
+    "business revenue", "sales", "revenue", "business income",
+    "client invoice", "invoice paid", "payment received",
+    "order received", "deal closed"
+  ],
+
+  "Rental Income": [
+    "rent income", "rental income", "tenant", "tenant payment", "rent received",
+    "rent collection", "property income"
+  ],
+
+  "Interest & Dividends": [
+    "interest", "dividend", "bank interest", "fd interest", "rd interest",
+    "savings interest", "bond interest", "mutual fund dividend"
+  ],
+
+  "Personal": [
+    "personal", "self care", "salon", "haircut", "spa", "parlour",
+    "beauty", "skincare", "facial", "massage", "manicure", "pedicure",
+    "barber", "laundry", "dry cleaning", "ironing", "tailor",
+    "alteration", "cobbler"
+  ],
+
+  "EMI & Loans": [
+    "emi", "loan", "home loan", "car loan", "personal loan", "bike loan",
+    "education loan", "credit card bill", "credit card payment",
+    "installment", "equated monthly", "bajaj finance", "hdfc loan",
+    "sbi loan", "icici loan", "mortgage"
+  ],
+
+  "Kids & Family": [
+    "school fees", "daycare", "nanny", "babysitter", "toys", "diapers",
+    "baby food", "formula", "kids clothes", "children", "child",
+    "tuition fees", "picnic", "family outing"
+  ],
+
+  "Pets": [
+    "pet", "dog food", "cat food", "vet", "veterinary", "pet grooming",
+    "pet shop", "pet accessories", "pet medicine", "kennel"
+  ]
+}

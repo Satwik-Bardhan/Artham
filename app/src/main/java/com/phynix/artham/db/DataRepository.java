@@ -201,23 +201,38 @@ public class DataRepository {
     private List<CategoryModel> getStandardCategories() {
         List<CategoryModel> categories = new ArrayList<>();
 
-        // --- EXPENSES ---
-        categories.add(new CategoryModel("Food & Dining", "Expense", "#FF5722", R.drawable.ic_food_dining, false));
-        categories.add(new CategoryModel("Bills & Utility", "Expense", "#FFC107", R.drawable.ic_utilities, false));
-        categories.add(new CategoryModel("Transportation", "Expense", "#3F51B5", R.drawable.ic_transportation, false));
-        categories.add(new CategoryModel("Rent", "Expense", "#009688", R.drawable.ic_home, false));
-        categories.add(new CategoryModel("Entertainment", "Expense", "#9C27B0", R.drawable.ic_entertainment, false));
-        categories.add(new CategoryModel("Shopping", "Expense", "#E91E63", R.drawable.ic_receipt, false));
-        categories.add(new CategoryModel("Medical", "Expense", "#F44336", R.drawable.ic_shield_check, false));
-        categories.add(new CategoryModel("Education", "Expense", "#795548", R.drawable.ic_book, false));
-        categories.add(new CategoryModel("Personal", "Expense", "#607D8B", R.drawable.ic_person, false));
-        categories.add(new CategoryModel("Other", "Expense", "#9E9E9E", R.drawable.ic_all_inclusive, false));
+        // ═══════════════ EXPENSES ═══════════════
+        categories.add(new CategoryModel("Food & Dining",    "Expense", "#FF7043", R.drawable.ic_food_dining,      false));
+        categories.add(new CategoryModel("Groceries",        "Expense", "#8BC34A", R.drawable.ic_groceries,        false));
+        categories.add(new CategoryModel("Bills & Utility",  "Expense", "#FFDE21", R.drawable.ic_utilities,       false));
+        categories.add(new CategoryModel("Subscriptions",    "Expense", "#3F51B5", R.drawable.ic_subscriptions,    false));
+        categories.add(new CategoryModel("Transport",        "Expense", "#29B6F6", R.drawable.ic_transportation,   false));
+        categories.add(new CategoryModel("Travel",           "Expense", "#03A9F4", R.drawable.ic_flight,           false));
+        categories.add(new CategoryModel("Rent",             "Expense", "#FFA726", R.drawable.ic_home,             false));
+        categories.add(new CategoryModel("Insurance",        "Expense", "#795548", R.drawable.ic_security,         false));
+        categories.add(new CategoryModel("Shopping",         "Expense", "#EC407A", R.drawable.ic_shopping_cart,     false));
+        categories.add(new CategoryModel("Entertainment",    "Expense", "#AB47BC", R.drawable.ic_entertainment,    false));
+        categories.add(new CategoryModel("Health",           "Expense", "#EF5350", R.drawable.ic_medicine,         false));
+        categories.add(new CategoryModel("Education",        "Expense", "#5C6BC0", R.drawable.ic_book,             false));
+        categories.add(new CategoryModel("Personal",         "Expense", "#607D8B", R.drawable.ic_person,           false));
+        categories.add(new CategoryModel("Gifts & Charity",  "Expense", "#E91E63", R.drawable.ic_card_giftcard,    false));
+        categories.add(new CategoryModel("Business",         "Expense", "#78909C", R.drawable.ic_work,             false));
+        categories.add(new CategoryModel("Taxes",            "Expense", "#E53935", R.drawable.ic_receipt_outline,  false));
+        categories.add(new CategoryModel("EMI & Loans",      "Expense", "#FF8A65", R.drawable.ic_account_balance,  false));
+        categories.add(new CategoryModel("Kids & Family",    "Expense", "#CE93D8", R.drawable.ic_group_outline,    false));
+        categories.add(new CategoryModel("Pets",             "Expense", "#A1887F", R.drawable.ic_star_outline,     false));
+        categories.add(new CategoryModel("Other Expenses",   "Expense", "#9E9E9E", R.drawable.ic_category,         false));
 
-        // --- INCOME ---
-        categories.add(new CategoryModel("Salary", "Income", "#4CAF50", R.drawable.ic_money, false));
-        categories.add(new CategoryModel("Business", "Income", "#2196F3", R.drawable.ic_bar_graph, false));
-        categories.add(new CategoryModel("Investment", "Income", "#00BCD4", R.drawable.ic_trending_up, false));
-        categories.add(new CategoryModel("Gifts", "Income", "#FFEB3B", R.drawable.ic_star_filled, false));
+        // ═══════════════ INCOME ═══════════════
+        categories.add(new CategoryModel("Salary",              "Income", "#66BB6A", R.drawable.ic_money,            false));
+        categories.add(new CategoryModel("Freelance",           "Income", "#CDDC39", R.drawable.ic_work,             false));
+        categories.add(new CategoryModel("Business Revenue",    "Income", "#42A5F5", R.drawable.ic_bar_graph,        false));
+        categories.add(new CategoryModel("Investment",          "Income", "#009688", R.drawable.ic_trending_up,      false));
+        categories.add(new CategoryModel("Rental Income",       "Income", "#FFA726", R.drawable.ic_home,             false));
+        categories.add(new CategoryModel("Interest & Dividends","Income", "#00ACC1", R.drawable.ic_coins_outline,    false));
+        categories.add(new CategoryModel("Gifts",               "Income", "#FFEB3B", R.drawable.ic_card_giftcard,    false));
+        categories.add(new CategoryModel("Refunds",             "Income", "#4DB6AC", R.drawable.ic_assignment_return,false));
+        categories.add(new CategoryModel("Other Income",        "Income", "#9E9E9E", R.drawable.ic_category,         false));
 
         return categories;
     }
@@ -239,6 +254,12 @@ public class DataRepository {
                 });
             } else {
                 List<CategoryModel> models = EntityMapper.toCategoryModelList(entities);
+                // Cache custom categories so pie chart and legend resolve colors/icons correctly
+                for (CategoryModel cat : models) {
+                    if (cat.isCustom()) {
+                        com.phynix.artham.utils.CategoryColorUtil.cacheUserCategory(cat);
+                    }
+                }
                 new android.os.Handler(android.os.Looper.getMainLooper()).post(() -> {
                     if (callback != null) callback.onCallback(models);
                 });
