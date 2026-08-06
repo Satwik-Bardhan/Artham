@@ -13,8 +13,8 @@ android {
         applicationId = "com.phynix.artham"
         minSdk = 24
         targetSdk = 36
-        versionCode = 19
-        versionName = "2.1.2"
+        versionCode = 23
+        versionName = "2.2.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("String", "SUPABASE_URL", "\"https://pgrgcpyysvuzozylgump.supabase.co\"")
         buildConfigField("String", "SUPABASE_ANON_KEY", "\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBncmdjcHl5c3Z1em96eWxndW1wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM5NTA3ODMsImV4cCI6MjA5OTUyNjc4M30.BhM1BPFcKyKwH0jvFowyl8TguSNiTaEWNJlwQWQ1_kM\"")

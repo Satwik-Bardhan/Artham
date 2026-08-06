@@ -314,7 +314,7 @@ public class PdfReportGenerator {
     }
 
     private static String formatCurrency(double amount) {
-        return String.format(Locale.getDefault(), "%.0f", amount);
+        return String.format(Locale.getDefault(), "%.2f", amount);
     }
 
     private static void addCategoryReportTable(Document document, List<TransactionModel> transactions, boolean greyscale) throws Exception {

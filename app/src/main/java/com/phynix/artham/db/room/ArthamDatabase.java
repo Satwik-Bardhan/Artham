@@ -51,7 +51,9 @@ public abstract class ArthamDatabase extends RoomDatabase {
                             ArthamDatabase.class,
                             DB_NAME
                     )
-                    .fallbackToDestructiveMigration()
+                    // NEVER use fallbackToDestructiveMigration() — it wipes ALL data on schema changes!
+                    // Use OnDowngrade only, and add proper migrations for upgrades.
+                    .fallbackToDestructiveMigrationOnDowngrade()
                     .build();
                 }
             }

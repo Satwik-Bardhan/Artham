@@ -217,9 +217,15 @@ public class CashbookSwitchActivity extends BaseActivity {
         if (swipeRefreshLayout != null) {
             swipeRefreshLayout.setOnRefreshListener(() -> {
                 if (!repository.isLocalMode()) {
-                    com.phynix.artham.db.sync.SyncEngine.triggerSync(this, this::loadCashbooks);
+                    com.phynix.artham.db.sync.SyncEngine.triggerSync(this, () -> {
+                        runOnUiThread(() -> {
+                            loadCashbooks();
+                            if (swipeRefreshLayout != null) swipeRefreshLayout.setRefreshing(false);
+                        });
+                    });
                 } else {
                     loadCashbooks();
+                    if (swipeRefreshLayout != null) swipeRefreshLayout.setRefreshing(false);
                 }
             });
             swipeRefreshLayout.setColorSchemeResources(
@@ -289,6 +295,9 @@ public class CashbookSwitchActivity extends BaseActivity {
     }
 
     private void loadCashbooks() {
+        // Always stop swipe refresh first, regardless of isLoading state
+        if (swipeRefreshLayout != null) swipeRefreshLayout.setRefreshing(false);
+
         if (isLoading) return;
 
         showLoading(true);
@@ -300,6 +309,7 @@ public class CashbookSwitchActivity extends BaseActivity {
                 cb.setCurrent(isCurrent);
                 allCashbooks.add(cb);
             }
+            setupCategoriesListener();
             applyFiltersAndSort();
             showLoading(false);
             if (swipeRefreshLayout != null) swipeRefreshLayout.setRefreshing(false);
@@ -636,6 +646,9 @@ public class CashbookSwitchActivity extends BaseActivity {
             } else if (itemId == R.id.menu_export) {
                 exportCashbookAsPdf(cashbook);
                 return true;
+            } else if (itemId == R.id.menu_copy) {
+                duplicateCashbook(cashbook);
+                return true;
             } else if (itemId == R.id.menu_change_label) {
                 showChangeCategoryDialog(cashbook);
                 return true;
@@ -646,6 +659,16 @@ public class CashbookSwitchActivity extends BaseActivity {
             return false;
         });
         popup.show();
+    }
+
+    private void duplicateCashbook(CashbookModel original) {
+        if (original == null) return;
+
+        String newName = "Copy of " + original.getName();
+        repository.duplicateCashbook(original.getCashbookId(), newName, newId -> {
+            showSnackbar("Cashbook duplicated with all entries: " + newName);
+            loadCashbooks();
+        }, error -> showSnackbar("Failed to duplicate: " + error));
     }
 
     private void exportCashbookAsPdf(CashbookModel cashbook) {
@@ -691,14 +714,19 @@ public class CashbookSwitchActivity extends BaseActivity {
             showSnackbar(getString(R.string.error_delete_last_cashbook));
             return;
         }
+
+        // Build appropriate warning message for active/current cashbook
+        String message;
         if (cashbook.isCurrent()) {
-            showSnackbar(getString(R.string.error_delete_current_cashbook));
-            return;
+            message = getString(R.string.msg_delete_cashbook_confirmation, cashbook.getName())
+                    + "\n\nThis is your currently selected cashbook. Another cashbook will be selected automatically.";
+        } else {
+            message = getString(R.string.msg_delete_cashbook_confirmation, cashbook.getName());
         }
 
         AlertDialog dialog = new MaterialAlertDialogBuilder(this)
                 .setTitle(getString(R.string.title_delete_cashbook))
-                .setMessage(getString(R.string.msg_delete_cashbook_confirmation, cashbook.getName()))
+                .setMessage(message)
                 .setPositiveButton(getString(R.string.btn_delete), (d, which) -> deleteCashbookFromFirebase(cashbook))
                 .setNegativeButton(getString(R.string.btn_cancel), null)
                 .create();
@@ -708,12 +736,49 @@ public class CashbookSwitchActivity extends BaseActivity {
     }
 
     private void deleteCashbookFromFirebase(CashbookModel cashbook) {
+        // If deleting the current cashbook, auto-reassign to another one first
+        boolean wasCurrent = cashbook.isCurrent();
+
         repository.deleteCashbook(cashbook.getCashbookId(), success -> {
+            if (wasCurrent) {
+                // Find another cashbook to set as current
+                reassignActiveCashbook(cashbook.getCashbookId());
+            }
             showSnackbar("Cashbook deleted");
             loadCashbooks();
         }, error -> {
             showSnackbar(error);
         });
+    }
+
+    /**
+     * After deleting the current cashbook, auto-select another available one.
+     */
+    private void reassignActiveCashbook(String deletedId) {
+        CashbookModel replacement = null;
+        for (CashbookModel cb : allCashbooks) {
+            if (!cb.getCashbookId().equals(deletedId) && cb.isActive()) {
+                replacement = cb;
+                break;
+            }
+        }
+        // Fallback: pick any remaining cashbook
+        if (replacement == null) {
+            for (CashbookModel cb : allCashbooks) {
+                if (!cb.getCashbookId().equals(deletedId)) {
+                    replacement = cb;
+                    break;
+                }
+            }
+        }
+        if (replacement != null) {
+            currentCashbookId = replacement.getCashbookId();
+            SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+            String userId = AuthManager.getUserId(this);
+            prefs.edit().putString(Constants.PREF_ACTIVE_CASHBOOK_PREFIX + userId, currentCashbookId).apply();
+            replacement.setCurrent(true);
+            repository.updateCashbook(replacement, s -> {});
+        }
     }
 
     private void showSortOptionsDialog() {
@@ -902,6 +967,11 @@ public class CashbookSwitchActivity extends BaseActivity {
         // Hide the actual list while loading, show it when done
         if (cashbookRecyclerView != null) {
             cashbookRecyclerView.setVisibility(show ? View.GONE : View.VISIBLE);
+        }
+
+        // Hide FAB during loading, restore when done
+        if (quickAddFab != null) {
+            quickAddFab.setVisibility(show ? View.GONE : View.VISIBLE);
         }
 
         if (show) {

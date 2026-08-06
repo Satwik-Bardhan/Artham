@@ -50,8 +50,8 @@ public class EditProfileActivity extends BaseActivity {
     private static final String TAG = "EditProfileActivity";
 
     private ImageView profileImageView, backButton, editProfilePictureButton;
-    private EditText editFullName;
-    private TextView displayEmail, displayUid, dateOfBirthText;
+    private EditText editFullName, editUid;
+    private TextView displayEmail, dateOfBirthText;
     private LinearLayout dateOfBirthLayout;
     private Button saveProfileButton, cancelButton, deleteAccountButton;
 
@@ -81,23 +81,27 @@ public class EditProfileActivity extends BaseActivity {
 
         initViews();
         setupImagePicker();
+        setupListeners();
         loadUserInfo();
+    }
 
+    private void setupListeners() {
         backButton.setOnClickListener(v -> finish());
         cancelButton.setOnClickListener(v -> finish());
 
-        // EXPLICIT BUTTON LISTENER
-        saveProfileButton.setOnClickListener(v -> {
-            Log.d(TAG, "Save Button Clicked!");
-            saveProfileChanges();
-        });
-
         View.OnClickListener imgClick = v -> openImageChooser();
-        editProfilePictureButton.setOnClickListener(imgClick);
-        profileImageView.setOnClickListener(imgClick);
+        if (editProfilePictureButton != null) editProfilePictureButton.setOnClickListener(imgClick);
+        if (profileImageView != null) profileImageView.setOnClickListener(imgClick);
 
-        dateOfBirthLayout.setOnClickListener(v -> showDatePicker());
-        deleteAccountButton.setOnClickListener(v -> showDeleteAccountDialog());
+        if (dateOfBirthLayout != null) dateOfBirthLayout.setOnClickListener(v -> showDatePicker());
+        if (deleteAccountButton != null) deleteAccountButton.setOnClickListener(v -> showDeleteAccountDialog());
+
+        if (saveProfileButton != null) {
+            saveProfileButton.setOnClickListener(v -> {
+                Log.d(TAG, "Save Button Clicked!");
+                saveProfileChanges();
+            });
+        }
     }
 
     private void initViews() {
@@ -108,7 +112,7 @@ public class EditProfileActivity extends BaseActivity {
 
         editFullName = findViewById(R.id.editFullName);
         displayEmail = findViewById(R.id.displayEmail);
-        displayUid = findViewById(R.id.displayUid);
+        editUid = findViewById(R.id.editUid);
 
         dateOfBirthText = findViewById(R.id.dateOfBirthText);
         dateOfBirthLayout = findViewById(R.id.dateOfBirthLayout);
@@ -139,45 +143,82 @@ public class EditProfileActivity extends BaseActivity {
     }
 
     private void openImageChooser() {
-        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-        intent.setType("image/*");
+        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        if (intent.resolveActivity(getPackageManager()) == null) {
+            intent = new Intent(Intent.ACTION_GET_CONTENT);
+            intent.setType("image/*");
+        }
         imagePickerLauncher.launch(intent);
     }
 
     private void loadUserInfo() {
-        // Load UID
-        displayUid.setText(AuthManager.getUserId(this));
+        // Load UID into editable input
+        if (editUid != null) {
+            editUid.setText(AuthManager.getUserId(this));
+        }
 
         // Load saved profile data from SharedPreferences
         android.content.SharedPreferences prefs = getSharedPreferences("AppPrefs", Context.MODE_PRIVATE);
 
-        // Load name
+        // Load name (try user_display_name first, then user_name from Google login)
         String savedName = prefs.getString("user_display_name", "");
+        if (savedName.isEmpty()) {
+            savedName = prefs.getString("user_name", "");
+        }
         if (!savedName.isEmpty()) {
             editFullName.setText(savedName);
         }
 
         // Load email
-        String savedEmail = prefs.getString("user_email", "");
-        if (!savedEmail.isEmpty()) {
+        String savedEmail = AuthManager.getUserEmail(this);
+        if (savedEmail == null || savedEmail.isEmpty()) {
+            savedEmail = com.phynix.artham.auth.SupabaseAuthManager.getCurrentUserEmail();
+        }
+        if (savedEmail != null && !savedEmail.isEmpty()) {
             displayEmail.setText(savedEmail);
+            getSharedPreferences("AppPrefs", Context.MODE_PRIVATE)
+                    .edit().putString("user_email", savedEmail).apply();
         }
 
         // Load DOB
         long savedDob = prefs.getLong("user_dob", 0);
         if (savedDob > 0) {
             dobTimestamp = savedDob;
+            dobCalendar.setTimeInMillis(savedDob);
             updateDobText(savedDob);
         }
 
-        // Load profile photo from internal storage
+        // Load profile photo (try local path first, then Google photo URL)
         String savedPhotoPath = prefs.getString("user_photo_path", "");
         if (!savedPhotoPath.isEmpty()) {
-            File photoFile = new File(savedPhotoPath);
-            if (photoFile.exists()) {
+            // Check if it's a local file or URL
+            if (savedPhotoPath.startsWith("/")) {
+                File photoFile = new File(savedPhotoPath);
+                if (photoFile.exists()) {
+                    currentPhotoUrl = savedPhotoPath;
+                    Glide.with(this)
+                            .load(photoFile)
+                            .skipMemoryCache(true)
+                            .centerCrop()
+                            .circleCrop()
+                            .into(profileImageView);
+                }
+            } else {
+                // It's a URL (e.g. Google photo URL)
                 currentPhotoUrl = savedPhotoPath;
                 Glide.with(this)
-                        .load(photoFile)
+                        .load(savedPhotoPath)
+                        .centerCrop()
+                        .circleCrop()
+                        .into(profileImageView);
+            }
+        } else {
+            // Fallback: try Google photo URL
+            String photoUrl = prefs.getString("user_photo_url", "");
+            if (!photoUrl.isEmpty()) {
+                currentPhotoUrl = photoUrl;
+                Glide.with(this)
+                        .load(photoUrl)
                         .centerCrop()
                         .circleCrop()
                         .into(profileImageView);
@@ -187,10 +228,31 @@ public class EditProfileActivity extends BaseActivity {
 
     private void saveProfileChanges() {
         String name = editFullName.getText().toString().trim();
+        String uid = editUid != null ? editUid.getText().toString().trim() : "";
 
         if (TextUtils.isEmpty(name)) {
             editFullName.setError("Name is required");
             Toast.makeText(this, "Please enter your name", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (TextUtils.isEmpty(uid)) {
+            if (editUid != null) editUid.setError("User ID is required");
+            Toast.makeText(this, "Please enter a User ID", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (uid.length() < 3) {
+            if (editUid != null) editUid.setError("UID must be at least 3 characters");
+            Toast.makeText(this, "UID must be at least 3 characters", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (!uid.matches("^[a-zA-Z0-9._-]+$")) {
+            if (editUid != null) {
+                editUid.setError("Only '.', '-', and '_' special characters are allowed");
+            }
+            Toast.makeText(this, "Only '.', '-', and '_' special characters are allowed in UID", Toast.LENGTH_LONG).show();
             return;
         }
 
@@ -206,19 +268,39 @@ public class EditProfileActivity extends BaseActivity {
 
         ProgressDialog progressDialog = new ProgressDialog(this);
         progressDialog.setTitle("Updating Profile");
-        progressDialog.setMessage("Please wait...");
+        progressDialog.setMessage("Checking User ID...");
         progressDialog.setCanceledOnTouchOutside(false);
         progressDialog.show();
 
+        AuthManager.checkUidAvailability(this, uid, isAvailable -> {
+            if (!isAvailable) {
+                progressDialog.dismiss();
+                if (editUid != null) {
+                    editUid.setError("This UID is already used by someone");
+                }
+                Toast.makeText(EditProfileActivity.this, "This UID is already used by someone", Toast.LENGTH_LONG).show();
+                return;
+            }
+
+            progressDialog.setMessage("Please wait...");
+            saveProfileWithUid(progressDialog, name, uid, imageData);
+        });
+    }
+
+    private void saveProfileWithUid(ProgressDialog progressDialog, String name, String uid, byte[] imageData) {
         // Save on background thread
         new Thread(() -> {
             try {
+                // Persist custom UID
+                AuthManager.saveCustomUid(this, uid);
+
                 android.content.SharedPreferences.Editor editor =
                         getSharedPreferences("AppPrefs", Context.MODE_PRIVATE).edit();
 
                 // Save name
                 editor.putString("user_display_name", name);
-                Log.d(TAG, "Saving name: " + name);
+                editor.putString("user_name", name);
+                Log.d(TAG, "Saving name: " + name + ", custom UID: " + uid);
 
                 // Save DOB if set
                 if (dobTimestamp > 0) {
@@ -229,7 +311,16 @@ public class EditProfileActivity extends BaseActivity {
                 if (imageData != null) {
                     File photoDir = new File(getFilesDir(), "profile");
                     if (!photoDir.exists()) photoDir.mkdirs();
-                    File photoFile = new File(photoDir, "profile_photo.jpg");
+
+                    // Delete old profile photo files to prevent cache collision & free disk space
+                    File[] oldFiles = photoDir.listFiles();
+                    if (oldFiles != null) {
+                        for (File f : oldFiles) {
+                            try { f.delete(); } catch (Exception ignored) {}
+                        }
+                    }
+
+                    File photoFile = new File(photoDir, "profile_photo_" + System.currentTimeMillis() + ".jpg");
 
                     try (FileOutputStream fos = new FileOutputStream(photoFile)) {
                         fos.write(imageData);
@@ -238,6 +329,7 @@ public class EditProfileActivity extends BaseActivity {
 
                     String photoPath = photoFile.getAbsolutePath();
                     editor.putString("user_photo_path", photoPath);
+                    editor.putString("user_photo_url", photoPath);
                     Log.d(TAG, "Profile photo saved to: " + photoPath + " (size: " + photoFile.length() + " bytes)");
                 }
 
@@ -250,8 +342,8 @@ public class EditProfileActivity extends BaseActivity {
                 com.phynix.artham.models.Users cachedUser = cache.getCachedUserProfile();
                 if (cachedUser != null) {
                     cachedUser.setName(name);
+                    cachedUser.setUid(uid);
                     if (imageData != null) {
-                        // Set profile to local file path so Glide can load it
                         String savedPhoto = getSharedPreferences("AppPrefs", Context.MODE_PRIVATE)
                                 .getString("user_photo_path", "");
                         if (!savedPhoto.isEmpty()) {
@@ -260,15 +352,13 @@ public class EditProfileActivity extends BaseActivity {
                     }
                     cache.cacheUserProfile(cachedUser);
                 } else {
-                    // Create a new cache entry
-                    String userId = AuthManager.getUserId(this);
                     String savedPhoto = getSharedPreferences("AppPrefs", Context.MODE_PRIVATE)
                             .getString("user_photo_path", "");
                     com.phynix.artham.models.Users newUser = new com.phynix.artham.models.Users(
-                            userId, name, "", null, savedPhoto);
+                            uid, name, "", null, savedPhoto);
                     cache.cacheUserProfile(newUser);
                 }
-                Log.d(TAG, "SessionCache updated with name: " + name);
+                Log.d(TAG, "SessionCache updated with name: " + name + ", UID: " + uid);
 
                 runOnUiThread(() -> {
                     progressDialog.dismiss();
@@ -288,39 +378,44 @@ public class EditProfileActivity extends BaseActivity {
     }
 
     private byte[] getCompressedImageData(Uri uri) {
+        if (uri == null) return null;
         try {
-            InputStream inputBounds = getContentResolver().openInputStream(uri);
-            BitmapFactory.Options options = new BitmapFactory.Options();
-            options.inJustDecodeBounds = true;
-            BitmapFactory.decodeStream(inputBounds, null, options);
-            if (inputBounds != null) inputBounds.close();
-
-            int reqWidth = 600;
-            int reqHeight = 600;
-            int inSampleSize = 1;
-
-            if (options.outHeight > reqHeight || options.outWidth > reqWidth) {
-                final int halfHeight = options.outHeight / 2;
-                final int halfWidth = options.outWidth / 2;
-                while ((halfHeight / inSampleSize) >= reqHeight && (halfWidth / inSampleSize) >= reqWidth) {
-                    inSampleSize *= 2;
-                }
+            Bitmap bitmap = null;
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+                bitmap = android.graphics.ImageDecoder.decodeBitmap(
+                        android.graphics.ImageDecoder.createSource(getContentResolver(), uri)
+                );
+            } else {
+                bitmap = android.provider.MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
             }
 
-            options.inJustDecodeBounds = false;
-            options.inSampleSize = inSampleSize;
+            if (bitmap != null) {
+                int width = bitmap.getWidth();
+                int height = bitmap.getHeight();
+                float max = 600f;
+                if (width > max || height > max) {
+                    float ratio = Math.min(max / width, max / height);
+                    int newWidth = Math.round(width * ratio);
+                    int newHeight = Math.round(height * ratio);
+                    bitmap = Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true);
+                }
 
-            InputStream inputImage = getContentResolver().openInputStream(uri);
-            Bitmap scaledBitmap = BitmapFactory.decodeStream(inputImage, null, options);
-            if (inputImage != null) inputImage.close();
-
-            if (scaledBitmap != null) {
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                scaledBitmap.compress(Bitmap.CompressFormat.JPEG, 60, baos);
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 80, baos);
                 return baos.toByteArray();
             }
         } catch (Exception e) {
-            Log.e(TAG, "Error compressing image: " + e.getMessage());
+            Log.e(TAG, "Error decoding image with ImageDecoder/MediaStore, trying stream fallback", e);
+            try (InputStream is = getContentResolver().openInputStream(uri)) {
+                Bitmap b = BitmapFactory.decodeStream(is);
+                if (b != null) {
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    b.compress(Bitmap.CompressFormat.JPEG, 80, baos);
+                    return baos.toByteArray();
+                }
+            } catch (Exception ex) {
+                Log.e(TAG, "Fallback image decode failed", ex);
+            }
         }
         return null;
     }
@@ -359,19 +454,39 @@ public class EditProfileActivity extends BaseActivity {
 
     private void deleteUserData() {
         ProgressDialog pd = new ProgressDialog(this);
-        pd.setMessage("Deleting account...");
+        pd.setMessage("Deleting account and erasing cloud data...");
+        pd.setCancelable(false);
+        pd.setCanceledOnTouchOutside(false);
         pd.show();
 
-        pd.dismiss();
-        logoutAndRedirect();
+        com.phynix.artham.auth.SupabaseAuthManager.deleteUserAccount(this, new com.phynix.artham.auth.SupabaseAuthManager.AuthCallback() {
+            @Override
+            public void onSuccess(String userId) {
+                if (!isFinishing() && !isDestroyed()) {
+                    pd.dismiss();
+                    Toast.makeText(EditProfileActivity.this, "Account deleted successfully", Toast.LENGTH_SHORT).show();
+                }
+                logoutAndRedirect();
+            }
+
+            @Override
+            public void onError(String error) {
+                if (!isFinishing() && !isDestroyed()) {
+                    pd.dismiss();
+                    Toast.makeText(EditProfileActivity.this, "Local data cleared. " + error, Toast.LENGTH_LONG).show();
+                }
+                logoutAndRedirect();
+            }
+        });
     }
 
     private void logoutAndRedirect() {
-        AuthManager.signOut(this);
+        // AuthManager.signOut is already called inside deleteUserAccount, avoid double-call
         getSharedPreferences("AppPrefs", Context.MODE_PRIVATE).edit().clear().apply();
         Intent intent = new Intent(this, SignInActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
+        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
         finish();
     }
 

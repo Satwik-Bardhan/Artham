@@ -198,27 +198,29 @@ public class SearchFiltersActivity extends BaseActivity {
                 SnackbarHelper.show(this, "Party selection coming soon!", applyFiltersButton));
 
         // Radio Group Listeners
-        inOutToggle.setOnCheckedChangeListener((group, checkedId) -> {
-            if (checkedId == R.id.radioIn) entryType = "IN";
-            else if (checkedId == R.id.radioOut) entryType = "OUT";
-            updateActiveFilterCount();
-        });
+        if (inOutToggle != null) {
+            inOutToggle.setOnCheckedChangeListener((group, checkedId) -> {
+                if (checkedId == R.id.radioIn) entryType = "IN";
+                else if (checkedId == R.id.radioOut) entryType = "OUT";
+                updateActiveFilterCount();
+            });
+        }
 
-        cashOnlineToggle.setOnCheckedChangeListener((group, checkedId) -> {
-            if (checkedId == R.id.radioCash) paymentMode = "Cash";
-            else if (checkedId == R.id.radioOnline) paymentMode = "Online";
-            updateActiveFilterCount();
-        });
+        if (cashOnlineToggle != null) {
+            cashOnlineToggle.setOnCheckedChangeListener((group, checkedId) -> {
+                if (checkedId == R.id.radioCash) paymentMode = "Cash";
+                else if (checkedId == R.id.radioOnline) paymentMode = "Online";
+                updateActiveFilterCount();
+            });
+        }
 
         // Switch Button Logic
-        if (swapButton != null) {
+        if (swapButton != null && inOutToggle != null) {
             swapButton.setOnClickListener(v -> {
                 int checkedId = inOutToggle.getCheckedRadioButtonId();
                 if (checkedId == R.id.radioIn) {
-                    // Currently IN, switch to OUT
                     inOutToggle.check(R.id.radioOut);
                 } else {
-                    // Currently OUT or None (default to IN)
                     inOutToggle.check(R.id.radioIn);
                 }
             });
@@ -313,8 +315,8 @@ public class SearchFiltersActivity extends BaseActivity {
         selectedCategories.clear();
 
         filterTagsInput.setText("");
-        inOutToggle.clearCheck();
-        cashOnlineToggle.clearCheck();
+        if (inOutToggle != null) inOutToggle.clearCheck();
+        if (cashOnlineToggle != null) cashOnlineToggle.clearCheck();
 
         updateUIWithCurrentFilters();
         SnackbarHelper.show(this, "All filters cleared", applyFiltersButton);
@@ -350,12 +352,14 @@ public class SearchFiltersActivity extends BaseActivity {
         }
 
         // Programmatically check the radio buttons based on entryType
-        if ("IN".equals(entryType)) {
-            inOutToggle.check(R.id.radioIn);
-        } else if ("OUT".equals(entryType)) {
-            inOutToggle.check(R.id.radioOut);
-        } else {
-            inOutToggle.clearCheck();
+        if (inOutToggle != null) {
+            if ("IN".equals(entryType)) {
+                inOutToggle.check(R.id.radioIn);
+            } else if ("OUT".equals(entryType)) {
+                inOutToggle.check(R.id.radioOut);
+            } else {
+                inOutToggle.clearCheck();
+            }
         }
 
         updateActiveFilterCount();
@@ -366,8 +370,8 @@ public class SearchFiltersActivity extends BaseActivity {
 
         if (startCalendar.getTimeInMillis() != 0) count++;
         if (endCalendar.getTimeInMillis() != 0 && endCalendar.getTimeInMillis() > startCalendar.getTimeInMillis()) count++;
-        if (!"All".equals(entryType) && inOutToggle.getCheckedRadioButtonId() != -1) count++;
-        if (!"All".equals(paymentMode) && cashOnlineToggle.getCheckedRadioButtonId() != -1) count++;
+        if (!"All".equals(entryType) && inOutToggle != null && inOutToggle.getCheckedRadioButtonId() != -1) count++;
+        if (!"All".equals(paymentMode) && cashOnlineToggle != null && cashOnlineToggle.getCheckedRadioButtonId() != -1) count++;
         if (!selectedCategories.isEmpty()) count++;
         if (!filterTagsInput.getText().toString().trim().isEmpty()) count++;
 

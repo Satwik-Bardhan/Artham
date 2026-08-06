@@ -67,7 +67,71 @@ object SyncEngine {
         }
 
         scope.launch {
-            syncAll(context)
+            try {
+                syncAll(context)
+            } catch (e: Exception) {
+                Log.e(TAG, "triggerSync failed", e)
+            } finally {
+                onComplete?.let {
+                    withContext(Dispatchers.Main) { it.run() }
+                }
+            }
+        }
+    }
+
+    /**
+     * Force push ALL local data to Supabase — used for data recovery.
+     * Marks ALL cashbooks, transactions, and categories as PENDING
+     * so pushCashbooks/pushTransactions will re-push everything.
+     */
+    @JvmStatic
+    fun forcePushAll(context: Context, onComplete: Runnable?) {
+        if (!SupabaseAuthManager.isAuthenticated()) {
+            Log.d(TAG, "Not authenticated, cannot force push.")
+            onComplete?.let { kotlinx.coroutines.MainScope().launch { it.run() } }
+            return
+        }
+
+        scope.launch {
+            try {
+                val db = ArthamDatabase.getInstance(context)
+
+                // Mark ALL non-deleted cashbooks as PENDING
+                val allCashbooks = withContext(Dispatchers.IO) { db.cashbookDao().getAll() }
+                var cashbookCount = 0
+                for (cb in allCashbooks) {
+                    cb.syncStatus = "PENDING"
+                    cb.lastModified = System.currentTimeMillis()
+                    db.cashbookDao().update(cb)
+                    cashbookCount++
+                }
+
+                // Mark ALL non-deleted transactions as PENDING
+                val allTransactions = withContext(Dispatchers.IO) {
+                    val txList = mutableListOf<com.phynix.artham.db.room.entity.TransactionEntity>()
+                    for (cb in allCashbooks) {
+                        txList.addAll(db.transactionDao().getByCashbook(cb.id))
+                    }
+                    txList
+                }
+                var txCount = 0
+                for (tx in allTransactions) {
+                    tx.syncStatus = "PENDING"
+                    tx.lastModified = System.currentTimeMillis()
+                    db.transactionDao().update(tx)
+                    txCount++
+                }
+
+                Log.d(TAG, "Force push: marked $cashbookCount cashbooks and $txCount transactions as PENDING")
+
+                // Now run normal sync which will push everything
+                syncAll(context)
+
+                Log.d(TAG, "Force push completed!")
+            } catch (e: Exception) {
+                Log.e(TAG, "Force push failed", e)
+            }
+
             onComplete?.let {
                 withContext(Dispatchers.Main) { it.run() }
             }
@@ -98,18 +162,29 @@ object SyncEngine {
 
             Log.d(TAG, "Starting sync cycle...")
 
-            // Push local changes to Supabase
-            pushCashbooks(db, supabaseUserId)
-            pushCategories(db)
-            pushTransactions(db)
+            // Check if this is a fresh install (no local cashbooks = pull first)
+            val localCashbookCount = withContext(Dispatchers.IO) { db.cashbookDao().getAll().size }
+            
+            if (localCashbookCount == 0) {
+                // Fresh install: pull from cloud first, then push any remaining local changes
+                Log.d(TAG, "Fresh install detected — pulling from cloud first")
+                pullCashbooks(context, db, supabaseUserId)
+                pullTransactions(db)
+                pullCategories(db)
+                pushCashbooks(db, supabaseUserId)
+                pushCategories(db)
+                pushTransactions(db)
+            } else {
+                // Normal sync: push first, then pull
+                pushCashbooks(db, supabaseUserId)
+                pushCategories(db)
+                pushTransactions(db)
+                pullCashbooks(context, db, supabaseUserId)
+                pullTransactions(db)
+                pullCategories(db)
+            }
 
-            // Pull remote changes from Supabase
-            pullCashbooks(db, supabaseUserId)
-            pullTransactions(db)
-            pullCategories(db)
-
-            // Recalculate cashbook stats from actual transactions
-            // (Supabase may have stale balance/count values from migration)
+            // Recalculate cashbook stats ONLY if there are local transactions
             recalculateAllCashbookStats(db)
 
             // Update last sync timestamp
@@ -135,28 +210,33 @@ object SyncEngine {
 
     private suspend fun pushCashbooks(db: ArthamDatabase, userId: String) {
         try {
-            // Push unsynced (new or modified)
             val unsynced = withContext(Dispatchers.IO) { db.cashbookDao().getUnsynced() }
-            for (entity in unsynced) {
-                val model = SupabaseCashbook(
-                    id = entity.id,
-                    userId = userId,
-                    name = entity.name,
-                    description = entity.description,
-                    category = entity.category,
-                    themeColor = entity.themeColor,
-                    themeIcon = entity.themeIcon,
-                    currency = entity.currency,
-                    totalBalance = entity.totalBalance,
-                    transactionCount = entity.transactionCount,
-                    isActive = entity.isActive,
-                    isCurrent = entity.isCurrent,
-                    isFavorite = entity.isFavorite
-                )
-                supabase.from("cashbooks").upsert(model)
-                entity.syncStatus = "SYNCED"
-                db.cashbookDao().update(entity)
-                Log.d(TAG, "Pushed cashbook: ${entity.name}")
+            val allLocal = withContext(Dispatchers.IO) { db.cashbookDao().getAll() }
+            val toPush = (unsynced + allLocal).distinctBy { it.id }
+            for (entity in toPush) {
+                try {
+                    val model = SupabaseCashbook(
+                        id = entity.id,
+                        userId = userId,
+                        name = entity.name,
+                        description = entity.description,
+                        category = entity.category,
+                        themeColor = entity.themeColor,
+                        themeIcon = entity.themeIcon,
+                        currency = entity.currency,
+                        totalBalance = entity.totalBalance,
+                        transactionCount = entity.transactionCount,
+                        isActive = entity.isActive,
+                        isCurrent = entity.isCurrent,
+                        isFavorite = entity.isFavorite
+                    )
+                    supabase.from("cashbooks").upsert(model)
+                    entity.syncStatus = "SYNCED"
+                    db.cashbookDao().update(entity)
+                    Log.d(TAG, "Pushed cashbook: ${entity.name}")
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to push cashbook ${entity.name}, will retry next sync", e)
+                }
             }
 
             // Push deleted
@@ -166,11 +246,11 @@ object SyncEngine {
                     supabase.from("cashbooks").delete {
                         filter { eq("id", entity.id) }
                     }
+                    db.cashbookDao().hardDelete(entity.id)
+                    Log.d(TAG, "Deleted cashbook from cloud: ${entity.id}")
                 } catch (e: Exception) {
                     Log.w(TAG, "Remote delete failed for cashbook ${entity.id} (may not exist)", e)
                 }
-                db.cashbookDao().hardDelete(entity.id)
-                Log.d(TAG, "Deleted cashbook from cloud: ${entity.id}")
             }
         } catch (e: Exception) {
             Log.e(TAG, "Failed to push cashbooks", e)
@@ -180,28 +260,38 @@ object SyncEngine {
     private suspend fun pushTransactions(db: ArthamDatabase) {
         try {
             val unsynced = withContext(Dispatchers.IO) { db.transactionDao().getUnsynced() }
-            for (entity in unsynced) {
-                val model = SupabaseTransaction(
-                    id = entity.id,
-                    cashbookId = entity.cashbookId,
-                    amount = entity.amount,
-                    type = entity.type ?: "OUT",
-                    transactionCategory = entity.transactionCategory,
-                    partyName = entity.partyName,
-                    paymentMode = entity.paymentMode,
-                    remark = entity.remark,
-                    timestamp = entity.timestamp,
-                    tags = entity.tags,
-                    location = entity.location,
-                    attachmentUri = entity.attachmentUri,
-                    autoFrequency = entity.autoFrequency,
-                    taxRate = entity.taxRate,
-                    taxAmount = entity.taxAmount,
-                    taxInclusive = entity.taxInclusive
-                )
-                supabase.from("transactions").upsert(model)
-                entity.syncStatus = "SYNCED"
-                db.transactionDao().update(entity)
+            val allLocal = withContext(Dispatchers.IO) { db.transactionDao().getAll() }
+            val toPush = (unsynced + allLocal).distinctBy { it.id }
+            var pushCount = 0
+            var failCount = 0
+            for (entity in toPush) {
+                try {
+                    val model = SupabaseTransaction(
+                        id = entity.id,
+                        cashbookId = entity.cashbookId,
+                        amount = entity.amount,
+                        type = entity.type ?: "OUT",
+                        transactionCategory = entity.transactionCategory,
+                        partyName = entity.partyName,
+                        paymentMode = entity.paymentMode,
+                        remark = entity.remark,
+                        timestamp = entity.timestamp,
+                        tags = entity.tags,
+                        location = entity.location,
+                        attachmentUri = entity.attachmentUri,
+                        autoFrequency = entity.autoFrequency,
+                        taxRate = entity.taxRate,
+                        taxAmount = entity.taxAmount,
+                        taxInclusive = entity.taxInclusive
+                    )
+                    supabase.from("transactions").upsert(model)
+                    entity.syncStatus = "SYNCED"
+                    db.transactionDao().update(entity)
+                    pushCount++
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to push transaction ${entity.id}, will retry next sync", e)
+                    failCount++
+                }
             }
 
             val deleted = withContext(Dispatchers.IO) { db.transactionDao().getDeleted() }
@@ -210,13 +300,13 @@ object SyncEngine {
                     supabase.from("transactions").delete {
                         filter { eq("id", entity.id) }
                     }
+                    db.transactionDao().hardDelete(entity.id)
                 } catch (e: Exception) {
                     Log.w(TAG, "Remote delete failed for transaction ${entity.id}", e)
                 }
-                db.transactionDao().hardDelete(entity.id)
             }
-            if (unsynced.isNotEmpty() || deleted.isNotEmpty()) {
-                Log.d(TAG, "Pushed ${unsynced.size} transactions, deleted ${deleted.size}")
+            if (pushCount > 0 || deleted.isNotEmpty() || failCount > 0) {
+                Log.d(TAG, "Transactions: pushed=$pushCount, deleted=${deleted.size}, failed=$failCount")
             }
         } catch (e: Exception) {
             Log.e(TAG, "Failed to push transactions", e)
@@ -227,18 +317,28 @@ object SyncEngine {
         try {
             val unsynced = withContext(Dispatchers.IO) { db.categoryDao().getUnsynced() }
             for (entity in unsynced) {
-                val model = SupabaseCategory(
-                    id = entity.id,
-                    cashbookId = entity.cashbookId,
-                    name = entity.name,
-                    type = entity.type,
-                    colorHex = entity.colorHex,
-                    iconResId = entity.iconResId,
-                    isCustom = entity.isCustom
-                )
-                supabase.from("categories").upsert(model)
-                entity.syncStatus = "SYNCED"
-                db.categoryDao().update(entity)
+                if (!entity.isCustom) {
+                    // Default system categories are global/predefined; mark as SYNCED
+                    entity.syncStatus = "SYNCED"
+                    db.categoryDao().update(entity)
+                    continue
+                }
+                try {
+                    val model = SupabaseCategory(
+                        id = entity.id,
+                        cashbookId = entity.cashbookId ?: "",
+                        name = entity.name,
+                        type = entity.type,
+                        colorHex = entity.colorHex,
+                        iconResId = entity.iconResId,
+                        isCustom = entity.isCustom
+                    )
+                    supabase.from("categories").upsert(model)
+                    entity.syncStatus = "SYNCED"
+                    db.categoryDao().update(entity)
+                } catch (e: Exception) {
+                    Log.w(TAG, "Failed to push category '${entity.name}'", e)
+                }
             }
 
             val deleted = withContext(Dispatchers.IO) { db.categoryDao().getDeleted() }
@@ -264,13 +364,54 @@ object SyncEngine {
     //  PULL: Supabase → Room
     // ═══════════════════════════════════════
 
-    private suspend fun pullCashbooks(db: ArthamDatabase, userId: String) {
+    private suspend fun pullCashbooks(context: Context, db: ArthamDatabase, userId: String) {
         try {
-            val remoteCashbooks = supabase.from("cashbooks")
-                .select {
-                    filter { eq("user_id", userId) }
-                }
-                .decodeList<SupabaseCashbook>()
+            val remoteCashbooksAll = try {
+                supabase.from("cashbooks").select().decodeList<SupabaseCashbook>()
+            } catch (e: Exception) {
+                emptyList<SupabaseCashbook>()
+            }
+
+            val remoteCashbooksByUserId = try {
+                supabase.from("cashbooks")
+                    .select {
+                        filter { eq("user_id", userId) }
+                    }
+                    .decodeList<SupabaseCashbook>()
+            } catch (e: Exception) {
+                emptyList<SupabaseCashbook>()
+            }
+
+            val remoteCashbooksByAuthId = try {
+                val authId = SupabaseAuthManager.getCurrentUserId()
+                if (authId != null && authId != userId) {
+                    supabase.from("cashbooks")
+                        .select {
+                            filter { eq("user_id", authId) }
+                        }
+                        .decodeList<SupabaseCashbook>()
+                } else emptyList()
+            } catch (e: Exception) {
+                emptyList<SupabaseCashbook>()
+            }
+
+            val remoteCashbooksByCustomUid = try {
+                val customUid = com.phynix.artham.auth.AuthManager.getUserId(context)
+                val authId = SupabaseAuthManager.getCurrentUserId()
+                if (!customUid.isNullOrEmpty() && customUid != userId && customUid != authId) {
+                    supabase.from("cashbooks")
+                        .select {
+                            filter { eq("user_id", customUid) }
+                        }
+                        .decodeList<SupabaseCashbook>()
+                } else emptyList()
+            } catch (e: Exception) {
+                emptyList<SupabaseCashbook>()
+            }
+
+            val remoteCashbooks = (remoteCashbooksAll + remoteCashbooksByUserId + remoteCashbooksByAuthId + remoteCashbooksByCustomUid)
+                .filter { it.deletedAt == null }
+                .distinctBy { it.id }
 
             for (remote in remoteCashbooks) {
                 val local = withContext(Dispatchers.IO) { db.cashbookDao().getById(remote.id) }
@@ -355,6 +496,7 @@ object SyncEngine {
                             syncStatus = "SYNCED"
                         }
                         db.transactionDao().insert(entity)
+                        Log.d(TAG, "Pulled new transaction from cloud: ${remote.id}")
                     } else if (local.syncStatus == "SYNCED") {
                         // Update if not locally modified
                         local.amount = remote.amount
@@ -363,7 +505,11 @@ object SyncEngine {
                         local.partyName = remote.partyName
                         local.paymentMode = remote.paymentMode
                         local.remark = remote.remark
+                        local.timestamp = remote.timestamp
                         local.tags = remote.tags
+                        local.location = remote.location
+                        local.attachmentUri = remote.attachmentUri
+                        local.autoFrequency = remote.autoFrequency
                         local.taxRate = remote.taxRate
                         local.taxAmount = remote.taxAmount
                         local.taxInclusive = remote.taxInclusive
@@ -403,10 +549,12 @@ object SyncEngine {
                             syncStatus = "SYNCED"
                         }
                         db.categoryDao().insert(entity)
+                        Log.d(TAG, "Pulled new category from cloud: ${remote.name}")
                     } else if (local.syncStatus == "SYNCED") {
                         local.name = remote.name
                         local.type = remote.type
                         local.colorHex = remote.colorHex
+                        local.iconResId = remote.iconResId ?: 0
                         local.isCustom = remote.isCustom
                         local.syncStatus = "SYNCED"
                         db.categoryDao().update(local)
@@ -431,12 +579,23 @@ object SyncEngine {
         try {
             val allCashbooks = withContext(Dispatchers.IO) { db.cashbookDao().getAll() }
             for (cb in allCashbooks) {
-                val balance = db.transactionDao().calculateBalance(cb.id)
                 val count = db.transactionDao().countByCashbook(cb.id)
+                
+                // IMPORTANT: Only recalculate if there are actual local transactions.
+                // If count is 0 but the cashbook has a non-zero balance from the cloud,
+                // it means transactions haven't been pulled yet — preserve the cloud balance.
+                if (count == 0 && (cb.totalBalance != 0.0 || cb.transactionCount != 0)) {
+                    // Transactions may not have been pulled yet, preserve cloud values
+                    Log.d(TAG, "Skipping recalculation for '${cb.name}' — no local transactions, preserving cloud balance=${cb.totalBalance}")
+                    continue
+                }
+                
+                val balance = db.transactionDao().calculateBalance(cb.id)
                 if (cb.totalBalance != balance || cb.transactionCount != count) {
                     cb.totalBalance = balance
                     cb.transactionCount = count
                     cb.lastModified = System.currentTimeMillis()
+                    // Don't change syncStatus here — let the push handle it
                     db.cashbookDao().update(cb)
                     Log.d(TAG, "Recalculated stats for '${cb.name}': balance=$balance, count=$count")
                 }
@@ -458,22 +617,48 @@ object SyncEngine {
         return try {
             val authId = SupabaseAuthManager.getCurrentUserId() ?: return null
 
-            // Query the users table directly (avoid stale cached IDs from Auto Backup)
-            val users = supabase.from("users")
+            // 1. Try querying users by auth_id
+            var users = supabase.from("users")
                 .select {
                     filter { eq("auth_id", authId) }
                 }
                 .decodeList<SupabaseUserRow>()
 
-            val userId = users.firstOrNull()?.id
+            // 2. Fallback: try querying by id
+            if (users.isEmpty()) {
+                users = supabase.from("users")
+                    .select {
+                        filter { eq("id", authId) }
+                    }
+                    .decodeList<SupabaseUserRow>()
+            }
+
+            var userId = users.firstOrNull()?.id
+
+            // 3. Self-healing: if user row is missing in public.users, create/link it now
+            if (userId == null) {
+                Log.d(TAG, "User profile missing in public.users, running ensureUserProfile...")
+                val email = com.phynix.artham.auth.AuthManager.getUserEmail(context)
+                val name = com.phynix.artham.auth.AuthManager.getUserName(context)
+                val photoUrl = com.phynix.artham.auth.AuthManager.getUserPhotoUrl(context)
+                SupabaseAuthManager.ensureUserProfile(authId, null, email, name, photoUrl)
+
+                val retryUsers = supabase.from("users")
+                    .select {
+                        filter { eq("auth_id", authId) }
+                    }
+                    .decodeList<SupabaseUserRow>()
+                userId = retryUsers.firstOrNull()?.id ?: authId
+            }
+
             if (userId != null) {
                 val prefs = context.getSharedPreferences(PREF_SYNC, Context.MODE_PRIVATE)
                 prefs.edit().putString("supabase_user_table_id", userId).apply()
             }
             userId
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to get Supabase user ID", e)
-            null
+            Log.e(TAG, "Failed to get Supabase user ID, falling back to authId", e)
+            SupabaseAuthManager.getCurrentUserId()
         }
     }
 

@@ -371,12 +371,37 @@ public class AppSettingsActivity extends BaseActivity {
                     .show();
             return;
         }
-        String email = "Artham Account";
+        String email = com.phynix.artham.auth.AuthManager.getUserEmail(this);
+        if (email == null || email.isEmpty()) email = "Artham Account";
+
+        long lastSync = getSharedPreferences("sync_prefs", MODE_PRIVATE)
+                .getLong("last_sync_timestamp", 0);
+        String lastSyncStr = lastSync > 0
+                ? new java.text.SimpleDateFormat("MMM dd, yyyy hh:mm a", java.util.Locale.getDefault())
+                    .format(new java.util.Date(lastSync))
+                : "Never";
 
         new AlertDialog.Builder(this)
                 .setTitle("Cloud Backup")
-                .setMessage("Account: " + email + "\nStatus: \u2705 Active")
-                .setPositiveButton("OK", null)
+                .setMessage("Account: " + email
+                        + "\nStatus: \u2705 Active"
+                        + "\nLast Backup: " + lastSyncStr)
+                .setPositiveButton("Backup Now", (d, w) -> {
+                    com.google.android.material.snackbar.Snackbar.make(
+                            findViewById(android.R.id.content),
+                            "Starting cloud backup...",
+                            com.google.android.material.snackbar.Snackbar.LENGTH_SHORT
+                    ).show();
+
+                    com.phynix.artham.db.sync.SyncEngine.forcePushAll(this, () -> {
+                        runOnUiThread(() -> com.google.android.material.snackbar.Snackbar.make(
+                                findViewById(android.R.id.content),
+                                "Cloud backup completed successfully!",
+                                com.google.android.material.snackbar.Snackbar.LENGTH_SHORT
+                        ).show());
+                    });
+                })
+                .setNegativeButton("Close", null)
                 .show();
     }
 

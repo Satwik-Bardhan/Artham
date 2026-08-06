@@ -401,6 +401,24 @@ public class CashInOutActivity extends BaseActivity {
         } else if (checkedId == R.id.radioOut) {
             updateHeaderForTransactionType(Constants.TRANSACTION_TYPE_OUT);
         }
+
+        // Reset category when switching between Cash In/Out since categories differ
+        if (!manualCategorySelected || true) {
+            selectedCategory = "Other";
+            manualCategorySelected = false;
+            if (selectedCategoryTextView != null) {
+                selectedCategoryTextView.setText("Select Category");
+                selectedCategoryTextView.setTextColor(Color.GRAY);
+            }
+            if (selectedCategoryIcon != null) {
+                selectedCategoryIcon.setImageResource(
+                        CategoryColorUtil.getCategoryIcon("Other"));
+            }
+            if (selectedIconContainer != null) {
+                selectedIconContainer.setBackgroundTintList(
+                        ColorStateList.valueOf(ContextCompat.getColor(this, R.color.primary_blue)));
+            }
+        }
     }
 
     private void setupActivityLaunchers() {
@@ -727,7 +745,10 @@ public class CashInOutActivity extends BaseActivity {
         }
 
         TextView display = view.findViewById(R.id.calc_display);
-        display.setText(amountEditText.getText().toString().isEmpty() ? "0" : amountEditText.getText().toString());
+        String initialValue = amountEditText.getText().toString().isEmpty() ? "0" : amountEditText.getText().toString();
+        display.setText(initialValue);
+        // Track if user hasn't typed yet (so first digit replaces the initial value)
+        final boolean[] isNewInput = {!initialValue.equals("0")};
 
         View.OnClickListener listener = v -> {
             Button b = (Button) v;
@@ -738,17 +759,29 @@ public class CashInOutActivity extends BaseActivity {
                 case "C":
                     expression.setLength(0);
                     display.setText("0");
+                    isNewInput[0] = false;
                     break;
                 case "⌫":
                     if (expression.length() > 0) expression.deleteCharAt(expression.length() - 1);
                     display.setText(expression.length() > 0 ? expression.toString() : "0");
+                    isNewInput[0] = false;
                     break;
                 case "=":
                     String result = safeEvaluate(expression.toString());
                     display.setText(result);
+                    isNewInput[0] = true; // After evaluating, next digit should replace
                     break;
                 default:
-                    if (display.getText().toString().equals("0")) expression.setLength(0);
+                    boolean isOperator = text.equals("+") || text.equals("-") ||
+                            text.equals("×") || text.equals("÷") || text.equals("%");
+                    if (isNewInput[0] && !isOperator) {
+                        // First digit typed replaces the initial/previous amount
+                        expression.setLength(0);
+                        isNewInput[0] = false;
+                    } else if (isOperator) {
+                        isNewInput[0] = false;
+                    }
+                    if (display.getText().toString().equals("0") && !isOperator) expression.setLength(0);
                     expression.append(text);
                     display.setText(expression.toString());
                     break;

@@ -1,13 +1,17 @@
 package com.phynix.artham.auth
 
+import android.content.Context
 import android.util.Log
 import com.phynix.artham.utils.SupabaseClientProvider
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.providers.Google
 import io.github.jan.supabase.auth.providers.builtin.IDToken
 import io.github.jan.supabase.postgrest.from
+import io.github.jan.supabase.postgrest.postgrest
 import kotlinx.coroutines.*
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 
 /**
  * SupabaseAuthManager — Handles Supabase authentication alongside Firebase.
@@ -23,6 +27,14 @@ object SupabaseAuthManager {
     private const val TAG = "SupabaseAuth"
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
+    /** Holds the restored custom_uid from Supabase after cross-device login */
+    @JvmStatic
+    var restoredCustomUid: String? = null
+
+    /** Set synchronously when sign-out starts so isAuthenticated() returns false immediately */
+    @Volatile
+    private var isSigningOut = false
+
     // ═══════════════════════════════════════
     //  JAVA-FRIENDLY CALLBACK INTERFACE
     // ═══════════════════════════════════════
@@ -30,6 +42,10 @@ object SupabaseAuthManager {
     interface AuthCallback {
         fun onSuccess(userId: String)
         fun onError(error: String)
+    }
+
+    interface UidCheckCallback {
+        fun onResult(isAvailable: Boolean)
     }
 
     // ═══════════════════════════════════════
@@ -42,7 +58,8 @@ object SupabaseAuthManager {
         val firebase_uid: String? = null,
         val email: String? = null,
         val display_name: String? = null,
-        val photo_url: String? = null
+        val photo_url: String? = null,
+        val custom_uid: String? = null
     )
 
     // ═══════════════════════════════════════
@@ -81,11 +98,28 @@ object SupabaseAuthManager {
                 val supabaseUserId = supabaseUser?.id ?: ""
 
                 Log.d(TAG, "Supabase auth successful. User ID: $supabaseUserId")
+                isSigningOut = false // Reset on successful sign-in
 
                 // 2. Create/update user profile in public.users table
                 ensureUserProfile(supabaseUserId, firebaseUid, email, displayName, photoUrl)
 
-                // 3. Notify caller on main thread
+                // 3. Restore existing custom_uid from Supabase (for cross-device login)
+                try {
+                    val users = SupabaseClientProvider.client.from("users")
+                        .select {
+                            filter { eq("auth_id", supabaseUserId) }
+                        }
+                        .decodeList<ExistingUser>()
+                    val existingUid = users.firstOrNull()?.customUid
+                    if (!existingUid.isNullOrEmpty()) {
+                        Log.d(TAG, "Restoring existing custom_uid from Supabase: $existingUid")
+                        restoredCustomUid = existingUid
+                    }
+                } catch (e: Exception) {
+                    Log.w(TAG, "Failed to restore custom_uid from Supabase (non-fatal)", e)
+                }
+
+                // 4. Notify caller on main thread
                 withContext(Dispatchers.Main) {
                     callback?.onSuccess(supabaseUserId)
                 }
@@ -107,8 +141,11 @@ object SupabaseAuthManager {
      */
     @JvmStatic
     fun signOut(callback: AuthCallback?) {
+        // Set flag IMMEDIATELY (synchronously) so isAuthenticated() returns false right away
+        isSigningOut = true
         scope.launch {
             try {
+                restoredCustomUid = null
                 SupabaseClientProvider.client.auth.signOut()
                 Log.d(TAG, "Supabase sign-out successful")
                 withContext(Dispatchers.Main) {
@@ -136,10 +173,19 @@ object SupabaseAuthManager {
     }
 
     /**
+     * Get the current Supabase user email, or null if not authenticated.
+     */
+    @JvmStatic
+    fun getCurrentUserEmail(): String? {
+        return SupabaseClientProvider.client.auth.currentUserOrNull()?.email
+    }
+
+    /**
      * Check if a Supabase session is active.
      */
     @JvmStatic
     fun isAuthenticated(): Boolean {
+        if (isSigningOut) return false
         return SupabaseClientProvider.client.auth.currentUserOrNull() != null
     }
 
@@ -155,8 +201,154 @@ object SupabaseAuthManager {
         val id: String,
         @kotlinx.serialization.SerialName("auth_id") val authId: String? = null,
         @kotlinx.serialization.SerialName("firebase_uid") val firebaseUid: String? = null,
-        val email: String? = null
+        val email: String? = null,
+        @kotlinx.serialization.SerialName("custom_uid") val customUid: String? = null
     )
+
+    /**
+     * Check whether a custom UID is available (not claimed by any other user).
+     * Uses Supabase RPC function to bypass RLS restrictions.
+     * Falls back to client-side query if RPC is not available.
+     */
+    @JvmStatic
+    fun checkUidAvailability(customUid: String, currentAuthId: String?, callback: UidCheckCallback) {
+        scope.launch {
+            try {
+                val targetUid = customUid.trim()
+                if (targetUid.isEmpty()) {
+                    withContext(Dispatchers.Main) { callback.onResult(false) }
+                    return@launch
+                }
+
+                // If target matches current restored UID, it's available for the user
+                if (!restoredCustomUid.isNullOrEmpty() && targetUid.equals(restoredCustomUid, ignoreCase = true)) {
+                    withContext(Dispatchers.Main) { callback.onResult(true) }
+                    return@launch
+                }
+
+                // Try RPC function first (bypasses RLS)
+                var rpcResult: Boolean? = null
+                try {
+                    val params = buildJsonObject {
+                        put("target_uid", targetUid)
+                        put("current_auth_id", currentAuthId ?: "")
+                    }
+                    val response = SupabaseClientProvider.client.postgrest
+                        .rpc("check_uid_available", params)
+                        .decodeAs<Boolean>()
+                    rpcResult = response
+                } catch (e: Exception) {
+                    Log.w(TAG, "RPC check_uid_available not available, falling back to client-side check", e)
+                }
+
+                if (rpcResult != null) {
+                    withContext(Dispatchers.Main) { callback.onResult(rpcResult) }
+                    return@launch
+                }
+
+                // Fallback: client-side query
+                val usersByCustomUid = try {
+                    SupabaseClientProvider.client.from("users")
+                        .select {
+                            filter { eq("custom_uid", targetUid) }
+                        }
+                        .decodeList<ExistingUser>()
+                } catch (e: Exception) {
+                    emptyList<ExistingUser>()
+                }
+
+                val usersByUsername = try {
+                    SupabaseClientProvider.client.from("users")
+                        .select {
+                            filter { eq("username", targetUid) }
+                        }
+                        .decodeList<ExistingUser>()
+                } catch (e: Exception) {
+                    emptyList<ExistingUser>()
+                }
+
+                val allMatching = (usersByCustomUid + usersByUsername).distinctBy { it.id }
+
+                // Check if any matches belong to a DIFFERENT user
+                val takenByOther = allMatching.any { user ->
+                    val isCurrentUser = (user.authId != null && user.authId.equals(currentAuthId, ignoreCase = true)) ||
+                            user.id.equals(currentAuthId, ignoreCase = true)
+                    !isCurrentUser
+                }
+
+                withContext(Dispatchers.Main) {
+                    callback.onResult(!takenByOther)
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error checking UID availability", e)
+                withContext(Dispatchers.Main) {
+                    callback.onResult(true)
+                }
+            }
+        }
+    }
+
+    /**
+     * Update custom_uid / username for user in Supabase.
+     */
+    @JvmStatic
+    fun updateCustomUid(authId: String, customUid: String, callback: AuthCallback?) {
+        scope.launch {
+            try {
+                val trimmed = customUid.trim()
+                restoredCustomUid = trimmed
+                val updateData = mapOf(
+                    "custom_uid" to trimmed,
+                    "username" to trimmed
+                )
+
+                var updatedCount = 0
+
+                // 1. Update by auth_id
+                try {
+                    SupabaseClientProvider.client.from("users").update(updateData) {
+                        filter { eq("auth_id", authId) }
+                    }
+                    updatedCount++
+                } catch (e: Exception) {
+                    Log.w(TAG, "Update by auth_id failed", e)
+                }
+
+                // 2. Update by id (primary key)
+                try {
+                    SupabaseClientProvider.client.from("users").update(updateData) {
+                        filter { eq("id", authId) }
+                    }
+                    updatedCount++
+                } catch (e: Exception) {
+                    Log.w(TAG, "Update by id failed", e)
+                }
+
+                // 3. Update by user email (for linked user rows)
+                val userEmail = getCurrentUserEmail()?.trim()?.lowercase()
+                if (!userEmail.isNullOrEmpty()) {
+                    try {
+                        SupabaseClientProvider.client.from("users").update(updateData) {
+                            filter { eq("email", userEmail) }
+                        }
+                        updatedCount++
+                    } catch (e: Exception) {
+                        Log.w(TAG, "Update by email failed", e)
+                    }
+                }
+
+                Log.d(TAG, "Successfully updated custom_uid/username in Supabase to $trimmed")
+                withContext(Dispatchers.Main) {
+                    callback?.onSuccess(authId)
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to update custom_uid in Supabase", e)
+                withContext(Dispatchers.Main) {
+                    callback?.onError(e.message ?: "This UID is already taken by another user.")
+                }
+            }
+        }
+    }
 
     /**
      * Serializable model for updating an existing user's auth_id.
@@ -207,6 +399,10 @@ object SupabaseAuthManager {
                     ?: allRelatedUsers.firstOrNull()
 
                 if (targetUser != null) {
+                    if (!targetUser.customUid.isNullOrEmpty()) {
+                        restoredCustomUid = targetUser.customUid
+                        Log.d(TAG, "Restored custom UID: ${targetUser.customUid}")
+                    }
                     // STEP 1: Delete ALL duplicate rows FIRST to free up auth_id
                     val duplicates = allRelatedUsers.filter { it.id != targetUser.id }
                     for (dup in duplicates) {
@@ -266,6 +462,106 @@ object SupabaseAuthManager {
         } catch (e: Exception) {
             // Non-fatal - auth succeeded but profile creation failed
             Log.w(TAG, "Failed to upsert user profile (non-fatal)", e)
+        }
+    }
+
+    @Serializable
+    private data class ExistingCashbook(val id: String)
+
+    /**
+     * Delete user's account and all associated cloud & local data.
+     */
+    @JvmStatic
+    fun deleteUserAccount(context: Context, callback: AuthCallback?) {
+        scope.launch {
+            var success = false
+            try {
+                val authId = getCurrentUserId()
+                val userEmail = getCurrentUserEmail()?.trim()?.lowercase()
+
+                Log.d(TAG, "Starting account deletion. authId=$authId, email=$userEmail")
+
+                if (authId != null) {
+                    // 1. Get user's cashbooks (filtered by user_id to respect RLS)
+                    val userCashbooks = try {
+                        SupabaseClientProvider.client.from("cashbooks")
+                            .select {
+                                filter { eq("user_id", authId) }
+                            }
+                            .decodeList<ExistingCashbook>()
+                    } catch (e: Exception) {
+                        Log.w(TAG, "Failed to query cashbooks for user $authId", e)
+                        emptyList<ExistingCashbook>()
+                    }
+                    Log.d(TAG, "Found ${userCashbooks.size} cashbooks to delete")
+
+                    // 2. Delete transactions and categories for user's cashbooks
+                    for (cb in userCashbooks) {
+                        try {
+                            SupabaseClientProvider.client.from("transactions").delete {
+                                filter { eq("cashbook_id", cb.id) }
+                            }
+                        } catch (e: Exception) {
+                            Log.w(TAG, "Failed to delete transactions for cashbook ${cb.id}", e)
+                        }
+                        try {
+                            SupabaseClientProvider.client.from("categories").delete {
+                                filter { eq("cashbook_id", cb.id) }
+                            }
+                        } catch (e: Exception) {
+                            Log.w(TAG, "Failed to delete categories for cashbook ${cb.id}", e)
+                        }
+                    }
+
+                    // 3. Delete cashbooks
+                    try {
+                        SupabaseClientProvider.client.from("cashbooks").delete {
+                            filter { eq("user_id", authId) }
+                        }
+                    } catch (e: Exception) {
+                        Log.w(TAG, "Failed to delete cashbooks for user_id $authId", e)
+                    }
+
+                    // 4. Delete user profile row by auth_id
+                    try {
+                        SupabaseClientProvider.client.from("users").delete {
+                            filter { eq("auth_id", authId) }
+                        }
+                    } catch (e: Exception) {
+                        Log.w(TAG, "Failed to delete user profile for auth_id $authId", e)
+                    }
+
+                    // 5. Delete user profile row by email
+                    if (!userEmail.isNullOrEmpty()) {
+                        try {
+                            SupabaseClientProvider.client.from("users").delete {
+                                filter { eq("email", userEmail) }
+                            }
+                        } catch (e: Exception) {
+                            Log.w(TAG, "Failed to delete user profile for email $userEmail", e)
+                        }
+                    }
+                }
+
+                success = true
+                Log.d(TAG, "Account deletion completed successfully")
+            } catch (e: Exception) {
+                Log.e(TAG, "Error deleting user account", e)
+            } finally {
+                // Always clear local data and invoke callback on Main thread
+                withContext(Dispatchers.Main) {
+                    try {
+                        AuthManager.signOut(context)
+                    } catch (e: Exception) {
+                        Log.w(TAG, "Error during signOut in deleteUserAccount", e)
+                    }
+                    if (success) {
+                        callback?.onSuccess("")
+                    } else {
+                        callback?.onError("Some cloud data could not be deleted, but local data has been cleared.")
+                    }
+                }
+            }
         }
     }
 }

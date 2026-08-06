@@ -49,6 +49,9 @@ public interface TransactionDao {
     @Query("SELECT * FROM transactions WHERE syncStatus != 'SYNCED' AND isDeleted = 0")
     List<TransactionEntity> getUnsynced();
 
+    @Query("SELECT * FROM transactions WHERE isDeleted = 0")
+    List<TransactionEntity> getAll();
+
     @Query("SELECT * FROM transactions WHERE syncStatus = 'DELETED'")
     List<TransactionEntity> getDeleted();
 }

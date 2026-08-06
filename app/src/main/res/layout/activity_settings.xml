@@ -322,12 +322,16 @@
                 </LinearLayout>
 
                 <LinearLayout
+                    android:id="@+id/autoBackupCard"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
                     android:layout_weight="1"
                     android:gravity="center"
                     android:orientation="vertical"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:background="?attr/selectableItemBackground"
                     android:padding="16dp">
 
                     <ImageView

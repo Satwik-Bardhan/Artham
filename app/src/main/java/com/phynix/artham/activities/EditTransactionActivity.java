@@ -768,7 +768,9 @@ public class EditTransactionActivity extends BaseActivity {
         }
 
         TextView display = view.findViewById(R.id.calc_display);
-        display.setText(amountEditText.getText().toString().isEmpty() ? "0" : amountEditText.getText().toString());
+        String initialValue = amountEditText.getText().toString().isEmpty() ? "0" : amountEditText.getText().toString();
+        display.setText(initialValue);
+        final boolean[] isNewInput = {!initialValue.equals("0")};
 
         View.OnClickListener listener = v -> {
             Button b = (Button) v;
@@ -776,17 +778,31 @@ public class EditTransactionActivity extends BaseActivity {
             StringBuilder expression = new StringBuilder(display.getText().toString());
 
             switch (text) {
-                case "C": expression.setLength(0); display.setText("0"); break;
+                case "C":
+                    expression.setLength(0);
+                    display.setText("0");
+                    isNewInput[0] = false;
+                    break;
                 case "⌫":
                     if (expression.length() > 0) expression.deleteCharAt(expression.length() - 1);
                     display.setText(expression.length() > 0 ? expression.toString() : "0");
+                    isNewInput[0] = false;
                     break;
                 case "=":
                     String result = safeEvaluate(expression.toString());
                     display.setText(result);
+                    isNewInput[0] = true;
                     break;
                 default:
-                    if (display.getText().toString().equals("0")) expression.setLength(0);
+                    boolean isOperator = text.equals("+") || text.equals("-") ||
+                            text.equals("×") || text.equals("÷") || text.equals("%");
+                    if (isNewInput[0] && !isOperator) {
+                        expression.setLength(0);
+                        isNewInput[0] = false;
+                    } else if (isOperator) {
+                        isNewInput[0] = false;
+                    }
+                    if (display.getText().toString().equals("0") && !isOperator) expression.setLength(0);
                     expression.append(text);
                     display.setText(expression.toString());
                     break;

@@ -6,9 +6,14 @@ import com.phynix.artham.BaseActivity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.phynix.artham.utils.ThemeManager;
@@ -38,6 +43,7 @@ public class HelpSupportActivity extends BaseActivity {
         setupQuickActions();
         setupFaqListeners();
         setupSupportCreator();
+        setupSearchFilter();
     }
 
     private void setupHeader() {
@@ -230,5 +236,83 @@ public class HelpSupportActivity extends BaseActivity {
         } catch (Exception e) {
             Toast.makeText(this, "No UPI app found on this device.", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    /**
+     * Sets up the search bar to dynamically filter FAQ items.
+     * Searches through child TextViews of each FAQ LinearLayout item.
+     */
+    private void setupSearchFilter() {
+        EditText searchEditText = findViewById(R.id.helpSearchEditText);
+        ImageView clearButton = findViewById(R.id.btnClearHelpSearch);
+        View faqLayout = findViewById(R.id.faqLayout);
+
+        if (searchEditText == null || faqLayout == null) return;
+
+        // Collect all FAQ item views (LinearLayouts with IDs like faqAllTransactions, etc.)
+        int[] faqIds = {
+                R.id.faqAllTransactions, R.id.faqAnalytics, R.id.faqFilters,
+                R.id.faqAddTransaction, R.id.faqDownload, R.id.faqManageCategory,
+                R.id.faqSwitchBook, R.id.faqEditProfile, R.id.faqSecuritySettings,
+                R.id.faqDeleteData, R.id.faqThemeSelection, R.id.faqThemeSync,
+                R.id.faqAboutDev, R.id.faqRecurringTransactions, R.id.faqEditTransaction,
+                R.id.faqOfflineMode, R.id.faqHomeWidget
+        };
+
+        if (clearButton != null) {
+            clearButton.setOnClickListener(v -> {
+                searchEditText.setText("");
+                clearButton.setVisibility(View.GONE);
+            });
+        }
+
+        searchEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                String query = s.toString().toLowerCase().trim();
+
+                if (clearButton != null) {
+                    clearButton.setVisibility(query.isEmpty() ? View.GONE : View.VISIBLE);
+                }
+
+                for (int id : faqIds) {
+                    View faqItem = findViewById(id);
+                    if (faqItem == null) continue;
+
+                    if (query.isEmpty()) {
+                        faqItem.setVisibility(View.VISIBLE);
+                        continue;
+                    }
+
+                    // Search through all TextViews in this FAQ item
+                    String itemText = extractText(faqItem).toLowerCase();
+                    faqItem.setVisibility(itemText.contains(query) ? View.VISIBLE : View.GONE);
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
+    }
+
+    /**
+     * Recursively extract all text from TextViews within a ViewGroup.
+     */
+    private String extractText(View view) {
+        StringBuilder sb = new StringBuilder();
+        if (view instanceof TextView) {
+            CharSequence text = ((TextView) view).getText();
+            if (text != null) sb.append(text).append(" ");
+        }
+        if (view instanceof ViewGroup) {
+            ViewGroup vg = (ViewGroup) view;
+            for (int i = 0; i < vg.getChildCount(); i++) {
+                sb.append(extractText(vg.getChildAt(i)));
+            }
+        }
+        return sb.toString();
     }
 }

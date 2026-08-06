@@ -113,6 +113,15 @@ public class SignInActivity extends BaseActivity {
     private void observeViewModel() {
         viewModel.getUserId().observe(this, userId -> {
             if (userId != null) {
+                // Restore custom UID from Supabase cloud (cross-device login)
+                String restoredUid = com.phynix.artham.auth.SupabaseAuthManager.getRestoredCustomUid();
+                if (restoredUid != null && !restoredUid.isEmpty()) {
+                    getSharedPreferences(com.phynix.artham.utils.Constants.PREF_NAME, MODE_PRIVATE)
+                            .edit()
+                            .putString("user_custom_uid", restoredUid)
+                            .commit();
+                    Log.d(TAG, "Restored custom UID from cloud: " + restoredUid);
+                }
                 navigateToHome();
             }
         });
@@ -136,6 +145,10 @@ public class SignInActivity extends BaseActivity {
     }
 
     private void navigateToHome() {
+        // Trigger immediate cloud sync so cashbooks/transactions restore on new device
+        if (!AuthManager.isLocalMode(this)) {
+            com.phynix.artham.db.sync.SyncEngine.triggerSync(this);
+        }
         Toast.makeText(this, "Welcome to Artham!", Toast.LENGTH_SHORT).show();
         Intent intent = new Intent(this, HomeActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);

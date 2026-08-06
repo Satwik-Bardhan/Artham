@@ -92,7 +92,9 @@
                     app:tint="?attr/chk_textColorSecondary" />
 
                 <EditText
-                    android:layout_width="match_parent"
+                    android:id="@+id/helpSearchEditText"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
                     android:layout_height="match_parent"
                     android:layout_marginStart="12dp"
                     android:background="@null"
@@ -100,6 +102,15 @@
                     android:textColor="?attr/chk_textColorPrimary"
                     android:textColorHint="?attr/chk_textColorHint"
                     android:inputType="text" />
+
+                <ImageView
+                    android:id="@+id/btnClearHelpSearch"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_close"
+                    android:visibility="gone"
+                    android:contentDescription="Clear search"
+                    app:tint="?attr/chk_textColorSecondary" />
             </LinearLayout>
 
             <TextView

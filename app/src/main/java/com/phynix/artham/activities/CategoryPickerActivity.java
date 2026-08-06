@@ -92,6 +92,12 @@ public class CategoryPickerActivity extends BaseActivity {
         findViewById(R.id.addNewCategoryButton).setOnClickListener(v -> {
             Intent intent = new Intent(this, CreateCategoryActivity.class);
             intent.putExtra(Constants.EXTRA_CASHBOOK_ID, currentCashbookId);
+            // Pass mapped category type so new categories get the correct type
+            if (Constants.TRANSACTION_TYPE_IN.equalsIgnoreCase(transactionType)) {
+                intent.putExtra("type", "Income");
+            } else if (Constants.TRANSACTION_TYPE_OUT.equalsIgnoreCase(transactionType)) {
+                intent.putExtra("type", "Expense");
+            }
             startActivity(intent);
         });
 
@@ -122,13 +128,24 @@ public class CategoryPickerActivity extends BaseActivity {
             currentCashbookId = prefs.getString("active_cashbook_id_" + uid, "");
         }
 
+        // Map transaction type ("IN"/"OUT") to category type ("Income"/"Expense")
+        String categoryTypeFilter = null;
+        if (transactionType != null && !transactionType.isEmpty()) {
+            if (Constants.TRANSACTION_TYPE_IN.equalsIgnoreCase(transactionType)) {
+                categoryTypeFilter = "Income";
+            } else if (Constants.TRANSACTION_TYPE_OUT.equalsIgnoreCase(transactionType)) {
+                categoryTypeFilter = "Expense";
+            }
+        }
+        final String filterType = categoryTypeFilter;
+
         com.phynix.artham.db.DataRepository.getInstance(getApplication()).getCategories(currentCashbookId, categories -> {
             defaultFullList.clear();
             customFullList.clear();
             if (categories != null) {
                 for (CategoryModel c : categories) {
-                    if (transactionType != null && !transactionType.isEmpty() && c.getType() != null) {
-                        if (!c.getType().equalsIgnoreCase(transactionType)) continue;
+                    if (filterType != null && c.getType() != null) {
+                        if (!c.getType().equalsIgnoreCase(filterType)) continue;
                     }
                     if (c.isCustom()) {
                         customFullList.add(c);

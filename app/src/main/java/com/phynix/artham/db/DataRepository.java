@@ -290,7 +290,10 @@ public class DataRepository {
                     if (!localCallbacks.containsKey(cashbookId)) {
                         localCallbacks.put(cashbookId, new ArrayList<>());
                     }
-                    localCallbacks.get(cashbookId).add(callback);
+                    List<DataCallback<List<TransactionModel>>> cbList = localCallbacks.get(cashbookId);
+                    if (cbList != null && !cbList.contains(callback)) {
+                        cbList.add(callback);
+                    }
                 }
                 Log.d(TAG, "subscribeToTransactions: calling callback with " + models.size() + " transactions");
                 callback.onCallback(models);
@@ -380,8 +383,12 @@ public class DataRepository {
             // to ensure stats are always accurate (fixes stale values after sync/migration)
             List<CashbookEntity> entities = cashbookDao.getAll();
             for (CashbookEntity cb : entities) {
-                double freshBalance = transactionDao.calculateBalance(cb.id);
                 int freshCount = transactionDao.countByCashbook(cb.id);
+                if (freshCount == 0 && (cb.totalBalance != 0.0 || cb.transactionCount != 0)) {
+                    // Preserving pulled cloud balance and transaction count
+                    continue;
+                }
+                double freshBalance = transactionDao.calculateBalance(cb.id);
                 if (cb.totalBalance != freshBalance || cb.transactionCount != freshCount) {
                     cb.totalBalance = freshBalance;
                     cb.transactionCount = freshCount;
@@ -589,6 +596,8 @@ public class DataRepository {
             cb.totalBalance = balance;
             cb.transactionCount = count;
             cb.lastModified = System.currentTimeMillis();
+            // Mark as MODIFIED so SyncEngine pushes the updated balance to Supabase
+            cb.syncStatus = "MODIFIED";
             cashbookDao.update(cb);
         }
     }
@@ -624,5 +633,19 @@ public class DataRepository {
 
     public String getCurrentUserId() {
         return AuthManager.getUserId(context);
+    }
+
+    public void clearLocalDatabase() {
+        executorService.execute(() -> {
+            try {
+                roomDb.clearAllTables();
+                synchronized (localCallbacks) {
+                    localCallbacks.clear();
+                }
+                Log.d(TAG, "Local database and callbacks cleared successfully.");
+            } catch (Exception e) {
+                Log.e(TAG, "Failed to clear local database", e);
+            }
+        });
     }
 }

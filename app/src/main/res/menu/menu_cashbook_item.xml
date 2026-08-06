@@ -21,6 +21,11 @@
         android:icon="@drawable/ic_export" />
 
     <item
+        android:id="@+id/menu_copy"
+        android:title="Duplicate Cashbook"
+        android:icon="@drawable/ic_copy" />
+
+    <item
         android:id="@+id/menu_change_label"
         android:title="@string/change_label"
         android:icon="@drawable/ic_label" />

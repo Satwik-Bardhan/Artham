@@ -48,6 +48,7 @@ import androidx.lifecycle.ViewModelProvider;
 import com.facebook.shimmer.ShimmerFrameLayout;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.google.android.play.core.review.ReviewInfo;
 import com.google.android.play.core.review.ReviewManager;
 import com.google.android.play.core.review.ReviewManagerFactory;
@@ -202,6 +203,10 @@ public class HomeActivity extends BaseActivity {
                                 .apply();
 
                         viewModel.switchCashbook(newId);
+
+                        // Immediately hide the "No Cashbook" prompt
+                        if (binding.noCashbookPromptCard != null)
+                            binding.noCashbookPromptCard.setVisibility(View.GONE);
 
                         if (balanceCardCashbookName != null)
                             balanceCardCashbookName.setText(newName);
@@ -533,6 +538,10 @@ public class HomeActivity extends BaseActivity {
                 if (binding.emptyStateView != null)
                     binding.emptyStateView.setVisibility(View.GONE);
 
+                // Hide the "No Cashbook Selected" prompt when a cashbook is active
+                if (binding.noCashbookPromptCard != null)
+                    binding.noCashbookPromptCard.setVisibility(View.GONE);
+
                 currentCashbookId = cashbook.getCashbookId();
 
                 // Save cashbook name for widget display & refresh widget
@@ -569,6 +578,10 @@ public class HomeActivity extends BaseActivity {
                     binding.transactionTable.setVisibility(View.GONE);
                 if (binding.emptyStateView != null)
                     binding.emptyStateView.setVisibility(View.GONE);
+
+                // Show the "No Cashbook Selected" prompt card
+                if (binding.noCashbookPromptCard != null)
+                    binding.noCashbookPromptCard.setVisibility(View.VISIBLE);
 
                 currentCashbookId = null;
             }
@@ -683,6 +696,8 @@ public class HomeActivity extends BaseActivity {
                     java.io.File photoFile = new java.io.File(savedPhotoPath);
                     if (photoFile.exists()) {
                         Glide.with(this).load(photoFile)
+                                .skipMemoryCache(true)
+                                .diskCacheStrategy(DiskCacheStrategy.NONE)
                                 .placeholder(R.drawable.ic_person_placeholder)
                                 .circleCrop()
                                 .into(backProfileImage);
@@ -722,6 +737,7 @@ public class HomeActivity extends BaseActivity {
                         ? new java.io.File(photoUrl) : photoUrl;
                 Glide.with(this).load(glideSource)
                         .skipMemoryCache(true)
+                        .diskCacheStrategy(DiskCacheStrategy.NONE)
                         .placeholder(R.drawable.ic_person_placeholder)
                         .circleCrop()
                         .into(backProfileImage);
@@ -1084,6 +1100,11 @@ public class HomeActivity extends BaseActivity {
     private void setupClickListeners() {
         // Removed userBox click listener
 
+        // "No Cashbook Selected" prompt → navigate to Cashbook Manager
+        if (binding.btnGoToCashbooks != null) {
+            binding.btnGoToCashbooks.setOnClickListener(v -> openCashbookSwitcher());
+        }
+
         // Setup original buttons utilizing ViewBinding's include handling
         if (binding.originalButtons != null) {
             binding.originalButtons.btnCashIn
@@ -1225,6 +1246,7 @@ public class HomeActivity extends BaseActivity {
         Intent intent = new Intent(this, SignInActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
+        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
         finish();
     }
 
@@ -1360,6 +1382,25 @@ public class HomeActivity extends BaseActivity {
         } else {
             SessionCache cache = SessionCache.getInstance();
             updateUserUI(cache.hasUserProfile() ? cache.getCachedUserProfile() : null);
+            // Trigger automatic sync cycle to restore/sync data with Supabase
+            com.phynix.artham.db.sync.SyncEngine.triggerSync(this);
+            // Retry sync after 3 seconds in case Supabase session wasn't ready yet (new device login)
+            new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
+                if (!isFinishing() && !isDestroyed()) {
+                    Log.d("HomeActivity", "Retry sync after delay for cross-device data restore");
+                    com.phynix.artham.db.sync.SyncEngine.triggerSync(this);
+                }
+            }, 3000);
+        }
+
+        // Re-read the saved cashbook and refresh data if it changed
+        String savedId = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
+                .getString("last_selected_cashbook_id", null);
+        if (savedId != null && !savedId.equals(currentCashbookId)) {
+            currentCashbookId = savedId;
+            currentActiveBookId = null;
+            isTimestampUpdatedForCurrentBook = false;
+            viewModel.switchCashbook(savedId);
         }
     }
 

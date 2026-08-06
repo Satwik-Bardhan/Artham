@@ -257,31 +257,17 @@
                         android:textSize="14sp"
                         android:textStyle="bold" />
 
-                    <LinearLayout
+                    <EditText
+                        android:id="@+id/editUid"
                         android:layout_width="match_parent"
                         android:layout_height="50dp"
                         android:layout_marginBottom="16dp"
-                        android:background="@drawable/rounded_input_readonly"
-                        android:gravity="center_vertical"
-                        android:paddingHorizontal="12dp">
-
-                        <TextView
-                            android:id="@+id/displayUid"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:ellipsize="end"
-                            android:maxLines="1"
-                            android:text="UID123456789"
-                            android:textColor="?attr/chk_textColorPrimary"
-                            android:textSize="15sp" />
-
-                        <ImageView
-                            android:layout_width="16dp"
-                            android:layout_height="16dp"
-                            android:src="@drawable/ic_lock"
-                            app:tint="?attr/chk_textColorHint" />
-                    </LinearLayout>
+                        android:background="@drawable/rounded_input_background"
+                        android:hint="Enter your custom UID"
+                        android:inputType="text"
+                        android:paddingHorizontal="12dp"
+                        android:textColor="?attr/chk_textColorPrimary"
+                        android:textColorHint="?attr/chk_textColorHint" />
 
                     <TextView
                         android:layout_width="wrap_content"

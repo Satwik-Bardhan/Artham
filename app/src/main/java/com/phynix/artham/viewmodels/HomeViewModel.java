@@ -149,24 +149,33 @@ public class HomeViewModel extends AndroidViewModel {
             List<TransactionModel> todayList = new ArrayList<>();
             List<TransactionModel> previousList = new ArrayList<>();
 
-            for (TransactionModel t : rawData) {
-                double amount = t.getAmount();
-                boolean isIncome = Constants.TRANSACTION_TYPE_IN.equalsIgnoreCase(t.getType());
+            if (rawData != null) {
+                for (TransactionModel t : rawData) {
+                    if (t == null) continue;
+                    double amount = t.getAmount();
+                    boolean isIncome = Constants.TRANSACTION_TYPE_IN.equalsIgnoreCase(t.getType());
 
-                if (isIncome) in += amount;
-                else out += amount;
+                    if (isIncome) in += amount;
+                    else out += amount;
 
-                if (isToday(t.getTimestamp())) {
-                    todayList.add(t);
-                    if (isIncome) tIn += amount;
-                    else tOut += amount;
-                } else {
-                    previousList.add(t);
+                    if (isToday(t.getTimestamp())) {
+                        todayList.add(t);
+                        if (isIncome) tIn += amount;
+                        else tOut += amount;
+                    } else {
+                        previousList.add(t);
+                    }
                 }
             }
 
-            // Sort previous entries by timestamp descending (newest first) and take up to 10
-            previousList.sort((a, b) -> Long.compare(b.getTimestamp(), a.getTimestamp()));
+            if (!previousList.isEmpty()) {
+                previousList.sort((a, b) -> {
+                    if (a == null && b == null) return 0;
+                    if (a == null) return 1;
+                    if (b == null) return -1;
+                    return Long.compare(b.getTimestamp(), a.getTimestamp());
+                });
+            }
             List<TransactionModel> latestPrevious = previousList.size() > 10
                     ? previousList.subList(0, 10) : previousList;
 
@@ -175,7 +184,7 @@ public class HomeViewModel extends AndroidViewModel {
             double finalTIn = tIn;
             double finalTOut = tOut;
 
-            transactions.postValue(rawData);
+            transactions.postValue(rawData != null ? rawData : new ArrayList<>());
             totalIncome.postValue(finalIn);
             totalExpense.postValue(finalOut);
             currentBalance.postValue(finalIn - finalOut);

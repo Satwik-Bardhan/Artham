@@ -33,5 +33,8 @@ public class MyApplication extends Application {
 
         // 7. Schedule periodic Supabase sync (every 1 hour, requires network)
         com.phynix.artham.db.sync.SyncWorker.schedulePeriodicSync(this);
+
+        // 8. Load auto-category suggestion keywords from assets/category_keywords.json
+        com.phynix.artham.utils.AutoCategorySuggester.init(this);
     }
 }

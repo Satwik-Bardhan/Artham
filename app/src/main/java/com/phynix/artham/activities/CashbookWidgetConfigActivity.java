@@ -139,6 +139,13 @@ public class CashbookWidgetConfigActivity extends AppCompatActivity {
                         }
                     }
 
+                    // Sort cashbooks alphabetically by name for easy lookup
+                    allCashbooks.sort((a, b) -> {
+                        String nameA = a.getName() != null ? a.getName() : "";
+                        String nameB = b.getName() != null ? b.getName() : "";
+                        return nameA.compareToIgnoreCase(nameB);
+                    });
+
                     // Load previously selected cashbooks if reconfiguring
                     loadPreviousSelection();
 

@@ -20,6 +20,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.phynix.artham.databinding.ActivitySettingsBinding;
 import com.phynix.artham.models.CashbookModel;
 import com.phynix.artham.db.DataRepository;
@@ -183,6 +184,10 @@ public class SettingsActivity extends BaseActivity {
                     startActivity(new Intent(this, EditProfileActivity.class)));
             binding.generalSettingsLayout.aboutCashFlow.setOnClickListener(v ->
                     startActivity(new Intent(this, AboutActivity.class)));
+        }
+
+        if (binding.autoBackupCard != null) {
+            binding.autoBackupCard.setOnClickListener(v -> showAutoBackupDialog());
         }
 
         if (binding.logoutSection != null) {
@@ -403,6 +408,8 @@ public class SettingsActivity extends BaseActivity {
                 if (photoFile.exists() && !isDestroyed() && !isFinishing()) {
                     Glide.with(this)
                             .load(photoFile)
+                            .skipMemoryCache(true)
+                            .diskCacheStrategy(DiskCacheStrategy.NONE)
                             .placeholder(R.drawable.ic_person_placeholder)
                             .error(R.drawable.ic_person_placeholder)
                             .circleCrop()
@@ -442,6 +449,7 @@ public class SettingsActivity extends BaseActivity {
                 Glide.with(this)
                         .load(glideSource)
                         .skipMemoryCache(true)
+                        .diskCacheStrategy(DiskCacheStrategy.NONE)
                         .placeholder(R.drawable.ic_person_placeholder)
                         .error(R.drawable.ic_person_placeholder)
                         .circleCrop()
@@ -457,6 +465,8 @@ public class SettingsActivity extends BaseActivity {
                 if (fallbackFile.exists() && !isDestroyed() && !isFinishing()) {
                     Glide.with(this)
                             .load(fallbackFile)
+                            .skipMemoryCache(true)
+                            .diskCacheStrategy(DiskCacheStrategy.NONE)
                             .placeholder(R.drawable.ic_person_placeholder)
                             .error(R.drawable.ic_person_placeholder)
                             .circleCrop()
@@ -516,7 +526,46 @@ public class SettingsActivity extends BaseActivity {
         Intent intent = new Intent(this, SignInActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
+        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
         finish();
+    }
+
+    private void showAutoBackupDialog() {
+        boolean isLocal = DataRepository.getInstance(getApplication()).isLocalMode();
+        String message = isLocal
+                ? "You are currently using Guest Mode. Sign in with Google to enable automatic cloud backup and keep your data safe."
+                : "Auto Backup is active. Your entries are automatically backed up to the cloud.\n\nYou can also force a sync now to push all local data immediately.";
+
+        com.google.android.material.dialog.MaterialAlertDialogBuilder builder =
+                new com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+                        .setTitle("Cloud Backup & Sync")
+                        .setMessage(message);
+
+        if (!isLocal) {
+            builder.setPositiveButton("Sync Now", (dialog, which) -> {
+                android.app.ProgressDialog progress = new android.app.ProgressDialog(this);
+                progress.setTitle("Cloud Sync");
+                progress.setMessage("Pushing all data to cloud...");
+                progress.setCancelable(false);
+                progress.show();
+
+                com.phynix.artham.db.sync.SyncEngine.forcePushAll(this, () -> {
+                    progress.dismiss();
+                    android.widget.Toast.makeText(this,
+                            "Cloud backup completed! All local data is synced.",
+                            android.widget.Toast.LENGTH_LONG).show();
+                });
+            });
+            builder.setNegativeButton("Close", null);
+        } else {
+            builder.setPositiveButton("Sign In", (dialog, which) -> {
+                Intent intent = new Intent(this, com.phynix.artham.SignInActivity.class);
+                startActivity(intent);
+            });
+            builder.setNegativeButton("Cancel", null);
+        }
+
+        builder.show();
     }
 
     private void showLogoutConfirmationDialog() {

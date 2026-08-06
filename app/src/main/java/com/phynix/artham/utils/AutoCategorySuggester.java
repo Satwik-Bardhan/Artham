@@ -1,23 +1,30 @@
 package com.phynix.artham.utils;
 
-import android.content.res.ColorStateList;
-import android.graphics.Color;
+import android.content.Context;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.view.View;
-import android.widget.ImageView;
-import android.widget.TextView;
+import android.util.Log;
 
 import androidx.annotation.Nullable;
 
 import com.phynix.artham.models.CategoryModel;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
  * Smart Auto-Category Suggester — analyzes entry remark text and suggests
  * the best matching category based on keyword matching.
+ *
+ * Keywords are loaded from two sources (merged together):
+ *   1. Built-in hardcoded defaults (fallback)
+ *   2. assets/category_keywords.json (user-editable, takes priority)
  *
  * Usage:
  *   AutoCategorySuggester.suggest("electric bill paid") → "Bills & Utility"
@@ -26,27 +33,34 @@ import java.util.Map;
  */
 public class AutoCategorySuggester {
 
+    private static final String TAG = "AutoCategorySuggester";
+    private static final String KEYWORDS_ASSET_FILE = "category_keywords.json";
+
     // Ordered map: category name → array of keywords
     // LinkedHashMap preserves insertion order for priority (more specific categories first)
-    private static final LinkedHashMap<String, String[]> CATEGORY_KEYWORDS = new LinkedHashMap<>();
+    private static final LinkedHashMap<String, String[]> BUILTIN_KEYWORDS = new LinkedHashMap<>();
+
+    // Merged keywords (built-in + JSON file) — populated on first use
+    private static LinkedHashMap<String, String[]> mergedKeywords = null;
+    private static boolean jsonLoaded = false;
 
     static {
-        // --- More specific categories first to avoid false positives ---
+        // --- Built-in defaults (fallback if JSON is unavailable) ---
 
         // Rental Income (check before "Rent" to avoid conflict)
-        CATEGORY_KEYWORDS.put("Rental Income", new String[]{
+        BUILTIN_KEYWORDS.put("Rental Income", new String[]{
                 "rent income", "rental income", "tenant", "tenant payment", "rent received",
                 "rent collection"
         });
 
         // Interest & Dividends
-        CATEGORY_KEYWORDS.put("Interest & Dividends", new String[]{
+        BUILTIN_KEYWORDS.put("Interest & Dividends", new String[]{
                 "interest", "dividend", "bank interest", "fd interest", "rd interest",
                 "savings interest", "bond interest"
         });
 
         // Bills & Utility
-        CATEGORY_KEYWORDS.put("Bills & Utility", new String[]{
+        BUILTIN_KEYWORDS.put("Bills & Utility", new String[]{
                 "ebill", "e-bill", "electric", "electricity", "power bill", "water bill",
                 "gas bill", "wifi", "broadband", "internet bill", "recharge", "dth",
                 "postpaid", "prepaid", "phone bill", "mobile bill", "utility", "utilities",
@@ -57,7 +71,7 @@ public class AutoCategorySuggester {
         });
 
         // Groceries
-        CATEGORY_KEYWORDS.put("Groceries", new String[]{
+        BUILTIN_KEYWORDS.put("Groceries", new String[]{
                 "grocery", "groceries", "vegetables", "veggies", "fruits", "milk", "eggs",
                 "supermarket", "kirana", "bigbasket", "big basket", "blinkit", "zepto",
                 "instamart", "dmart", "d-mart", "reliance fresh", "more supermarket",
@@ -66,7 +80,7 @@ public class AutoCategorySuggester {
         });
 
         // Food & Dining
-        CATEGORY_KEYWORDS.put("Food & Dining", new String[]{
+        BUILTIN_KEYWORDS.put("Food & Dining", new String[]{
                 "food", "lunch", "dinner", "breakfast", "snack", "snacks", "biryani",
                 "pizza", "burger", "zomato", "swiggy", "restaurant", "cafe", "coffee",
                 "tea", "dosa", "idli", "meal", "tiffin", "canteen", "mess", "dhaba",
@@ -77,7 +91,7 @@ public class AutoCategorySuggester {
         });
 
         // Transport
-        CATEGORY_KEYWORDS.put("Transport", new String[]{
+        BUILTIN_KEYWORDS.put("Transport", new String[]{
                 "uber", "ola", "cab", "taxi", "auto", "rickshaw", "bus", "metro",
                 "train", "petrol", "diesel", "fuel", "parking", "toll", "fastag",
                 "rapido", "bike taxi", "local train", "railway", "irctc", "commute",
@@ -86,7 +100,7 @@ public class AutoCategorySuggester {
         });
 
         // Travel
-        CATEGORY_KEYWORDS.put("Travel", new String[]{
+        BUILTIN_KEYWORDS.put("Travel", new String[]{
                 "flight", "hotel", "trip", "travel", "holiday", "vacation", "booking",
                 "airbnb", "makemytrip", "goibibo", "oyo", "resort", "tourism", "tour",
                 "passport", "visa", "luggage", "suitcase", "cleartrip", "yatra",
@@ -94,14 +108,14 @@ public class AutoCategorySuggester {
         });
 
         // Rent
-        CATEGORY_KEYWORDS.put("Rent", new String[]{
+        BUILTIN_KEYWORDS.put("Rent", new String[]{
                 "rent", "house rent", "room rent", "pg", "hostel", "maintenance",
                 "society maintenance", "flat rent", "apartment rent", "rent paid",
                 "monthly rent", "paying guest"
         });
 
         // Subscriptions
-        CATEGORY_KEYWORDS.put("Subscriptions", new String[]{
+        BUILTIN_KEYWORDS.put("Subscriptions", new String[]{
                 "netflix", "hotstar", "disney", "prime video", "amazon prime",
                 "spotify", "youtube premium", "subscription", "jio", "airtel",
                 "membership", "apple music", "gaana", "wynk", "zee5", "sonyliv",
@@ -111,7 +125,7 @@ public class AutoCategorySuggester {
         });
 
         // Shopping
-        CATEGORY_KEYWORDS.put("Shopping", new String[]{
+        BUILTIN_KEYWORDS.put("Shopping", new String[]{
                 "amazon", "flipkart", "myntra", "shopping", "clothes", "shoes",
                 "dress", "electronics", "gadget", "mobile", "phone", "laptop",
                 "meesho", "ajio", "nykaa", "tata cliq", "croma", "reliance digital",
@@ -121,7 +135,7 @@ public class AutoCategorySuggester {
         });
 
         // Entertainment
-        CATEGORY_KEYWORDS.put("Entertainment", new String[]{
+        BUILTIN_KEYWORDS.put("Entertainment", new String[]{
                 "movie", "cinema", "theatre", "theater", "game", "gaming", "concert",
                 "party", "outing", "pvr", "inox", "carnival", "imax", "amusement",
                 "theme park", "water park", "event", "show", "standup", "comedy",
@@ -130,7 +144,7 @@ public class AutoCategorySuggester {
         });
 
         // Health
-        CATEGORY_KEYWORDS.put("Health", new String[]{
+        BUILTIN_KEYWORDS.put("Health", new String[]{
                 "doctor", "hospital", "medicine", "pharmacy", "medical", "health",
                 "checkup", "check up", "lab test", "blood test", "dental", "dentist",
                 "eye", "optician", "glasses", "gym", "fitness", "yoga", "ayurveda",
@@ -140,7 +154,7 @@ public class AutoCategorySuggester {
         });
 
         // Education
-        CATEGORY_KEYWORDS.put("Education", new String[]{
+        BUILTIN_KEYWORDS.put("Education", new String[]{
                 "school", "college", "tuition", "course", "exam", "books", "fees",
                 "coaching", "udemy", "skillshare", "coursera", "unacademy",
                 "byjus", "education", "training", "workshop", "seminar", "webinar",
@@ -149,47 +163,47 @@ public class AutoCategorySuggester {
         });
 
         // Salary
-        CATEGORY_KEYWORDS.put("Salary", new String[]{
+        BUILTIN_KEYWORDS.put("Salary", new String[]{
                 "salary", "wages", "pay", "paycheck", "stipend", "monthly salary",
                 "salary credited", "pay day", "payday", "income received"
         });
 
         // Freelance
-        CATEGORY_KEYWORDS.put("Freelance", new String[]{
+        BUILTIN_KEYWORDS.put("Freelance", new String[]{
                 "freelance", "project payment", "client payment", "gig", "consulting",
                 "contract work", "side hustle", "upwork", "fiverr", "freelancing",
                 "commission", "consultancy"
         });
 
         // Gifts & Charity
-        CATEGORY_KEYWORDS.put("Gifts & Charity", new String[]{
+        BUILTIN_KEYWORDS.put("Gifts & Charity", new String[]{
                 "donation", "charity", "temple", "church", "mosque", "gurudwara",
                 "zakat", "tithe", "ngo", "fundraiser", "crowdfunding", "helping",
                 "orphanage", "old age home", "daan", "seva"
         });
 
         // Gifts (standalone)
-        CATEGORY_KEYWORDS.put("Gifts", new String[]{
+        BUILTIN_KEYWORDS.put("Gifts", new String[]{
                 "gift", "present", "birthday gift", "wedding gift", "anniversary gift",
                 "surprise", "gift card", "bouquet", "flowers"
         });
 
         // Insurance
-        CATEGORY_KEYWORDS.put("Insurance", new String[]{
+        BUILTIN_KEYWORDS.put("Insurance", new String[]{
                 "insurance", "lic", "premium", "policy", "term plan", "health insurance",
                 "car insurance", "bike insurance", "vehicle insurance", "life insurance",
                 "mediclaim", "accidental", "endowment"
         });
 
         // Taxes
-        CATEGORY_KEYWORDS.put("Taxes", new String[]{
+        BUILTIN_KEYWORDS.put("Taxes", new String[]{
                 "tax", "gst", "income tax", "tds", "advance tax", "tax filing",
                 "tax return", "itr", "property tax", "road tax", "professional tax",
                 "tax paid", "tax payment"
         });
 
         // Investment
-        CATEGORY_KEYWORDS.put("Investment", new String[]{
+        BUILTIN_KEYWORDS.put("Investment", new String[]{
                 "investment", "mutual fund", "sip", "stock", "shares", "fd",
                 "fixed deposit", "ppf", "nps", "crypto", "bitcoin", "ethereum",
                 "demat", "zerodha", "groww", "paytm money", "kuvera",
@@ -198,23 +212,96 @@ public class AutoCategorySuggester {
         });
 
         // Refunds
-        CATEGORY_KEYWORDS.put("Refunds", new String[]{
+        BUILTIN_KEYWORDS.put("Refunds", new String[]{
                 "refund", "cashback", "return", "reimbursement", "money back",
                 "refund received", "claim", "reversal", "chargeback"
         });
 
         // Business
-        CATEGORY_KEYWORDS.put("Business", new String[]{
+        BUILTIN_KEYWORDS.put("Business", new String[]{
                 "business", "office", "supplies", "stationery", "printing", "courier",
                 "postage", "stamp", "xerox", "photocopy", "visiting card",
                 "business expense", "office expense", "coworking", "meeting"
         });
 
         // Business Revenue
-        CATEGORY_KEYWORDS.put("Business Revenue", new String[]{
+        BUILTIN_KEYWORDS.put("Business Revenue", new String[]{
                 "business revenue", "sales", "revenue", "business income",
                 "client invoice", "invoice paid", "payment received"
         });
+    }
+
+    /**
+     * Initialize the suggester by loading keywords from the JSON asset file.
+     * Call this once during app startup (e.g., in Application.onCreate or first Activity).
+     * Safe to call multiple times — only loads once.
+     *
+     * @param context Application or Activity context
+     */
+    public static void init(Context context) {
+        if (jsonLoaded) return;
+        loadKeywordsFromAssets(context);
+    }
+
+    /**
+     * Loads keywords from the JSON asset file and merges them with built-in defaults.
+     * JSON entries take priority — if a category exists in both, JSON keywords replace built-in ones.
+     * New categories in JSON are added to the merged map.
+     */
+    private static synchronized void loadKeywordsFromAssets(Context context) {
+        if (jsonLoaded) return;
+
+        // Start with a copy of built-in keywords
+        mergedKeywords = new LinkedHashMap<>(BUILTIN_KEYWORDS);
+
+        try {
+            BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(context.getAssets().open(KEYWORDS_ASSET_FILE), "UTF-8"));
+            StringBuilder sb = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                sb.append(line);
+            }
+            reader.close();
+
+            JSONObject json = new JSONObject(sb.toString());
+            Iterator<String> keys = json.keys();
+
+            while (keys.hasNext()) {
+                String categoryName = keys.next();
+
+                // Skip the _README key
+                if (categoryName.startsWith("_")) continue;
+
+                JSONArray keywordsArray = json.optJSONArray(categoryName);
+                if (keywordsArray != null && keywordsArray.length() > 0) {
+                    String[] keywords = new String[keywordsArray.length()];
+                    for (int i = 0; i < keywordsArray.length(); i++) {
+                        keywords[i] = keywordsArray.getString(i);
+                    }
+                    // JSON entries override built-in ones for the same category name
+                    mergedKeywords.put(categoryName, keywords);
+                }
+            }
+
+            Log.d(TAG, "Loaded " + mergedKeywords.size() + " categories from JSON + built-in defaults");
+        } catch (Exception e) {
+            Log.w(TAG, "Could not load " + KEYWORDS_ASSET_FILE + ", using built-in defaults only: " + e.getMessage());
+            // mergedKeywords already has built-in defaults, so this is safe
+        }
+
+        jsonLoaded = true;
+    }
+
+    /**
+     * Get the active keyword map (merged or built-in fallback).
+     */
+    private static LinkedHashMap<String, String[]> getKeywords() {
+        if (mergedKeywords != null) {
+            return mergedKeywords;
+        }
+        // If init() was never called, fall back to built-in
+        return BUILTIN_KEYWORDS;
     }
 
     /**
@@ -235,7 +322,7 @@ public class AutoCategorySuggester {
         String bestCategory = null;
         int bestScore = 0;
 
-        for (Map.Entry<String, String[]> entry : CATEGORY_KEYWORDS.entrySet()) {
+        for (Map.Entry<String, String[]> entry : getKeywords().entrySet()) {
             int score = 0;
             for (String keyword : entry.getValue()) {
                 if (normalizedText.contains(keyword.toLowerCase())) {
@@ -286,6 +373,18 @@ public class AutoCategorySuggester {
                 }
             }
         };
+    }
+
+    /**
+     * Force reload keywords from the JSON asset file.
+     * Useful if the file has been updated at runtime (hot reload during development).
+     *
+     * @param context Application or Activity context
+     */
+    public static void reload(Context context) {
+        jsonLoaded = false;
+        mergedKeywords = null;
+        init(context);
     }
 
     /**
