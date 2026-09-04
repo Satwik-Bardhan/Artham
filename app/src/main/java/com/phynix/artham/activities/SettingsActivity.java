@@ -288,6 +288,7 @@ public class SettingsActivity extends BaseActivity {
             
             if (currentCashbookId != null && !currentCashbookId.isEmpty()) {
                 DataRepository.getInstance(getApplication()).getCashbooks(cashbooks -> {
+                    if (!isAlive()) return;
                     for (CashbookModel cb : cashbooks) {
                         if (cb.getCashbookId().equals(currentCashbookId)) {
                             if (binding.primarySettingsLayout != null) {
@@ -504,6 +505,7 @@ public class SettingsActivity extends BaseActivity {
     private void startListeningForCashbookName(String cashbookId) {
         if (cashbookId == null || cashbookId.isEmpty()) return;
         DataRepository.getInstance(getApplication()).getCashbooks(cashbooks -> {
+            if (!isAlive()) return;
             for (CashbookModel cb : cashbooks) {
                 if (cb.getCashbookId().equals(cashbookId)) {
                     SessionCache.getInstance().cacheCashbookName(cashbookId, cb.getName());
@@ -519,8 +521,9 @@ public class SettingsActivity extends BaseActivity {
     private void logoutUser() {
         removeFirebaseListeners();
         SessionCache.getInstance().clear();
-        SharedPreferences prefs = getSharedPreferences("AppPrefs", Context.MODE_PRIVATE);
-        prefs.edit().putBoolean("is_local_mode", false).apply();
+        // NOTE: Do NOT set is_local_mode=false here before signOut().
+        // signOut() already clears all AppPrefs. Setting it first causes
+        // guest-mode logout to erroneously trigger forcePushAll() to Supabase.
         AuthManager.signOut(this);
         Toast.makeText(this, "Logged out", Toast.LENGTH_SHORT).show();
         Intent intent = new Intent(this, SignInActivity.class);

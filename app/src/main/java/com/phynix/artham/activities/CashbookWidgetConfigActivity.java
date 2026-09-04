@@ -115,47 +115,53 @@ public class CashbookWidgetConfigActivity extends AppCompatActivity {
         recyclerView.setVisibility(View.GONE);
 
         DataRepository.getInstance(getApplication()).getCashbooks(
-                cashbooks -> new Handler(Looper.getMainLooper()).post(() -> {
-                    loadingIndicator.setVisibility(View.GONE);
-                    recyclerView.setVisibility(View.VISIBLE);
+                cashbooks -> {
+                    if (isFinishing() || isDestroyed()) return;
+                    new Handler(Looper.getMainLooper()).post(() -> {
+                        loadingIndicator.setVisibility(View.GONE);
+                        recyclerView.setVisibility(View.VISIBLE);
 
-                    allCashbooks.clear();
-                    if (cashbooks != null) {
-                        boolean isLocal = DataRepository.getInstance(getApplication()).isLocalMode();
-                        for (CashbookModel cb : cashbooks) {
-                            if (!isLocal) {
-                                double totalIncome = 0;
-                                double totalExpense = 0;
-                                for (TransactionModel t : cb.getTransactionList()) {
-                                    if ("IN".equalsIgnoreCase(t.getType())) {
-                                        totalIncome += t.getAmount();
-                                    } else {
-                                        totalExpense += t.getAmount();
+                        allCashbooks.clear();
+                        if (cashbooks != null) {
+                            boolean isLocal = DataRepository.getInstance(getApplication()).isLocalMode();
+                            for (CashbookModel cb : cashbooks) {
+                                if (!isLocal) {
+                                    double totalIncome = 0;
+                                    double totalExpense = 0;
+                                    for (TransactionModel t : cb.getTransactionList()) {
+                                        if ("IN".equalsIgnoreCase(t.getType())) {
+                                            totalIncome += t.getAmount();
+                                        } else {
+                                            totalExpense += t.getAmount();
+                                        }
                                     }
+                                    cb.setTotalBalance(totalIncome - totalExpense);
                                 }
-                                cb.setTotalBalance(totalIncome - totalExpense);
+                                allCashbooks.add(cb);
                             }
-                            allCashbooks.add(cb);
                         }
-                    }
 
-                    // Sort cashbooks alphabetically by name for easy lookup
-                    allCashbooks.sort((a, b) -> {
-                        String nameA = a.getName() != null ? a.getName() : "";
-                        String nameB = b.getName() != null ? b.getName() : "";
-                        return nameA.compareToIgnoreCase(nameB);
+                        // Sort cashbooks alphabetically by name for easy lookup
+                        allCashbooks.sort((a, b) -> {
+                            String nameA = a.getName() != null ? a.getName() : "";
+                            String nameB = b.getName() != null ? b.getName() : "";
+                            return nameA.compareToIgnoreCase(nameB);
+                        });
+
+                        // Load previously selected cashbooks if reconfiguring
+                        loadPreviousSelection();
+
+                        adapter.notifyDataSetChanged();
+                        updateSelectAllState();
                     });
-
-                    // Load previously selected cashbooks if reconfiguring
-                    loadPreviousSelection();
-
-                    adapter.notifyDataSetChanged();
-                    updateSelectAllState();
-                }),
-                error -> new Handler(Looper.getMainLooper()).post(() -> {
-                    loadingIndicator.setVisibility(View.GONE);
-                    Toast.makeText(this, "Failed to load cashbooks", Toast.LENGTH_SHORT).show();
-                })
+                },
+                error -> {
+                    if (isFinishing() || isDestroyed()) return;
+                    new Handler(Looper.getMainLooper()).post(() -> {
+                        loadingIndicator.setVisibility(View.GONE);
+                        Toast.makeText(this, "Failed to load cashbooks", Toast.LENGTH_SHORT).show();
+                    });
+                }
         );
     }
 

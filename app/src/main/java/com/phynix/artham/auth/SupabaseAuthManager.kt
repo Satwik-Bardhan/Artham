@@ -475,6 +475,7 @@ object SupabaseAuthManager {
     fun deleteUserAccount(context: Context, callback: AuthCallback?) {
         scope.launch {
             var success = false
+            var criticalFailure = false
             try {
                 val authId = getCurrentUserId()
                 val userEmail = getCurrentUserEmail()?.trim()?.lowercase()
@@ -482,56 +483,105 @@ object SupabaseAuthManager {
                 Log.d(TAG, "Starting account deletion. authId=$authId, email=$userEmail")
 
                 if (authId != null) {
-                    // 1. Get user's cashbooks (filtered by user_id to respect RLS)
-                    val userCashbooks = try {
-                        SupabaseClientProvider.client.from("cashbooks")
-                            .select {
-                                filter { eq("user_id", authId) }
-                            }
-                            .decodeList<ExistingCashbook>()
-                    } catch (e: Exception) {
-                        Log.w(TAG, "Failed to query cashbooks for user $authId", e)
-                        emptyList<ExistingCashbook>()
-                    }
-                    Log.d(TAG, "Found ${userCashbooks.size} cashbooks to delete")
+                    // 1. Resolve the public.users table ID (may differ from authId)
+                    val possibleUserIds = mutableSetOf(authId)
 
-                    // 2. Delete transactions and categories for user's cashbooks
-                    for (cb in userCashbooks) {
+                    // Query users table by auth_id to get the table PK
+                    try {
+                        val usersByAuthId = SupabaseClientProvider.client.from("users")
+                            .select {
+                                filter { eq("auth_id", authId) }
+                            }
+                            .decodeList<ExistingUser>()
+                        for (user in usersByAuthId) {
+                            possibleUserIds.add(user.id)
+                            if (!user.customUid.isNullOrEmpty()) {
+                                possibleUserIds.add(user.customUid)
+                            }
+                        }
+                    } catch (e: Exception) {
+                        Log.w(TAG, "Failed to query users by auth_id", e)
+                    }
+
+                    // Also query users by email for migrated users
+                    if (!userEmail.isNullOrEmpty()) {
                         try {
-                            SupabaseClientProvider.client.from("transactions").delete {
-                                filter { eq("cashbook_id", cb.id) }
+                            val usersByEmail = SupabaseClientProvider.client.from("users")
+                                .select {
+                                    filter { eq("email", userEmail) }
+                                }
+                                .decodeList<ExistingUser>()
+                            for (user in usersByEmail) {
+                                possibleUserIds.add(user.id)
+                                if (!user.customUid.isNullOrEmpty()) {
+                                    possibleUserIds.add(user.customUid)
+                                }
                             }
                         } catch (e: Exception) {
-                            Log.w(TAG, "Failed to delete transactions for cashbook ${cb.id}", e)
+                            Log.w(TAG, "Failed to query users by email", e)
+                        }
+                    }
+
+                    Log.d(TAG, "Resolved possible user_ids for cashbook lookup: $possibleUserIds")
+
+                    // 2. Collect ALL cashbooks belonging to this user (across all user_id variants)
+                    val allCashbookIds = mutableSetOf<String>()
+                    for (userId in possibleUserIds) {
+                        try {
+                            val cashbooks = SupabaseClientProvider.client.from("cashbooks")
+                                .select {
+                                    filter { eq("user_id", userId) }
+                                }
+                                .decodeList<ExistingCashbook>()
+                            for (cb in cashbooks) {
+                                allCashbookIds.add(cb.id)
+                            }
+                        } catch (e: Exception) {
+                            Log.w(TAG, "Failed to query cashbooks for user_id=$userId", e)
+                        }
+                    }
+                    Log.d(TAG, "Found ${allCashbookIds.size} cashbooks to delete")
+
+                    // 3. Delete transactions and categories for ALL user's cashbooks
+                    for (cbId in allCashbookIds) {
+                        try {
+                            SupabaseClientProvider.client.from("transactions").delete {
+                                filter { eq("cashbook_id", cbId) }
+                            }
+                        } catch (e: Exception) {
+                            Log.w(TAG, "Failed to delete transactions for cashbook $cbId", e)
                         }
                         try {
                             SupabaseClientProvider.client.from("categories").delete {
-                                filter { eq("cashbook_id", cb.id) }
+                                filter { eq("cashbook_id", cbId) }
                             }
                         } catch (e: Exception) {
-                            Log.w(TAG, "Failed to delete categories for cashbook ${cb.id}", e)
+                            Log.w(TAG, "Failed to delete categories for cashbook $cbId", e)
                         }
                     }
 
-                    // 3. Delete cashbooks
-                    try {
-                        SupabaseClientProvider.client.from("cashbooks").delete {
-                            filter { eq("user_id", authId) }
+                    // 4. Delete ALL cashbooks (by all user_id variants)
+                    for (userId in possibleUserIds) {
+                        try {
+                            SupabaseClientProvider.client.from("cashbooks").delete {
+                                filter { eq("user_id", userId) }
+                            }
+                        } catch (e: Exception) {
+                            Log.w(TAG, "Failed to delete cashbooks for user_id=$userId", e)
+                            criticalFailure = true
                         }
-                    } catch (e: Exception) {
-                        Log.w(TAG, "Failed to delete cashbooks for user_id $authId", e)
                     }
 
-                    // 4. Delete user profile row by auth_id
+                    // 5. Delete user profile rows (by auth_id and email)
                     try {
                         SupabaseClientProvider.client.from("users").delete {
                             filter { eq("auth_id", authId) }
                         }
                     } catch (e: Exception) {
                         Log.w(TAG, "Failed to delete user profile for auth_id $authId", e)
+                        criticalFailure = true
                     }
 
-                    // 5. Delete user profile row by email
                     if (!userEmail.isNullOrEmpty()) {
                         try {
                             SupabaseClientProvider.client.from("users").delete {
@@ -543,17 +593,18 @@ object SupabaseAuthManager {
                     }
                 }
 
-                success = true
-                Log.d(TAG, "Account deletion completed successfully")
+                success = !criticalFailure
+                Log.d(TAG, "Account deletion completed. success=$success")
             } catch (e: Exception) {
                 Log.e(TAG, "Error deleting user account", e)
             } finally {
-                // Always clear local data and invoke callback on Main thread
+                // Clear local data WITHOUT re-pushing to cloud
                 withContext(Dispatchers.Main) {
                     try {
-                        AuthManager.signOut(context)
+                        // Use signOutForDeletion which does NOT call forcePushAll
+                        AuthManager.signOutForDeletion(context)
                     } catch (e: Exception) {
-                        Log.w(TAG, "Error during signOut in deleteUserAccount", e)
+                        Log.w(TAG, "Error during signOutForDeletion in deleteUserAccount", e)
                     }
                     if (success) {
                         callback?.onSuccess("")

@@ -28,6 +28,40 @@ public class BaseActivity extends AppCompatActivity {
     private static final String PREFS_NAME = "AppSettingsPrefs";
     private static final String KEY_HAPTIC = "haptic_feedback_enabled";
 
+    /**
+     * Returns true if this Activity is still alive (not finishing or destroyed).
+     * Use this guard at the top of all async callbacks before updating UI.
+     */
+    protected boolean isAlive() {
+        return !isFinishing() && !isDestroyed();
+    }
+
+    /**
+     * Wraps a DataRepository callback with a lifecycle guard.
+     * If the activity is finishing or destroyed when the callback fires, it's silently skipped.
+     * Usage: repository.getCashbooks(safeCallback(data -> { ... }), ...);
+     */
+    protected <T> com.phynix.artham.db.DataRepository.DataCallback<T> safeCallback(
+            com.phynix.artham.db.DataRepository.DataCallback<T> callback) {
+        return data -> {
+            if (isAlive()) {
+                callback.onCallback(data);
+            }
+        };
+    }
+
+    /**
+     * Wraps a DataRepository error callback with a lifecycle guard.
+     */
+    protected com.phynix.artham.db.DataRepository.ErrorCallback safeError(
+            com.phynix.artham.db.DataRepository.ErrorCallback callback) {
+        return error -> {
+            if (isAlive()) {
+                callback.onError(error);
+            }
+        };
+    }
+
     // Track the initial touch position to distinguish clicks from scrolls/swipes
     private float downX, downY;
 

@@ -148,6 +148,7 @@ public class CategoryActivity extends BaseActivity {
             cashbookId = prefs.getString("active_cashbook_id_" + uid, getIntent().getStringExtra("cashbook_id"));
         }
         com.phynix.artham.db.DataRepository.getInstance(getApplication()).getCategories(cashbookId, categories -> {
+            if (!isAlive()) return;
             allCategories.clear();
             if (categories != null) {
                 allCategories.addAll(categories);
@@ -213,6 +214,7 @@ public class CategoryActivity extends BaseActivity {
                 .setMessage("Are you sure you want to delete " + c.getName() + "?")
                 .setPositiveButton("Delete", (d, w) -> {
                     com.phynix.artham.db.DataRepository.getInstance(getApplication()).deleteCategory(c.getId(), success -> {
+                        if (!isAlive()) return;
                         Toast.makeText(this, "Category deleted", Toast.LENGTH_SHORT).show();
                         loadCategories();
                     });

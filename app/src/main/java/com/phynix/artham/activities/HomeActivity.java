@@ -472,6 +472,7 @@ public class HomeActivity extends BaseActivity {
 
         // Handle Skeleton Loading State Toggle
         viewModel.getIsLoading().observe(this, isLoading -> {
+            if (!isAlive()) return;
             if (isLoading) {
                 // Delay skeleton show by 150ms — if data arrives from cache, skeleton never flashes
                 skeletonTimeoutHandler.postDelayed(() -> {
@@ -513,6 +514,7 @@ public class HomeActivity extends BaseActivity {
         });
 
         viewModel.getErrorMessage().observe(this, error -> {
+            if (!isAlive()) return;
             if (error != null && !error.isEmpty())
                 showSnackbar(error);
         });
@@ -522,6 +524,7 @@ public class HomeActivity extends BaseActivity {
         viewModel.getUserProfile().observe(this, this::updateUserUI);
 
         viewModel.getActiveCashbook().observe(this, cashbook -> {
+            if (!isAlive()) return;
             if (cashbook != null) {
                 // NORMAL STATE: Data exists
                 if (balanceCardCashbookName != null)
@@ -588,16 +591,19 @@ public class HomeActivity extends BaseActivity {
         });
 
         viewModel.getTotalIncome().observe(this, income -> {
+            if (!isAlive()) return;
             if (balanceCardMoneyIn != null)
                 AmountFormatter.setAdaptiveAmount(balanceCardMoneyIn, income, 14f, 9f);
         });
 
         viewModel.getTotalExpense().observe(this, expense -> {
+            if (!isAlive()) return;
             if (balanceCardMoneyOut != null)
                 AmountFormatter.setAdaptiveAmount(balanceCardMoneyOut, expense, 14f, 9f);
         });
 
         viewModel.getCurrentBalance().observe(this, balance -> {
+            if (!isAlive()) return;
             // Using ViewBinding to get the balanceText within the balance card
             TextView balanceText = binding.balanceCardView.getRoot().findViewById(R.id.balanceText);
             if (balanceText != null) {
@@ -608,6 +614,7 @@ public class HomeActivity extends BaseActivity {
         });
 
         viewModel.getTodayBalance().observe(this, balance -> {
+            if (!isAlive()) return;
             // Utilizing the included layout reference for safe access
             TextView dailyDateText = binding.dailySummaryInclude.getRoot().findViewById(R.id.dailyDateText);
             TextView dailyBalanceText = binding.dailySummaryInclude.getRoot().findViewById(R.id.dailyBalanceText);
@@ -629,6 +636,7 @@ public class HomeActivity extends BaseActivity {
         viewModel.getTodaysTransactions().observe(this, this::updateTransactionTable);
 
         viewModel.getRecentTransactions().observe(this, recent -> {
+            if (!isAlive()) return;
             cachedRecentTransactions = (recent != null) ? recent : new ArrayList<>();
             // Re-render the table since backfill data changed
             List<TransactionModel> todayList = viewModel.getTodaysTransactions().getValue();
@@ -1393,14 +1401,18 @@ public class HomeActivity extends BaseActivity {
             }, 3000);
         }
 
-        // Re-read the saved cashbook and refresh data if it changed
+        // Re-read the saved cashbook and refresh data
         String savedId = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
                 .getString("last_selected_cashbook_id", null);
         if (savedId != null && !savedId.equals(currentCashbookId)) {
+            // Cashbook changed — full switch
             currentCashbookId = savedId;
             currentActiveBookId = null;
             isTimestampUpdatedForCurrentBook = false;
             viewModel.switchCashbook(savedId);
+        } else if (currentCashbookId != null) {
+            // Same cashbook — still refresh transactions to show newly added entries
+            viewModel.switchCashbook(currentCashbookId);
         }
     }
 

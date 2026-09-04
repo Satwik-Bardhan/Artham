@@ -73,8 +73,10 @@ public class DailySummaryActivity extends BaseActivity {
         }
 
         repository.subscribeToTransactions(cashbookId, transactions -> {
+            if (!isAlive()) return;
             processTransactions(transactions);
         }, error -> {
+            if (!isAlive()) return;
             showEmptyState(dailyBalancesList.isEmpty());
         });
     }

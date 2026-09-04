@@ -199,6 +199,7 @@ public class ExpenseAnalyticsActivity extends BaseActivity {
     private void loadCategoriesAndTransactions() {
         loadingProgressBar.setVisibility(View.VISIBLE);
         com.phynix.artham.db.DataRepository.getInstance(getApplication()).getCategories(cashbookId, categories -> {
+            if (!isAlive()) return;
             categoryMap.clear();
             if (categories != null) {
                 for (CategoryModel cat : categories) {
@@ -208,12 +209,14 @@ public class ExpenseAnalyticsActivity extends BaseActivity {
                 }
             }
             com.phynix.artham.db.DataRepository.getInstance(getApplication()).getAllTransactions(cashbookId, transactions -> {
+                if (!isAlive()) return;
                 allTransactions.clear();
                 if (transactions != null) {
                     allTransactions.addAll(transactions);
                 }
                 processTransactionData();
             }, error -> {
+                if (!isAlive()) return;
                 loadingProgressBar.setVisibility(View.GONE);
                 Toast.makeText(ExpenseAnalyticsActivity.this, "Failed to load data", Toast.LENGTH_SHORT).show();
             });

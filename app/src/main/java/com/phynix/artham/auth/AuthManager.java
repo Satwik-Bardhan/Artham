@@ -185,26 +185,93 @@ public class AuthManager {
 
     /**
      * Sign out the current user from Supabase.
+     * Forces a cloud sync push BEFORE clearing local data to prevent data loss.
      */
     public static void signOut(Context context) {
         if (context != null) {
-            context.getSharedPreferences(Constants.PREF_NAME, Context.MODE_PRIVATE)
-                    .edit().clear().apply();
+            // 1. Capture local mode BEFORE clearing prefs
+            boolean wasLocalMode = isLocalMode(context);
 
-            context.getSharedPreferences("AppPrefs", Context.MODE_PRIVATE)
-                    .edit().clear().apply();
+            // 2. Force push ALL local data to cloud BEFORE clearing anything
+            //    This ensures no user data is lost even if sync hadn't completed.
+            //    Skip for local/guest mode users (they have no cloud account).
+            if (!wasLocalMode) {
+                try {
+                    com.phynix.artham.db.sync.SyncEngine.forcePushAll(context, () -> {
+                        // Push completed — now clear local database
+                        clearAllLocalData(context);
+                    });
+                } catch (Exception e) {
+                    android.util.Log.e("AuthManager", "Force push before sign-out failed", e);
+                    // Still clear local data even if push failed
+                    clearAllLocalData(context);
+                }
+            } else {
+                // Local mode — no push needed, clear immediately
+                clearAllLocalData(context);
+            }
 
-            context.getSharedPreferences("CashbookPrefs", Context.MODE_PRIVATE)
-                    .edit().clear().apply();
-
-            android.app.Application app = (context.getApplicationContext() instanceof android.app.Application)
-                    ? (android.app.Application) context.getApplicationContext()
-                    : null;
-            if (app != null) {
-                com.phynix.artham.db.DataRepository.getInstance(app).clearLocalDatabase();
+            // 3. Cancel periodic sync worker
+            try {
+                androidx.work.WorkManager.getInstance(context)
+                        .cancelUniqueWork("artham_periodic_sync");
+            } catch (Exception e) {
+                android.util.Log.w("AuthManager", "Failed to cancel sync worker", e);
             }
         }
         com.phynix.artham.utils.SessionCache.getInstance().clear();
         SupabaseAuthManager.signOut(null);
+    }
+
+    /**
+     * Sign out for account deletion — does NOT push data back to cloud.
+     * Used exclusively by the account deletion flow where cloud data
+     * has already been deleted and must not be re-uploaded.
+     */
+    public static void signOutForDeletion(Context context) {
+        if (context != null) {
+            // Clear all local data immediately (no push, no delay)
+            clearAllLocalData(context);
+
+            // Cancel periodic sync worker
+            try {
+                androidx.work.WorkManager.getInstance(context)
+                        .cancelUniqueWork("artham_periodic_sync");
+            } catch (Exception e) {
+                android.util.Log.w("AuthManager", "Failed to cancel sync worker", e);
+            }
+        }
+        com.phynix.artham.utils.SessionCache.getInstance().clear();
+        SupabaseAuthManager.signOut(null);
+    }
+
+    /**
+     * Clears all local user data: SharedPreferences, Room database, offline queue.
+     */
+    private static void clearAllLocalData(Context context) {
+        // Clear ALL SharedPreferences
+        context.getSharedPreferences(Constants.PREF_NAME, Context.MODE_PRIVATE)
+                .edit().clear().apply();
+        context.getSharedPreferences("AppPrefs", Context.MODE_PRIVATE)
+                .edit().clear().apply();
+        context.getSharedPreferences("CashbookPrefs", Context.MODE_PRIVATE)
+                .edit().clear().apply();
+        context.getSharedPreferences("sync_prefs", Context.MODE_PRIVATE)
+                .edit().clear().apply();
+        context.getSharedPreferences("AppSettingsPrefs", Context.MODE_PRIVATE)
+                .edit().clear().apply();
+        context.getSharedPreferences("onboarding_prefs", Context.MODE_PRIVATE)
+                .edit().clear().apply();
+
+        // Clear offline transaction queue
+        com.phynix.artham.utils.OfflineTransactionManager.clearQueue(context);
+
+        // Clear local Room database
+        android.app.Application app = (context.getApplicationContext() instanceof android.app.Application)
+                ? (android.app.Application) context.getApplicationContext()
+                : null;
+        if (app != null) {
+            com.phynix.artham.db.DataRepository.getInstance(app).clearLocalDatabase();
+        }
     }
 }

@@ -138,6 +138,24 @@ public class OfflineTransactionManager {
     }
 
     /**
+     * Clear all pending offline transactions.
+     * Must be called during logout and account deletion to prevent
+     * stale transactions from syncing into a new account.
+     */
+    public static synchronized void clearQueue(Context context) {
+        try {
+            File arthamDir = new File(context.getFilesDir(), "Artham");
+            File file = new File(arthamDir, OFFLINE_FILE_NAME);
+            if (file.exists()) {
+                file.delete();
+                Log.d(TAG, "Offline queue cleared");
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to clear offline queue", e);
+        }
+    }
+
+    /**
      * Read JSON data from the offline queue file.
      */
     private static String readOfflineFile(Context context) {

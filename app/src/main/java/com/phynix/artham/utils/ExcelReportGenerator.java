@@ -34,6 +34,11 @@ public class ExcelReportGenerator {
 
     public static Uri generateReport(Context context, List<TransactionModel> transactions,
                                       String cashbookName, long startDate, long endDate, boolean categoryReport) {
+        // Prevent NPE if transactions list is null or empty
+        if (transactions == null || transactions.isEmpty()) {
+            Toast.makeText(context, "No transactions to export", Toast.LENGTH_SHORT).show();
+            return null;
+        }
         String sanitizedBookName = cashbookName != null ? cashbookName.replaceAll("[\\\\/:*?\"<>|\\s]+", "_") : "Report";
         if (sanitizedBookName.trim().isEmpty()) {
             sanitizedBookName = "Report";

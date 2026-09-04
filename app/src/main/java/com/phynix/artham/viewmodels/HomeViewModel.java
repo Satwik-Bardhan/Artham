@@ -94,10 +94,23 @@ public class HomeViewModel extends AndroidViewModel {
         repository.getCashbooks(data -> {
             cashbooks.setValue(data);
 
+            // If switchCashbook was already called (from HomeActivity.onCreate),
+            // don't override the user's selection
+            if (currentCashbookId != null) {
+                // Verify the selected cashbook still exists in the loaded list
+                boolean stillExists = data.stream()
+                        .anyMatch(c -> c != null && currentCashbookId.equals(c.getCashbookId()));
+                if (stillExists) {
+                    switchCashbook(currentCashbookId);
+                    return;
+                }
+            }
+
             String lastId = getActiveCashbookIdFromPrefs();
             String targetId = null;
 
-            if (lastId != null && data.stream().anyMatch(c -> c.getCashbookId().equals(lastId))) {
+            if (lastId != null && data.stream()
+                    .anyMatch(c -> c != null && lastId.equals(c.getCashbookId()))) {
                 targetId = lastId;
             } else if (!data.isEmpty()) {
                 targetId = data.get(0).getCashbookId();
@@ -124,7 +137,7 @@ public class HomeViewModel extends AndroidViewModel {
         List<CashbookModel> currentList = cashbooks.getValue();
         if (currentList != null) {
             for (CashbookModel c : currentList) {
-                if (c.getCashbookId().equals(cashbookId)) {
+                if (c != null && cashbookId.equals(c.getCashbookId())) {
                     activeCashbook.setValue(c);
                     break;
                 }

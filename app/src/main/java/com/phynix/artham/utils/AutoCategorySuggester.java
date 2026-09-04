@@ -14,8 +14,10 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -270,17 +272,38 @@ public class AutoCategorySuggester {
             while (keys.hasNext()) {
                 String categoryName = keys.next();
 
-                // Skip the _README key
+                // Skip comments/metadata keys starting with _
                 if (categoryName.startsWith("_")) continue;
 
-                JSONArray keywordsArray = json.optJSONArray(categoryName);
-                if (keywordsArray != null && keywordsArray.length() > 0) {
-                    String[] keywords = new String[keywordsArray.length()];
-                    for (int i = 0; i < keywordsArray.length(); i++) {
-                        keywords[i] = keywordsArray.getString(i);
+                List<String> keywordList = new ArrayList<>();
+
+                JSONObject categoryObj = json.optJSONObject(categoryName);
+                if (categoryObj != null) {
+                    // Category is organized section-wise with sub-keys (e.g., Desserts, Cafes, etc.)
+                    Iterator<String> sectionKeys = categoryObj.keys();
+                    while (sectionKeys.hasNext()) {
+                        String sectionKey = sectionKeys.next();
+                        if (sectionKey.startsWith("_")) continue;
+                        JSONArray subArray = categoryObj.optJSONArray(sectionKey);
+                        if (subArray != null) {
+                            for (int i = 0; i < subArray.length(); i++) {
+                                keywordList.add(subArray.getString(i));
+                            }
+                        }
                     }
+                } else {
+                    // Flat array format
+                    JSONArray keywordsArray = json.optJSONArray(categoryName);
+                    if (keywordsArray != null) {
+                        for (int i = 0; i < keywordsArray.length(); i++) {
+                            keywordList.add(keywordsArray.getString(i));
+                        }
+                    }
+                }
+
+                if (!keywordList.isEmpty()) {
                     // JSON entries override built-in ones for the same category name
-                    mergedKeywords.put(categoryName, keywords);
+                    mergedKeywords.put(categoryName, keywordList.toArray(new String[0]));
                 }
             }
 

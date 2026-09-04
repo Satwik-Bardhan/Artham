@@ -140,6 +140,7 @@ public class CategoryPickerActivity extends BaseActivity {
         final String filterType = categoryTypeFilter;
 
         com.phynix.artham.db.DataRepository.getInstance(getApplication()).getCategories(currentCashbookId, categories -> {
+            if (!isAlive()) return;
             defaultFullList.clear();
             customFullList.clear();
             if (categories != null) {

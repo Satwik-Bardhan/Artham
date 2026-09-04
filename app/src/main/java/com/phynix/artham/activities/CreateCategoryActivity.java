@@ -237,6 +237,11 @@ public class CreateCategoryActivity extends BaseActivity {
             targetCashbookId = prefs.getString("active_cashbook_id_" + uid, getIntent().getStringExtra("cashbook_id"));
         }
 
+        if (targetCashbookId == null || targetCashbookId.isEmpty()) {
+            Toast.makeText(this, "No cashbook selected", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         CategoryModel category = new CategoryModel();
         category.setName(name);
         category.setType(categoryType != null ? categoryType : "Expense");
@@ -245,6 +250,7 @@ public class CreateCategoryActivity extends BaseActivity {
         category.setCustom(true);
 
         com.phynix.artham.db.DataRepository.getInstance(getApplication()).addCategory(targetCashbookId, category, success -> {
+            if (!isAlive()) return;
             finishWithSuccess("Category saved successfully");
         });
     }

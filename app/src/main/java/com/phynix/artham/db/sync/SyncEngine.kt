@@ -11,6 +11,8 @@ import com.phynix.artham.utils.SupabaseClientProvider
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.query.filter.FilterOperator
 import kotlinx.coroutines.*
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 
 /**
  * SyncEngine — Bidirectional sync between Room (local) and Supabase (cloud).
@@ -210,10 +212,9 @@ object SyncEngine {
 
     private suspend fun pushCashbooks(db: ArthamDatabase, userId: String) {
         try {
+            // Only push cashbooks that have local changes (not ALL cashbooks)
             val unsynced = withContext(Dispatchers.IO) { db.cashbookDao().getUnsynced() }
-            val allLocal = withContext(Dispatchers.IO) { db.cashbookDao().getAll() }
-            val toPush = (unsynced + allLocal).distinctBy { it.id }
-            for (entity in toPush) {
+            for (entity in unsynced) {
                 try {
                     val model = SupabaseCashbook(
                         id = entity.id,
@@ -243,7 +244,10 @@ object SyncEngine {
             val deleted = withContext(Dispatchers.IO) { db.cashbookDao().getDeleted() }
             for (entity in deleted) {
                 try {
-                    supabase.from("cashbooks").delete {
+                    // Soft-delete in cloud (preserve data for recovery)
+                    supabase.from("cashbooks").update(
+                        buildJsonObject { put("deleted_at", java.time.Instant.now().toString()) }
+                    ) {
                         filter { eq("id", entity.id) }
                     }
                     db.cashbookDao().hardDelete(entity.id)
@@ -259,12 +263,11 @@ object SyncEngine {
 
     private suspend fun pushTransactions(db: ArthamDatabase) {
         try {
+            // Only push transactions that have local changes (not ALL transactions)
             val unsynced = withContext(Dispatchers.IO) { db.transactionDao().getUnsynced() }
-            val allLocal = withContext(Dispatchers.IO) { db.transactionDao().getAll() }
-            val toPush = (unsynced + allLocal).distinctBy { it.id }
             var pushCount = 0
             var failCount = 0
-            for (entity in toPush) {
+            for (entity in unsynced) {
                 try {
                     val model = SupabaseTransaction(
                         id = entity.id,
@@ -297,7 +300,10 @@ object SyncEngine {
             val deleted = withContext(Dispatchers.IO) { db.transactionDao().getDeleted() }
             for (entity in deleted) {
                 try {
-                    supabase.from("transactions").delete {
+                    // Soft-delete in cloud (preserve data for recovery)
+                    supabase.from("transactions").update(
+                        buildJsonObject { put("deleted_at", java.time.Instant.now().toString()) }
+                    ) {
                         filter { eq("id", entity.id) }
                     }
                     db.transactionDao().hardDelete(entity.id)
@@ -344,7 +350,10 @@ object SyncEngine {
             val deleted = withContext(Dispatchers.IO) { db.categoryDao().getDeleted() }
             for (entity in deleted) {
                 try {
-                    supabase.from("categories").delete {
+                    // Soft-delete in cloud (preserve data for recovery)
+                    supabase.from("categories").update(
+                        buildJsonObject { put("deleted_at", java.time.Instant.now().toString()) }
+                    ) {
                         filter { eq("id", entity.id) }
                     }
                 } catch (e: Exception) {
@@ -366,11 +375,9 @@ object SyncEngine {
 
     private suspend fun pullCashbooks(context: Context, db: ArthamDatabase, userId: String) {
         try {
-            val remoteCashbooksAll = try {
-                supabase.from("cashbooks").select().decodeList<SupabaseCashbook>()
-            } catch (e: Exception) {
-                emptyList<SupabaseCashbook>()
-            }
+            // REMOVED: Unfiltered select() that fetched ALL users' cashbooks.
+            // This was a security risk — rely on user-specific filtered queries instead.
+            val remoteCashbooksAll = emptyList<SupabaseCashbook>()
 
             val remoteCashbooksByUserId = try {
                 supabase.from("cashbooks")
@@ -472,6 +479,18 @@ object SyncEngine {
                     .decodeList<SupabaseTransaction>()
 
                 for (remote in remoteTransactions) {
+                    // Skip soft-deleted cloud transactions — do NOT re-insert them
+                    if (remote.deletedAt != null) {
+                        // If this deleted transaction still exists locally, remove it
+                        // (handles cross-device deletion propagation)
+                        val localStale = withContext(Dispatchers.IO) { db.transactionDao().getById(remote.id) }
+                        if (localStale != null) {
+                            db.transactionDao().hardDelete(remote.id)
+                            Log.d(TAG, "Removed locally stale (cloud-deleted) transaction: ${remote.id}")
+                        }
+                        continue
+                    }
+
                     val local = withContext(Dispatchers.IO) { db.transactionDao().getById(remote.id) }
                     if (local == null) {
                         // New from cloud
@@ -535,6 +554,17 @@ object SyncEngine {
                     .decodeList<SupabaseCategory>()
 
                 for (remote in remoteCategories) {
+                    // Skip soft-deleted cloud categories — do NOT re-insert them
+                    if (remote.deletedAt != null) {
+                        // If this deleted category still exists locally, remove it
+                        val localStale = withContext(Dispatchers.IO) { db.categoryDao().getById(remote.id) }
+                        if (localStale != null) {
+                            db.categoryDao().hardDelete(remote.id)
+                            Log.d(TAG, "Removed locally stale (cloud-deleted) category: ${remote.id}")
+                        }
+                        continue
+                    }
+
                     val local = withContext(Dispatchers.IO) { db.categoryDao().getById(remote.id) }
                     if (local == null) {
                         val entity = CategoryEntity().apply {

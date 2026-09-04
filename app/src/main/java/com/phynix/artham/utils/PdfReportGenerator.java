@@ -80,6 +80,11 @@ public class PdfReportGenerator {
     }
 
     public static Uri generateReport(Context context, List<TransactionModel> transactions, String cashbookName, long startDate, long endDate, boolean greyscale, boolean categoryReport) {
+        // Prevent NPE if transactions list is null or empty
+        if (transactions == null || transactions.isEmpty()) {
+            Toast.makeText(context, "No transactions to export", Toast.LENGTH_SHORT).show();
+            return null;
+        }
         Document document = new Document(PageSize.A4, 36, 36, 36, 50);
         String sanitizedBookName = cashbookName != null ? cashbookName.replaceAll("[\\\\/:*?\"<>|\\s]+", "_") : "Report";
         if (sanitizedBookName.trim().isEmpty()) {

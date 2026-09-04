@@ -56,12 +56,19 @@ public class ErrorHandler {
     }
 
     private static void showErrorToUser(@NonNull Context context, String message) {
-        // Check if context is valid before showing toast
-        if (context instanceof Activity && !((Activity) context).isFinishing()) {
-            Toast.makeText(context, message, Toast.LENGTH_LONG).show();
-        } else if (context != null) {
-            Toast.makeText(context, message, Toast.LENGTH_LONG).show();
-        }
+        // Always show Toast on the main thread to prevent CalledFromWrongThreadException
+        android.os.Handler mainHandler = new android.os.Handler(android.os.Looper.getMainLooper());
+        mainHandler.post(() -> {
+            // Check if context is valid before showing toast
+            if (context instanceof Activity && ((Activity) context).isFinishing()) {
+                return;
+            }
+            try {
+                Toast.makeText(context, message, Toast.LENGTH_LONG).show();
+            } catch (Exception e) {
+                Log.e(TAG, "Failed to show error toast", e);
+            }
+        });
     }
 
     public static void showLoadingError(@NonNull Context context, String operation) {

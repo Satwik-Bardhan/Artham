@@ -1,20 +1,103 @@
 {
-  "_README": "Add or edit keywords here to improve auto-category suggestions. Each category maps to an array of keywords. When a remark matches a keyword, the corresponding category is auto-selected. Longer keyword matches score higher. The app merges these with built-in defaults — your entries here take priority.",
+  "_README": "Add or edit keywords here to improve auto-category suggestions. Categories can be flat arrays or section-wise objects. The app merges these with built-in defaults — your entries here take priority.",
 
-  "Food & Dining": [
-    "food", "lunch", "dinner", "breakfast", "snack", "snacks", "biryani",
-    "pizza", "burger", "zomato", "swiggy", "restaurant", "cafe", "coffee",
-    "tea", "dosa", "idli", "meal", "tiffin", "canteen", "mess", "dhaba",
-    "thali", "noodles", "momos", "sandwich", "juice", "milkshake",
-    "ice cream", "dessert", "bakery", "cake", "starbucks", "dominos",
-    "mcdonalds", "kfc", "subway", "chaiwala", "eating out", "dining",
-    "takeaway", "delivery", "brunch", "paneer", "chicken", "mutton",
-    "fish", "egg", "paratha", "roti", "chapati", "pav bhaji", "chaat",
-    "samosa", "vada pav", "pani puri", "golgappa", "lassi", "chai",
-    "maggi", "pasta", "wrap", "roll", "kebab", "tandoori", "tikka",
-    "dal makhani", "butter chicken", "masala dosa", "uttapam",
-    "poha", "upma", "chole bhature", "rajma chawal"
-  ],
+  "Food & Dining": {
+    "Cafes, Coffee & Tea": [
+      "starbucks", "third wave", "blue tokai", "costa coffee", "tim hortons",
+      "chaayos", "chaiwala", "cafe", "coffee", "cappuccino", "latte", "espresso",
+      "cold coffee", "filter coffee", "kaapi", "boba", "bubble tea", "chai",
+      "kulhad chai", "cutting chai", "tea", "bistro", "eatery"
+    ],
+
+    "Refreshments & Cold Drinks": [
+      "juice", "milkshake", "lassi", "thamsup", "coca cola", "pepsi", "cold drink",
+      "badam milk", "thandai", "jaljeera", "sattu drink", "sugarcane juice",
+      "ganne ka ras", "nimbupani", "shikanji", "coconut water", "nariyal pani",
+      "nimbu soda", "soda", "fresh juice"
+    ],
+
+    "Desserts, Sweets & Ice Creams": [
+      "ice cream", "dessert", "halwai", "barfi", "gulab jamun", "rasgulla",
+      "jalebi", "laddu", "sweets", "mithai", "waffle", "donut", "falooda",
+      "kulfi", "rabri", "rabdi", "kheer", "phirni", "gajar halwa",
+      "moong dal halwa", "rasmalai", "rabdi jalebi", "kaju katli", "peda",
+      "motichoor laddu", "besan laddu", "soan papdi", "malpua", "ghevar",
+      "shahi tukda", "mysore pak", "puran poli", "modak", "shrikhand",
+      "aamras", "amras", "basundi", "sandesh", "mishti doi", "chhena poda",
+      "sweet truth", "pastry"
+    ],
+
+    "Bakeries & Cakes": [
+      "bakery", "cake", "theobroma", "muffin", "brownie", "cupcake",
+      "croissant", "bread roll", "patties"
+    ],
+
+    "Fast Food, Pizza & Burgers": [
+      "pizza", "burger", "dominos", "mcdonalds", "kfc", "subway", "taco bell",
+      "pizza hut", "burger king", "wendys", "ovenstory", "fast food",
+      "french fries", "garlic bread", "nuggets", "wrap"
+    ],
+
+    "Street Food, Chaat & Snacks": [
+      "snack", "snacks", "samosa", "vada pav", "pani puri", "golgappa",
+      "pav bhaji", "chaat", "bhel puri", "sev puri", "dahi puri", "aloo tikki",
+      "tikki chaat", "kachori", "ram ladoo", "shakarkandi", "pakora", "pakode",
+      "bread pakora", "dabeli", "kothimbir vadi", "alu vadi", "paan",
+      "meetha paan"
+    ],
+
+    "North Indian & Tandoori": [
+      "biryani", "paneer", "chicken", "mutton", "paratha", "roti", "chapati",
+      "kebab", "tandoori", "tikka", "dal makhani", "butter chicken", "bhature",
+      "kulche", "chole bhature", "chole kulche", "bedmi puri", "aloo puri",
+      "kachori sabzi", "dahi bhalla", "bhalla papdi", "bhalla", "papdi chaat",
+      "raj kachori", "matar kulcha", "paneer tikka", "paneer butter masala",
+      "shahi paneer", "kadhai paneer", "dal tadka", "jeera rice", "naan",
+      "garlic naan", "butter naan", "tandoori roti", "missi roti", "rumali roti",
+      "lachha paratha", "stuffed paratha", "aloo paratha", "gobi paratha",
+      "pyaaz paratha", "paneer paratha", "sattu paratha", "litti chokha",
+      "dal baati churma", "kadhi chawal", "sarson ka saag", "makki di roti",
+      "nihari", "paya", "galouti kebab", "kakori kebab", "seekh kebab",
+      "korma", "rogan josh", "rajma chawal", "poha", "haldiram", "bikano",
+      "bikanervala"
+    ],
+
+    "South Indian & Tiffin": [
+      "dosa", "idli", "uttapam", "masala dosa", "upma", "podi dosa",
+      "mysore masala dosa", "rava dosa", "onion uttapam", "set dosa",
+      "pesarattu", "vada", "medu vada", "masala vada", "sambar vada",
+      "dahi vada", "rasam rice", "sambar rice", "curd rice", "tayir sadam",
+      "bisibelebath", "pongal", "ven pongal", "sweet pongal", "lemon rice",
+      "tamarind rice", "puliyogare", "coconut rice", "appam", "stew",
+      "idiyappam", "puttu", "kadala curry", "parotta", "kerala parotta",
+      "kothu parotta", "chettinad chicken", "fish curry", "meen curry",
+      "hyderabadi biryani", "ambur biryani", "thalassery biryani",
+      "dindigul biryani", "kesari bath", "khara bath"
+    ],
+
+    "West Indian, Maharashtrian & Gujarati": [
+      "misal pav", "usal pav", "kanda poha", "thalipeeth", "sabudana khichdi",
+      "sabudana vada", "bhakri", "pithla bhakri", "sol kadhi", "dhokla",
+      "khaman", "khandvi", "fafda", "jalebi fafda", "thepla", "undhiyu",
+      "handvo", "locho", "gathiya", "sev khamani"
+    ],
+
+    "East Indian, Bengali & Asian / Chinese": [
+      "kathi roll", "egg roll", "chicken roll", "mutton roll", "luchi",
+      "alur dom", "ghugni", "pitha", "kosha mangsho", "fish fry", "ilish",
+      "chingri malai curry", "momo", "momos", "wow momo", "thukpa",
+      "chowmein", "hakka noodles", "fried rice", "manchurian", "chilli chicken",
+      "chilli paneer", "spring roll", "dimsum", "maggi", "pasta", "noodles"
+    ],
+
+    "General Dining, Meals & Delivery": [
+      "zomato", "swiggy", "eatclub", "magicpin food", "faasos", "behrouz",
+      "lunchbox", "food", "lunch", "dinner", "breakfast", "meal", "tiffin",
+      "canteen", "mess", "dhaba", "thali", "restaurant", "eating out",
+      "dining", "takeaway", "delivery", "brunch", "food court", "buffet",
+      "barbeque", "bbq", "barbeque nation"
+    ]
+  },
 
   "Groceries": [
     "grocery", "groceries", "vegetables", "veggies", "fruits", "milk", "eggs",
@@ -24,7 +107,14 @@
     "cooking oil", "atta", "dal", "rice", "spices", "masala",
     "sugar", "salt", "flour", "ghee", "butter", "curd", "paneer",
     "bread", "biscuits", "soap", "shampoo", "toothpaste", "detergent",
-    "tissue", "toilet paper", "cleaning", "dishwash", "market"
+    "tissue", "toilet paper", "cleaning", "dishwash", "market", "mandi",
+    "sabzi mandi", "dahi", "doodh", "amul", "mother dairy", "nandini",
+    "verka", "avin", "aashirvaad", "fortune oil", "tata salt", "tata tea",
+    "red label", "surf excel", "ariel", "vim", "harpic", "colgate",
+    "sensodyne", "dettol", "savlon", "household items", "pantry", "dry fruits",
+    "badam", "kaju", "kishmish", "almonds", "cashew", "walnut", "honey",
+    "oats", "cornflakes", "muesli", "noodle packet", "ketchup", "mayo",
+    "jam", "pickle", "achaar", "papad"
   ],
 
   "Bills & Utility": [
@@ -35,7 +125,10 @@
     "sewage", "garbage", "municipal", "bescom", "bses", "tata power",
     "adani electricity", "jio fiber", "airtel fiber", "act fibernet",
     "bill paid", "bill payment", "cylinder", "gas cylinder", "lpg",
-    "piped gas", "png", "water purifier", "ro service"
+    "piped gas", "png", "water purifier", "ro service", "indane", "bharat gas",
+    "hp gas", "tata play", "dish tv", "d2h", "sun direct", "airtel dth",
+    "excitel", "hathway", "bsnl", "vi recharge", "vodafone", "idea",
+    "bill desk", "bbps", "bharat billpay", "property tax bill", "maintenance bill"
   ],
 
   "Transport": [
@@ -44,7 +137,10 @@
     "rapido", "bike taxi", "local train", "railway", "irctc", "commute",
     "transport", "transportation", "car wash", "servicing", "car service",
     "bike service", "tyre", "puncture", "cng", "ev charging", "charging station",
-    "namma yatri", "bluSmart", "meru", "ubergo", "ola mini"
+    "namma yatri", "bluSmart", "meru", "ubergo", "ola mini", "indian oil",
+    "hpcl", "bpcl", "nayara", "shell petrol", "speed petrol", "power diesel",
+    "alignment", "wheel balancing", "motor vehicle", "speedometer", "mechanic",
+    "garage", "spare parts", "helmet", "challan", "traffic fine", "rto"
   ],
 
   "Travel": [
@@ -53,14 +149,18 @@
     "passport", "visa", "luggage", "suitcase", "cleartrip", "yatra",
     "ixigo", "indigo", "air india", "spicejet", "vistara", "homestay",
     "trek", "trekking", "camping", "road trip", "sightseeing",
-    "pilgrimage", "tirupati", "vaishno devi", "kedarnath"
+    "pilgrimage", "tirupati", "vaishno devi", "kedarnath", "agoda",
+    "booking.com", "trivago", "easemytrip", "redbus", "abhibus", "intercity",
+    "travel agent", "forex", "international trip", "cruise", "dormitory",
+    "guest house", "traveller", "backpacking"
   ],
 
   "Rent": [
     "rent", "house rent", "room rent", "pg", "hostel", "maintenance",
     "society maintenance", "flat rent", "apartment rent", "rent paid",
     "monthly rent", "paying guest", "security deposit", "brokerage",
-    "broker fee", "house deposit"
+    "broker fee", "house deposit", "advance rent", "flat maintenance",
+    "landlord", "nobroker", "housing.com", "magicbricks", "nestaway", "stanza living"
   ],
 
   "Subscriptions": [
@@ -70,7 +170,9 @@
     "hbo", "crunchyroll", "linkedin premium", "icloud", "google one",
     "cloud storage", "vpn", "antivirus", "microsoft 365", "adobe",
     "canva pro", "chatgpt", "premium plan", "annual plan", "monthly plan",
-    "notion", "figma", "github copilot", "claude", "gemini pro"
+    "notion", "figma", "github copilot", "claude", "gemini pro", "midjourney",
+    "openai", "duolingo", "medium", "substack", "audible", "kindle unlimited",
+    "times prime", "swiggy one", "zomato gold"
   ],
 
   "Shopping": [
@@ -82,7 +184,11 @@
     "furniture", "home decor", "curtains", "bedsheet", "kitchen appliance",
     "jeans", "shirt", "kurti", "saree", "t-shirt", "hoodie",
     "sneakers", "sandals", "chappal", "headphones", "earbuds",
-    "charger", "cable", "power bank", "smartwatch"
+    "charger", "cable", "power bank", "smartwatch", "zara", "h&m",
+    "uniqlo", "zudio", "westside", "pantaloons", "max fashion", "trends",
+    "decathlon", "lenskart", "eyewear", "titan", "fastrack", "boat",
+    "noise", "fire-boltt", "apple store", "samsung", "oneplus", "realme",
+    "xiaomi", "ikea", "pepperfry", "urban ladder"
   ],
 
   "Entertainment": [
@@ -92,7 +198,10 @@
     "sports", "match", "stadium", "bowling", "arcade", "pub", "bar",
     "nightclub", "karaoke", "picnic", "zoo", "museum", "exhibition",
     "play store", "app store", "in-app purchase", "playstation", "xbox",
-    "nintendo", "steam", "valorant", "pubg", "bgmi", "free fire"
+    "nintendo", "steam", "valorant", "pubg", "bgmi", "free fire",
+    "bookmyshow", "insider", "district", "clubbing", "beer", "liquor",
+    "wine", "spirits", "theka", "casio", "billiards", "pool table",
+    "wonderla", "essell world", "imagica", "film ticket", "match ticket"
   ],
 
   "Health": [
@@ -104,7 +213,9 @@
     "therapy", "counseling", "wellness", "vitamin", "supplement",
     "x-ray", "mri", "ct scan", "ultrasound", "ecg", "vaccination",
     "injection", "ointment", "tablet", "capsule", "syrup",
-    "protein powder", "whey", "creatine"
+    "protein powder", "whey", "creatine", "cult.fit", "gold's gym",
+    "anytime fitness", "dawa", "chemist", "diagnostic", "lal pathlabs",
+    "thyrocare", "srl diagnostics", "max hospital", "fortis", "manipal"
   ],
 
   "Education": [
@@ -114,47 +225,56 @@
     "library", "stationery", "notebook", "pen", "pencil", "study",
     "scholarship", "admission", "university", "degree", "certificate",
     "class", "classes", "tutorial", "lecture", "assignment", "project",
-    "thesis", "research", "lab", "practical"
+    "thesis", "research", "lab", "practical", "allen", "fitjee",
+    "physics wallah", "vedantu", "testbook", "gate academy", "leet code",
+    "geeksforgeeks", "scaler", "upgrad", "simplilearn", "school dress",
+    "uniform", "school bag", "exam fee"
   ],
 
   "Salary": [
     "salary", "wages", "pay", "paycheck", "stipend", "monthly salary",
     "salary credited", "pay day", "payday", "income received",
     "bonus", "incentive", "appraisal", "increment", "allowance",
-    "hra", "da", "ta", "overtime", "arrears"
+    "hra", "da", "ta", "overtime", "arrears", "ctc payout", "employer payout",
+    "payroll", "salary account"
   ],
 
   "Freelance": [
     "freelance", "project payment", "client payment", "gig", "consulting",
     "contract work", "side hustle", "upwork", "fiverr", "freelancing",
-    "commission", "consultancy", "toptal", "freelancer.com"
+    "commission", "consultancy", "toptal", "freelancer.com", "deel",
+    "payoneer", "wise payment", "stripe payout", "client payout"
   ],
 
   "Gifts & Charity": [
     "donation", "charity", "temple", "church", "mosque", "gurudwara",
     "zakat", "tithe", "ngo", "fundraiser", "crowdfunding", "helping",
     "orphanage", "old age home", "daan", "seva", "pooja", "puja",
-    "havan", "yajna", "prasad", "offerings"
+    "havan", "yajna", "prasad", "offerings", "pm cares", "giveindia",
+    "ketto", "milaap", "akshaya patra", "cry ngo", "relief fund"
   ],
 
   "Gifts": [
     "gift", "present", "birthday gift", "wedding gift", "anniversary gift",
     "surprise", "gift card", "bouquet", "flowers", "shagun", "envelope",
-    "birthday party", "wedding"
+    "birthday party", "wedding", "ferns n petals", "fnp", "igp", "floweraura"
   ],
 
   "Insurance": [
     "insurance", "lic", "premium", "policy", "term plan", "health insurance",
     "car insurance", "bike insurance", "vehicle insurance", "life insurance",
     "mediclaim", "accidental", "endowment", "ulip", "star health",
-    "max life", "hdfc life", "icici prudential", "sbi life"
+    "max life", "hdfc life", "icici prudential", "sbi life", "policybazaar",
+    "acko", "digit insurance", "niva bupa", "care health", "tata aia",
+    "bajaj allianz", "insurance renewal"
   ],
 
   "Taxes": [
     "tax", "gst", "income tax", "tds", "advance tax", "tax filing",
     "tax return", "itr", "property tax", "road tax", "professional tax",
     "tax paid", "tax payment", "ca fees", "chartered accountant",
-    "tax consultant", "audit"
+    "tax consultant", "audit", "clear tax", "cleartax", "tin nsdl",
+    "e-filing", "challan 280", "challan 281"
   ],
 
   "Investment": [
@@ -164,61 +284,75 @@
     "gold", "silver", "bond", "elss", "nifty", "sensex", "trading",
     "portfolio", "equity", "debt fund", "etf", "index fund",
     "angel one", "upstox", "5paisa", "ipo", "smallcase",
-    "sgb", "sovereign gold bond", "rdsp", "sukanya samriddhi", "groww",
-    "postal", "postoffice", "india post"
+    "sgb", "sovereign gold bond", "rdsp", "sukanya samriddhi",
+    "postal", "postoffice", "india post", "wazirx", "coin-dcx",
+    "coinswitch", "motilal oswal", "nippon", "sbi mutual fund",
+    "hdfc mutual fund", "icici pru mf", "parag parikh", "quant mf",
+    "axis mf", "mirae asset"
   ],
 
   "Refunds": [
     "refund", "cashback", "return", "reimbursement", "money back",
     "refund received", "claim", "reversal", "chargeback",
-    "warranty claim", "replacement"
+    "warranty claim", "replacement", "amazon refund", "flipkart refund",
+    "zomato refund", "swiggy refund", "irctc refund", "uber refund"
   ],
 
   "Business": [
     "business", "office", "supplies", "stationery", "printing", "courier",
     "postage", "stamp", "xerox", "photocopy", "visiting card",
     "business expense", "office expense", "coworking", "meeting",
-    "wework", "office rent", "office supplies"
+    "wework", "office rent", "office supplies", "bluedart", "delhivery",
+    "dtdc", "dtdc courier", "fedex", "shiprocket", "vendor payment",
+    "raw material", "inventory", "stock purchase", "wholesale"
   ],
 
   "Business Revenue": [
     "business revenue", "sales", "revenue", "business income",
     "client invoice", "invoice paid", "payment received",
-    "order received", "deal closed"
+    "order received", "deal closed", "merchant payout", "pos settlement",
+    "razorpay payout", "cashfree payout", "paytm merchant"
   ],
 
   "Rental Income": [
     "rent income", "rental income", "tenant", "tenant payment", "rent received",
-    "rent collection", "property income"
+    "rent collection", "property income", "flat rent received",
+    "commercial rent", "lease income"
   ],
 
   "Interest & Dividends": [
     "interest", "dividend", "bank interest", "fd interest", "rd interest",
-    "savings interest", "bond interest", "mutual fund dividend"
+    "savings interest", "bond interest", "mutual fund dividend",
+    "stock dividend", "quarterly interest", "annual interest"
   ],
 
   "Personal": [
     "personal", "self care", "salon", "haircut", "spa", "parlour",
     "beauty", "skincare", "facial", "massage", "manicure", "pedicure",
     "barber", "laundry", "dry cleaning", "ironing", "tailor",
-    "alteration", "cobbler"
+    "alteration", "cobbler", "urban company", "urbanclap", "trimming",
+    "shaving", "cosmetic clinic", "tanning", "waxing", "hair color"
   ],
 
   "EMI & Loans": [
     "emi", "loan", "home loan", "car loan", "personal loan", "bike loan",
     "education loan", "credit card bill", "credit card payment",
     "installment", "equated monthly", "bajaj finance", "hdfc loan",
-    "sbi loan", "icici loan", "mortgage"
+    "sbi loan", "icici loan", "mortgage", "tata capital", "home credit",
+    "idfc loan", "l&t finance", "muthoot", "manappuram", "gold loan",
+    "cred bill", "cred payment", "slice bill", "onecard bill", "uni card"
   ],
 
   "Kids & Family": [
     "school fees", "daycare", "nanny", "babysitter", "toys", "diapers",
     "baby food", "formula", "kids clothes", "children", "child",
-    "tuition fees", "picnic", "family outing"
+    "tuition fees", "picnic", "family outing", "firstcry", "pampers",
+    "huggies", "cerelac", "pram", "stroller", "toy store", "hamleys"
   ],
 
   "Pets": [
     "pet", "dog food", "cat food", "vet", "veterinary", "pet grooming",
-    "pet shop", "pet accessories", "pet medicine", "kennel"
+    "pet shop", "pet accessories", "pet medicine", "kennel", "pedigree",
+    "royal canin", "whiskas", "heads up for tails", "huft", "dog hostel"
   ]
 }

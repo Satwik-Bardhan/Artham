@@ -128,6 +128,7 @@ public class ManageCashbookLabelsActivity extends BaseActivity implements Cashbo
     private void loadData() {
         DataRepository repo = DataRepository.getInstance(getApplication());
         repo.getCashbooks(cashbooks -> {
+            if (!isAlive()) return;
             allCashbooks.clear();
             if (cashbooks != null) {
                 allCashbooks.addAll(cashbooks);

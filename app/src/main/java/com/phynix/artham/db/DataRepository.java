@@ -119,8 +119,10 @@ public class DataRepository {
     private synchronized List<TransactionModel> getLocalTransactions(String cashbookId) {
         LocalDataWrapper data = loadLocalData();
         for (CashbookModel cb : data.cashbooks) {
-            if (cb.getCashbookId().equals(cashbookId)) {
+            if (cb.getCashbookId() != null && cb.getCashbookId().equals(cashbookId)) {
                 List<TransactionModel> txs = cb.getTransactionList();
+                // Remove null entries that can appear from deserialized JSON
+                txs.removeIf(t -> t == null);
                 txs.sort((t1, t2) -> Long.compare(t2.getTimestamp(), t1.getTimestamp()));
                 return txs;
             }
@@ -656,9 +658,18 @@ public class DataRepository {
         return AuthManager.getUserId(context);
     }
 
+    /**
+     * Clears all local data. Should only be called AFTER data has been
+     * pushed to the cloud via SyncEngine.forcePushAll().
+     */
     public void clearLocalDatabase() {
         executorService.execute(() -> {
             try {
+                // Log what we're about to delete for recovery purposes
+                int cashbookCount = cashbookDao.getAll().size();
+                int transactionCount = transactionDao.getAll().size();
+                Log.w(TAG, "CLEARING LOCAL DATABASE: " + cashbookCount + " cashbooks, " + transactionCount + " transactions");
+
                 roomDb.clearAllTables();
                 synchronized (localCallbacks) {
                     localCallbacks.clear();

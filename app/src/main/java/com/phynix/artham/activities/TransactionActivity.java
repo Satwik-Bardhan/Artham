@@ -584,6 +584,7 @@ public class TransactionActivity extends BaseActivity {
         boolean isLocal = DataRepository.getInstance(getApplication()).isLocalMode();
         if (isLocal) {
             DataRepository.getInstance(getApplication()).getCashbooks(cashbooks -> {
+                if (!isAlive()) return;
                 for (CashbookModel cb : cashbooks) {
                     if (cb.getCashbookId().equals(currentCashbookId)) {
                         currentCashbookName = cb.getName();

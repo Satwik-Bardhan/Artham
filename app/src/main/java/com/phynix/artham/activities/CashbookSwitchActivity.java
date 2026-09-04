@@ -303,6 +303,7 @@ public class CashbookSwitchActivity extends BaseActivity {
         showLoading(true);
 
         repository.getCashbooks(data -> {
+            if (!isAlive()) return;
             allCashbooks.clear();
             for (CashbookModel cb : data) {
                 boolean isCurrent = currentCashbookId != null && currentCashbookId.equals(cb.getCashbookId());
@@ -315,6 +316,7 @@ public class CashbookSwitchActivity extends BaseActivity {
             if (swipeRefreshLayout != null) swipeRefreshLayout.setRefreshing(false);
             checkAndShowOnboarding();
         }, error -> {
+            if (!isAlive()) return;
             showLoading(false);
             if (swipeRefreshLayout != null) swipeRefreshLayout.setRefreshing(false);
             showSnackbar(error);
@@ -563,6 +565,7 @@ public class CashbookSwitchActivity extends BaseActivity {
         newCashbook.setActive(true);
 
         repository.createNewCashbook(newCashbook, successId -> {
+            if (!isAlive()) return;
             if (!category.isEmpty()) {
                 saveCustomCategory(category);
             }
@@ -583,9 +586,12 @@ public class CashbookSwitchActivity extends BaseActivity {
                         .show();
             } else {
                 showSnackbar("Cashbook created successfully!");
-                loadCashbooks();
+                onCashbookSelected(newCashbook);
             }
-        }, error -> showSnackbar("Failed to create cashbook: " + error));
+        }, error -> {
+            if (!isAlive()) return;
+            showSnackbar("Failed to create cashbook: " + error);
+        });
     }
 
     private void updateCashbook(CashbookModel cashbook, String newName, String newDescription, String category, String color, String icon) {
@@ -597,6 +603,7 @@ public class CashbookSwitchActivity extends BaseActivity {
         cashbook.setLastModified(System.currentTimeMillis());
 
         repository.updateCashbook(cashbook, success -> {
+            if (!isAlive()) return;
             if (!category.isEmpty()) {
                 saveCustomCategory(category);
             }
@@ -616,6 +623,7 @@ public class CashbookSwitchActivity extends BaseActivity {
         }
 
         repository.updateCashbook(cashbook, success -> {
+            if (!isAlive()) return;
             showSnackbar(newFavoriteState ? "Added to favorites" : "Removed from favorites");
             loadCashbooks();
         });
@@ -666,9 +674,13 @@ public class CashbookSwitchActivity extends BaseActivity {
 
         String newName = "Copy of " + original.getName();
         repository.duplicateCashbook(original.getCashbookId(), newName, newId -> {
+            if (!isAlive()) return;
             showSnackbar("Cashbook duplicated with all entries: " + newName);
             loadCashbooks();
-        }, error -> showSnackbar("Failed to duplicate: " + error));
+        }, error -> {
+            if (!isAlive()) return;
+            showSnackbar("Failed to duplicate: " + error);
+        });
     }
 
     private void exportCashbookAsPdf(CashbookModel cashbook) {
@@ -677,6 +689,7 @@ public class CashbookSwitchActivity extends BaseActivity {
         showSnackbar("Preparing export...");
 
         repository.getAllTransactions(cashbook.getCashbookId(), transactions -> {
+            if (!isAlive()) return;
             if (transactions.isEmpty()) {
                 showSnackbar("No transactions to export in this cashbook");
                 return;
@@ -695,7 +708,10 @@ public class CashbookSwitchActivity extends BaseActivity {
                     earliest,
                     latest
             );
-        }, error -> showSnackbar("Failed to fetch transactions for export: " + error));
+        }, error -> {
+            if (!isAlive()) return;
+            showSnackbar("Failed to fetch transactions for export: " + error);
+        });
     }
 
     private void toggleCashbookActive(CashbookModel cashbook) {
@@ -704,6 +720,7 @@ public class CashbookSwitchActivity extends BaseActivity {
         cashbook.setLastModified(System.currentTimeMillis());
 
         repository.updateCashbook(cashbook, success -> {
+            if (!isAlive()) return;
             showSnackbar(newActiveState ? "Cashbook activated" : "Cashbook deactivated");
             loadCashbooks();
         });
@@ -740,6 +757,7 @@ public class CashbookSwitchActivity extends BaseActivity {
         boolean wasCurrent = cashbook.isCurrent();
 
         repository.deleteCashbook(cashbook.getCashbookId(), success -> {
+            if (!isAlive()) return;
             if (wasCurrent) {
                 // Find another cashbook to set as current
                 reassignActiveCashbook(cashbook.getCashbookId());
@@ -747,6 +765,7 @@ public class CashbookSwitchActivity extends BaseActivity {
             showSnackbar("Cashbook deleted");
             loadCashbooks();
         }, error -> {
+            if (!isAlive()) return;
             showSnackbar(error);
         });
     }
@@ -777,7 +796,9 @@ public class CashbookSwitchActivity extends BaseActivity {
             String userId = AuthManager.getUserId(this);
             prefs.edit().putString(Constants.PREF_ACTIVE_CASHBOOK_PREFIX + userId, currentCashbookId).apply();
             replacement.setCurrent(true);
-            repository.updateCashbook(replacement, s -> {});
+            repository.updateCashbook(replacement, s -> {
+                if (!isAlive()) return;
+            });
         }
     }
 
@@ -1178,6 +1199,7 @@ public class CashbookSwitchActivity extends BaseActivity {
         cashbook.setLastModified(System.currentTimeMillis());
 
         repository.updateCashbook(cashbook, success -> {
+            if (!isAlive()) return;
             if (!category.isEmpty() && !customCategories.contains(category)) {
                 saveCustomCategory(category);
             }
