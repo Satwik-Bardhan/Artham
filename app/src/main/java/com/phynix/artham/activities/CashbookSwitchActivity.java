@@ -514,11 +514,11 @@ public class CashbookSwitchActivity extends BaseActivity {
                     return;
                 }
 
-                // Validate: only allow alphabets, numerics, and spaces
-                if (!name.matches("^[a-zA-Z0-9\\s]+$")) {
+                // Validate: first character must be a letter or number; after that allow alphabets, numerics, spaces, #, comma, and dot
+                if (!name.matches("^[a-zA-Z0-9][a-zA-Z0-9\\s#,.]*$")) {
                     new MaterialAlertDialogBuilder(this)
                             .setTitle("Invalid Name")
-                            .setMessage("Cashbook name can only contain alphabets and numerics.")
+                            .setMessage("Cashbook name must start with a letter or number. After that, you can use alphabets, numbers, spaces, #, comma (,) and dot (.)")
                             .setPositiveButton("OK", null)
                             .show();
                     return;
@@ -700,14 +700,33 @@ public class CashbookSwitchActivity extends BaseActivity {
                 if (txn.getTimestamp() < earliest) earliest = txn.getTimestamp();
                 if (txn.getTimestamp() > latest) latest = txn.getTimestamp();
             }
-            String bookName = cashbook.getName() != null ? cashbook.getName() : "Cashbook";
-            PdfReportGenerator.generateReport(
+            String bookName = (cashbook.getName() != null && !cashbook.getName().trim().isEmpty())
+                    ? cashbook.getName().trim() : "Cashbook";
+            android.net.Uri fileUri = PdfReportGenerator.generateReport(
                     CashbookSwitchActivity.this,
                     transactions,
                     bookName,
                     earliest,
                     latest
             );
+            if (fileUri != null) {
+                new com.google.android.material.dialog.MaterialAlertDialogBuilder(CashbookSwitchActivity.this)
+                        .setTitle("Export Successful")
+                        .setMessage("\"" + bookName + "\" report saved to Downloads/Artham. Open it now?")
+                        .setPositiveButton("Open", (dialog, which) -> {
+                            try {
+                                android.content.Intent openIntent = new android.content.Intent(android.content.Intent.ACTION_VIEW);
+                                openIntent.setDataAndType(fileUri, "application/pdf");
+                                openIntent.addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                                openIntent.addFlags(android.content.Intent.FLAG_ACTIVITY_NO_HISTORY);
+                                startActivity(openIntent);
+                            } catch (android.content.ActivityNotFoundException e) {
+                                showSnackbar("No application found to open PDF files");
+                            }
+                        })
+                        .setNegativeButton("Maybe Later", null)
+                        .show();
+            }
         }, error -> {
             if (!isAlive()) return;
             showSnackbar("Failed to fetch transactions for export: " + error);

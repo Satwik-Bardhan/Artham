@@ -84,7 +84,8 @@ public class ExcelReportGenerator {
             SimpleDateFormat rowDateFormat = new SimpleDateFormat("dd MMM yy", Locale.getDefault());
 
             // ── Header Section ──
-            writer.println("Artham Report");
+            String displayName = (cashbookName != null && !cashbookName.trim().isEmpty()) ? cashbookName : "Cashbook";
+            writer.println(displayName + " - Cashbook Statement");
             writer.println("Cashbook:," + escapeCsv(cashbookName));
             writer.println("Duration:," + dateFormat.format(new Date(startDate)) + " - " + dateFormat.format(new Date(endDate)));
             writer.println("Generated On:," + dateTimeFormat.format(new Date()));

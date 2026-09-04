@@ -185,12 +185,14 @@ public class PdfReportGenerator {
             }
         } catch (Exception e) { Log.e(TAG, "Logo error", e); }
 
-        Paragraph pTitle = new Paragraph("Artham Report", fontTitle);
+        // Use the actual cashbook name as the primary title
+        String displayName = (cashbookName != null && !cashbookName.trim().isEmpty()) ? cashbookName : "Cashbook";
+        Paragraph pTitle = new Paragraph(displayName, fontTitle);
         pTitle.setAlignment(Element.ALIGN_CENTER);
         pTitle.setSpacingBefore(5);
         document.add(pTitle);
 
-        Paragraph pBook = new Paragraph(cashbookName, fontBookName);
+        Paragraph pBook = new Paragraph("Cashbook Statement", fontBookName);
         pBook.setAlignment(Element.ALIGN_CENTER);
         pBook.setSpacingAfter(2);
         document.add(pBook);

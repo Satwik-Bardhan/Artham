@@ -425,6 +425,19 @@ public class DataRepository {
         });
     }
 
+    /**
+     * Fetches a single cashbook by ID from Room.
+     * Returns null via callback if not found.
+     */
+    public void getCashbook(String cashbookId, DataCallback<CashbookModel> callback) {
+        if (cashbookId == null || callback == null) return;
+        executorService.execute(() -> {
+            CashbookEntity entity = cashbookDao.getById(cashbookId);
+            CashbookModel model = entity != null ? EntityMapper.toModel(entity) : null;
+            new android.os.Handler(android.os.Looper.getMainLooper()).post(() -> callback.onCallback(model));
+        });
+    }
+
     public void createNewCashbook(String name, DataCallback<String> callback, ErrorCallback errorCallback) {
         if (name == null || name.trim().isEmpty()) {
             if (errorCallback != null) errorCallback.onError("Cashbook name cannot be empty");

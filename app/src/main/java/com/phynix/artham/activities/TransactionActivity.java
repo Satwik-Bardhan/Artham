@@ -119,7 +119,7 @@ public class TransactionActivity extends BaseActivity {
     private TextView stickyDateHeader;
 
     private String currentCashbookId;
-    private String currentCashbookName = "Artham Cashbook";
+    private String currentCashbookName = null;
 
 
     private boolean isShowingAllTransactions = false;
@@ -161,6 +161,9 @@ public class TransactionActivity extends BaseActivity {
         if (getSupportActionBar() != null) getSupportActionBar().hide();
 
         currentCashbookId = getIntent().getStringExtra("cashbook_id");
+        if (currentCashbookId == null) {
+            currentCashbookId = getIntent().getStringExtra(Constants.EXTRA_CASHBOOK_ID);
+        }
         currentMonthCalendar = Calendar.getInstance();
 
         boolean isLocal = DataRepository.getInstance(getApplication()).isLocalMode();
@@ -170,6 +173,14 @@ public class TransactionActivity extends BaseActivity {
             return;
         }
 
+        // Retrieve cashbook name from intent, with SharedPreferences fallback
+        String intentName = getIntent().getStringExtra("cashbook_name");
+        if (intentName != null && !intentName.trim().isEmpty()) {
+            currentCashbookName = intentName;
+        } else {
+            currentCashbookName = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+                    .getString("last_selected_cashbook_name", null);
+        }
         fetchCashbookName();
         initializeUI();
         initViewModel();
@@ -581,19 +592,13 @@ public class TransactionActivity extends BaseActivity {
     }
 
     private void fetchCashbookName() {
-        boolean isLocal = DataRepository.getInstance(getApplication()).isLocalMode();
-        if (isLocal) {
-            DataRepository.getInstance(getApplication()).getCashbooks(cashbooks -> {
-                if (!isAlive()) return;
-                for (CashbookModel cb : cashbooks) {
-                    if (cb.getCashbookId().equals(currentCashbookId)) {
-                        currentCashbookName = cb.getName();
-                        break;
-                    }
-                }
-            }, null);
-            return;
-        }
+        if (currentCashbookId == null) return;
+        DataRepository.getInstance(getApplication()).getCashbook(currentCashbookId, cashbook -> {
+            if (!isAlive()) return;
+            if (cashbook != null && cashbook.getName() != null && !cashbook.getName().trim().isEmpty()) {
+                currentCashbookName = cashbook.getName();
+            }
+        });
     }
 
     private int getThemeColor(int attr) {
@@ -688,13 +693,20 @@ public class TransactionActivity extends BaseActivity {
 
         if (exportList.isEmpty()) { showSnackbar("No matching transactions"); return; }
 
+        // Ensure cashbook name is available for the exported report
+        String exportName = currentCashbookName;
+        if (exportName == null || exportName.trim().isEmpty()) {
+            exportName = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+                    .getString("last_selected_cashbook_name", "Cashbook");
+        }
+
         Uri fileUri;
         String mimeType;
         if ("Excel".equalsIgnoreCase(format)) {
-            fileUri = ExcelReportGenerator.generateReport(this, exportList, currentCashbookName, startDate, endDate, categoryReport);
+            fileUri = ExcelReportGenerator.generateReport(this, exportList, exportName, startDate, endDate, categoryReport);
             mimeType = "text/csv";
         } else {
-            fileUri = PdfReportGenerator.generateReport(this, exportList, currentCashbookName, startDate, endDate, greyscale, categoryReport);
+            fileUri = PdfReportGenerator.generateReport(this, exportList, exportName, startDate, endDate, greyscale, categoryReport);
             mimeType = "application/pdf";
         }
 

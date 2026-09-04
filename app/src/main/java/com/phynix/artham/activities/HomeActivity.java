@@ -1062,6 +1062,8 @@ public class HomeActivity extends BaseActivity {
             if (idToUse != null) {
                 Intent intent = new Intent(this, TransactionActivity.class);
                 intent.putExtra(Constants.EXTRA_CASHBOOK_ID, idToUse);
+                intent.putExtra("cashbook_name", getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
+                        .getString("last_selected_cashbook_name", ""));
                 intent.putExtra(NavPillAnimator.EXTRA_PREVIOUS_TAB, NavPillAnimator.TAB_HOME);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 startActivity(intent);
@@ -1149,6 +1151,8 @@ public class HomeActivity extends BaseActivity {
         if (idToUse != null) {
             Intent intent = new Intent(this, TransactionActivity.class);
             intent.putExtra(Constants.EXTRA_CASHBOOK_ID, idToUse);
+            intent.putExtra("cashbook_name", getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
+                    .getString("last_selected_cashbook_name", ""));
             intent.putExtra(NavPillAnimator.EXTRA_PREVIOUS_TAB, NavPillAnimator.TAB_HOME);
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
             startActivity(intent);

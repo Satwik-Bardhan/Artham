@@ -249,6 +249,8 @@ public class SettingsActivity extends BaseActivity {
         // you can seamlessly click away to the Home page or Transactions without getting trapped.
         Intent intent = new Intent(this, targetActivityClass);
         intent.putExtra("cashbook_id", currentCashbookId);
+        intent.putExtra("cashbook_name", getSharedPreferences("AppPrefs", Context.MODE_PRIVATE)
+                .getString("last_selected_cashbook_name", ""));
         intent.putExtra(NavPillAnimator.EXTRA_PREVIOUS_TAB, fromTab);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         startActivity(intent);
